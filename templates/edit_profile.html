@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}编辑个人资料 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="text-center mb-5">编辑个人资料</h1>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-user-edit"></i> 基本信息</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="edit-profile-form" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="username" class="form-label">用户名</label>
+                            <input type="text" class="form-control" id="username" value="{{ current_user.username }}" readonly>
+                            <div class="form-text">用户名不可修改</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">邮箱地址 *</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ current_user.email }}" required>
+                            <div class="form-text">用于接收重要通知</div>
+                            <div class="invalid-feedback">
+                                请输入有效的邮箱地址
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存更改
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 修改密码 -->
+        <div class="card mt-4" id="password">
+            <div class="card-header">
+                <h5><i class="fas fa-key"></i> 修改密码</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="change-password-form" class="needs-validation" novalidate>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label for="current_password" class="form-label">当前密码 *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="current_password" 
+                                       name="current_password" required>
+                                <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                请输入当前密码
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="new_password" class="form-label">新密码 *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="new_password" 
+                                       name="new_password" minlength="6" maxlength="50">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">密码长度至少6位</div>
+                            <div class="invalid-feedback">
+                                密码长度至少6位
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="confirm_new_password" class="form-label">确认新密码 *</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="confirm_new_password" 
+                                       name="confirm_password" minlength="6" maxlength="50">
+                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmNewPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback">
+                                两次输入的密码不一致
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key"></i> 修改密码
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 账户安全设置 -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="fas fa-shield-alt"></i> 安全设置</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
+                            <label class="form-check-label" for="emailNotifications">
+                                接收邮件通知
+                            </label>
+                        </div>
+                        <small class="text-muted">接收重要账户变更的邮件通知</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="loginNotifications">
+                            <label class="form-check-label" for="loginNotifications">
+                                登录通知
+                            </label>
+                        </div>
+                        <small class="text-muted">在新设备登录时发送通知</small>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                            <label class="form-check-label" for="twoFactorAuth">
+                                两步验证
+                            </label>
+                        </div>
+                        <small class="text-muted">启用两步验证提高账户安全性</small>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="sessionTimeout">
+                            <label class="form-check-label" for="sessionTimeout">
+                                自动登出
+                            </label>
+                        </div>
+                        <small class="text-muted">长时间无操作时自动登出</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div class="card mt-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> 返回个人资料
+                    </a>
+                    <div>
+                        <a href="{{ url_for('forgot_password') }}" class="btn btn-outline-warning me-2">
+                            <i class="fas fa-key"></i> 忘记密码
+                        </a>
+                        <a href="{{ url_for('logout') }}" class="btn btn-outline-danger">
+                            <i class="fas fa-sign-out-alt"></i> 退出登录
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 密码显示/隐藏切换
+    const toggleButtons = document.querySelectorAll('[id^="toggle"]');
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const inputId = this.id.replace('toggle', '').toLowerCase();
+            const input = document.getElementById(inputId);
+            const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+            input.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    });
+    
+    // 基本信息表单验证
+    const editProfileForm = document.getElementById('edit-profile-form');
+    editProfileForm.addEventListener('submit', function(event) {
+        if (!this.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        this.classList.add('was-validated');
+    });
+    
+    // 修改密码表单验证
+    const changePasswordForm = document.getElementById('change-password-form');
+    const newPassword = document.getElementById('new_password');
+    const confirmNewPassword = document.getElementById('confirm_new_password');
+    
+    // 密码确认验证
+    confirmNewPassword.addEventListener('input', function() {
+        if (newPassword.value !== this.value) {
+            this.setCustomValidity('两次输入的密码不一致');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+    
+    newPassword.addEventListener('input', function() {
+        if (confirmNewPassword.value && newPassword.value !== confirmNewPassword.value) {
+            confirmNewPassword.setCustomValidity('两次输入的密码不一致');
+        } else {
+            confirmNewPassword.setCustomValidity('');
+        }
+        
+        // 更新密码强度指示器
+        const strength = checkPasswordStrength(this.value);
+        updatePasswordStrengthIndicator(strength);
+    });
+    
+    changePasswordForm.addEventListener('submit', function(event) {
+        if (!this.checkValidity()) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        
+        // 检查密码一致性
+        if (newPassword.value !== confirmNewPassword.value) {
+            event.preventDefault();
+            confirmNewPassword.setCustomValidity('两次输入的密码不一致');
+        }
+        
+        this.classList.add('was-validated');
+    });
+    
+    // 密码强度检测
+    function checkPasswordStrength(password) {
+        let score = 0;
+        
+        if (password.length >= 6) score++;
+        if (password.length >= 8) score++;
+        if (/[a-z]/.test(password)) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        
+        if (score <= 2) return 'weak';
+        if (score <= 4) return 'medium';
+        return 'strong';
+    }
+    
+    function updatePasswordStrengthIndicator(strength) {
+        // 移除现有的强度指示器
+        const existingIndicator = document.getElementById('password-strength');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
+        // 创建新的强度指示器
+        const indicator = document.createElement('div');
+        indicator.id = 'password-strength';
+        indicator.className = 'mt-2';
+        
+        let color, text;
+        switch (strength) {
+            case 'weak':
+                color = 'danger';
+                text = '密码强度：弱';
+                break;
+            case 'medium':
+                color = 'warning';
+                text = '密码强度：中等';
+                break;
+            case 'strong':
+                color = 'success';
+                text = '密码强度：强';
+                break;
+        }
+        
+        indicator.innerHTML = `
+            <div class="progress" style="height: 5px;">
+                <div class="progress-bar bg-${color}" style="width: ${strength === 'weak' ? '33%' : strength === 'medium' ? '66%' : '100%'}"></div>
+            </div>
+            <small class="text-${color}">${text}</small>
+        `;
+        
+        newPassword.parentNode.appendChild(indicator);
+    }
+    
+    // 安全设置开关
+    const switches = document.querySelectorAll('.form-check-input');
+    switches.forEach(switchInput => {
+        switchInput.addEventListener('change', function() {
+            // 这里可以添加保存设置的逻辑
+            console.log(`${this.id}: ${this.checked}`);
+        });
+    });
+});
+</script>
+{% endblock %} 

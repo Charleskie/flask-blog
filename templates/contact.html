@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}联系我 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="text-center mb-5">联系我</h1>
+        <p class="text-center lead mb-5">有任何问题或合作意向？欢迎随时联系我。</p>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 联系表单 -->
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-envelope"></i> 发送消息</h4>
+            </div>
+            <div class="card-body">
+                <form id="contact-form">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">姓名 *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">邮箱 *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="subject" class="form-label">主题 *</label>
+                        <input type="text" class="form-control" id="subject" name="subject" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">消息内容 *</label>
+                        <textarea class="form-control" id="message" name="message" rows="6" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="newsletter" name="newsletter">
+                            <label class="form-check-label" for="newsletter">
+                                订阅我的技术博客更新
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> 发送消息
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 联系信息 -->
+    <div class="col-lg-4">
+        <!-- 联系信息卡片 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-address-card"></i> 联系信息</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <i class="fas fa-envelope text-primary me-2"></i>
+                        <a href="mailto:email@example.com" class="text-decoration-none">email@example.com</a>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-phone text-success me-2"></i>
+                        <span>+86 138-0000-0000</span>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                        <span>北京，中国</span>
+                    </li>
+                    <li class="mb-3">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <span>周一至周五 9:00-18:00</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 社交媒体 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5><i class="fas fa-share-alt"></i> 社交媒体</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="https://github.com/yourusername" class="btn btn-outline-dark" target="_blank">
+                        <i class="fab fa-github"></i> GitHub
+                    </a>
+                    <a href="https://linkedin.com/in/yourusername" class="btn btn-outline-primary" target="_blank">
+                        <i class="fab fa-linkedin"></i> LinkedIn
+                    </a>
+                    <a href="https://twitter.com/yourusername" class="btn btn-outline-info" target="_blank">
+                        <i class="fab fa-twitter"></i> Twitter
+                    </a>
+                    <a href="https://weibo.com/yourusername" class="btn btn-outline-danger" target="_blank">
+                        <i class="fab fa-weibo"></i> 微博
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速回复 -->
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-comments"></i> 常见问题</h5>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                如何开始合作项目？
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                请通过联系表单发送详细的项目需求，我会在24小时内回复您。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                提供哪些技术服务？
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                包括Web开发、移动应用开发、API设计、数据库设计、系统架构等。
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                项目周期大概多久？
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                根据项目复杂度，通常2-8周不等，具体时间会在项目开始前确定。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 地图区域 -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-map"></i> 位置</h5>
+            </div>
+            <div class="card-body">
+                <div class="ratio ratio-21x9">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3024.2219901290355!2d-74.00369368400567!3d40.71312937933185!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x89c25a23e28c1191%3A0x49f75d3281df052a!2s150%20Park%20Row%2C%20New%20York%2C%20NY%2010007%2C%20USA!5e0!3m2!1sen!2scn!4v1640995200000!5m2!1sen!2scn" 
+                            style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contactForm = document.getElementById('contact-form');
+    
+    contactForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // 获取表单数据
+        const formData = new FormData(contactForm);
+        const data = Object.fromEntries(formData);
+        
+        // 这里可以添加表单验证逻辑
+        
+        // 模拟发送消息
+        alert('消息已发送！我会尽快回复您。');
+        contactForm.reset();
+    });
+});
+</script>
+{% endblock %} 

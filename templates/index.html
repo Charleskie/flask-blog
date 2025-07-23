@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - 我的个人网站{% endblock %}
+
+{% block content %}
+<!-- 英雄区域 -->
+<div class="hero-section text-center py-5 mb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <h1 class="display-4 fw-bold mb-4">欢迎来到我的个人网站</h1>
+            <p class="lead mb-4">你好！我是一名开发者，这里是我展示项目、分享想法和记录学习的地方。</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('projects') }}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-code"></i> 查看项目
+                </a>
+                <a href="{{ url_for('about') }}" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-user"></i> 了解更多
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 特色内容 -->
+<div class="row mb-5">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-code fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">项目展示</h5>
+                <p class="card-text">查看我开发的各种项目，包括Web应用、移动应用和其他技术作品。</p>
+                <a href="{{ url_for('projects') }}" class="btn btn-outline-primary">浏览项目</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-blog fa-3x text-success mb-3"></i>
+                <h5 class="card-title">技术博客</h5>
+                <p class="card-text">分享我的技术心得、学习笔记和行业见解。</p>
+                <a href="{{ url_for('blog') }}" class="btn btn-outline-success">阅读博客</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-envelope fa-3x text-info mb-3"></i>
+                <h5 class="card-title">联系我</h5>
+                <p class="card-text">有任何问题或合作意向？欢迎随时联系我。</p>
+                <a href="{{ url_for('contact') }}" class="btn btn-outline-info">联系我</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最新项目预览 -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">最新项目</h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">项目名称 1</h5>
+                        <p class="card-text">这是一个示例项目描述，展示了项目的技术栈和功能特点。</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-primary">Python</span>
+                            <span class="badge bg-secondary">Flask</span>
+                            <span class="badge bg-info">Bootstrap</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">项目名称 2</h5>
+                        <p class="card-text">另一个示例项目，展示了不同的技术组合和实现方案。</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-primary">JavaScript</span>
+                            <span class="badge bg-secondary">React</span>
+                            <span class="badge bg-info">Node.js</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 技能展示 -->
+<div class="row">
+    <div class="col-12">
+        <h2 class="text-center mb-4">技术技能</h2>
+        <div class="row text-center">
+            <div class="col-md-3 mb-3">
+                <div class="skill-item">
+                    <i class="fab fa-python fa-3x text-primary mb-2"></i>
+                    <h5>Python</h5>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: 90%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="skill-item">
+                    <i class="fab fa-js-square fa-3x text-warning mb-2"></i>
+                    <h5>JavaScript</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-warning" style="width: 85%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="skill-item">
+                    <i class="fab fa-react fa-3x text-info mb-2"></i>
+                    <h5>React</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" style="width: 80%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="skill-item">
+                    <i class="fab fa-git-alt fa-3x text-danger mb-2"></i>
+                    <h5>Git</h5>
+                    <div class="progress">
+                        <div class="progress-bar bg-danger" style="width: 95%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

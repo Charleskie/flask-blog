@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}服务器错误 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto text-center">
+        <div class="error-page">
+            <h1 class="display-1 text-muted">500</h1>
+            <h2 class="mb-4">服务器错误</h2>
+            <p class="lead mb-4">抱歉，服务器出现了问题。我们正在努力修复中。</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="{{ url_for('contact') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-envelope"></i> 联系我们
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
