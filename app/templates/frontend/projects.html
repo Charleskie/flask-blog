@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block title %}项目展示 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="text-center mb-5">项目展示</h1>
+        <p class="text-center lead mb-5">这里展示了我开发的各种项目，包括Web应用、移动应用和其他技术作品。</p>
+    </div>
+</div>
+
+<!-- 项目筛选 -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-center flex-wrap gap-2">
+            <button class="btn btn-outline-primary active" data-filter="all">全部</button>
+            <button class="btn btn-outline-primary" data-filter="web">Web应用</button>
+            <button class="btn btn-outline-primary" data-filter="mobile">移动应用</button>
+            <button class="btn btn-outline-primary" data-filter="ai">AI/ML</button>
+            <button class="btn btn-outline-primary" data-filter="other">其他</button>
+        </div>
+    </div>
+</div>
+
+<!-- 项目列表 -->
+<div class="row" id="projects-container">
+    {% if projects %}
+        {% for project in projects %}
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="web">
+            <div class="card h-100 shadow-sm project-card">
+                <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="text-decoration-none">
+                    {% if project.image_url %}
+                    <img src="{{ project.image_url }}" class="card-img-top" alt="{{ project.title }}">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title text-dark">{{ project.title }}</h5>
+                        <p class="card-text text-muted">{{ project.short_description or project.description[:100] + '...' if project.description|length > 100 else project.description }}</p>
+                        <div class="d-flex gap-2 mb-3">
+                            {% if project.technologies %}
+                                {% for tech in project.get_technologies_list()[:3] %}
+                                    <span class="badge bg-primary">{{ tech }}</span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="badge bg-primary">Python</span>
+                                <span class="badge bg-secondary">Flask</span>
+                                <span class="badge bg-info">Bootstrap</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" class="btn btn-outline-dark btn-sm" target="_blank" onclick="event.stopPropagation();">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        {% endif %}
+                        {% if project.live_url %}
+                        <a href="{{ project.live_url }}" class="btn btn-primary btn-sm" target="_blank" onclick="event.stopPropagation();">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                        {% else %}
+                                                       <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> 查看详情
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- 示例项目 -->
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="web">
+            <div class="card h-100 shadow-sm">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-code fa-3x text-muted"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">个人网站</h5>
+                    <p class="card-text">基于Flask开发的个人网站，包含博客、项目展示、联系表单等功能。</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">Python</span>
+                        <span class="badge bg-secondary">Flask</span>
+                        <span class="badge bg-info">Bootstrap</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="web">
+            <div class="card h-100 shadow-sm">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-shopping-cart fa-3x text-muted"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">电商平台</h5>
+                    <p class="card-text">一个功能完整的电商平台，包含商品管理、购物车、订单处理等功能。</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">Python</span>
+                        <span class="badge bg-secondary">Django</span>
+                        <span class="badge bg-info">PostgreSQL</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="mobile">
+            <div class="card h-100 shadow-sm">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-mobile-alt fa-3x text-muted"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">任务管理App</h5>
+                    <p class="card-text">一个简洁的任务管理应用，帮助用户高效管理日常任务和项目。</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">React Native</span>
+                        <span class="badge bg-secondary">JavaScript</span>
+                        <span class="badge bg-info">Firebase</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="ai">
+            <div class="card h-100 shadow-sm">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-brain fa-3x text-muted"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">图像识别系统</h5>
+                    <p class="card-text">基于深度学习的图像识别系统，能够识别多种物体和场景。</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">Python</span>
+                        <span class="badge bg-secondary">TensorFlow</span>
+                        <span class="badge bg-info">OpenCV</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="other">
+            <div class="card h-100 shadow-sm">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-chart-line fa-3x text-muted"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">数据分析工具</h5>
+                    <p class="card-text">一个强大的数据分析工具，支持多种数据格式的导入和可视化分析。</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">Python</span>
+                        <span class="badge bg-secondary">Pandas</span>
+                        <span class="badge bg-info">Plotly</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4 project-item" data-category="web">
+            <div class="card h-100 shadow-sm">
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-users fa-3x text-muted"></i>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">社交平台</h5>
+                    <p class="card-text">一个现代化的社交平台，支持用户分享、评论、关注等功能。</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-primary">Node.js</span>
+                        <span class="badge bg-secondary">React</span>
+                        <span class="badge bg-info">MongoDB</span>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="#" class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </a>
+                        <a href="#" class="btn btn-primary btn-sm">
+                            <i class="fas fa-external-link-alt"></i> 演示
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- 加载更多按钮 -->
+<div class="row">
+    <div class="col-12 text-center">
+        <button class="btn btn-outline-primary btn-lg" id="load-more">
+            <i class="fas fa-plus"></i> 加载更多项目
+        </button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.project-card {
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.project-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15) !important;
+}
+
+.project-card a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.project-card a:hover {
+    color: inherit;
+    text-decoration: none;
+}
+
+.project-card .card-title {
+    transition: color 0.3s ease;
+}
+
+.project-card:hover .card-title {
+    color: #007bff !important;
+}
+
+.project-card .card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.project-card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-sm {
+    font-size: 0.875em;
+    padding: 0.25rem 0.5rem;
+}
+
+/* 确保按钮在卡片悬停时保持可见 */
+.card-footer .btn {
+    position: relative;
+    z-index: 10;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 项目筛选功能
+    const filterButtons = document.querySelectorAll('[data-filter]');
+    const projectItems = document.querySelectorAll('.project-item');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const filter = this.getAttribute('data-filter');
+            
+            // 更新按钮状态
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            // 筛选项目
+            projectItems.forEach(item => {
+                if (filter === 'all' || item.getAttribute('data-category') === filter) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

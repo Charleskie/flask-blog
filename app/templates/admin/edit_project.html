@@ -1,0 +1,305 @@
+{% extends "base.html" %}
+
+{% block title %}编辑项目 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+                          <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h1><i class="fas fa-edit"></i> 编辑项目</h1>
+                  <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回项目列表
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-edit"></i> 项目信息</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">项目标题 *</label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           value="{{ project.title }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="category" class="form-label">项目分类</label>
+                                    <select class="form-select" id="category" name="category">
+                                        <option value="">选择分类</option>
+                                        <option value="web" {{ 'selected' if project.category == 'web' }}>Web应用</option>
+                                        <option value="mobile" {{ 'selected' if project.category == 'mobile' }}>移动应用</option>
+                                        <option value="ai" {{ 'selected' if project.category == 'ai' }}>AI/ML</option>
+                                        <option value="desktop" {{ 'selected' if project.category == 'desktop' }}>桌面应用</option>
+                                        <option value="other" {{ 'selected' if project.category == 'other' }}>其他</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="short_description" class="form-label">简短描述</label>
+                            <textarea class="form-control" id="short_description" name="short_description" 
+                                      rows="2" placeholder="项目的简短描述，用于列表页显示">{{ project.short_description or '' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">项目描述 *</label>
+                            <textarea class="form-control" id="description" name="description" 
+                                      rows="6" required placeholder="详细描述项目的功能、特点等">{{ project.description }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="technologies" class="form-label">技术栈</label>
+                                    <input type="text" class="form-control" id="technologies" name="technologies" 
+                                           value="{{ project.technologies or '' }}" 
+                                           placeholder="Python, Flask, Bootstrap (用逗号分隔)">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="tags" class="form-label">标签</label>
+                                    <input type="text" class="form-control" id="tags" name="tags" 
+                                           value="{{ project.tags or '' }}" 
+                                           placeholder="Web开发, 全栈, 响应式 (用逗号分隔)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="features" class="form-label">主要功能</label>
+                            <textarea class="form-control" id="features" name="features" 
+                                      rows="4" placeholder="每行一个功能特性">{{ project.features or '' }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="challenges" class="form-label">开发挑战</label>
+                                    <textarea class="form-control" id="challenges" name="challenges" 
+                                              rows="3" placeholder="描述开发过程中遇到的挑战和解决方案">{{ project.challenges or '' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="lessons_learned" class="form-label">学习经验</label>
+                                    <textarea class="form-control" id="lessons_learned" name="lessons_learned" 
+                                              rows="3" placeholder="从项目中学到的经验和教训">{{ project.lessons_learned or '' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="github_url" class="form-label">GitHub链接</label>
+                                    <input type="url" class="form-control" id="github_url" name="github_url" 
+                                           value="{{ project.github_url or '' }}" placeholder="https://github.com/...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="live_url" class="form-label">在线演示</label>
+                                    <input type="url" class="form-control" id="live_url" name="live_url" 
+                                           value="{{ project.live_url or '' }}" placeholder="https://...">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="demo_url" class="form-label">演示视频</label>
+                                    <input type="url" class="form-control" id="demo_url" name="demo_url" 
+                                           value="{{ project.demo_url or '' }}" placeholder="https://...">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="image_url" class="form-label">项目图片URL</label>
+                                    <input type="url" class="form-control" id="image_url" name="image_url" 
+                                           value="{{ project.image_url or '' }}" placeholder="https://...">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="status" class="form-label">项目状态</label>
+                                    <select class="form-select" id="status" name="status">
+                                        <option value="active" {{ 'selected' if project.status == 'active' }}>进行中</option>
+                                        <option value="completed" {{ 'selected' if project.status == 'completed' }}>已完成</option>
+                                        <option value="archived" {{ 'selected' if project.status == 'archived' }}>已归档</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="featured" name="featured" 
+                                       {{ 'checked' if project.featured }}>
+                                <label class="form-check-label" for="featured">
+                                    推荐项目
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存更改
+                            </button>
+                            <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> 取消
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- 项目预览 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-eye"></i> 项目预览</h5>
+                </div>
+                <div class="card-body">
+                    <div id="project-preview">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-image fa-3x mb-3"></i>
+                            <p>填写项目信息后，这里将显示预览</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 快速操作 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-tools"></i> 快速操作</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                                                       <a href="{{ url_for('main.project_detail', project_id=project.id) }}" 
+                           class="btn btn-outline-primary" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> 查看项目页面
+                        </a>
+                        <button type="button" class="btn btn-outline-danger" 
+                                onclick="deleteProject({{ project.id }})">
+                            <i class="fas fa-trash"></i> 删除项目
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除确认模态框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">确认删除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除项目 "{{ project.title }}" 吗？此操作无法撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form method="POST" action="{{ url_for('delete_project', project_id=project.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">确认删除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 实时预览功能
+    const titleInput = document.getElementById('title');
+    const shortDescInput = document.getElementById('short_description');
+    const descInput = document.getElementById('description');
+    const techInput = document.getElementById('technologies');
+    const categorySelect = document.getElementById('category');
+    const imageUrlInput = document.getElementById('image_url');
+    const previewDiv = document.getElementById('project-preview');
+
+    function updatePreview() {
+        const title = titleInput.value || '项目标题';
+        const shortDesc = shortDescInput.value || '项目简短描述';
+        const desc = descInput.value || '项目详细描述';
+        const techs = techInput.value ? techInput.value.split(',').map(t => t.trim()) : [];
+        const category = categorySelect.value || 'web';
+        const imageUrl = imageUrlInput.value;
+
+        const categoryNames = {
+            'web': 'Web应用',
+            'mobile': '移动应用',
+            'ai': 'AI/ML',
+            'desktop': '桌面应用',
+            'other': '其他'
+        };
+
+        let previewHTML = `
+            <div class="card h-100 shadow-sm">
+                ${imageUrl ? 
+                    `<img src="${imageUrl}" class="card-img-top" alt="${title}" style="height: 200px; object-fit: cover;">` :
+                    `<div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                        <i class="fas fa-image fa-3x text-muted"></i>
+                    </div>`
+                }
+                <div class="card-body">
+                    <h5 class="card-title">${title}</h5>
+                    <p class="card-text">${shortDesc}</p>
+                    <div class="d-flex gap-2 mb-3">
+                        <span class="badge bg-info">${categoryNames[category]}</span>
+                        ${techs.slice(0, 3).map(tech => `<span class="badge bg-primary">${tech}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-outline-dark btn-sm">
+                            <i class="fab fa-github"></i> 代码
+                        </button>
+                        <button class="btn btn-primary btn-sm">
+                            <i class="fas fa-eye"></i> 查看详情
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        previewDiv.innerHTML = previewHTML;
+    }
+
+    // 绑定事件
+    [titleInput, shortDescInput, descInput, techInput, categorySelect, imageUrlInput].forEach(element => {
+        element.addEventListener('input', updatePreview);
+        element.addEventListener('change', updatePreview);
+    });
+
+    // 初始预览
+    updatePreview();
+});
+
+function deleteProject(projectId) {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+}
+</script>
+{% endblock %} 

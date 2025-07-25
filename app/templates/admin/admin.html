@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}管理后台 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">管理后台</h1>
+        <p class="lead">欢迎回来，{{ current_user.username }}！</p>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">文章</h4>
+                        <h2>{{ total_posts }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-blog fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">项目</h4>
+                        <h2>{{ total_projects }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-code fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">访问量</h4>
+                        <h2>1,234</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-eye fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">消息</h4>
+                        <h2>{{ total_messages }}</h2>
+                        {% if unread_messages > 0 %}
+                            <small>{{ unread_messages }} 未读</small>
+                        {% endif %}
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-envelope fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 管理功能 -->
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-blog"></i> 文章管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.new_post') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> 新建文章
+                    </a>
+                    <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> 文章列表
+                    </a>
+                    <a href="#" class="btn btn-outline-info">
+                        <i class="fas fa-tags"></i> 分类管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-code"></i> 项目管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('admin.new_project') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> 添加项目
+                    </a>
+                    <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> 项目列表
+                    </a>
+                    <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-outline-info">
+                        <i class="fas fa-envelope"></i> 消息管理
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近活动 -->
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-history"></i> 最近活动</h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-plus-circle text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6>新建文章</h6>
+                                <p class="text-muted mb-0">发布了新文章《Flask Web开发入门指南》</p>
+                                <small class="text-muted">2小时前</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-edit text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6>更新项目</h6>
+                                <p class="text-muted mb-0">更新了项目《个人网站》的信息</p>
+                                <small class="text-muted">1天前</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item mb-3">
+                        <div class="d-flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-comment text-info"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6>新消息</h6>
+                                <p class="text-muted mb-0">收到来自张三的合作咨询</p>
+                                <small class="text-muted">2天前</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog"></i> 快速设置</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="#" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-user-edit"></i> 编辑个人信息
+                    </a>
+                    <a href="#" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-palette"></i> 主题设置
+                    </a>
+                    <a href="#" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-shield-alt"></i> 安全设置
+                    </a>
+                    <a href="#" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-database"></i> 数据备份
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

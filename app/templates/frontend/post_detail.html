@@ -1,0 +1,411 @@
+{% extends "base.html" %}
+
+{% block title %}{{ post.title }} - 博客{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- 文章头部 -->
+            <article class="blog-post">
+                <header class="mb-4">
+                    <h1 class="display-4 fw-bold">{{ post.title }}</h1>
+                    
+                    <!-- 文章元信息 -->
+                    <div class="d-flex flex-wrap align-items-center text-muted mb-3">
+                        <div class="me-4">
+                            <i class="fas fa-user"></i>
+                            <span>{{ post.author.username }}</span>
+                        </div>
+                        <div class="me-4">
+                            <i class="fas fa-calendar"></i>
+                            <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
+                        </div>
+                        <div class="me-4">
+                            <i class="fas fa-eye"></i>
+                            <span>{{ post.view_count }} 次浏览</span>
+                        </div>
+                        {% if post.category %}
+                        <div class="me-4">
+                            <i class="fas fa-folder"></i>
+                            <span>{{ post.category }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- 标签 -->
+                    {% if post.tags %}
+                    <div class="mb-3">
+                        {% for tag in post.get_tags_list() %}
+                        <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </header>
+                
+                <!-- 特色图片 -->
+                {% if post.featured_image %}
+                <div class="mb-4">
+                    <img src="{{ post.featured_image }}" class="img-fluid rounded" alt="{{ post.title }}">
+                </div>
+                {% endif %}
+                
+                <!-- 文章摘要 -->
+                {% if post.excerpt %}
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>摘要：</strong>{{ post.excerpt }}
+                </div>
+                {% endif %}
+                
+                <!-- 文章内容 -->
+                <div class="blog-content">
+                    {{ post.content|nl2br|safe }}
+                </div>
+                
+                <!-- 文章底部 -->
+                <footer class="mt-5 pt-4 border-top">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted">
+                            <small>
+                                <i class="fas fa-clock"></i>
+                                最后更新：{{ post.updated_at.strftime('%Y年%m月%d日 %H:%M') }}
+                            </small>
+                        </div>
+                        <div class="share-buttons">
+                            <button class="btn btn-outline-primary btn-sm me-2" onclick="shareToWeChat()">
+                                <i class="fab fa-weixin"></i> 微信
+                            </button>
+                            <button class="btn btn-outline-info btn-sm me-2" onclick="shareToWeibo()">
+                                <i class="fab fa-weibo"></i> 微博
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()">
+                                <i class="fas fa-link"></i> 复制链接
+                            </button>
+                        </div>
+                    </div>
+                </footer>
+            </article>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- 作者信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-user"></i> 关于作者</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle fa-3x text-primary"></i>
+                    </div>
+                    <h6>{{ post.author.username }}</h6>
+                    <p class="text-muted small">技术博主，热爱编程和分享</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <a href="#" class="btn btn-outline-primary btn-sm">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-info btn-sm">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 文章目录 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-list"></i> 文章目录</h5>
+                </div>
+                <div class="card-body">
+                    <nav id="table-of-contents">
+                        <!-- 目录将通过JavaScript动态生成 -->
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- 相关文章 -->
+            {% if related_posts %}
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-newspaper"></i> 相关文章</h5>
+                </div>
+                <div class="card-body">
+                    {% for related in related_posts %}
+                    <div class="d-flex align-items-start mb-3">
+                        {% if related.featured_image %}
+                        <img src="{{ related.featured_image }}" alt="{{ related.title }}" 
+                             class="rounded me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                        {% else %}
+                        <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-file-alt text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                                                       <a href="{{ url_for('main.post_detail', slug=related.slug) }}" 
+                                   class="text-decoration-none">{{ related.title }}</a>
+                            </h6>
+                            <small class="text-muted">
+                                {{ related.created_at.strftime('%m月%d日') }} · 
+                                {{ related.view_count }} 次浏览
+                            </small>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.blog-post {
+    line-height: 1.8;
+}
+
+.blog-content {
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.blog-content h1,
+.blog-content h2,
+.blog-content h3,
+.blog-content h4,
+.blog-content h5,
+.blog-content h6 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.blog-content h1 { font-size: 2rem; }
+.blog-content h2 { font-size: 1.75rem; }
+.blog-content h3 { font-size: 1.5rem; }
+.blog-content h4 { font-size: 1.25rem; }
+.blog-content h5 { font-size: 1.1rem; }
+.blog-content h6 { font-size: 1rem; }
+
+.blog-content p {
+    margin-bottom: 1.5rem;
+}
+
+.blog-content ul,
+.blog-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+}
+
+.blog-content li {
+    margin-bottom: 0.5rem;
+}
+
+.blog-content blockquote {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+    margin-left: 0;
+    color: #6c757d;
+    font-style: italic;
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.25rem;
+}
+
+.blog-content code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    color: #e83e8c;
+}
+
+.blog-content pre {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e9ecef;
+}
+
+.blog-content pre code {
+    background-color: transparent;
+    padding: 0;
+    color: inherit;
+}
+
+.blog-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+}
+
+.blog-content table {
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-collapse: collapse;
+}
+
+.blog-content table th,
+.blog-content table td {
+    padding: 0.75rem;
+    border: 1px solid #dee2e6;
+}
+
+.blog-content table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+/* 目录样式 */
+#table-of-contents {
+    font-size: 0.9rem;
+}
+
+#table-of-contents ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#table-of-contents li {
+    margin-bottom: 0.5rem;
+}
+
+#table-of-contents a {
+    color: #6c757d;
+    text-decoration: none;
+    display: block;
+    padding: 0.25rem 0;
+    border-radius: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+#table-of-contents a:hover {
+    color: #007bff;
+    background-color: #f8f9fa;
+    padding-left: 0.5rem;
+}
+
+#table-of-contents .toc-h2 {
+    padding-left: 1rem;
+}
+
+#table-of-contents .toc-h3 {
+    padding-left: 2rem;
+}
+
+/* 分享按钮样式 */
+.share-buttons .btn {
+    transition: all 0.3s ease;
+}
+
+.share-buttons .btn:hover {
+    transform: translateY(-1px);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .blog-post h1 {
+        font-size: 1.75rem;
+    }
+    
+    .share-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .share-buttons .btn {
+        width: 100%;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // 生成文章目录
+    generateTableOfContents();
+    
+    // 平滑滚动到目录项
+    document.querySelectorAll('#table-of-contents a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+    });
+});
+
+function generateTableOfContents() {
+    const content = document.querySelector('.blog-content');
+    const toc = document.getElementById('table-of-contents');
+    
+    if (!content || !toc) return;
+    
+    const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    const tocList = document.createElement('ul');
+    
+    headings.forEach((heading, index) => {
+        // 为标题添加ID
+        const headingId = `heading-${index}`;
+        heading.id = headingId;
+        
+        // 创建目录项
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `#${headingId}`;
+        a.textContent = heading.textContent;
+        a.className = `toc-${heading.tagName.toLowerCase()}`;
+        
+        li.appendChild(a);
+        tocList.appendChild(li);
+    });
+    
+    toc.appendChild(tocList);
+}
+
+function shareToWeChat() {
+    // 微信分享功能
+    alert('请使用微信扫描二维码分享');
+}
+
+function shareToWeibo() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(document.title);
+    const weiboUrl = `https://service.weibo.com/share/share.php?url=${url}&title=${title}`;
+    window.open(weiboUrl, '_blank');
+}
+
+function copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        alert('链接已复制到剪贴板');
+    }).catch(() => {
+        // 降级方案
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        alert('链接已复制到剪贴板');
+    });
+}
+</script>
+{% endblock %} 

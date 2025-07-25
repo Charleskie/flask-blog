@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}新建项目 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-plus"></i> 新建项目</h1>
+                <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回项目列表
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" id="project-form">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- 基本信息 -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-info-circle"></i> 基本信息</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label">项目标题 *</label>
+                                            <input type="text" class="form-control" id="title" name="title" 
+                                                   required maxlength="200" placeholder="请输入项目标题">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="short_description" class="form-label">简短描述</label>
+                                            <textarea class="form-control" id="short_description" name="short_description" 
+                                                      rows="2" maxlength="300" placeholder="项目的一句话描述"></textarea>
+                                            <div class="form-text">用于项目列表显示，不超过300字符</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">详细描述 *</label>
+                                            <textarea class="form-control" id="description" name="description" 
+                                                      rows="6" required placeholder="请详细描述项目功能、特点等"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 项目详情 -->
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-cogs"></i> 项目详情</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="technologies" class="form-label">技术栈</label>
+                                            <textarea class="form-control" id="technologies" name="technologies" 
+                                                      rows="2" placeholder="Python, Flask, SQLAlchemy, Bootstrap"></textarea>
+                                            <div class="form-text">用逗号分隔多个技术</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="features" class="form-label">主要功能</label>
+                                            <textarea class="form-control" id="features" name="features" 
+                                                      rows="4" placeholder="每行一个功能特性"></textarea>
+                                            <div class="form-text">每行输入一个功能特性</div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="challenges" class="form-label">遇到的挑战</label>
+                                            <textarea class="form-control" id="challenges" name="challenges" 
+                                                      rows="3" placeholder="描述开发过程中遇到的主要挑战和解决方案"></textarea>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="lessons_learned" class="form-label">学到的经验</label>
+                                            <textarea class="form-control" id="lessons_learned" name="lessons_learned" 
+                                                      rows="3" placeholder="从这个项目中学到了什么"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <!-- 项目设置 -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-cog"></i> 项目设置</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="status" class="form-label">项目状态</label>
+                                            <select class="form-select" id="status" name="status">
+                                                <option value="active">进行中</option>
+                                                <option value="completed">已完成</option>
+                                                <option value="archived">已归档</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label">项目分类</label>
+                                            <select class="form-select" id="category" name="category">
+                                                <option value="">选择分类</option>
+                                                <option value="Web应用">Web应用</option>
+                                                <option value="移动应用">移动应用</option>
+                                                <option value="桌面应用">桌面应用</option>
+                                                <option value="数据分析">数据分析</option>
+                                                <option value="机器学习">机器学习</option>
+                                                <option value="工具开发">工具开发</option>
+                                                <option value="学习项目">学习项目</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="tags" class="form-label">技术标签</label>
+                                            <input type="text" class="form-control" id="tags" name="tags" 
+                                                   placeholder="用逗号分隔多个标签">
+                                            <div class="form-text">例如：Python, Web开发, 数据库</div>
+                                        </div>
+                                        
+                                        <div class="form-check mb-3">
+                                            <input class="form-check-input" type="checkbox" id="featured" name="featured">
+                                            <label class="form-check-label" for="featured">
+                                                推荐项目
+                                            </label>
+                                            <div class="form-text">推荐项目会优先显示在项目列表中</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 链接信息 -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-link"></i> 链接信息</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="image_url" class="form-label">项目图片</label>
+                                            <input type="url" class="form-control" id="image_url" name="image_url" 
+                                                   placeholder="https://example.com/project-image.jpg">
+                                            <div id="image-preview" class="text-center mt-2" style="display: none;">
+                                                <img id="preview-img" src="" alt="预览" class="img-fluid rounded" style="max-height: 150px;">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="github_url" class="form-label">GitHub链接</label>
+                                            <input type="url" class="form-control" id="github_url" name="github_url" 
+                                                   placeholder="https://github.com/username/project">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="live_url" class="form-label">在线演示</label>
+                                            <input type="url" class="form-control" id="live_url" name="live_url" 
+                                                   placeholder="https://project-demo.com">
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="demo_url" class="form-label">演示视频</label>
+                                            <input type="url" class="form-control" id="demo_url" name="demo_url" 
+                                                   placeholder="https://youtube.com/watch?v=...">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> 保存项目
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" id="preview-btn">
+                                                <i class="fas fa-eye"></i> 预览
+                                            </button>
+                                            <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-outline-danger">
+                                                <i class="fas fa-times"></i> 取消
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 预览模态框 -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">项目预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="preview-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    .card-header h5, .card-header h6 {
+        margin-bottom: 0;
+        color: #495057;
+    }
+    
+    .form-check-input:checked {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    const shortDescriptionInput = document.getElementById('short_description');
+    const imageUrlInput = document.getElementById('image_url');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    const previewContent = document.getElementById('preview-content');
+    
+    // 自动生成简短描述
+    descriptionInput.addEventListener('input', function() {
+        if (!shortDescriptionInput.value && this.value.length > 50) {
+            const shortDesc = this.value.substring(0, 200).replace(/\n/g, ' ').trim();
+            shortDescriptionInput.value = shortDesc + (shortDesc.length === 200 ? '...' : '');
+        }
+    });
+    
+    // 图片预览
+    imageUrlInput.addEventListener('input', function() {
+        if (this.value) {
+            previewImg.src = this.value;
+            imagePreview.style.display = 'block';
+        } else {
+            imagePreview.style.display = 'none';
+        }
+    });
+    
+    // 预览功能
+    previewBtn.addEventListener('click', function() {
+        const title = titleInput.value || '项目标题';
+        const description = descriptionInput.value || '项目描述';
+        const shortDesc = shortDescriptionInput.value || description.substring(0, 200);
+        const imageUrl = imageUrlInput.value;
+        const technologies = document.getElementById('technologies').value;
+        const features = document.getElementById('features').value;
+        const category = document.getElementById('category').value;
+        
+        const previewHTML = `
+            <div class="project-preview">
+                <div class="row">
+                    <div class="col-md-4">
+                        ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="img-fluid rounded mb-3">` : ''}
+                    </div>
+                    <div class="col-md-8">
+                        <h3>${title}</h3>
+                        <p class="text-muted">${shortDesc}</p>
+                        
+                        ${category ? `<span class="badge bg-primary me-2">${category}</span>` : ''}
+                        ${technologies ? `<span class="badge bg-secondary">${technologies}</span>` : ''}
+                        
+                        <hr>
+                        <h5>项目描述</h5>
+                        <p>${description.replace(/\n/g, '<br>')}</p>
+                        
+                        ${features ? `
+                        <h5>主要功能</h5>
+                        <ul>
+                            ${features.split('\n').filter(f => f.trim()).map(f => `<li>${f.trim()}</li>`).join('')}
+                        </ul>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        previewContent.innerHTML = previewHTML;
+        previewModal.show();
+    });
+    
+    // 表单验证
+    const form = document.getElementById('project-form');
+    form.addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const description = descriptionInput.value.trim();
+        
+        if (!title) {
+            e.preventDefault();
+            alert('请输入项目标题');
+            titleInput.focus();
+            return;
+        }
+        
+        if (!description) {
+            e.preventDefault();
+            alert('请输入项目描述');
+            descriptionInput.focus();
+            return;
+        }
+        
+        // 显示保存提示
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %} 

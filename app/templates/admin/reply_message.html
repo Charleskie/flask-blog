@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}回复消息 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-reply"></i> 回复消息</h1>
+                <a href="{{ url_for('view_message', message_id=message.id) }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回消息详情
+                </a>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <!-- 回复表单 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-edit"></i> 回复内容</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="POST" id="reply-form">
+                                <div class="mb-3">
+                                    <label for="reply_content" class="form-label">回复内容 *</label>
+                                    <textarea class="form-control" id="reply_content" name="reply_content" 
+                                              rows="10" required placeholder="请输入您的回复内容..."></textarea>
+                                    <div class="form-text">您的回复将发送给 {{ message.name }} ({{ message.email }})</div>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-paper-plane"></i> 发送回复
+                                    </button>
+                                    <a href="{{ url_for('view_message', message_id=message.id) }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i> 取消
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <!-- 原消息内容 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5><i class="fas fa-envelope-open"></i> 原消息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">发送者</label>
+                                <p class="mb-0">{{ message.name }} &lt;{{ message.email }}&gt;</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">主题</label>
+                                <p class="mb-0">{{ message.subject }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">发送时间</label>
+                                <p class="mb-0 text-muted">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">消息内容</label>
+                                <div class="border rounded p-3 bg-light">
+                                    <pre class="mb-0">{{ message.message }}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 快速回复模板 -->
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h6><i class="fas fa-lightbulb"></i> 快速回复模板</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="insertTemplate('感谢您的来信！我会尽快处理您的问题。')">
+                                    感谢模板
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="insertTemplate('您好！我已经收到您的消息，正在处理中，请稍候。')">
+                                    处理中模板
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="insertTemplate('感谢您的反馈！您的建议对我们很有帮助。')">
+                                    反馈模板
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" 
+                                        onclick="insertTemplate('您好！我已经仔细阅读了您的消息，以下是回复：\n\n')">
+                                    正式回复模板
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.card-header h5, .card-header h6 {
+    margin-bottom: 0;
+    color: #495057;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function insertTemplate(template) {
+    const textarea = document.getElementById('reply_content');
+    const currentValue = textarea.value;
+    
+    if (currentValue) {
+        textarea.value = currentValue + '\n\n' + template;
+    } else {
+        textarea.value = template;
+    }
+    
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+}
+
+// 表单验证
+document.getElementById('reply-form').addEventListener('submit', function(e) {
+    const replyContent = document.getElementById('reply_content').value.trim();
+    
+    if (!replyContent) {
+        e.preventDefault();
+        alert('请输入回复内容');
+        document.getElementById('reply_content').focus();
+        return;
+    }
+    
+    // 显示发送提示
+    const submitBtn = this.querySelector('button[type="submit"]');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中...';
+    submitBtn.disabled = true;
+});
+
+// 自动调整文本框高度
+document.getElementById('reply_content').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 300) + 'px';
+});
+</script>
+{% endblock %} 

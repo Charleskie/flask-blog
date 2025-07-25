@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}关于我 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <h1 class="text-center mb-5">关于我</h1>
+        
+        <!-- 个人介绍 -->
+        <div class="card mb-5">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="https://via.placeholder.com/200x200" alt="个人头像" class="img-fluid rounded-circle mb-3">
+                    </div>
+                    <div class="col-md-8">
+                        <h3>你好，我是 王胜</h3>
+                        <p class="lead">一名充满激情的开发者，专注于大数据、平台开发。</p>
+                        <p>我热爱编程，喜欢学习新技术，并且享受将想法转化为现实的过程。在过去的几年里，我参与过多个项目的开发，积累了丰富的经验。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 教育背景 -->
+        <div class="card mb-5">
+            <div class="card-header">
+                <h4><i class="fas fa-graduation-cap"></i> 教育背景</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>电子信息工程</h5>
+                        <p class="text-muted">****大学 | 2012-2016</p>
+                        <p>主修是电子信息技术，同时学习了数据结构、算法、数据库、网络编程等核心课程。</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>电子与通信工程</h5>
+                        <p class="text-muted">**大学 | 2016-2019</p>
+                        <p>主修信息科学。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 工作经验 -->
+        <div class="card mb-5">
+            <div class="card-header">
+                <h4><i class="fas fa-briefcase"></i> 工作经验</h4>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h6 class="text-muted">2023 - 至今</h6>
+                            </div>
+                            <div class="col-md-9">
+                                <h5>高级开发工程师</h5>
+                                <p class="text-muted">某某科技有限公司</p>
+                                <p>负责公司核心产品的开发和维护，带领团队完成多个重要项目。</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-item mb-4">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h6 class="text-muted">2022 - 2023</h6>
+                            </div>
+                            <div class="col-md-9">
+                                <h5>初级开发工程师</h5>
+                                <p class="text-muted">某某软件公司</p>
+                                <p>参与Web应用开发，负责前端界面设计和后端API开发。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 兴趣爱好 -->
+        <div class="card mb-5">
+            <div class="card-header">
+                <h4><i class="fas fa-heart"></i> 兴趣爱好</h4>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <i class="fas fa-book fa-2x text-primary mb-2"></i>
+                        <h6>阅读</h6>
+                        <p class="small text-muted">技术书籍、科幻小说</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <i class="fas fa-gamepad fa-2x text-success mb-2"></i>
+                        <h6>游戏</h6>
+                        <p class="small text-muted">独立游戏、策略游戏</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <i class="fas fa-hiking fa-2x text-warning mb-2"></i>
+                        <h6>旅行</h6>
+                        <p class="small text-muted">探索新地方、摄影</p>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <i class="fas fa-music fa-2x text-info mb-2"></i>
+                        <h6>音乐</h6>
+                        <p class="small text-muted">古典音乐、电子音乐</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 联系方式 -->
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-address-card"></i>联系方式</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-envelope text-primary"></i>
+                                <a href="mailto:email@example.com" class="text-decoration-none">wdws851421092@gmail.com</a>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fab fa-github text-dark"></i>
+                                <a href="https://github.com/Charleskie" class="text-decoration-none">GitHub</a>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fab fa-linkedin text-primary"></i>
+                                <a href="https://linkedin.com/in/yourusername" class="text-decoration-none">LinkedIn</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fab fa-twitter text-info"></i>
+                                <a href="https://twitter.com/yourusername" class="text-decoration-none">Twitter</a>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fab fa-weixin text-success"></i>
+                                <span>微信: your_wechat</span>
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-map-marker-alt text-danger"></i>
+                                <span>北京，中国</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

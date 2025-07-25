@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.title }} - 项目详情{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- 项目标题和基本信息 -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="card-title">{{ project.title }}</h1>
+                            {% if project.featured %}
+                                <span class="badge bg-warning">推荐项目</span>
+                            {% endif %}
+                            {% if project.status == 'active' %}
+                                <span class="badge bg-success">进行中</span>
+                            {% elif project.status == 'completed' %}
+                                <span class="badge bg-primary">已完成</span>
+                            {% else %}
+                                <span class="badge bg-secondary">已归档</span>
+                            {% endif %}
+                        </div>
+                        <div class="text-muted">
+                            <small>
+                                <i class="fas fa-eye"></i> {{ project.view_count }} 次浏览
+                            </small>
+                        </div>
+                    </div>
+                    
+                    {% if project.short_description %}
+                        <p class="lead text-muted">{{ project.short_description }}</p>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        {% if project.category %}
+                            <span class="badge bg-info me-2">{{ project.category }}</span>
+                        {% endif %}
+                        {% for tag in project.get_tags_list() %}
+                            <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 项目图片 -->
+            {% if project.image_url %}
+                <div class="card mb-4">
+                    <img src="{{ project.image_url }}" class="card-img-top" alt="{{ project.title }}" style="max-height: 400px; object-fit: cover;">
+                </div>
+            {% endif %}
+            
+            <!-- 项目描述 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> 项目描述</h5>
+                </div>
+                <div class="card-body">
+                    <div class="project-description">
+                        {{ project.description|nl2br }}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 技术栈 -->
+            {% if project.technologies %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs"></i> 技术栈</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for tech in project.get_technologies_list() %}
+                                <span class="badge bg-primary">{{ tech }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- 主要功能 -->
+            {% if project.features %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-list-check"></i> 主要功能</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            {% for feature in project.get_features_list() %}
+                                <li class="mb-2">
+                                    <i class="fas fa-check text-success me-2"></i>
+                                    {{ feature }}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- 开发挑战 -->
+            {% if project.challenges %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-exclamation-triangle"></i> 开发挑战</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ project.challenges }}</p>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- 学习经验 -->
+            {% if project.lessons_learned %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-graduation-cap"></i> 学习经验</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">{{ project.lessons_learned }}</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- 项目链接 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-link"></i> 项目链接</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        {% if project.github_url %}
+                            <a href="{{ project.github_url }}" class="btn btn-outline-dark" target="_blank">
+                                <i class="fab fa-github"></i> 查看源码
+                            </a>
+                        {% endif %}
+                        
+                        {% if project.live_url %}
+                            <a href="{{ project.live_url }}" class="btn btn-outline-primary" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> 在线演示
+                            </a>
+                        {% endif %}
+                        
+                        {% if project.demo_url %}
+                            <a href="{{ project.demo_url }}" class="btn btn-outline-success" target="_blank">
+                                <i class="fas fa-play"></i> 演示视频
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 项目信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-info"></i> 项目信息</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <small class="text-muted">创建时间</small>
+                        <div>{{ project.created_at.strftime('%Y年%m月%d日') }}</div>
+                    </div>
+                    
+                    {% if project.updated_at %}
+                        <div class="mb-3">
+                            <small class="text-muted">更新时间</small>
+                            <div>{{ project.updated_at.strftime('%Y年%m月%d日') }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <small class="text-muted">项目状态</small>
+                        <div>
+                            {% if project.status == 'active' %}
+                                <span class="badge bg-success">进行中</span>
+                            {% elif project.status == 'completed' %}
+                                <span class="badge bg-primary">已完成</span>
+                            {% else %}
+                                <span class="badge bg-secondary">已归档</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if project.category %}
+                        <div class="mb-3">
+                            <small class="text-muted">项目分类</small>
+                            <div>{{ project.category }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 相关项目 -->
+            {% if related_projects %}
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-project-diagram"></i> 相关项目</h6>
+                    </div>
+                    <div class="card-body">
+                        {% for related in related_projects %}
+                            <div class="d-flex align-items-center mb-3">
+                                {% if related.image_url %}
+                                    <img src="{{ related.image_url }}" alt="{{ related.title }}" 
+                                         class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
+                                {% else %}
+                                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" 
+                                         style="width: 50px; height: 50px;">
+                                        <i class="fas fa-code text-muted"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">
+                                        <a href="{{ url_for('main.project_detail', project_id=related.id) }}" 
+                                           class="text-decoration-none">{{ related.title }}</a>
+                                    </h6>
+                                    {% if related.short_description %}
+                                        <small class="text-muted">{{ related.short_description[:50] }}...</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.project-description {
+    line-height: 1.8;
+    font-size: 16px;
+}
+
+.project-description h1,
+.project-description h2,
+.project-description h3,
+.project-description h4,
+.project-description h5,
+.project-description h6 {
+    margin-top: 1.5rem;
+    margin-bottom: 1rem;
+    color: #495057;
+}
+
+.project-description p {
+    margin-bottom: 1rem;
+}
+
+.project-description ul,
+.project-description ol {
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+}
+
+.project-description li {
+    margin-bottom: 0.5rem;
+}
+
+.project-description code {
+    background-color: #f8f9fa;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+.project-description pre {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.project-description blockquote {
+    border-left: 4px solid #007bff;
+    padding-left: 1rem;
+    margin-left: 0;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.card-header h5,
+.card-header h6 {
+    margin-bottom: 0;
+    color: #495057;
+}
+
+.badge {
+    font-size: 0.875em;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %} 

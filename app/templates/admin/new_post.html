@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}新建文章 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-plus"></i> 新建文章</h1>
+                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回文章列表
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" id="post-form">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <!-- 标题 -->
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">文章标题 *</label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           required maxlength="200" placeholder="请输入文章标题">
+                                    <div class="form-text">标题将自动生成URL友好的链接</div>
+                                </div>
+                                
+                                <!-- 内容 -->
+                                <div class="mb-3">
+                                    <label for="content" class="form-label">文章内容 *</label>
+                                    <textarea class="form-control" id="content" name="content" rows="15" 
+                                              required placeholder="请输入文章内容，支持Markdown格式"></textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle"></i> 支持Markdown格式，可以使用 **粗体**、*斜体*、[链接](url) 等
+                                    </div>
+                                </div>
+                                
+                                <!-- 摘要 -->
+                                <div class="mb-3">
+                                    <label for="excerpt" class="form-label">文章摘要</label>
+                                    <textarea class="form-control" id="excerpt" name="excerpt" rows="3" 
+                                              placeholder="请输入文章摘要（可选）"></textarea>
+                                    <div class="form-text">摘要将显示在文章列表中，如果不填写将自动截取内容前200字符</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <!-- 发布设置 -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-cog"></i> 发布设置</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="status" class="form-label">发布状态</label>
+                                            <select class="form-select" id="status" name="status">
+                                                <option value="draft">草稿</option>
+                                                <option value="published">发布</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label">分类</label>
+                                            <select class="form-select" id="category" name="category">
+                                                <option value="">选择分类</option>
+                                                <option value="技术">技术</option>
+                                                <option value="生活">生活</option>
+                                                <option value="随笔">随笔</option>
+                                                <option value="教程">教程</option>
+                                                <option value="分享">分享</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="tags" class="form-label">标签</label>
+                                            <input type="text" class="form-control" id="tags" name="tags" 
+                                                   placeholder="用逗号分隔多个标签">
+                                            <div class="form-text">例如：Python, Flask, 教程</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 特色图片 -->
+                                <div class="card mb-3">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-image"></i> 特色图片</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label for="featured_image" class="form-label">图片URL</label>
+                                            <input type="url" class="form-control" id="featured_image" name="featured_image" 
+                                                   placeholder="https://example.com/image.jpg">
+                                        </div>
+                                        <div id="image-preview" class="text-center" style="display: none;">
+                                            <img id="preview-img" src="" alt="预览" class="img-fluid rounded">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save"></i> 保存文章
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" id="preview-btn">
+                                                <i class="fas fa-eye"></i> 预览
+                                            </button>
+                                            <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-danger">
+                                                <i class="fas fa-times"></i> 取消
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 预览模态框 -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">文章预览</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="preview-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+    
+    #content {
+        font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+    
+    .card-header h6 {
+        margin-bottom: 0;
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const titleInput = document.getElementById('title');
+    const contentInput = document.getElementById('content');
+    const excerptInput = document.getElementById('excerpt');
+    const featuredImageInput = document.getElementById('featured_image');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImg = document.getElementById('preview-img');
+    const previewBtn = document.getElementById('preview-btn');
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    const previewContent = document.getElementById('preview-content');
+    
+    // 自动生成摘要
+    contentInput.addEventListener('input', function() {
+        if (!excerptInput.value && this.value.length > 50) {
+            const excerpt = this.value.substring(0, 200).replace(/\n/g, ' ').trim();
+            excerptInput.value = excerpt + (excerpt.length === 200 ? '...' : '');
+        }
+    });
+    
+    // 图片预览
+    featuredImageInput.addEventListener('input', function() {
+        if (this.value) {
+            previewImg.src = this.value;
+            imagePreview.style.display = 'block';
+        } else {
+            imagePreview.style.display = 'none';
+        }
+    });
+    
+    // 预览功能
+    previewBtn.addEventListener('click', function() {
+        const title = titleInput.value || '文章标题';
+        const content = contentInput.value || '文章内容';
+        const excerpt = excerptInput.value || content.substring(0, 200);
+        
+        // 简单的Markdown转HTML（基础功能）
+        let htmlContent = content
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
+            .replace(/\n/g, '<br>');
+        
+        const previewHTML = `
+            <article class="blog-post">
+                <header class="mb-4">
+                    <h1 class="display-4">${title}</h1>
+                    <div class="text-muted">
+                        <small>作者：{{ current_user.username }} | 发布时间：${new Date().toLocaleDateString()}</small>
+                    </div>
+                </header>
+                
+                ${excerpt ? `<div class="lead mb-4">${excerpt}</div>` : ''}
+                
+                <div class="blog-content">
+                    ${htmlContent}
+                </div>
+            </article>
+        `;
+        
+        previewContent.innerHTML = previewHTML;
+        previewModal.show();
+    });
+    
+    // 表单验证
+    const form = document.getElementById('post-form');
+    form.addEventListener('submit', function(e) {
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+        
+        if (!title) {
+            e.preventDefault();
+            alert('请输入文章标题');
+            titleInput.focus();
+            return;
+        }
+        
+        if (!content) {
+            e.preventDefault();
+            alert('请输入文章内容');
+            contentInput.focus();
+            return;
+        }
+        
+        // 显示保存提示
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+        submitBtn.disabled = true;
+    });
+    
+    // 字数统计
+    function updateWordCount() {
+        const content = contentInput.value;
+        const wordCount = content.length;
+        const charCount = content.replace(/\s/g, '').length;
+        
+        // 可以在这里添加字数统计显示
+        console.log(`字符数：${wordCount}，非空字符数：${charCount}`);
+    }
+    
+    contentInput.addEventListener('input', updateWordCount);
+});
+</script>
+{% endblock %} 
