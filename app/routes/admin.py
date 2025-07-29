@@ -2,12 +2,14 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.models import Post, Project, Message, User
 from app.models.user import db
+from app.utils import admin_required
 from datetime import datetime
 
 admin_bp = Blueprint('admin', __name__)
 
 @admin_bp.route('/admin')
 @login_required
+@admin_required
 def admin():
     """管理后台首页"""
     # 统计数据
@@ -41,6 +43,7 @@ def admin():
 # 文章管理
 @admin_bp.route('/admin/posts')
 @login_required
+@admin_required
 def admin_posts():
     """文章管理页面"""
     page = request.args.get('page', 1, type=int)
@@ -51,6 +54,7 @@ def admin_posts():
 
 @admin_bp.route('/admin/posts/new', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def new_post():
     """新建文章"""
     if request.method == 'POST':
@@ -100,6 +104,7 @@ def new_post():
 
 @admin_bp.route('/admin/posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def edit_post(post_id):
     """编辑文章"""
     post = Post.query.get_or_404(post_id)
@@ -147,6 +152,7 @@ def edit_post(post_id):
 
 @admin_bp.route('/admin/posts/<int:post_id>/delete', methods=['POST'])
 @login_required
+@admin_required
 def delete_post(post_id):
     """删除文章"""
     post = Post.query.get_or_404(post_id)
@@ -165,6 +171,7 @@ def delete_post(post_id):
 # 项目管理
 @admin_bp.route('/admin/projects')
 @login_required
+@admin_required
 def admin_projects():
     """项目管理页面"""
     page = request.args.get('page', 1, type=int)
@@ -175,6 +182,7 @@ def admin_projects():
 
 @admin_bp.route('/admin/projects/new', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def new_project():
     """新建项目"""
     if request.method == 'POST':

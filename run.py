@@ -25,7 +25,7 @@ if __name__ == '__main__':
             )
             db.session.add(admin)
             db.session.commit()
-            print("✅ 默认管理员用户已创建：用户名 admin，密码 admin123")
+            # print("✅ 默认管理员用户已创建：用户名 admin，密码 admin123")
         else:
             print("✅ 管理员用户已存在")
     

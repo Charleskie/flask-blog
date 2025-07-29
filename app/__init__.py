@@ -1,6 +1,6 @@
 from flask import Flask
 from flask_login import LoginManager
-from app.models.user import db, User
+from app.models.user import db
 from app.utils import nl2br_filter
 import os
 
@@ -23,6 +23,7 @@ def create_app():
     
     @login_manager.user_loader
     def load_user(user_id):
+        from app.models.user import User
         return User.query.get(int(user_id))
     
     # 注册自定义过滤器
