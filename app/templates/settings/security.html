@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}安全设置 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 设置侧边栏 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> 设置</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('settings.profile_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> 个人信息
+                    </a>
+                    <a href="{{ url_for('settings.account_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shield-alt"></i> 账户设置
+                    </a>
+                    <a href="{{ url_for('settings.theme_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-palette"></i> 主题设置
+                    </a>
+                    <a href="{{ url_for('settings.security_settings') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-lock"></i> 安全设置
+                    </a>
+                    <a href="{{ url_for('settings.privacy_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-eye-slash"></i> 隐私设置
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-lock"></i> 安全设置</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- 登录通知 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-bell"></i> 登录通知</h5>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="login_notifications" 
+                                       name="login_notifications" 
+                                       {% if current_user.login_notifications %}checked{% endif %}>
+                                <label class="form-check-label" for="login_notifications">
+                                    启用登录通知
+                                </label>
+                            </div>
+                            <small class="text-muted">
+                                当有新设备登录您的账户时，您将收到通知
+                            </small>
+                        </div>
+                        
+                        <!-- 会话超时 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-clock"></i> 会话超时</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="session_timeout" class="form-label">自动登出时间</label>
+                                    <select class="form-select" id="session_timeout" name="session_timeout">
+                                        <option value="15" {% if current_user.session_timeout == 15 %}selected{% endif %}>
+                                            15分钟
+                                        </option>
+                                        <option value="30" {% if current_user.session_timeout == 30 %}selected{% endif %}>
+                                            30分钟
+                                        </option>
+                                        <option value="60" {% if current_user.session_timeout == 60 %}selected{% endif %}>
+                                            1小时
+                                        </option>
+                                        <option value="120" {% if current_user.session_timeout == 120 %}selected{% endif %}>
+                                            2小时
+                                        </option>
+                                        <option value="0" {% if current_user.session_timeout == 0 %}selected{% endif %}>
+                                            永不超时
+                                        </option>
+                                    </select>
+                                    <small class="text-muted">
+                                        超过此时间未操作将自动登出
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 双因素认证 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-shield-alt"></i> 双因素认证</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>双因素认证</strong> 为您的账户提供额外的安全保护
+                            </div>
+                            
+                            {% if current_user.two_factor_enabled %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>已启用</strong> 双因素认证已启用
+                            </div>
+                            <button type="button" class="btn btn-warning btn-sm">
+                                <i class="fas fa-edit"></i> 修改双因素认证
+                            </button>
+                            {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>未启用</strong> 建议启用双因素认证以提高安全性
+                            </div>
+                            <button type="button" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> 启用双因素认证
+                            </button>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 登录历史 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-history"></i> 登录历史</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>时间</th>
+                                            <th>IP地址</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% if current_user.last_login %}
+                                        <tr>
+                                            <td>{{ current_user.last_login.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                                            <td>{{ current_user.last_login_ip or '未知' }}</td>
+                                            <td><span class="badge bg-success">成功</span></td>
+                                        </tr>
+                                        {% else %}
+                                        <tr>
+                                            <td colspan="3" class="text-center text-muted">暂无登录记录</td>
+                                        </tr>
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- 安全建议 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-lightbulb"></i> 安全建议</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-success">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-success">
+                                                <i class="fas fa-check"></i> 强密码
+                                            </h6>
+                                            <p class="card-text small">
+                                                使用包含大小写字母、数字和特殊字符的强密码
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-warning">
+                                                <i class="fas fa-exclamation"></i> 定期更换
+                                            </h6>
+                                            <p class="card-text small">
+                                                建议每3-6个月更换一次密码
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-info">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-info">
+                                                <i class="fas fa-shield-alt"></i> 双因素认证
+                                            </h6>
+                                            <p class="card-text small">
+                                                启用双因素认证提供额外的安全保护
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-danger">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-danger">
+                                                <i class="fas fa-user-secret"></i> 隐私保护
+                                            </h6>
+                                            <p class="card-text small">
+                                                不要在公共设备上保存登录状态
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('settings.settings') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存设置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-switch {
+    padding-left: 2.5em;
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+
+{% block title %}隐私设置 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 设置侧边栏 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> 设置</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('settings.profile_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> 个人信息
+                    </a>
+                    <a href="{{ url_for('settings.account_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shield-alt"></i> 账户设置
+                    </a>
+                    <a href="{{ url_for('settings.theme_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-palette"></i> 主题设置
+                    </a>
+                    <a href="{{ url_for('settings.security_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-lock"></i> 安全设置
+                    </a>
+                    <a href="{{ url_for('settings.privacy_settings') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-eye-slash"></i> 隐私设置
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-eye-slash"></i> 隐私设置</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- 个人资料可见性 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-user"></i> 个人资料可见性</h5>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       id="profile_public" 
+                                       name="profile_public" 
+                                       {% if current_user.profile_public %}checked{% endif %}>
+                                <label class="form-check-label" for="profile_public">
+                                    公开个人资料
+                                </label>
+                                <small class="form-text text-muted d-block">
+                                    允许其他用户查看您的个人资料页面
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- 联系信息可见性 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-address-book"></i> 联系信息可见性</h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="show_email" 
+                                               name="show_email" 
+                                               {% if current_user.show_email %}checked{% endif %}>
+                                        <label class="form-check-label" for="show_email">
+                                            显示邮箱地址
+                                        </label>
+                                        <small class="form-text text-muted d-block">
+                                            在个人资料中显示您的邮箱地址
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" 
+                                               type="checkbox" 
+                                               id="show_phone" 
+                                               name="show_phone" 
+                                               {% if current_user.show_phone %}checked{% endif %}>
+                                        <label class="form-check-label" for="show_phone">
+                                            显示电话号码
+                                        </label>
+                                        <small class="form-text text-muted d-block">
+                                            在个人资料中显示您的电话号码
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 数据收集 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-database"></i> 数据收集</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>数据收集说明</strong> 我们收集的数据仅用于改善用户体验和网站功能
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-chart-line"></i> 使用统计
+                                            </h6>
+                                            <p class="card-text small">
+                                                收集页面访问、功能使用等统计信息，用于改善网站体验
+                                            </p>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked disabled>
+                                                <label class="form-check-label">已启用（必需）</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <i class="fas fa-cookie-bite"></i> Cookie
+                                            </h6>
+                                            <p class="card-text small">
+                                                使用Cookie保存登录状态和偏好设置
+                                            </p>
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" checked disabled>
+                                                <label class="form-check-label">已启用（必需）</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 隐私政策 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-file-contract"></i> 隐私政策</h5>
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">数据保护承诺</h6>
+                                    <ul class="list-unstyled">
+                                        <li><i class="fas fa-check text-success"></i> 我们不会出售您的个人信息</li>
+                                        <li><i class="fas fa-check text-success"></i> 我们不会与第三方共享您的数据</li>
+                                        <li><i class="fas fa-check text-success"></i> 您可以随时删除您的账户和数据</li>
+                                        <li><i class="fas fa-check text-success"></i> 我们使用加密技术保护您的数据</li>
+                                    </ul>
+                                    <button type="button" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-file-alt"></i> 查看完整隐私政策
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 数据导出 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-download"></i> 数据管理</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-info">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-info">
+                                                <i class="fas fa-download"></i> 导出数据
+                                            </h6>
+                                            <p class="card-text small">
+                                                导出您的个人数据，包括文章、项目、设置等信息
+                                            </p>
+                                            <button type="button" class="btn btn-outline-info btn-sm" disabled>
+                                                <i class="fas fa-download"></i> 导出数据
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-warning">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-warning">
+                                                <i class="fas fa-trash"></i> 删除数据
+                                            </h6>
+                                            <p class="card-text small">
+                                                删除您的所有个人数据，此操作不可恢复
+                                            </p>
+                                            <button type="button" class="btn btn-outline-warning btn-sm" disabled>
+                                                <i class="fas fa-trash"></i> 删除数据
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('settings.settings') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> 返回
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存设置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-switch {
+    padding-left: 2.5em;
+}
+
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.list-unstyled li {
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %} 

@@ -31,9 +31,11 @@ def create_app():
     
     # 注册蓝图
     from app.routes import main_bp, admin_bp, auth_bp
+    from app.routes.settings import settings_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(settings_bp)
     
     # 错误处理
     @app.errorhandler(404)

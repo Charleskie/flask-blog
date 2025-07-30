@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}权限不足 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto text-center">
+        <div class="error-page">
+            <h1 class="display-1 text-muted">403</h1>
+            <h2 class="mb-4">权限不足</h2>
+            <p class="lead mb-4">抱歉，您没有访问此页面的权限。</p>
+            <p class="text-muted mb-4">如果您认为这是一个错误，请联系管理员。</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-sign-in-alt"></i> 重新登录
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

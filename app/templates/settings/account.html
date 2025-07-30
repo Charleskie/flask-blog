@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}账户设置 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 设置侧边栏 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> 设置</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('settings.profile_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-user"></i> 个人信息
+                    </a>
+                    <a href="{{ url_for('settings.account_settings') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-shield-alt"></i> 账户设置
+                    </a>
+                    <a href="{{ url_for('settings.theme_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-palette"></i> 主题设置
+                    </a>
+                    <a href="{{ url_for('settings.security_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-lock"></i> 安全设置
+                    </a>
+                    <a href="{{ url_for('settings.privacy_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-eye-slash"></i> 隐私设置
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-shield-alt"></i> 账户设置</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <!-- 基本信息 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-user"></i> 基本信息</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="username" class="form-label">用户名</label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="username" 
+                                           name="username" 
+                                           value="{{ current_user.username }}" 
+                                           required>
+                                    <div class="form-text">用户名用于登录，修改后需要重新登录</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">邮箱地址</label>
+                                    <input type="email" 
+                                           class="form-control" 
+                                           id="email" 
+                                           name="email" 
+                                           value="{{ current_user.email }}" 
+                                           required>
+                                    <div class="form-text">邮箱用于接收重要通知</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 密码修改 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-lock"></i> 密码修改</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="current_password" class="form-label">当前密码</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="current_password" 
+                                           name="current_password" 
+                                           placeholder="请输入当前密码">
+                                    <div class="form-text">修改密码时必须输入当前密码</div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <label for="new_password" class="form-label">新密码</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="new_password" 
+                                           name="new_password" 
+                                           placeholder="请输入新密码">
+                                    <div class="form-text">密码长度至少6位，建议包含字母和数字</div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="confirm_password" class="form-label">确认新密码</label>
+                                    <input type="password" 
+                                           class="form-control" 
+                                           id="confirm_password" 
+                                           name="confirm_password" 
+                                           placeholder="请再次输入新密码">
+                                    <div class="form-text">两次输入的密码必须一致</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 账户安全 -->
+                        <div class="mb-4">
+                            <h5><i class="fas fa-shield-alt"></i> 账户安全</h5>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                <strong>安全提示：</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>定期更换密码，建议每3个月更换一次</li>
+                                    <li>使用强密码，包含大小写字母、数字和特殊字符</li>
+                                    <li>不要在多个网站使用相同的密码</li>
+                                    <li>如果怀疑账户被盗，请立即修改密码</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- 提交按钮 -->
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" onclick="history.back()">
+                                <i class="fas fa-arrow-left"></i> 返回
+                            </button>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存设置
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 密码强度检查脚本 -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newPassword = document.getElementById('new_password');
+    const confirmPassword = document.getElementById('confirm_password');
+    
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        if (password.length >= 6) strength++;
+        if (password.match(/[a-z]/)) strength++;
+        if (password.match(/[A-Z]/)) strength++;
+        if (password.match(/[0-9]/)) strength++;
+        if (password.match(/[^a-zA-Z0-9]/)) strength++;
+        return strength;
+    }
+    
+    function updatePasswordStrength() {
+        const password = newPassword.value;
+        const strength = checkPasswordStrength(password);
+        const strengthText = ['很弱', '弱', '一般', '强', '很强'];
+        const strengthClass = ['text-danger', 'text-warning', 'text-info', 'text-primary', 'text-success'];
+        
+        // 移除之前的提示
+        const existingTip = newPassword.parentNode.querySelector('.password-strength');
+        if (existingTip) {
+            existingTip.remove();
+        }
+        
+        if (password.length > 0) {
+            const tip = document.createElement('div');
+            tip.className = `form-text password-strength ${strengthClass[strength - 1]}`;
+            tip.innerHTML = `<i class="fas fa-shield-alt"></i> 密码强度：${strengthText[strength - 1]}`;
+            newPassword.parentNode.appendChild(tip);
+        }
+    }
+    
+    function checkPasswordMatch() {
+        const password = newPassword.value;
+        const confirm = confirmPassword.value;
+        
+        // 移除之前的提示
+        const existingTip = confirmPassword.parentNode.querySelector('.password-match');
+        if (existingTip) {
+            existingTip.remove();
+        }
+        
+        if (confirm.length > 0) {
+            const tip = document.createElement('div');
+            tip.className = 'form-text password-match';
+            if (password === confirm) {
+                tip.className += ' text-success';
+                tip.innerHTML = '<i class="fas fa-check"></i> 密码匹配';
+            } else {
+                tip.className += ' text-danger';
+                tip.innerHTML = '<i class="fas fa-times"></i> 密码不匹配';
+            }
+            confirmPassword.parentNode.appendChild(tip);
+        }
+    }
+    
+    if (newPassword) {
+        newPassword.addEventListener('input', updatePasswordStrength);
+    }
+    
+    if (confirmPassword) {
+        confirmPassword.addEventListener('input', checkPasswordMatch);
+    }
+});
+</script>
+{% endblock %} 

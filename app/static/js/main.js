@@ -2,10 +2,14 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化工具提示
-    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
+    try {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    } catch (error) {
+        console.error('工具提示初始化错误:', error);
+    }
 
     // 平滑滚动
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -166,22 +170,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 消息提示功能
     window.showAlert = function(message, type = 'info') {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        document.body.appendChild(alertDiv);
-        
-        // 自动移除
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
+        try {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // 自动移除
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        } catch (error) {
+            console.error('showAlert函数错误:', error);
+        }
     };
 
     // 图片懒加载
@@ -246,7 +254,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 错误处理
     window.addEventListener('error', function(e) {
         console.error('JavaScript错误:', e.error);
-        showAlert('页面出现了一些问题，请刷新页面重试。', 'danger');
+        // 只在控制台记录错误，不显示弹窗
+        return false;
     });
 
     // 性能监控

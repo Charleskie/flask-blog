@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}个人信息设置 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-3">
+            <!-- 设置侧边栏 -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog"></i> 设置</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('settings.profile_settings') }}" class="list-group-item list-group-item-action active">
+                        <i class="fas fa-user"></i> 个人信息
+                    </a>
+                    <a href="{{ url_for('settings.account_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-shield-alt"></i> 账户设置
+                    </a>
+                    <a href="{{ url_for('settings.theme_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-palette"></i> 主题设置
+                    </a>
+                    <a href="{{ url_for('settings.security_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-lock"></i> 安全设置
+                    </a>
+                    <a href="{{ url_for('settings.privacy_settings') }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-eye-slash"></i> 隐私设置
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-user"></i> 个人信息设置</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <!-- 头像上传 -->
+                                <div class="text-center mb-4">
+                                    <div class="avatar-container mb-3">
+                                        <img src="{{ current_user.get_avatar_url() }}" 
+                                             alt="头像" 
+                                             class="rounded-circle" 
+                                             style="width: 150px; height: 150px; object-fit: cover;">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="file" 
+                                               class="form-control" 
+                                               id="avatar" 
+                                               name="avatar" 
+                                               accept="image/*">
+                                    </div>
+                                    <button type="submit" 
+                                            class="btn btn-outline-primary btn-sm" 
+                                            formaction="{{ url_for('settings.upload_avatar') }}">
+                                        <i class="fas fa-upload"></i> 上传头像
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-8">
+                                <!-- 基本信息 -->
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="nickname" class="form-label">昵称</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="nickname" 
+                                               name="nickname" 
+                                               value="{{ current_user.nickname or '' }}" 
+                                               placeholder="请输入昵称">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="location" class="form-label">所在地</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="location" 
+                                               name="location" 
+                                               value="{{ current_user.location or '' }}" 
+                                               placeholder="请输入所在地">
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="company" class="form-label">公司</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="company" 
+                                               name="company" 
+                                               value="{{ current_user.company or '' }}" 
+                                               placeholder="请输入公司名称">
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="job_title" class="form-label">职位</label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="job_title" 
+                                               name="job_title" 
+                                               value="{{ current_user.job_title or '' }}" 
+                                               placeholder="请输入职位">
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="website" class="form-label">个人网站</label>
+                                    <input type="url" 
+                                           class="form-control" 
+                                           id="website" 
+                                           name="website" 
+                                           value="{{ current_user.website or '' }}" 
+                                           placeholder="https://example.com">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">电话</label>
+                                    <input type="tel" 
+                                           class="form-control" 
+                                           id="phone" 
+                                           name="phone" 
+                                           value="{{ current_user.phone or '' }}" 
+                                           placeholder="请输入电话号码">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="bio" class="form-label">个人简介</label>
+                                    <textarea class="form-control" 
+                                              id="bio" 
+                                              name="bio" 
+                                              rows="4" 
+                                              placeholder="介绍一下自己...">{{ current_user.bio or '' }}</textarea>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between">
+                                    <a href="{{ url_for('settings.settings') }}" class="btn btn-secondary">
+                                        <i class="fas fa-arrow-left"></i> 返回
+                                    </a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 保存更改
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-container {
+    position: relative;
+    display: inline-block;
+}
+
+.avatar-container img {
+    border: 3px solid #dee2e6;
+    transition: border-color 0.3s ease;
+}
+
+.avatar-container:hover img {
+    border-color: #007bff;
+}
+</style>
+{% endblock %} 
