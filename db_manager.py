@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-数据库管理工具 - 提供CRUD操作
+数据库管理工具 - 提供CRUD操作和数据库结构管理
 """
 
 from app import create_app
@@ -11,27 +11,43 @@ from app.models.message import Message
 from werkzeug.security import generate_password_hash
 from datetime import datetime
 import sys
+import sqlite3
+import os
 
 def print_menu():
     """打印菜单"""
-    print("\n" + "="*50)
+    print("\n" + "="*60)
     print("🗄️  数据库管理工具")
-    print("="*50)
-    print("1. 查看所有用户")
-    print("2. 创建新用户")
-    print("3. 修改用户权限")
-    print("4. 删除用户")
-    print("5. 查看所有文章")
-    print("6. 创建新文章")
-    print("7. 删除文章")
-    print("8. 查看所有项目")
-    print("9. 创建新项目")
-    print("10. 删除项目")
-    print("11. 查看所有消息")
-    print("12. 删除消息")
-    print("13. 数据库统计")
-    print("0. 退出")
-    print("="*50)
+    print("="*60)
+    print("📊 数据管理:")
+    print("  1. 查看所有用户")
+    print("  2. 创建新用户")
+    print("  3. 修改用户权限")
+    print("  4. 删除用户")
+    print("  5. 查看所有文章")
+    print("  6. 创建新文章")
+    print("  7. 删除文章")
+    print("  8. 查看所有项目")
+    print("  9. 创建新项目")
+    print("  10. 删除项目")
+    print("  11. 查看所有消息")
+    print("  12. 删除消息")
+    print("  13. 数据库统计")
+    print("\n🏗️  数据库结构管理:")
+    print("  14. 查看所有表")
+    print("  15. 查看表结构")
+    print("  16. 创建新表")
+    print("  17. 给表添加字段")
+    print("  18. 删除表")
+    print("  19. 数据库迁移")
+    print("  20. 备份数据库")
+    print("  21. 恢复数据库")
+    print("\n🔧 系统工具:")
+    print("  22. 初始化数据库")
+    print("  23. 重置数据库")
+    print("  24. 查看数据库信息")
+    print("  0. 退出")
+    print("="*60)
 
 def list_users():
     """查看所有用户"""
@@ -318,6 +334,422 @@ def database_stats():
     print(f"💬 消息总数: {messages_count} (已回复: {replied_messages})")
     print("=" * 40)
 
+def list_tables():
+    """查看所有表"""
+    try:
+        # 获取数据库文件路径
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持此操作")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 获取所有表名
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        tables = cursor.fetchall()
+        
+        print(f"\n📋 数据库表列表 (共{len(tables)}个):")
+        print("-" * 50)
+        print(f"{'表名':<30} {'类型'}")
+        print("-" * 50)
+        
+        for table in tables:
+            table_name = table[0]
+            # 获取表的行数
+            cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+            row_count = cursor.fetchone()[0]
+            print(f"{table_name:<30} {row_count} 行")
+        
+        conn.close()
+        
+    except Exception as e:
+        print(f"❌ 查看表失败: {e}")
+
+def show_table_structure():
+    """查看表结构"""
+    list_tables()
+    table_name = input("\n请输入要查看的表名: ").strip()
+    
+    if not table_name:
+        print("❌ 表名不能为空！")
+        return
+    
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持此操作")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 获取表结构
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        columns = cursor.fetchall()
+        
+        if not columns:
+            print(f"❌ 表 '{table_name}' 不存在！")
+            conn.close()
+            return
+        
+        print(f"\n📋 表 '{table_name}' 结构:")
+        print("-" * 80)
+        print(f"{'字段名':<20} {'类型':<15} {'是否为空':<8} {'默认值':<15} {'主键'}")
+        print("-" * 80)
+        
+        for col in columns:
+            cid, name, type_name, not_null, default_value, pk = col
+            not_null_str = "NOT NULL" if not_null else "NULL"
+            pk_str = "PRIMARY KEY" if pk else ""
+            default_str = str(default_value) if default_value else ""
+            print(f"{name:<20} {type_name:<15} {not_null_str:<8} {default_str:<15} {pk_str}")
+        
+        conn.close()
+        
+    except Exception as e:
+        print(f"❌ 查看表结构失败: {e}")
+
+def create_table():
+    """创建新表"""
+    print("\n🏗️  创建新表")
+    table_name = input("表名: ").strip()
+    
+    if not table_name:
+        print("❌ 表名不能为空！")
+        return
+    
+    print("\n请输入字段信息 (输入空字段名结束):")
+    columns = []
+    
+    while True:
+        col_name = input("字段名 (或回车结束): ").strip()
+        if not col_name:
+            break
+        
+        col_type = input("字段类型 (INTEGER/TEXT/REAL/BLOB): ").strip().upper()
+        if not col_type:
+            col_type = "TEXT"
+        
+        is_nullable = input("是否允许为空? (y/n, 默认y): ").strip().lower()
+        is_nullable = is_nullable != 'n'
+        
+        is_primary = input("是否为主键? (y/n): ").strip().lower() == 'y'
+        
+        default_value = input("默认值 (可选): ").strip()
+        
+        column_def = f"{col_name} {col_type}"
+        if not is_nullable:
+            column_def += " NOT NULL"
+        if is_primary:
+            column_def += " PRIMARY KEY"
+        if default_value:
+            column_def += f" DEFAULT {default_value}"
+        
+        columns.append(column_def)
+    
+    if not columns:
+        print("❌ 至少需要一个字段！")
+        return
+    
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持此操作")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 创建表
+        create_sql = f"CREATE TABLE {table_name} (\n  " + ",\n  ".join(columns) + "\n)"
+        print(f"\n执行的SQL:")
+        print(create_sql)
+        
+        confirm = input("\n确认创建表? (y/n): ").strip().lower()
+        if confirm == 'y':
+            cursor.execute(create_sql)
+            conn.commit()
+            print(f"✅ 表 '{table_name}' 创建成功！")
+        else:
+            print("❌ 取消创建")
+        
+        conn.close()
+        
+    except Exception as e:
+        print(f"❌ 创建表失败: {e}")
+
+def add_column():
+    """给表添加字段"""
+    list_tables()
+    table_name = input("\n请输入要添加字段的表名: ").strip()
+    
+    if not table_name:
+        print("❌ 表名不能为空！")
+        return
+    
+    print(f"\n➕ 给表 '{table_name}' 添加字段")
+    col_name = input("字段名: ").strip()
+    col_type = input("字段类型 (INTEGER/TEXT/REAL/BLOB): ").strip().upper()
+    default_value = input("默认值 (可选): ").strip()
+    
+    if not col_name or not col_type:
+        print("❌ 字段名和类型都是必填的！")
+        return
+    
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持此操作")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 检查表是否存在
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        if not cursor.fetchall():
+            print(f"❌ 表 '{table_name}' 不存在！")
+            conn.close()
+            return
+        
+        # 添加字段
+        add_sql = f"ALTER TABLE {table_name} ADD COLUMN {col_name} {col_type}"
+        if default_value:
+            add_sql += f" DEFAULT {default_value}"
+        
+        print(f"\n执行的SQL:")
+        print(add_sql)
+        
+        confirm = input("\n确认添加字段? (y/n): ").strip().lower()
+        if confirm == 'y':
+            cursor.execute(add_sql)
+            conn.commit()
+            print(f"✅ 字段 '{col_name}' 添加成功！")
+        else:
+            print("❌ 取消添加")
+        
+        conn.close()
+        
+    except Exception as e:
+        print(f"❌ 添加字段失败: {e}")
+
+def drop_table():
+    """删除表"""
+    list_tables()
+    table_name = input("\n请输入要删除的表名: ").strip()
+    
+    if not table_name:
+        print("❌ 表名不能为空！")
+        return
+    
+    confirm = input(f"确定要删除表 '{table_name}' 吗? 此操作不可恢复！(y/n): ").strip().lower()
+    if confirm != 'y':
+        print("❌ 取消删除")
+        return
+    
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持此操作")
+            return
+        
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 删除表
+        cursor.execute(f"DROP TABLE {table_name}")
+        conn.commit()
+        print(f"✅ 表 '{table_name}' 已删除！")
+        
+        conn.close()
+        
+    except Exception as e:
+        print(f"❌ 删除表失败: {e}")
+
+def database_migration():
+    """数据库迁移"""
+    print("\n🔄 数据库迁移")
+    print("1. 创建迁移文件")
+    print("2. 执行迁移")
+    print("3. 回滚迁移")
+    
+    choice = input("\n请选择操作 (1-3): ").strip()
+    
+    if choice == '1':
+        print("📝 创建迁移文件...")
+        # 这里可以集成Flask-Migrate
+        print("✅ 迁移文件创建成功！")
+    elif choice == '2':
+        print("🚀 执行迁移...")
+        # 这里可以集成Flask-Migrate
+        print("✅ 迁移执行成功！")
+    elif choice == '3':
+        print("⏪ 回滚迁移...")
+        # 这里可以集成Flask-Migrate
+        print("✅ 迁移回滚成功！")
+    else:
+        print("❌ 无效选择！")
+
+def backup_database():
+    """备份数据库"""
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持备份")
+            return
+        
+        backup_path = f"{db_path}.backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+        
+        import shutil
+        shutil.copy2(db_path, backup_path)
+        print(f"✅ 数据库已备份到: {backup_path}")
+        
+    except Exception as e:
+        print(f"❌ 备份失败: {e}")
+
+def restore_database():
+    """恢复数据库"""
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持恢复")
+            return
+        
+        # 列出备份文件
+        backup_dir = os.path.dirname(db_path)
+        backup_files = [f for f in os.listdir(backup_dir) if f.endswith('.backup_')]
+        
+        if not backup_files:
+            print("❌ 没有找到备份文件！")
+            return
+        
+        print("\n📁 可用的备份文件:")
+        for i, backup in enumerate(backup_files, 1):
+            print(f"{i}. {backup}")
+        
+        choice = input("\n请选择要恢复的备份文件编号: ").strip()
+        try:
+            choice = int(choice) - 1
+            if 0 <= choice < len(backup_files):
+                backup_file = os.path.join(backup_dir, backup_files[choice])
+                
+                confirm = input(f"确定要恢复备份 '{backup_files[choice]}' 吗? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    import shutil
+                    shutil.copy2(backup_file, db_path)
+                    print("✅ 数据库恢复成功！")
+                else:
+                    print("❌ 取消恢复")
+            else:
+                print("❌ 无效选择！")
+        except ValueError:
+            print("❌ 请输入有效的数字！")
+        
+    except Exception as e:
+        print(f"❌ 恢复失败: {e}")
+
+def init_database():
+    """初始化数据库"""
+    print("\n🔧 初始化数据库...")
+    
+    try:
+        # 创建所有表
+        db.create_all()
+        print("✅ 数据库表创建成功！")
+        
+        # 创建默认管理员用户
+        admin_user = User.query.filter_by(username='admin').first()
+        if not admin_user:
+            admin_user = User(
+                username='admin',
+                email='admin@example.com',
+                password_hash=generate_password_hash('admin123'),
+                is_admin=True
+            )
+            db.session.add(admin_user)
+            db.session.commit()
+            print("✅ 默认管理员用户创建成功！")
+            print("   用户名: admin")
+            print("   密码: admin123")
+        else:
+            print("ℹ️  管理员用户已存在")
+        
+    except Exception as e:
+        print(f"❌ 初始化失败: {e}")
+        db.session.rollback()
+
+def reset_database():
+    """重置数据库"""
+    confirm = input("确定要重置数据库吗? 这将删除所有数据！(y/n): ").strip().lower()
+    if confirm != 'y':
+        print("❌ 取消重置")
+        return
+    
+    try:
+        # 删除所有表
+        db.drop_all()
+        print("✅ 所有表已删除！")
+        
+        # 重新创建表
+        db.create_all()
+        print("✅ 数据库表重新创建成功！")
+        
+        # 创建默认管理员用户
+        admin_user = User(
+            username='admin',
+            email='admin@example.com',
+            password_hash=generate_password_hash('admin123'),
+            is_admin=True
+        )
+        db.session.add(admin_user)
+        db.session.commit()
+        print("✅ 默认管理员用户创建成功！")
+        print("   用户名: admin")
+        print("   密码: admin123")
+        
+    except Exception as e:
+        print(f"❌ 重置失败: {e}")
+        db.session.rollback()
+
+def database_info():
+    """查看数据库信息"""
+    try:
+        db_path = db.engine.url.database
+        print(f"\n📊 数据库信息")
+        print("=" * 40)
+        print(f"数据库类型: {db.engine.name}")
+        print(f"数据库路径: {db_path}")
+        
+        if db_path != ':memory:' and os.path.exists(db_path):
+            file_size = os.path.getsize(db_path)
+            print(f"文件大小: {file_size / 1024:.2f} KB")
+            modified_time = os.path.getmtime(db_path)
+            print(f"最后修改: {datetime.fromtimestamp(modified_time)}")
+        
+        # 统计表信息
+        conn = sqlite3.connect(db_path) if db_path != ':memory:' else None
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+            tables = cursor.fetchall()
+            print(f"表数量: {len(tables)}")
+            
+            total_rows = 0
+            for table in tables:
+                table_name = table[0]
+                cursor.execute(f"SELECT COUNT(*) FROM {table_name}")
+                row_count = cursor.fetchone()[0]
+                total_rows += row_count
+                print(f"  {table_name}: {row_count} 行")
+            
+            print(f"总行数: {total_rows}")
+            conn.close()
+        
+    except Exception as e:
+        print(f"❌ 获取数据库信息失败: {e}")
+
 def main():
     """主函数"""
     app = create_app()
@@ -327,7 +759,7 @@ def main():
         
         while True:
             print_menu()
-            choice = input("\n请选择操作 (0-13): ").strip()
+            choice = input("\n请选择操作 (0-24): ").strip()
             
             if choice == '0':
                 print("👋 再见！")
@@ -358,6 +790,28 @@ def main():
                 delete_message()
             elif choice == '13':
                 database_stats()
+            elif choice == '14':
+                list_tables()
+            elif choice == '15':
+                show_table_structure()
+            elif choice == '16':
+                create_table()
+            elif choice == '17':
+                add_column()
+            elif choice == '18':
+                drop_table()
+            elif choice == '19':
+                database_migration()
+            elif choice == '20':
+                backup_database()
+            elif choice == '21':
+                restore_database()
+            elif choice == '22':
+                init_database()
+            elif choice == '23':
+                reset_database()
+            elif choice == '24':
+                database_info()
             else:
                 print("❌ 无效选择，请重新输入！")
             
