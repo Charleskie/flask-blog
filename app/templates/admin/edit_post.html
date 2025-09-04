@@ -168,7 +168,7 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        {% if post.status == 'published' %}
+                        {% if post.status == 'published' and post.slug %}
                                                        <a href="{{ url_for('main.post_detail', slug=post.slug) }}" 
                            class="btn btn-outline-primary" target="_blank">
                             <i class="fas fa-external-link-alt"></i> 查看文章页面
@@ -198,7 +198,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form method="POST" action="{{ url_for('delete_post', post_id=post.id) }}" style="display: inline;">
+                <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" style="display: inline;">
                     <button type="submit" class="btn btn-danger">确认删除</button>
                 </form>
             </div>

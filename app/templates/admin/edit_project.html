@@ -218,7 +218,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form method="POST" action="{{ url_for('delete_project', project_id=project.id) }}" style="display: inline;">
+                <form method="POST" action="{{ url_for('admin.delete_project', project_id=project.id) }}" style="display: inline;">
                     <button type="submit" class="btn btn-danger">确认删除</button>
                 </form>
             </div>

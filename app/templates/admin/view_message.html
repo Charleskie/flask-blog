@@ -13,7 +13,7 @@
                         <i class="fas fa-arrow-left"></i> 返回消息列表
                     </a>
                     {% if not message.is_replied() %}
-                        <a href="{{ url_for('reply_message', message_id=message.id) }}" class="btn btn-success">
+                        <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn btn-success">
                             <i class="fas fa-reply"></i> 回复
                         </a>
                     {% endif %}
@@ -109,7 +109,7 @@
                         <div class="card-body">
                             <div class="d-grid gap-2">
                                 {% if not message.is_replied() %}
-                                    <a href="{{ url_for('reply_message', message_id=message.id) }}" class="btn btn-success">
+                                    <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn btn-success">
                                         <i class="fas fa-reply"></i> 回复消息
                                     </a>
                                 {% endif %}
@@ -161,7 +161,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form method="POST" action="{{ url_for('delete_message', message_id=message.id) }}" style="display: inline;">
+                <form method="POST" action="{{ url_for('admin.delete_message', message_id=message.id) }}" style="display: inline;">
                     <button type="submit" class="btn btn-danger">确认删除</button>
                 </form>
             </div>

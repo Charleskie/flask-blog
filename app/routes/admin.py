@@ -83,13 +83,15 @@ def new_post():
                 author_id=current_user.id
             )
             
+            db.session.add(post)
+            db.session.flush()  # 获取ID但不提交
+            
             # 生成或使用提供的slug
             if slug:
                 post.slug = slug
             else:
                 post.slug = post.generate_slug()
             
-            db.session.add(post)
             db.session.commit()
             
             flash('文章创建成功！', 'success')

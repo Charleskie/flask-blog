@@ -103,7 +103,7 @@ def blog():
     return render_template('frontend/blog.html', posts=posts, categories=categories, 
                          current_category=category, search=search)
 
-@main_bp.route('/blog/<slug>')
+@main_bp.route('/blog/post/<slug>')
 def post_detail(slug):
     """文章详情页面"""
     post = Post.query.filter_by(slug=slug, status='published').first_or_404()

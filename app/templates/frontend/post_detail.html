@@ -146,8 +146,12 @@
                         {% endif %}
                         <div class="flex-grow-1">
                             <h6 class="mb-1">
-                                                                       <a href="{{ url_for('main.post_detail', slug=related.slug) }}" 
+                                {% if related.slug %}
+                                <a href="{{ url_for('main.post_detail', slug=related.slug) }}" 
                                    class="text-decoration-none">{{ related.title }}</a>
+                                {% else %}
+                                <span class="text-decoration-none">{{ related.title }}</span>
+                                {% endif %}
                             </h6>
                             <small class="text-muted">
                                 {{ related.created_at.strftime('%m月%d日') }} · 

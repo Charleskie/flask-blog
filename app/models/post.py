@@ -26,8 +26,16 @@ class Post(db.Model):
     
     def generate_slug(self):
         """生成URL友好的标题"""
+        if not self.title:
+            return f"post-{self.id or 'new'}"
+        
         slug = re.sub(r'[^\w\s-]', '', self.title.lower())
         slug = re.sub(r'[-\s]+', '-', slug).strip('-')
+        
+        # 如果生成的slug为空，使用默认值
+        if not slug:
+            slug = f"post-{self.id or 'new'}"
+        
         return slug
     
     def get_tags_list(self):

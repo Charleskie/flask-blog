@@ -18,7 +18,11 @@
             <article class="card mb-4">
                 <div class="card-body">
                     <h2 class="card-title">
+                        {% if post.slug %}
                         <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none">{{ post.title }}</a>
+                        {% else %}
+                        <span class="text-decoration-none">{{ post.title }}</span>
+                        {% endif %}
                     </h2>
                     <p class="card-text text-muted">
                         <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%Y年%m月%d日') }}
@@ -28,7 +32,11 @@
                         {% endif %}
                     </p>
                     <p class="card-text">{{ post.excerpt or post.content[:200] + '...' if post.content|length > 200 else post.content }}</p>
-                                            <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="btn btn-primary">阅读更多</a>
+                    {% if post.slug %}
+                    <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="btn btn-primary">阅读更多</a>
+                    {% else %}
+                    <span class="btn btn-secondary disabled">暂无链接</span>
+                    {% endif %}
                 </div>
             </article>
             {% endfor %}
@@ -83,7 +91,7 @@
             <ul class="pagination justify-content-center">
                 {% if posts.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('blog', page=posts.prev_num) }}">上一页</a>
+                    <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num) }}">上一页</a>
                 </li>
                 {% endif %}
                 
@@ -91,7 +99,7 @@
                     {% if page_num %}
                         {% if page_num != posts.page %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('blog', page=page_num) }}">{{ page_num }}</a>
+                            <a class="page-link" href="{{ url_for('main.blog', page=page_num) }}">{{ page_num }}</a>
                         </li>
                         {% else %}
                         <li class="page-item active">
@@ -107,7 +115,7 @@
                 
                 {% if posts.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('blog', page=posts.next_num) }}">下一页</a>
+                    <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num) }}">下一页</a>
                 </li>
                 {% endif %}
             </ul>

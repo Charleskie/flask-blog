@@ -102,13 +102,17 @@
                                         </td>
                                         <td>
                                             <div class="btn-group btn-group-sm" role="group">
-                                                {% if post.status == 'published' %}
+                                                {% if post.status == 'published' and post.slug %}
                                                     <a href="{{ url_for('main.post_detail', slug=post.slug) }}" 
                                                        class="btn btn-outline-primary" target="_blank" title="查看">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
+                                                {% elif post.status == 'published' %}
+                                                    <span class="btn btn-outline-secondary disabled" title="文章缺少slug，无法预览">
+                                                        <i class="fas fa-eye-slash"></i>
+                                                    </span>
                                                 {% endif %}
-                                                <a href="{{ url_for('edit_post', post_id=post.id) }}" 
+                                                <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" 
                                                    class="btn btn-outline-secondary" title="编辑">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
@@ -141,7 +145,7 @@
                     <ul class="pagination justify-content-center">
                         {% if posts.has_prev %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin_posts', page=posts.prev_num, status=status_filter) }}">
+                                <a class="page-link" href="{{ url_for('admin.admin_posts', page=posts.prev_num, status=status_filter) }}">
                                     <i class="fas fa-chevron-left"></i>
                                 </a>
                             </li>
@@ -151,7 +155,7 @@
                             {% if page_num %}
                                 {% if page_num != posts.page %}
                                     <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin_posts', page=page_num, status=status_filter) }}">
+                                        <a class="page-link" href="{{ url_for('admin.admin_posts', page=page_num, status=status_filter) }}">
                                             {{ page_num }}
                                         </a>
                                     </li>
@@ -169,7 +173,7 @@
                         
                         {% if posts.has_next %}
                             <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin_posts', page=posts.next_num, status=status_filter) }}">
+                                <a class="page-link" href="{{ url_for('admin.admin_posts', page=posts.next_num, status=status_filter) }}">
                                     <i class="fas fa-chevron-right"></i>
                                 </a>
                             </li>
