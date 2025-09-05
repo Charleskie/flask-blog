@@ -100,8 +100,29 @@ def blog():
     ).distinct().all()
     categories = [cat[0] for cat in categories]
     
-    return render_template('frontend/blog.html', posts=posts, categories=categories, 
-                         current_category=category, search=search)
+    # 获取热门文章（按浏览次数排序）
+    popular_posts = Post.query.filter_by(status='published').order_by(
+        Post.view_count.desc()
+    ).limit(5).all()
+    
+    # 获取所有标签
+    all_tags = []
+    for post in Post.query.filter_by(status='published').all():
+        if post.tags:
+            all_tags.extend([tag.strip() for tag in post.tags.split(',')])
+    
+    # 统计标签出现次数
+    from collections import Counter
+    tag_counts = Counter(all_tags)
+    popular_tags = tag_counts.most_common(10)  # 取前10个热门标签
+    
+    return render_template('frontend/blog.html', 
+                         posts=posts, 
+                         categories=categories, 
+                         popular_posts=popular_posts,
+                         popular_tags=popular_tags,
+                         current_category=category, 
+                         search=search)
 
 @main_bp.route('/blog/post/<slug>')
 def post_detail(slug):

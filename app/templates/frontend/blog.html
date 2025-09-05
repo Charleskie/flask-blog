@@ -5,8 +5,48 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="text-center mb-5">技术博客</h1>
-        <p class="text-center lead mb-5">分享我的技术心得、学习笔记和行业见解。</p>
+        <h1 class="text-center mb-3">技术博客</h1>
+        <p class="text-center lead mb-4">分享我的技术心得、学习笔记和行业见解。</p>
+        
+        <!-- 面包屑导航 -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb justify-content-center">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('main.blog') }}">全部文章</a>
+                </li>
+                {% if current_category %}
+                <li class="breadcrumb-item active" aria-current="page">
+                    {{ current_category }}
+                </li>
+                {% endif %}
+                {% if search %}
+                <li class="breadcrumb-item active" aria-current="page">
+                    搜索结果: "{{ search }}"
+                </li>
+                {% endif %}
+            </ol>
+        </nav>
+        
+        <!-- 当前筛选状态 -->
+        {% if current_category or search %}
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center gap-2">
+                {% if current_category %}
+                <span class="badge bg-primary">
+                    <i class="fas fa-folder"></i> {{ current_category }}
+                </span>
+                {% endif %}
+                {% if search %}
+                <span class="badge bg-info">
+                    <i class="fas fa-search"></i> "{{ search }}"
+                </span>
+                {% endif %}
+                <a href="{{ url_for('main.blog') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="fas fa-times"></i> 清除筛选
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -41,48 +81,27 @@
             </article>
             {% endfor %}
         {% else %}
-            <!-- 示例文章 -->
-            <article class="card mb-4">
-                <div class="card-body">
-                    <h2 class="card-title">
-                        <a href="#" class="text-decoration-none">Flask Web开发入门指南</a>
-                    </h2>
-                    <p class="card-text text-muted">
-                        <i class="fas fa-calendar"></i> 2024年1月15日
-                        <i class="fas fa-user ms-3"></i> 管理员
-                    </p>
-                    <p class="card-text">Flask是一个轻量级的Python Web框架，非常适合初学者学习Web开发。本文将详细介绍Flask的基础知识，包括路由、模板、表单处理等核心概念...</p>
-                    <a href="#" class="btn btn-primary">阅读更多</a>
-                </div>
-            </article>
-
-            <article class="card mb-4">
-                <div class="card-body">
-                    <h2 class="card-title">
-                        <a href="#" class="text-decoration-none">现代前端开发技术栈</a>
-                    </h2>
-                    <p class="card-text text-muted">
-                        <i class="fas fa-calendar"></i> 2024年1月10日
-                        <i class="fas fa-user ms-3"></i> 管理员
-                    </p>
-                    <p class="card-text">前端开发技术日新月异，React、Vue、Angular等框架层出不穷。本文将分析当前主流的前端技术栈，帮助开发者选择合适的技术方案...</p>
-                    <a href="#" class="btn btn-primary">阅读更多</a>
-                </div>
-            </article>
-
-            <article class="card mb-4">
-                <div class="card-body">
-                    <h2 class="card-title">
-                        <a href="#" class="text-decoration-none">数据库设计最佳实践</a>
-                    </h2>
-                    <p class="card-text text-muted">
-                        <i class="fas fa-calendar"></i> 2024年1月5日
-                        <i class="fas fa-user ms-3"></i> 管理员
-                    </p>
-                    <p class="card-text">良好的数据库设计是应用程序成功的关键。本文将分享数据库设计的基本原则、常见模式和优化技巧，帮助你构建高效可靠的数据库...</p>
-                    <a href="#" class="btn btn-primary">阅读更多</a>
-                </div>
-            </article>
+            <!-- 无文章或搜索结果为空 -->
+            {% if search %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">没有找到相关文章</h4>
+                <p class="text-muted">尝试使用其他关键词搜索，或者浏览所有文章。</p>
+                <a href="{{ url_for('main.blog') }}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> 查看所有文章
+                </a>
+            </div>
+            {% elif current_category %}
+            <div class="text-center py-5">
+                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">该分类下暂无文章</h4>
+                <p class="text-muted">"{{ current_category }}" 分类下还没有发布任何文章。</p>
+                <a href="{{ url_for('main.blog') }}" class="btn btn-primary">
+                    <i class="fas fa-list"></i> 查看所有文章
+                </a>
+            </div>
+            {% else %}
+            {% endif %}
         {% endif %}
 
         <!-- 分页 -->
@@ -91,7 +110,7 @@
             <ul class="pagination justify-content-center">
                 {% if posts.has_prev %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num) }}">上一页</a>
+                    <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search) }}">上一页</a>
                 </li>
                 {% endif %}
                 
@@ -99,7 +118,7 @@
                     {% if page_num %}
                         {% if page_num != posts.page %}
                         <li class="page-item">
-                            <a class="page-link" href="{{ url_for('main.blog', page=page_num) }}">{{ page_num }}</a>
+                            <a class="page-link" href="{{ url_for('main.blog', page=page_num, category=current_category, search=search) }}">{{ page_num }}</a>
                         </li>
                         {% else %}
                         <li class="page-item active">
@@ -115,7 +134,7 @@
                 
                 {% if posts.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num) }}">下一页</a>
+                    <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search) }}">下一页</a>
                 </li>
                 {% endif %}
             </ul>
@@ -131,9 +150,10 @@
                 <h5><i class="fas fa-search"></i> 搜索文章</h5>
             </div>
             <div class="card-body">
-                <form>
+                <form method="GET" action="{{ url_for('main.blog') }}">
                     <div class="input-group">
-                        <input type="text" class="form-control" placeholder="搜索关键词...">
+                        <input type="text" class="form-control" name="search" 
+                               placeholder="搜索关键词..." value="{{ search or '' }}">
                         <button class="btn btn-primary" type="submit">
                             <i class="fas fa-search"></i>
                         </button>
@@ -150,30 +170,24 @@
             <div class="card-body">
                 <ul class="list-unstyled">
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none">
-                            <i class="fas fa-code"></i> Web开发 (15)
+                        <a href="{{ url_for('main.blog') }}" 
+                           class="text-decoration-none {% if not current_category %}fw-bold text-primary{% endif %}">
+                            <i class="fas fa-list"></i> 全部文章
                         </a>
                     </li>
+                    {% for category in categories %}
                     <li class="mb-2">
-                        <a href="#" class="text-decoration-none">
-                            <i class="fas fa-mobile-alt"></i> 移动开发 (8)
+                        <a href="{{ url_for('main.blog', category=category) }}" 
+                           class="text-decoration-none {% if current_category == category %}fw-bold text-primary{% endif %}">
+                            <i class="fas fa-folder"></i> {{ category }}
                         </a>
                     </li>
-                    <li class="mb-2">
-                        <a href="#" class="text-decoration-none">
-                            <i class="fas fa-database"></i> 数据库 (12)
-                        </a>
+                    {% endfor %}
+                    {% if not categories %}
+                    <li class="mb-2 text-muted">
+                        <i class="fas fa-info-circle"></i> 暂无分类
                     </li>
-                    <li class="mb-2">
-                        <a href="#" class="text-decoration-none">
-                            <i class="fas fa-brain"></i> AI/ML (6)
-                        </a>
-                    </li>
-                    <li class="mb-2">
-                        <a href="#" class="text-decoration-none">
-                            <i class="fas fa-tools"></i> 工具技巧 (10)
-                        </a>
-                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -184,26 +198,39 @@
                 <h5><i class="fas fa-fire"></i> 热门文章</h5>
             </div>
             <div class="card-body">
+                {% if popular_posts %}
                 <ul class="list-unstyled">
+                    {% for post in popular_posts %}
                     <li class="mb-3">
-                        <a href="#" class="text-decoration-none">
-                            <h6>Python性能优化技巧</h6>
-                            <small class="text-muted">阅读量: 1,234</small>
+                        {% if post.slug %}
+                        <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none">
+                            <h6 class="mb-1">{{ post.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-eye"></i> {{ post.view_count }} 次浏览
+                                <span class="ms-2">
+                                    <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%m月%d日') }}
+                                </span>
+                            </small>
                         </a>
+                        {% else %}
+                        <div class="text-decoration-none">
+                            <h6 class="mb-1">{{ post.title }}</h6>
+                            <small class="text-muted">
+                                <i class="fas fa-eye"></i> {{ post.view_count }} 次浏览
+                                <span class="ms-2">
+                                    <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%m月%d日') }}
+                                </span>
+                            </small>
+                        </div>
+                        {% endif %}
                     </li>
-                    <li class="mb-3">
-                        <a href="#" class="text-decoration-none">
-                            <h6>Docker容器化部署指南</h6>
-                            <small class="text-muted">阅读量: 987</small>
-                        </a>
-                    </li>
-                    <li class="mb-3">
-                        <a href="#" class="text-decoration-none">
-                            <h6>微服务架构设计</h6>
-                            <small class="text-muted">阅读量: 756</small>
-                        </a>
-                    </li>
+                    {% endfor %}
                 </ul>
+                {% else %}
+                <p class="text-muted mb-0">
+                    <i class="fas fa-info-circle"></i> 暂无热门文章
+                </p>
+                {% endif %}
             </div>
         </div>
 
@@ -213,18 +240,20 @@
                 <h5><i class="fas fa-tags"></i> 标签云</h5>
             </div>
             <div class="card-body">
+                {% if popular_tags %}
                 <div class="d-flex flex-wrap gap-2">
-                    <span class="badge bg-primary">Python</span>
-                    <span class="badge bg-secondary">Flask</span>
-                    <span class="badge bg-success">Django</span>
-                    <span class="badge bg-info">React</span>
-                    <span class="badge bg-warning">JavaScript</span>
-                    <span class="badge bg-danger">Docker</span>
-                    <span class="badge bg-dark">Git</span>
-                    <span class="badge bg-primary">数据库</span>
-                    <span class="badge bg-secondary">API</span>
-                    <span class="badge bg-success">微服务</span>
+                    {% for tag, count in popular_tags %}
+                    <span class="badge bg-primary" title="{{ count }} 篇文章">
+                        {{ tag }}
+                        <small class="ms-1">({{ count }})</small>
+                    </span>
+                    {% endfor %}
                 </div>
+                {% else %}
+                <p class="text-muted mb-0">
+                    <i class="fas fa-info-circle"></i> 暂无标签
+                </p>
+                {% endif %}
             </div>
         </div>
     </div>

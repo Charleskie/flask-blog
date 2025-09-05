@@ -130,8 +130,8 @@ def edit_profile():
         new_password = request.form.get('new_password')
         confirm_password = request.form.get('confirm_password')
         
-        # 验证当前密码
-        if not check_password_hash(current_user.password_hash, current_password):
+        # 验证当前密码（只有在修改密码时才需要）
+        if new_password and not check_password_hash(current_user.password_hash, current_password):
             flash('当前密码错误', 'error')
             return render_template('auth/edit_profile.html')
         
@@ -148,16 +148,18 @@ def edit_profile():
             return render_template('auth/edit_profile.html')
         
         try:
-            # 更新用户信息
-            current_user.username = username
-            current_user.email = email
+            # 更新用户信息（用户名不允许更改，保持原值）
+            if username and username.strip():
+                current_user.username = username.strip()
+            if email and email.strip():
+                current_user.email = email.strip()
             
             # 如果提供了新密码，则更新密码
             if new_password:
-                    if new_password != confirm_password:
-                        flash('两次输入的新密码不一致', 'error')
-                        return render_template('auth/edit_profile.html')
-            current_user.password_hash = generate_password_hash(new_password)
+                if new_password != confirm_password:
+                    flash('两次输入的新密码不一致', 'error')
+                    return render_template('auth/edit_profile.html')
+                current_user.password_hash = generate_password_hash(new_password)
             
             db.session.commit()
             flash('资料更新成功！', 'success')

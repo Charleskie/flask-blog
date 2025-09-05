@@ -76,8 +76,11 @@ def account_settings():
             return render_template('settings/account.html')
         
         try:
-            current_user.username = username
-            current_user.email = email
+            # 更新用户信息（用户名不允许更改，保持原值）
+            if username and username.strip():
+                current_user.username = username.strip()
+            if email and email.strip():
+                current_user.email = email.strip()
             
             # 如果提供了新密码，则更新密码
             if new_password:
