@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models import Post, Project, Message
+from app.models import Post, Project, Message, AboutContent, AboutContact
 from app.models.user import db
 import re
 
@@ -13,7 +13,11 @@ def index():
 @main_bp.route('/about')
 def about():
     """关于页面"""
-    return render_template('frontend/about.html')
+    # 获取关于页面内容
+    contents = AboutContent.query.filter_by(is_active=True).order_by(AboutContent.order.asc()).all()
+    contacts = AboutContact.query.filter_by(is_active=True).order_by(AboutContact.order.asc()).all()
+    
+    return render_template('frontend/about.html', contents=contents, contacts=contacts)
 
 @main_bp.route('/projects')
 def projects():

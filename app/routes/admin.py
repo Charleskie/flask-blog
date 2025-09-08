@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from app.models import Post, Project, Message, User
+from app.models import Post, Project, Message, User, AboutContent, AboutContact
 from app.models.user import db
 from app.utils import admin_required
 from datetime import datetime
@@ -411,4 +411,208 @@ def change_message_status(message_id):
             flash('更新失败，请稍后重试', 'error')
             print(f"更新消息状态错误: {e}")
     
-    return redirect(url_for('admin.admin_messages')) 
+    return redirect(url_for('admin.admin_messages'))
+
+# 关于页面管理
+@admin_bp.route('/admin/about')
+@login_required
+@admin_required
+def admin_about():
+    """关于页面管理"""
+    contents = AboutContent.query.order_by(AboutContent.order.asc()).all()
+    contacts = AboutContact.query.order_by(AboutContact.order.asc()).all()
+    return render_template('admin/admin_about.html', contents=contents, contacts=contacts)
+
+@admin_bp.route('/admin/about/content/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def new_about_content():
+    """新建关于页面内容"""
+    if request.method == 'POST':
+        section = request.form.get('section')
+        title = request.form.get('title')
+        content = request.form.get('content')
+        order = request.form.get('order', 0, type=int)
+        is_active = 'is_active' in request.form
+        
+        if not section or not title or not content:
+            flash('请填写所有必填字段', 'error')
+            return render_template('admin/new_about_content.html')
+        
+        try:
+            about_content = AboutContent(
+                section=section,
+                title=title,
+                content=content,
+                order=order,
+                is_active=is_active
+            )
+            
+            db.session.add(about_content)
+            db.session.commit()
+            
+            flash('内容创建成功！', 'success')
+            return redirect(url_for('admin.admin_about'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('创建失败，请稍后重试', 'error')
+            print(f"创建关于页面内容错误: {e}")
+    
+    return render_template('admin/new_about_content.html')
+
+@admin_bp.route('/admin/about/content/<int:content_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_about_content(content_id):
+    """编辑关于页面内容"""
+    content = AboutContent.query.get_or_404(content_id)
+    
+    if request.method == 'POST':
+        section = request.form.get('section')
+        title = request.form.get('title')
+        content_text = request.form.get('content')
+        order = request.form.get('order', 0, type=int)
+        is_active = 'is_active' in request.form
+        
+        if not section or not title or not content_text:
+            flash('请填写所有必填字段', 'error')
+            return render_template('admin/edit_about_content.html', content=content)
+        
+        try:
+            content.section = section
+            content.title = title
+            content.content = content_text
+            content.order = order
+            content.is_active = is_active
+            content.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            flash('内容更新成功！', 'success')
+            return redirect(url_for('admin.admin_about'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('更新失败，请稍后重试', 'error')
+            print(f"更新关于页面内容错误: {e}")
+    
+    return render_template('admin/edit_about_content.html', content=content)
+
+@admin_bp.route('/admin/about/content/<int:content_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_about_content(content_id):
+    """删除关于页面内容"""
+    content = AboutContent.query.get_or_404(content_id)
+    
+    try:
+        db.session.delete(content)
+        db.session.commit()
+        flash('内容删除成功！', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('删除失败，请稍后重试', 'error')
+        print(f"删除关于页面内容错误: {e}")
+    
+    return redirect(url_for('admin.admin_about'))
+
+@admin_bp.route('/admin/about/contact/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def new_about_contact():
+    """新建联系方式"""
+    if request.method == 'POST':
+        platform = request.form.get('platform')
+        icon = request.form.get('icon')
+        url = request.form.get('url')
+        text = request.form.get('text')
+        color = request.form.get('color', 'primary')
+        order = request.form.get('order', 0, type=int)
+        is_active = 'is_active' in request.form
+        
+        if not platform or not icon or not text:
+            flash('请填写所有必填字段', 'error')
+            return render_template('admin/new_about_contact.html')
+        
+        try:
+            contact = AboutContact(
+                platform=platform,
+                icon=icon,
+                url=url,
+                text=text,
+                color=color,
+                order=order,
+                is_active=is_active
+            )
+            
+            db.session.add(contact)
+            db.session.commit()
+            
+            flash('联系方式创建成功！', 'success')
+            return redirect(url_for('admin.admin_about'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('创建失败，请稍后重试', 'error')
+            print(f"创建联系方式错误: {e}")
+    
+    return render_template('admin/new_about_contact.html')
+
+@admin_bp.route('/admin/about/contact/<int:contact_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_about_contact(contact_id):
+    """编辑联系方式"""
+    contact = AboutContact.query.get_or_404(contact_id)
+    
+    if request.method == 'POST':
+        platform = request.form.get('platform')
+        icon = request.form.get('icon')
+        url = request.form.get('url')
+        text = request.form.get('text')
+        color = request.form.get('color', 'primary')
+        order = request.form.get('order', 0, type=int)
+        is_active = 'is_active' in request.form
+        
+        if not platform or not icon or not text:
+            flash('请填写所有必填字段', 'error')
+            return render_template('admin/edit_about_contact.html', contact=contact)
+        
+        try:
+            contact.platform = platform
+            contact.icon = icon
+            contact.url = url
+            contact.text = text
+            contact.color = color
+            contact.order = order
+            contact.is_active = is_active
+            contact.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            flash('联系方式更新成功！', 'success')
+            return redirect(url_for('admin.admin_about'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash('更新失败，请稍后重试', 'error')
+            print(f"更新联系方式错误: {e}")
+    
+    return render_template('admin/edit_about_contact.html', contact=contact)
+
+@admin_bp.route('/admin/about/contact/<int:contact_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_about_contact(contact_id):
+    """删除联系方式"""
+    contact = AboutContact.query.get_or_404(contact_id)
+    
+    try:
+        db.session.delete(contact)
+        db.session.commit()
+        flash('联系方式删除成功！', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash('删除失败，请稍后重试', 'error')
+        print(f"删除联系方式错误: {e}")
+    
+    return redirect(url_for('admin.admin_about')) 
