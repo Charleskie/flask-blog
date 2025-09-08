@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}新建联系方式 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-plus"></i> 新建联系方式</h1>
+                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回管理
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" id="contact-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- 基本信息 -->
+                                <div class="mb-3">
+                                    <label for="platform" class="form-label">平台名称 *</label>
+                                    <input type="text" class="form-control" id="platform" name="platform" 
+                                           required placeholder="例如: GitHub, LinkedIn, 微信">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="icon" class="form-label">图标类名 *</label>
+                                    <input type="text" class="form-control" id="icon" name="icon" 
+                                           required placeholder="例如: fab fa-github, fas fa-envelope">
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle"></i> 
+                                        使用Font Awesome图标，如 <code>fab fa-github</code>、<code>fas fa-envelope</code>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="text" class="form-label">显示文本 *</label>
+                                    <input type="text" class="form-control" id="text" name="text" 
+                                           required placeholder="例如: GitHub, 邮箱地址">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="url" class="form-label">链接地址</label>
+                                    <input type="url" class="form-control" id="url" name="url" 
+                                           placeholder="例如: https://github.com/username">
+                                    <div class="form-text">可选，如果不填写则只显示文本</div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <!-- 样式设置 -->
+                                <div class="mb-3">
+                                    <label for="color" class="form-label">图标颜色</label>
+                                    <select class="form-select" id="color" name="color">
+                                        <option value="primary">蓝色 (primary)</option>
+                                        <option value="secondary">灰色 (secondary)</option>
+                                        <option value="success">绿色 (success)</option>
+                                        <option value="danger">红色 (danger)</option>
+                                        <option value="warning">黄色 (warning)</option>
+                                        <option value="info">青色 (info)</option>
+                                        <option value="light">浅色 (light)</option>
+                                        <option value="dark">深色 (dark)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="order" class="form-label">显示顺序</label>
+                                    <input type="number" class="form-control" id="order" name="order" 
+                                           value="0" min="0" placeholder="数字越小越靠前">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                                        <label class="form-check-label" for="is_active">
+                                            显示此联系方式
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <!-- 预览 -->
+                                <div class="mb-3">
+                                    <label class="form-label">预览效果</label>
+                                    <div class="border rounded p-3" style="background-color: #f8f9fa;">
+                                        <div id="contact-preview">
+                                            <i class="fas fa-envelope text-primary"></i>
+                                            <span class="ms-2">示例联系方式</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存联系方式
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const iconInput = document.getElementById('icon');
+    const textInput = document.getElementById('text');
+    const colorSelect = document.getElementById('color');
+    const urlInput = document.getElementById('url');
+    const previewDiv = document.getElementById('contact-preview');
+    
+    function updatePreview() {
+        const icon = iconInput.value.trim() || 'fas fa-envelope';
+        const text = textInput.value.trim() || '示例联系方式';
+        const color = colorSelect.value;
+        const url = urlInput.value.trim();
+        
+        let html = `<i class="${icon} text-${color}"></i>`;
+        if (url) {
+            html += ` <a href="${url}" target="_blank" class="text-decoration-none ms-2">${text}</a>`;
+        } else {
+            html += ` <span class="ms-2">${text}</span>`;
+        }
+        
+        previewDiv.innerHTML = html;
+    }
+    
+    iconInput.addEventListener('input', updatePreview);
+    textInput.addEventListener('input', updatePreview);
+    colorSelect.addEventListener('change', updatePreview);
+    urlInput.addEventListener('input', updatePreview);
+    
+    // 表单验证
+    const form = document.getElementById('contact-form');
+    form.addEventListener('submit', function(e) {
+        const platform = document.getElementById('platform').value.trim();
+        const icon = document.getElementById('icon').value.trim();
+        const text = document.getElementById('text').value.trim();
+        
+        if (!platform || !icon || !text) {
+            e.preventDefault();
+            alert('请填写所有必填字段');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -109,9 +109,13 @@ def blog():
         Post.view_count.desc()
     ).limit(5).all()
     
-    # 获取所有标签
+    # 获取所有标签（只统计有slug的文章）
     all_tags = []
-    for post in Post.query.filter_by(status='published').all():
+    for post in Post.query.filter(
+        Post.status == 'published',
+        Post.slug.isnot(None),
+        Post.slug != ''
+    ).all():
         if post.tags:
             all_tags.extend([tag.strip() for tag in post.tags.split(',')])
     
@@ -188,4 +192,53 @@ def contact():
             flash('发送失败，请稍后重试', 'error')
             print(f"保存消息错误: {e}")
     
-    return render_template('frontend/contact.html') 
+    return render_template('frontend/contact.html')
+
+@main_bp.route('/search')
+def search():
+    """全局搜索页面"""
+    query = request.args.get('q', '').strip()
+    page = request.args.get('page', 1, type=int)
+    
+    results = {
+        'posts': [],
+        'projects': [],
+        'total_count': 0
+    }
+    
+    if query:
+        # 搜索文章
+        posts_query = Post.query.filter(
+            db.or_(
+                Post.title.contains(query),
+                Post.content.contains(query),
+                Post.excerpt.contains(query)
+            ),
+            Post.status == 'published'
+        )
+        
+        posts = posts_query.order_by(Post.created_at.desc()).paginate(
+            page=page, per_page=5, error_out=False
+        )
+        results['posts'] = posts
+        
+        # 搜索项目
+        projects_query = Project.query.filter(
+            db.or_(
+                Project.title.contains(query),
+                Project.description.contains(query),
+                Project.short_description.contains(query)
+            ),
+            Project.status == 'active'
+        )
+        
+        projects = projects_query.order_by(Project.created_at.desc()).limit(5).all()
+        results['projects'] = projects
+        
+        # 计算总结果数
+        results['total_count'] = posts.total + len(projects)
+    
+    return render_template('frontend/search.html', 
+                         query=query, 
+                         results=results,
+                         current_page=page) 

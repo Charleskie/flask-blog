@@ -49,6 +49,11 @@
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:image" content="{{ url_for('static', filename='images/favicon.png', _external=True) }}">
     
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -60,7 +65,7 @@
 </head>
 <body>
     <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
                 <i class="fas fa-home"></i> 我的网站
@@ -89,7 +94,53 @@
                     </li>
                 </ul>
                 
+                <!-- 全局搜索 -->
+                <div class="global-search me-3">
+                    <form method="GET" action="{{ url_for('main.search') }}" class="d-flex">
+                        <input type="text" class="search-input" name="q" placeholder="搜索文章、项目..." 
+                               value="{{ request.args.get('q', '') }}" id="globalSearchInput">
+                        <button type="submit" class="search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </form>
+                    <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
+                </div>
+                
                 <ul class="navbar-nav">
+                    <!-- 主题切换下拉菜单 -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="themeDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-palette"></i> Theme
+                        </a>
+                        <ul class="dropdown-menu theme-dropdown">
+                            <li><h6 class="dropdown-header">Choose Theme</h6></li>
+                            <li>
+                                <a class="dropdown-item theme-option-item" href="#" data-theme="dark">
+                                    <div class="theme-preview theme-dark"></div>
+                                    <span>Dark</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item theme-option-item" href="#" data-theme="light">
+                                    <div class="theme-preview theme-light"></div>
+                                    <span>Light</span>
+                                </a>
+                            </li>
+                <li>
+                    <a class="dropdown-item theme-option-item" href="#" data-theme="traditional-green">
+                        <div class="theme-preview theme-traditional-green"></div>
+                        <span>Traditional Green</span>
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item theme-option-item" href="#" data-theme="blue-white">
+                        <div class="theme-preview theme-blue-white"></div>
+                        <span>Blue & White</span>
+                    </a>
+                </li>
+                        </ul>
+                    </li>
+                    
                     {% if current_user.is_authenticated %}
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
@@ -143,7 +194,7 @@
     </main>
 
     <!-- 页脚 -->
-    <footer class="bg-dark text-light py-4 mt-5">
+    <footer class="py-4 mt-5">
         <div class="container">
             <div class="row">
                 <div class="col-md-6">
@@ -166,10 +217,12 @@
         </div>
     </footer>
 
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/interaction.js') }}"></script>
     
     <!-- 错误处理脚本 -->
     <script>

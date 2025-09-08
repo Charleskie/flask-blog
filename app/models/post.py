@@ -14,6 +14,10 @@ class Post(db.Model):
     tags = db.Column(db.String(200), nullable=True)  # 标签，用逗号分隔
     featured_image = db.Column(db.String(500), nullable=True)  # 特色图片
     view_count = db.Column(db.Integer, default=0)  # 浏览次数
+    like_count = db.Column(db.Integer, default=0)  # 点赞数
+    favorite_count = db.Column(db.Integer, default=0)  # 收藏数
+    comment_count = db.Column(db.Integer, default=0)  # 评论数
+    average_rating = db.Column(db.Float, default=0.0)  # 平均评分
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)

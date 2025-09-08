@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}编辑关于页面内容 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-edit"></i> 编辑关于页面内容</h1>
+                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回管理
+                </a>
+            </div>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" id="content-form">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <!-- 基本信息 -->
+                                <div class="mb-3">
+                                    <label for="section" class="form-label">区块标识 *</label>
+                                    <input type="text" class="form-control" id="section" name="section" 
+                                           value="{{ content.section }}" required>
+                                    <div class="form-text">用于标识内容区块，建议使用英文和下划线</div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="title" class="form-label">标题 *</label>
+                                    <input type="text" class="form-control" id="title" name="title" 
+                                           value="{{ content.title }}" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="order" class="form-label">显示顺序</label>
+                                    <input type="number" class="form-control" id="order" name="order" 
+                                           value="{{ content.order }}" min="0">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                               {% if content.is_active %}checked{% endif %}>
+                                        <label class="form-check-label" for="is_active">
+                                            显示此内容
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle"></i> 
+                                        创建时间: {{ content.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+                                        更新时间: {{ content.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                                    </small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <!-- 内容预览 -->
+                                <div class="mb-3">
+                                    <label class="form-label">内容预览</label>
+                                    <div class="border rounded p-3" style="min-height: 200px; background-color: #f8f9fa;">
+                                        <div id="content-preview">
+                                            {{ content.content|safe }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 内容编辑 -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label">内容 *</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" 
+                                      required>{{ content.content }}</textarea>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> 支持HTML标签，如 &lt;strong&gt;、&lt;em&gt;、&lt;br&gt; 等
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 取消
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 保存更改
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const contentTextarea = document.getElementById('content');
+    const previewDiv = document.getElementById('content-preview');
+    
+    function updatePreview() {
+        const content = contentTextarea.value;
+        if (content.trim()) {
+            previewDiv.innerHTML = content;
+        } else {
+            previewDiv.innerHTML = '<p class="text-muted">输入内容后将在此处显示预览</p>';
+        }
+    }
+    
+    contentTextarea.addEventListener('input', updatePreview);
+    
+    // 表单验证
+    const form = document.getElementById('content-form');
+    form.addEventListener('submit', function(e) {
+        const section = document.getElementById('section').value.trim();
+        const title = document.getElementById('title').value.trim();
+        const content = document.getElementById('content').value.trim();
+        
+        if (!section || !title || !content) {
+            e.preventDefault();
+            alert('请填写所有必填字段');
+            return;
+        }
+        
+        // 检查区块标识格式
+        if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(section)) {
+            e.preventDefault();
+            alert('区块标识只能包含字母、数字和下划线，且必须以字母开头');
+            return;
+        }
+    });
+});
+</script>
+{% endblock %}

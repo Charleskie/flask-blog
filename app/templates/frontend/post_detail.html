@@ -62,33 +62,55 @@
                 <div class="blog-content">
                     {{ post.content|nl2br|safe }}
                 </div>
+            </article>
+            
+            <!-- 评论区域 -->
+            <div class="comments-section">
+                <h4><i class="fas fa-comments"></i> 评论 ({{ post.comment_count }})</h4>
                 
-                <!-- 文章底部 -->
-                <footer class="mt-5 pt-4 border-top">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted">
-                            <small>
-                                <i class="fas fa-clock"></i>
-                                最后更新：{{ post.updated_at.strftime('%Y年%m月%d日 %H:%M') }}
-                            </small>
-                        </div>
-                        <div class="share-buttons">
-                            <button class="btn btn-outline-primary btn-sm me-2" onclick="shareToWeChat()">
-                                <i class="fab fa-weixin"></i> 微信
-                            </button>
-                            <button class="btn btn-outline-info btn-sm me-2" onclick="shareToWeibo()">
-                                <i class="fab fa-weibo"></i> 微博
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()">
-                                <i class="fas fa-link"></i> 复制链接
-                            </button>
+                <!-- 评论表单 -->
+                {% if current_user.is_authenticated %}
+                <form class="comment-form" data-id="{{ post.id }}" data-type="post">
+                    <div class="form-group">
+                        <label for="comment-content">发表评论</label>
+                        <div id="comment-editor-{{ post.id }}" class="comment-editor"></div>
+                        <textarea class="form-control comment-content" id="comment-content" 
+                                  name="content" style="display: none;"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>评分 (可选)</label>
+                        <div class="rating-input">
+                            <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="1">
+                            <label for="rating-{{ post.id }}-1">★</label>
+                            <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="2">
+                            <label for="rating-{{ post.id }}-2">★</label>
+                            <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
+                            <label for="rating-{{ post.id }}-3">★</label>
+                            <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="4">
+                            <label for="rating-{{ post.id }}-4">★</label>
+                            <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="5">
+                            <label for="rating-{{ post.id }}-5">★</label>
                         </div>
                     </div>
-                </footer>
-            </article>
+                    <button type="submit" class="comment-submit">
+                        <i class="fas fa-paper-plane"></i> 提交评论
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    请 <a href="{{ url_for('auth.login') }}">登录</a> 后发表评论
+                </div>
+                {% endif %}
+                
+                <!-- 评论列表 -->
+                <div class="comments-list" data-content-id="{{ post.id }}" data-content-type="post">
+                    <!-- 评论将通过JavaScript动态加载 -->
+                </div>
+            </div>
         </div>
         
-        <div class="col-lg-4">
+        <div class="col-lg-4 sidebar">
             <!-- 作者信息 -->
             <div class="card mb-4">
                 <div class="card-header">
@@ -123,6 +145,94 @@
                     <nav id="table-of-contents">
                         <!-- 目录将通过JavaScript动态生成 -->
                     </nav>
+                </div>
+            </div>
+            
+            <!-- 交互功能区域 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-heart"></i> 互动统计</h5>
+                </div>
+                <div class="card-body">
+                    <div class="interaction-section" data-id="{{ post.id }}" data-type="post">
+                        <!-- 统计信息 -->
+                        <div class="stats-info">
+                            <div class="stat-item">
+                                <i class="fas fa-eye"></i>
+                                <span>{{ post.view_count }} 次浏览</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="far fa-heart"></i>
+                                <span class="like-count">{{ post.like_count }} 点赞</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="far fa-star"></i>
+                                <span class="favorite-count">{{ post.favorite_count }} 收藏</span>
+                            </div>
+                            <div class="stat-item">
+                                <i class="far fa-comment"></i>
+                                <span class="comment-count">{{ post.comment_count }} 评论</span>
+                            </div>
+                            {% if post.average_rating > 0 %}
+                            <div class="stat-item">
+                                <i class="fas fa-star"></i>
+                                <span class="rating-display">
+                                    {% for i in range(5) %}
+                                        {% if i < post.average_rating %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="rating-text">{{ post.average_rating }}</span>
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- 交互按钮 -->
+                        {% if current_user.is_authenticated %}
+                        <div class="interaction-buttons">
+                            <button class="interaction-btn like-btn" data-id="{{ post.id }}" data-type="post">
+                                <i class="far fa-heart"></i>
+                                <span class="count">{{ post.like_count }}</span>
+                            </button>
+                            <button class="interaction-btn favorite-btn" data-id="{{ post.id }}" data-type="post">
+                                <i class="far fa-star"></i>
+                                <span class="count">{{ post.favorite_count }}</span>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 文章底部信息 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> 文章信息</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-muted mb-3">
+                        <small>
+                            <i class="fas fa-clock"></i>
+                            最后更新：{{ post.updated_at.strftime('%Y年%m月%d日 %H:%M') }}
+                        </small>
+                    </div>
+                    <div class="share-buttons">
+                        <h6 class="mb-3">分享文章</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="shareToWeChat()">
+                                <i class="fab fa-weixin"></i> 微信分享
+                            </button>
+                            <button class="btn btn-outline-info btn-sm" onclick="shareToWeibo()">
+                                <i class="fab fa-weibo"></i> 微博分享
+                            </button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="copyLink()">
+                                <i class="fas fa-link"></i> 复制链接
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
@@ -316,6 +426,7 @@
     transform: translateY(-1px);
 }
 
+
 /* 响应式调整 */
 @media (max-width: 768px) {
     .blog-post h1 {
@@ -330,11 +441,13 @@
     .share-buttons .btn {
         width: 100%;
     }
+    
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
+<script src="{{ url_for('static', filename='js/rich-text-editor.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 生成文章目录
@@ -354,6 +467,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // 初始化富文本编辑器
+    const commentEditorContainer = document.getElementById('comment-editor-{{ post.id }}');
+    if (commentEditorContainer) {
+        const editor = new RichTextEditor(commentEditorContainer);
+        
+        // 在提交表单前同步编辑器内容到隐藏的textarea
+        const commentForm = document.querySelector('.comment-form');
+        if (commentForm) {
+            commentForm.addEventListener('submit', function(e) {
+                const textarea = this.querySelector('.comment-content');
+                if (textarea && editor) {
+                    textarea.value = editor.getContent();
+                }
+            });
+        }
+    }
 });
 
 function generateTableOfContents() {

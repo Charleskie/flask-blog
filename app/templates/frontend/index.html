@@ -4,18 +4,30 @@
 
 {% block content %}
 <!-- 英雄区域 -->
-<div class="hero-section text-center py-5 mb-5">
+<div class="hero-section text-center py-5 mb-5 fade-in-up">
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 fw-bold mb-4">欢迎来到我的个人网站</h1>
+            <h1 class="display-4 fw-bold mb-4 gradient-text">欢迎来到我的个人网站</h1>
             <p class="lead mb-4">你好！我是一名开发者，这里是我展示项目、分享想法和记录学习的地方。</p>
-            <div class="d-flex justify-content-center gap-3">
+            <div class="d-flex justify-content-center gap-3 mb-4">
                 <a href="{{ url_for('main.projects') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-code"></i> 查看项目
                 </a>
                 <a href="{{ url_for('main.about') }}" class="btn btn-outline-primary btn-lg">
                     <i class="fas fa-user"></i> 了解更多
                 </a>
+            </div>
+            
+            <!-- 首页搜索区域 -->
+            <div class="global-search">
+                <form method="GET" action="{{ url_for('main.search') }}">
+                    <input type="text" class="search-input" name="q" placeholder="搜索文章、项目、技术内容..." 
+                           value="{{ request.args.get('q', '') }}" id="homeSearchInput">
+                    <button type="submit" class="search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+                <div class="search-suggestions" id="homeSearchSuggestions" style="display: none;"></div>
             </div>
         </div>
     </div>
@@ -24,7 +36,7 @@
 <!-- 特色内容 -->
 <div class="row mb-5">
     <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm hover-lift slide-in-left">
             <div class="card-body text-center">
                 <i class="fas fa-code fa-3x text-primary mb-3"></i>
                 <h5 class="card-title">项目展示</h5>
@@ -35,7 +47,7 @@
     </div>
     
     <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm hover-lift fade-in-up">
             <div class="card-body text-center">
                 <i class="fas fa-blog fa-3x text-success mb-3"></i>
                 <h5 class="card-title">技术博客</h5>
@@ -46,7 +58,7 @@
     </div>
     
     <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
+        <div class="card h-100 shadow-sm hover-lift slide-in-right">
             <div class="card-body text-center">
                 <i class="fas fa-envelope fa-3x text-info mb-3"></i>
                 <h5 class="card-title">联系我</h5>
@@ -96,10 +108,10 @@
 <!-- 技能展示 -->
 <div class="row">
     <div class="col-12">
-        <h2 class="text-center mb-4">技术技能</h2>
+        <h2 class="text-center mb-4 gradient-text">技术技能</h2>
         <div class="row text-center">
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fab fa-java fa-3x text-primary mb-2"></i>
                     <h5>Java</h5>
                     <div class="progress">
@@ -108,7 +120,7 @@
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fas fa-bolt fa-3x text-primary mb-2"></i>
                     <h5>Spark</h5>
                     <div class="progress">
@@ -117,7 +129,7 @@
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fas fa-stream fa-3x text-primary mb-2"></i>
                     <h5>Flink</h5>
                     <div class="progress">
@@ -126,7 +138,7 @@
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fas fa-exchange-alt fa-3x text-primary mb-2"></i>
                     <h5>Kafka</h5>
                     <div class="progress">
@@ -135,7 +147,7 @@
                 </div>
             </div>
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fab fa-python fa-3x text-primary mb-2"></i>
                     <h5>Python</h5>
                     <div class="progress">
@@ -145,7 +157,7 @@
             </div>
             
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fab fa-js-square fa-3x text-warning mb-2"></i>
                     <h5>JavaScript</h5>
                     <div class="progress">
@@ -155,7 +167,7 @@
             </div>
             
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fab fa-react fa-3x text-info mb-2"></i>
                     <h5>React</h5>
                     <div class="progress">
@@ -165,7 +177,7 @@
             </div>
             
             <div class="col-md-3 mb-3">
-                <div class="skill-item">
+                <div class="skill-item hover-lift scale-in">
                     <i class="fab fa-git-alt fa-3x text-danger mb-2"></i>
                     <h5>Git</h5>
                     <div class="progress">

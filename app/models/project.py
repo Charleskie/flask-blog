@@ -19,6 +19,10 @@ class Project(db.Model):
     challenges = db.Column(db.Text, nullable=True)  # 遇到的挑战
     lessons_learned = db.Column(db.Text, nullable=True)  # 学到的经验
     view_count = db.Column(db.Integer, default=0)  # 浏览次数
+    like_count = db.Column(db.Integer, default=0)  # 点赞数
+    favorite_count = db.Column(db.Integer, default=0)  # 收藏数
+    comment_count = db.Column(db.Integer, default=0)  # 评论数
+    average_rating = db.Column(db.Float, default=0.0)  # 平均评分
     featured = db.Column(db.Boolean, default=False)  # 是否推荐项目
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

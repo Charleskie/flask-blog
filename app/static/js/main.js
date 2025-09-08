@@ -208,19 +208,247 @@ document.addEventListener('DOMContentLoaded', function() {
     images.forEach(img => imageObserver.observe(img));
 
     // 主题切换功能
-    const themeToggle = document.getElementById('theme-toggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function() {
-            document.body.classList.toggle('dark-theme');
-            const isDark = document.body.classList.contains('dark-theme');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    const themeOptionItems = document.querySelectorAll('.theme-option-item');
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    
+    // 应用主题
+    function applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // 更新主题选项的激活状态
+        themeOptionItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-theme') === theme) {
+                item.classList.add('active');
+            }
+        });
+    }
+    
+    // 初始化主题
+    applyTheme(savedTheme);
+    
+    // 主题切换事件
+    themeOptionItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const theme = this.getAttribute('data-theme');
+            applyTheme(theme);
+            
+            // 关闭下拉菜单
+            const dropdown = bootstrap.Dropdown.getInstance(document.getElementById('themeDropdown'));
+            if (dropdown) {
+                dropdown.hide();
+            }
+        });
+    });
+
+    // 全局搜索功能
+    const globalSearchInput = document.getElementById('globalSearchInput');
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    const homeSearchInput = document.getElementById('homeSearchInput');
+    const homeSearchSuggestions = document.getElementById('homeSearchSuggestions');
+    let searchTimeout;
+
+    if (globalSearchInput && searchSuggestions) {
+        // 搜索建议功能
+        globalSearchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                searchSuggestions.style.display = 'none';
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                fetchSearchSuggestions(query);
+            }, 300);
+        });
+
+        // 点击外部关闭建议
+        document.addEventListener('click', function(e) {
+            if (!globalSearchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                searchSuggestions.style.display = 'none';
+            }
+        });
+
+        // 键盘导航
+        globalSearchInput.addEventListener('keydown', function(e) {
+            const suggestions = searchSuggestions.querySelectorAll('.search-suggestion');
+            const activeSuggestion = searchSuggestions.querySelector('.search-suggestion.active');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    activeSuggestion.classList.remove('active');
+                    const next = activeSuggestion.nextElementSibling;
+                    if (next) {
+                        next.classList.add('active');
+                    } else {
+                        suggestions[0]?.classList.add('active');
+                    }
+                } else {
+                    suggestions[0]?.classList.add('active');
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    activeSuggestion.classList.remove('active');
+                    const prev = activeSuggestion.previousElementSibling;
+                    if (prev) {
+                        prev.classList.add('active');
+                    } else {
+                        suggestions[suggestions.length - 1]?.classList.add('active');
+                    }
+                } else {
+                    suggestions[suggestions.length - 1]?.classList.add('active');
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    const link = activeSuggestion.querySelector('a');
+                    if (link) {
+                        window.location.href = link.href;
+                    }
+                } else {
+                    // 执行搜索
+                    const form = globalSearchInput.closest('form');
+                    if (form) {
+                        form.submit();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                searchSuggestions.style.display = 'none';
+                globalSearchInput.blur();
+            }
         });
     }
 
-    // 加载保存的主题
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
-        document.body.classList.add('dark-theme');
+    // 首页搜索功能
+    if (homeSearchInput && homeSearchSuggestions) {
+        homeSearchInput.addEventListener('input', function() {
+            const query = this.value.trim();
+            
+            clearTimeout(searchTimeout);
+            
+            if (query.length < 2) {
+                homeSearchSuggestions.style.display = 'none';
+                return;
+            }
+            
+            searchTimeout = setTimeout(() => {
+                fetchSearchSuggestions(query, homeSearchSuggestions);
+            }, 300);
+        });
+
+        // 点击外部关闭建议
+        document.addEventListener('click', function(e) {
+            if (!homeSearchInput.contains(e.target) && !homeSearchSuggestions.contains(e.target)) {
+                homeSearchSuggestions.style.display = 'none';
+            }
+        });
+
+        // 键盘导航
+        homeSearchInput.addEventListener('keydown', function(e) {
+            const suggestions = homeSearchSuggestions.querySelectorAll('.search-suggestion');
+            const activeSuggestion = homeSearchSuggestions.querySelector('.search-suggestion.active');
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    activeSuggestion.classList.remove('active');
+                    const next = activeSuggestion.nextElementSibling;
+                    if (next) {
+                        next.classList.add('active');
+                    } else {
+                        suggestions[0]?.classList.add('active');
+                    }
+                } else {
+                    suggestions[0]?.classList.add('active');
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    activeSuggestion.classList.remove('active');
+                    const prev = activeSuggestion.previousElementSibling;
+                    if (prev) {
+                        prev.classList.add('active');
+                    } else {
+                        suggestions[suggestions.length - 1]?.classList.add('active');
+                    }
+                } else {
+                    suggestions[suggestions.length - 1]?.classList.add('active');
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeSuggestion) {
+                    const link = activeSuggestion.querySelector('a');
+                    if (link) {
+                        window.location.href = link.href;
+                    }
+                } else {
+                    // 执行搜索
+                    const form = homeSearchInput.closest('form');
+                    if (form) {
+                        form.submit();
+                    }
+                }
+            } else if (e.key === 'Escape') {
+                homeSearchSuggestions.style.display = 'none';
+                homeSearchInput.blur();
+            }
+        });
+    }
+
+    // 获取搜索建议
+    function fetchSearchSuggestions(query, targetElement = searchSuggestions) {
+        // 这里可以调用后端API获取搜索建议
+        // 现在使用模拟数据
+        const mockSuggestions = [
+            { title: 'Python开发教程', type: '文章', url: '/blog/python-tutorial' },
+            { title: 'Flask项目实战', type: '项目', url: '/projects/flask-project' },
+            { title: 'JavaScript基础', type: '文章', url: '/blog/javascript-basics' },
+            { title: 'React组件开发', type: '项目', url: '/projects/react-components' },
+            { title: 'Docker容器化部署', type: '文章', url: '/blog/docker-deployment' },
+            { title: 'Vue.js前端框架', type: '项目', url: '/projects/vue-framework' },
+            { title: 'MySQL数据库优化', type: '文章', url: '/blog/mysql-optimization' },
+            { title: '微服务架构设计', type: '项目', url: '/projects/microservices' }
+        ];
+
+        const filteredSuggestions = mockSuggestions.filter(item => 
+            item.title.toLowerCase().includes(query.toLowerCase())
+        );
+
+        displaySearchSuggestions(filteredSuggestions, targetElement);
+    }
+
+    // 显示搜索建议
+    function displaySearchSuggestions(suggestions, targetElement) {
+        if (suggestions.length === 0) {
+            targetElement.style.display = 'none';
+            return;
+        }
+
+        targetElement.innerHTML = suggestions.map(suggestion => `
+            <div class="search-suggestion">
+                <a href="${suggestion.url}" class="text-decoration-none">
+                    <div class="suggestion-title">${suggestion.title}</div>
+                    <div class="suggestion-type">${suggestion.type}</div>
+                </a>
+            </div>
+        `).join('');
+
+        targetElement.style.display = 'block';
+
+        // 添加点击事件
+        targetElement.querySelectorAll('.search-suggestion').forEach((suggestion, index) => {
+            suggestion.addEventListener('mouseenter', function() {
+                targetElement.querySelectorAll('.search-suggestion').forEach(s => s.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
     }
 
     // 键盘快捷键
@@ -228,9 +456,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ctrl/Cmd + K 打开搜索
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
-            const searchInput = document.querySelector('input[placeholder*="搜索"]');
-            if (searchInput) {
-                searchInput.focus();
+            if (homeSearchInput) {
+                homeSearchInput.focus();
+            } else if (globalSearchInput) {
+                globalSearchInput.focus();
             }
         }
         
