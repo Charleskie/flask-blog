@@ -5,7 +5,7 @@
 
 set -e
 
-SERVER_IP=${1:-"47.112.96.87"}
+SERVER_IP=${1:-"*.*.*.*"}
 SERVER_USER=${2:-"root"}
 
 echo "🚀 开始简单部署个人网站到 $SERVER_USER@$SERVER_IP"
@@ -19,6 +19,7 @@ PACKAGE_NAME="website_simple_${TIMESTAMP}.tar.gz"
 TEMP_DIR=$(mktemp -d)
 echo "📋 复制项目文件到临时目录..."
 cp -r app $TEMP_DIR/
+cp -r static $TEMP_DIR/ 2>/dev/null || echo "⚠️ static目录不存在，跳过"
 cp run.py $TEMP_DIR/
 cp requirements.txt $TEMP_DIR/
 cp requirements_compatible.txt $TEMP_DIR/
@@ -182,7 +183,18 @@ server {
     listen 80;
     server_name shiheng.info www.shiheng.info;
     
-    # 静态文件配置 - 使用root而不是alias
+    # 根目录静态文件配置（favicon等）
+    location ~ ^/(favicon\.(ico|png|svg)|robots\.txt|sitemap\.xml)$ {
+        root /home/website/static/images;
+        expires 1d;
+        add_header Cache-Control "public, no-transform";
+        add_header X-Content-Type-Options nosniff;
+        
+        # 确保文件存在时才提供
+        try_files \$uri =404;
+    }
+    
+    # 应用静态文件配置
     location /static/ {
         root /home/website/app;
         expires 1h;
@@ -190,7 +202,7 @@ server {
         add_header X-Content-Type-Options nosniff;
         
         # 确保文件存在时才提供
-        try_files $uri =404;
+        try_files \$uri =404;
     }
     
     # 主应用代理
@@ -214,14 +226,30 @@ echo "🔧 设置静态文件权限..."
 # 设置目录权限，确保nginx用户可以访问
 sudo chown -R root:root /home/website/
 sudo chmod -R 755 /home/website/
-sudo chmod -R 644 /home/website/app/static/css/*.css
-sudo chmod -R 644 /home/website/app/static/js/*.js
-sudo chmod -R 644 /home/website/app/static/images/*
-sudo chmod -R 644 /home/website/app/static/avatar/*
+
+# 安全地设置静态文件权限（只对存在的文件）
+echo "📁 设置CSS文件权限..."
+find /home/website/app/static/css -name "*.css" -type f -exec chmod 644 {} \; 2>/dev/null || true
+
+echo "📁 设置JS文件权限..."
+find /home/website/app/static/js -name "*.js" -type f -exec chmod 644 {} \; 2>/dev/null || true
+
+echo "📁 设置图片文件权限..."
+find /home/website/app/static/images -type f -exec chmod 644 {} \; 2>/dev/null || true
+
+echo "📁 设置头像文件权限..."
+find /home/website/app/static/avatar -type f -exec chmod 644 {} \; 2>/dev/null || true
+
+echo "📁 设置其他静态文件权限..."
+find /home/website/app/static -type f -exec chmod 644 {} \; 2>/dev/null || true
 
 echo "🔍 验证静态文件权限:"
-ls -la /home/website/app/static/css/main.css
-ls -la /home/website/app/static/js/main.js
+echo "📁 检查CSS文件:"
+ls -la /home/website/app/static/css/main.css 2>/dev/null || echo "⚠️ main.css不存在"
+echo "📁 检查JS文件:"
+ls -la /home/website/app/static/js/main.js 2>/dev/null || echo "⚠️ main.js不存在"
+echo "📁 检查静态文件目录结构:"
+find /home/website/app/static -type f | head -10 || echo "⚠️ 静态文件目录为空"
 
 echo "🧹 清理Nginx缓存..."
 sudo rm -rf /var/cache/nginx/* 2>/dev/null || true
