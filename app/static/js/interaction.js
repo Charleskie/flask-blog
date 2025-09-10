@@ -710,8 +710,13 @@ class InteractionManager {
         container.querySelectorAll('.btn-delete-comment').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const commentId = e.target.closest('.btn-delete-comment').dataset.commentId;
-                this.deleteComment(commentId);
+                const deleteBtn = e.target.closest('.btn-delete-comment');
+                if (deleteBtn && deleteBtn.dataset.commentId) {
+                    const commentId = deleteBtn.dataset.commentId;
+                    this.deleteComment(commentId);
+                } else {
+                    console.error('无法找到评论ID');
+                }
             });
         });
 
@@ -1154,8 +1159,13 @@ class InteractionManager {
         container.querySelectorAll('.btn-reply').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const commentId = e.target.closest('.btn-reply').dataset.commentId;
-                this.showReplyForm(commentId);
+                const replyBtn = e.target.closest('.btn-reply');
+                if (replyBtn && replyBtn.dataset.commentId) {
+                    const commentId = replyBtn.dataset.commentId;
+                    this.showReplyForm(commentId);
+                } else {
+                    console.error('无法找到评论ID');
+                }
             });
         });
 
@@ -1163,8 +1173,13 @@ class InteractionManager {
         container.querySelectorAll('.btn-submit-reply').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const commentId = e.target.closest('.btn-submit-reply').dataset.commentId;
-                this.submitReply(commentId);
+                const submitBtn = e.target.closest('.btn-submit-reply');
+                if (submitBtn && submitBtn.dataset.commentId) {
+                    const commentId = submitBtn.dataset.commentId;
+                    this.submitReply(commentId);
+                } else {
+                    console.error('无法找到评论ID');
+                }
             });
         });
 
@@ -1172,8 +1187,13 @@ class InteractionManager {
         container.querySelectorAll('.btn-cancel-reply').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const commentId = e.target.closest('.btn-cancel-reply').dataset.commentId;
-                this.hideReplyForm(commentId);
+                const cancelBtn = e.target.closest('.btn-cancel-reply');
+                if (cancelBtn && cancelBtn.dataset.commentId) {
+                    const commentId = cancelBtn.dataset.commentId;
+                    this.hideReplyForm(commentId);
+                } else {
+                    console.error('无法找到评论ID');
+                }
             });
         });
 
@@ -1183,8 +1203,13 @@ class InteractionManager {
         container.querySelectorAll('.btn-delete-reply').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const replyId = e.target.closest('.btn-delete-reply').dataset.replyId;
-                this.deleteReply(replyId);
+                const deleteBtn = e.target.closest('.btn-delete-reply');
+                if (deleteBtn && deleteBtn.dataset.replyId) {
+                    const replyId = deleteBtn.dataset.replyId;
+                    this.deleteReply(replyId);
+                } else {
+                    console.error('无法找到回复ID');
+                }
             });
         });
 
@@ -1320,9 +1345,16 @@ class InteractionManager {
                 // 重新加载评论以显示新回复
                 const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
                 if (commentItem) {
-                    const contentId = commentItem.closest('[data-id]').dataset.id;
-                    const contentType = commentItem.closest('[data-type]').dataset.type;
-                    this.loadCommentsForContent(contentId, contentType);
+                    const contentElement = commentItem.closest('[data-id]');
+                    const typeElement = commentItem.closest('[data-type]');
+                    
+                    if (contentElement && typeElement) {
+                        const contentId = contentElement.dataset.id;
+                        const contentType = typeElement.dataset.type;
+                        this.loadCommentsForContent(contentId, contentType);
+                    } else {
+                        console.warn('无法找到内容ID或类型元素，跳过重新加载评论');
+                    }
                 }
             } else {
                 this.showMessage(result.message || '回复失败', 'error');

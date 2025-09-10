@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+
+{% block title %}技能管理 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-header">
+        <h1>技能管理</h1>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.new_skill') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> 新建技能
+            </a>
+        </div>
+    </div>
+
+    <!-- 统计信息 -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-number">{{ skills.total }}</div>
+            <div class="stat-label">总技能数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ skills.items | selectattr('is_active') | list | length }}</div>
+            <div class="stat-label">启用技能</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ skills.items | selectattr('is_active', 'equalto', false) | list | length }}</div>
+            <div class="stat-label">禁用技能</div>
+        </div>
+    </div>
+
+    <!-- 技能列表 -->
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>技能列表</h2>
+                <div class="card-actions">
+                    <button class="btn btn-secondary" onclick="refreshSkills()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if skills.items %}
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>排序</th>
+                                <th>图标</th>
+                                <th>技能名称</th>
+                                <th>分类</th>
+                                <th>熟练度</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for skill in skills.items %}
+                            <tr>
+                                <td>
+                                    <span class="sort-order">{{ skill.sort_order }}</span>
+                                </td>
+                                <td>
+                                    {% if skill.icon %}
+                                        {% if skill.icon.startswith('http') %}
+                                            <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="skill-icon" style="width: 24px; height: 24px;">
+                                        {% else %}
+                                            <i class="{{ skill.icon }}" style="font-size: 24px; color: var(--primary-color);"></i>
+                                        {% endif %}
+                                    {% else %}
+                                        <i class="fas fa-code" style="font-size: 24px; color: var(--text-muted);"></i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="skill-name">
+                                        <strong>{{ skill.name }}</strong>
+                                        {% if skill.description %}
+                                        <div class="skill-description">{{ skill.description[:50] }}{% if skill.description|length > 50 %}...{% endif %}</div>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="skill-category">{{ skill.category or '未分类' }}</span>
+                                </td>
+                                <td>
+                                    <div class="proficiency-bar">
+                                        <div class="proficiency-fill" style="width: {{ skill.proficiency }}%"></div>
+                                        <span class="proficiency-text">{{ skill.proficiency }}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if skill.is_active %}
+                                        <span class="status-badge status-active">启用</span>
+                                    {% else %}
+                                        <span class="status-badge status-inactive">禁用</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="date-text">{{ skill.created_at.strftime('%Y-%m-%d') }}</span>
+                                </td>
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('admin.edit_skill', skill_id=skill.id) }}" 
+                                           class="btn btn-sm btn-primary" title="编辑">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-danger" 
+                                                onclick="deleteSkill({{ skill.id }}, '{{ skill.name }}')" 
+                                                title="删除">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 分页 -->
+                {% if skills.pages > 1 %}
+                <div class="pagination-wrapper">
+                    <nav class="pagination">
+                        {% if skills.has_prev %}
+                            <a href="{{ url_for('admin.admin_skills', page=skills.prev_num) }}" class="page-link">
+                                <i class="fas fa-chevron-left"></i> 上一页
+                            </a>
+                        {% endif %}
+                        
+                        {% for page_num in skills.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != skills.page %}
+                                    <a href="{{ url_for('admin.admin_skills', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                                {% else %}
+                                    <span class="page-link current">{{ page_num }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="page-link disabled">...</span>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if skills.has_next %}
+                            <a href="{{ url_for('admin.admin_skills', page=skills.next_num) }}" class="page-link">
+                                下一页 <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-code fa-3x"></i>
+                    <h3>暂无技能</h3>
+                    <p>还没有添加任何技能，点击上方按钮创建第一个技能吧！</p>
+                    <a href="{{ url_for('admin.new_skill') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 新建技能
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.skill-icon {
+    border-radius: 4px;
+    object-fit: cover;
+}
+
+.skill-name {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.skill-description {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.3;
+}
+
+.skill-category {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+}
+
+.proficiency-bar {
+    position: relative;
+    width: 80px;
+    height: 20px;
+    background: var(--bg-tertiary);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.proficiency-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    border-radius: 10px;
+    transition: width 0.3s ease;
+}
+
+.proficiency-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-inactive {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+}
+
+.action-buttons .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.sort-order {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+</style>
+
+<script>
+function deleteSkill(skillId, skillName) {
+    if (confirm(`确定要删除技能 "${skillName}" 吗？此操作不可撤销。`)) {
+        fetch(`/admin/skills/${skillId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('删除技能失败:', error);
+            showMessage('删除失败，请稍后重试', 'error');
+        });
+    }
+}
+
+function refreshSkills() {
+    location.reload();
+}
+
+function showMessage(message, type) {
+    // 创建消息提示
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    messageDiv.textContent = message;
+    
+    document.body.appendChild(messageDiv);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

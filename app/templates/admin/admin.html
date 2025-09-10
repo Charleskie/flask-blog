@@ -12,7 +12,7 @@
 
 <!-- 统计卡片 -->
 <div class="row mb-4">
-    <div class="col-md-3 mb-3">
+    <div class="col-md-3 mb-3 h-80">
         <div class="card bg-primary text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -28,7 +28,7 @@
         </div>
     </div>
     
-    <div class="col-md-3 mb-3">
+    <div class="col-md-3 mb-3 h-80">
         <div class="card bg-success text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -44,7 +44,7 @@
         </div>
     </div>
     
-    <div class="col-md-3 mb-3">
+    <div class="col-md-3 mb-3 h-80">
         <div class="card bg-warning text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -60,7 +60,7 @@
         </div>
     </div>
     
-    <div class="col-md-3 mb-3">
+    <div class="col-md-3 mb-3 h-80">
         <div class="card bg-info text-white">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
@@ -82,81 +82,99 @@
 
 <!-- 管理功能 -->
 <div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-blog"></i> 文章管理</h5>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card h-80">
+            <div class="card-header py-2">
+                <h6 class="mb-0"><i class="fas fa-blog"></i> 文章管理</h6>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('admin.new_post') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-plus"></i> 新建文章
+            <div class="card-body py-2">
+                <div class="d-flex gap-1 flex-wrap">
+                    <a href="{{ url_for('admin.new_post') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i> 新建
                     </a>
-                    <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-list"></i> 文章列表
+                    <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-list"></i> 列表
                     </a>
-                    <a href="#" class="btn btn-outline-info">
-                        <i class="fas fa-tags"></i> 分类管理
+                    <a href="#" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-tags"></i> 分类
                     </a>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-code"></i> 项目管理</h5>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card h-80">
+            <div class="card-header py-2">
+                <h6 class="mb-0"><i class="fas fa-code"></i> 项目管理</h6>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('admin.new_project') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-plus"></i> 添加项目
+            <div class="card-body py-2">
+                <div class="d-flex gap-1 flex-wrap">
+                    <a href="{{ url_for('admin.new_project') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus"></i> 添加
                     </a>
-                    <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-list"></i> 项目列表
+                    <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-sm btn-outline-secondary">
+                        <i class="fas fa-list"></i> 列表
                     </a>
-                    <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-outline-info">
-                        <i class="fas fa-envelope"></i> 消息管理
+                    <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-envelope"></i> 消息
                     </a>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-user-circle"></i> 关于页面管理</h5>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card h-80">
+            <div class="card-header py-2">
+                <h6 class="mb-0"><i class="fas fa-user-circle"></i> 关于页面</h6>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-cog"></i> 关于页面管理
+            <div class="card-body py-2">
+                <div class="d-flex gap-1 flex-wrap">
+                    <a href="{{ url_for('admin.admin_about') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-cog"></i> 管理
                     </a>
-                    <a href="{{ url_for('admin.new_about_content') }}" class="btn btn-outline-success">
-                        <i class="fas fa-plus"></i> 新建内容
+                    <a href="{{ url_for('admin.new_about_content') }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-plus"></i> 内容
                     </a>
-                    <a href="{{ url_for('admin.new_about_contact') }}" class="btn btn-outline-info">
-                        <i class="fas fa-plus"></i> 新建联系方式
+                    <a href="{{ url_for('admin.new_about_contact') }}" class="btn btn-sm btn-outline-info">
+                        <i class="fas fa-plus"></i> 联系
                     </a>
                 </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-code-branch"></i> 版本管理</h5>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card h-80">
+            <div class="card-header py-2">
+                <h6 class="mb-0"><i class="fas fa-code-branch"></i> 版本管理</h6>
             </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('version.admin_versions') }}" class="btn btn-outline-primary">
-                        <i class="fas fa-list"></i> 版本列表
+            <div class="card-body py-2">
+                <div class="d-flex gap-1 flex-wrap">
+                    <a href="{{ url_for('version.admin_versions') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-list"></i> 列表
                     </a>
-                    <a href="{{ url_for('version.new_version') }}" class="btn btn-outline-success">
-                        <i class="fas fa-plus"></i> 新建版本
+                    <a href="{{ url_for('version.new_version') }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-plus"></i> 新建
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="card h-80">
+            <div class="card-header py-2">
+                <h6 class="mb-0"><i class="fas fa-tools"></i> 技能管理</h6>
+            </div>
+            <div class="card-body py-2">
+                <div class="d-flex gap-1 flex-wrap">
+                    <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-list"></i> 列表
+                    </a>
+                    <a href="{{ url_for('admin.new_skill') }}" class="btn btn-sm btn-outline-success">
+                        <i class="fas fa-plus"></i> 新建
                     </a>
                 </div>
             </div>

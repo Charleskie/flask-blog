@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from app.models import Post, Project, Message, AboutContent, AboutContact, Version
+from app.models import Post, Project, Message, AboutContent, AboutContact, Version, Skill
 from app.models.user import db
 import re
 
@@ -10,7 +10,11 @@ def index():
     """首页"""
     # 获取最新的版本更新记录
     versions = Version.query.filter_by(is_active=True).order_by(Version.release_date.desc()).limit(5).all()
-    return render_template('frontend/index.html', versions=versions)
+    
+    # 获取技能数据
+    skills = Skill.get_active_skills()
+    
+    return render_template('frontend/index.html', versions=versions, skills=skills)
 
 @main_bp.route('/about')
 def about():

@@ -571,7 +571,7 @@
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1rem;
-    margin-top: 0.75rem;
+    margin-top: 1.5rem;
 }
 
 .reply-content {
@@ -620,40 +620,47 @@
 
 .reply-actions button:hover::before {
     left: 100%;
+    margin-top: 0.5rem
 }
 
 .btn-submit-reply {
     background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: white;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    margin-top: 0.5rem
 }
 
 .btn-submit-reply:hover {
     background: linear-gradient(135deg, #2563eb, #1d4ed8);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     transform: translateY(-1px);
+    margin-top: 0.5rem
 }
 
 .btn-submit-reply:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    margin-top: 0.5rem
 }
 
 .btn-cancel-reply {
     background: linear-gradient(135deg, #6b7280, #4b5563);
     color: white;
     box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+    margin-top: 0.5rem
 }
 
 .btn-cancel-reply:hover {
     background: linear-gradient(135deg, #4b5563, #374151);
     box-shadow: 0 4px 12px rgba(107, 114, 128, 0.4);
     transform: translateY(-1px);
+    margin-top: 0.5rem
 }
 
 .btn-cancel-reply:active {
     transform: translateY(0);
     box-shadow: 0 2px 4px rgba(107, 114, 128, 0.3);
+    margin-top: 0.5rem
 }
 
 /* 回复编辑按钮样式 */
@@ -734,11 +741,13 @@
 
 .comment-footer {
     margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--bg-tertiary);
 }
 
 .btn-reply {
+    margin-bottom: 0.5rem;
     background: none;
     border: none;
     color: var(--text-secondary);

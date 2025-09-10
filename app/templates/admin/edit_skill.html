@@ -1,0 +1,476 @@
+{% extends "base.html" %}
+
+{% block title %}编辑技能 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-header">
+        <h1>编辑技能</h1>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回列表
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>技能信息</h2>
+                <div class="card-meta">
+                    <span class="meta-item">
+                        <i class="fas fa-calendar"></i>
+                        创建时间：{{ skill.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                    {% if skill.updated_at %}
+                    <span class="meta-item">
+                        <i class="fas fa-edit"></i>
+                        更新时间：{{ skill.updated_at.strftime('%Y-%m-%d %H:%M') }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">技能名称 *</label>
+                            <input type="text" id="name" name="name" class="form-control" required 
+                                   value="{{ skill.name }}" placeholder="例如：Python、JavaScript、React">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">技能分类</label>
+                            <select id="category" name="category" class="form-control">
+                                <option value="">选择分类</option>
+                                <option value="前端开发" {% if skill.category == '前端开发' %}selected{% endif %}>前端开发</option>
+                                <option value="后端开发" {% if skill.category == '后端开发' %}selected{% endif %}>后端开发</option>
+                                <option value="数据库" {% if skill.category == '数据库' %}selected{% endif %}>数据库</option>
+                                <option value="移动开发" {% if skill.category == '移动开发' %}selected{% endif %}>移动开发</option>
+                                <option value="DevOps" {% if skill.category == 'DevOps' %}selected{% endif %}>DevOps</option>
+                                <option value="设计" {% if skill.category == '设计' %}selected{% endif %}>设计</option>
+                                <option value="其他" {% if skill.category == '其他' %}selected{% endif %}>其他</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="icon">技能图标</label>
+                            <input type="text" id="icon" name="icon" class="form-control" 
+                                   value="{{ skill.icon or '' }}" placeholder="FontAwesome 图标类名，如：fab fa-python">
+                            <small class="form-text">支持 FontAwesome 图标类名或图片URL</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="proficiency">技能熟练度</label>
+                            <div class="proficiency-input">
+                                <input type="range" id="proficiency" name="proficiency" 
+                                       class="form-control-range" min="0" max="100" value="{{ skill.proficiency }}">
+                                <span class="proficiency-value">{{ skill.proficiency }}%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sort_order">排序顺序</label>
+                            <input type="number" id="sort_order" name="sort_order" class="form-control" 
+                                   value="{{ skill.sort_order }}" min="0" placeholder="数字越小排序越靠前">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_active" {% if skill.is_active %}checked{% endif %}>
+                                <span class="checkmark"></span>
+                                启用此技能
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">技能描述</label>
+                        <textarea id="description" name="description" class="form-control" rows="4" 
+                                  placeholder="描述这个技能的特点、用途等...">{{ skill.description or '' }}</textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存修改
+                        </button>
+                        <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                        <button type="button" class="btn btn-danger" onclick="deleteSkill({{ skill.id }}, '{{ skill.name }}')">
+                            <i class="fas fa-trash"></i> 删除技能
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 图标预览 -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2>图标预览</h2>
+            </div>
+            <div class="card-body">
+                <div class="icon-preview">
+                    <div class="preview-item">
+                        {% if skill.icon %}
+                            {% if skill.icon.startswith('http') %}
+                                <img src="{{ skill.icon }}" alt="{{ skill.name }}" style="width: 48px; height: 48px; border-radius: 4px;">
+                            {% else %}
+                                <i class="{{ skill.icon }}" style="font-size: 48px; color: var(--primary-color);"></i>
+                            {% endif %}
+                        {% else %}
+                            <i class="fas fa-code" style="font-size: 48px; color: var(--primary-color);"></i>
+                        {% endif %}
+                        <div class="preview-label">当前图标</div>
+                    </div>
+                </div>
+                <div class="icon-suggestions">
+                    <h4>常用图标建议：</h4>
+                    <div class="icon-grid">
+                        <div class="icon-item" data-icon="fab fa-python">
+                            <i class="fab fa-python"></i>
+                            <span>Python</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-js-square">
+                            <i class="fab fa-js-square"></i>
+                            <span>JavaScript</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-react">
+                            <i class="fab fa-react"></i>
+                            <span>React</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-vue">
+                            <i class="fab fa-vue"></i>
+                            <span>Vue</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-node-js">
+                            <i class="fab fa-node-js"></i>
+                            <span>Node.js</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-html5">
+                            <i class="fab fa-html5"></i>
+                            <span>HTML5</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-css3-alt">
+                            <i class="fab fa-css3-alt"></i>
+                            <span>CSS3</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-git-alt">
+                            <i class="fab fa-git-alt"></i>
+                            <span>Git</span>
+                        </div>
+                        <div class="icon-item" data-icon="fas fa-database">
+                            <i class="fas fa-database"></i>
+                            <span>数据库</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-docker">
+                            <i class="fab fa-docker"></i>
+                            <span>Docker</span>
+                        </div>
+                        <div class="icon-item" data-icon="fas fa-mobile-alt">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>移动开发</span>
+                        </div>
+                        <div class="icon-item" data-icon="fas fa-paint-brush">
+                            <i class="fas fa-paint-brush"></i>
+                            <span>设计</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card-meta {
+    display: flex;
+    gap: 20px;
+    margin-top: 8px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.meta-item i {
+    font-size: 0.8rem;
+}
+
+.proficiency-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.proficiency-input input[type="range"] {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.proficiency-input input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.proficiency-input input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.proficiency-value {
+    font-weight: 600;
+    color: var(--primary-color);
+    min-width: 40px;
+    text-align: center;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.icon-preview {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.preview-item {
+    text-align: center;
+}
+
+.preview-label {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.icon-suggestions h4 {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+}
+
+.icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.icon-item:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.icon-item i {
+    font-size: 24px;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.icon-item span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+    padding-top: 20px;
+    border-top: 1px solid var(--bg-tertiary);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .icon-grid {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .card-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+</style>
+
+<script>
+// 熟练度滑块实时更新
+document.getElementById('proficiency').addEventListener('input', function() {
+    document.querySelector('.proficiency-value').textContent = this.value + '%';
+});
+
+// 图标输入框实时预览
+document.getElementById('icon').addEventListener('input', function() {
+    const preview = document.querySelector('.preview-item i');
+    const iconClass = this.value.trim();
+    
+    if (iconClass) {
+        if (iconClass.startsWith('http')) {
+            // 如果是URL，替换为img标签
+            const previewItem = document.querySelector('.preview-item');
+            previewItem.innerHTML = `
+                <img src="${iconClass}" alt="图标预览" style="width: 48px; height: 48px; border-radius: 4px;">
+                <div class="preview-label">当前图标</div>
+            `;
+        } else {
+            // FontAwesome图标
+            preview.className = iconClass;
+            preview.style.fontSize = '48px';
+            preview.style.color = 'var(--primary-color)';
+        }
+    } else {
+        preview.className = 'fas fa-code';
+        preview.style.fontSize = '48px';
+        preview.style.color = 'var(--primary-color)';
+    }
+});
+
+// 点击图标建议
+document.querySelectorAll('.icon-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const iconClass = this.dataset.icon;
+        document.getElementById('icon').value = iconClass;
+        
+        // 更新预览
+        const preview = document.querySelector('.preview-item i');
+        preview.className = iconClass;
+        preview.style.fontSize = '48px';
+        preview.style.color = 'var(--primary-color)';
+        
+        // 高亮选中的图标
+        document.querySelectorAll('.icon-item').forEach(i => i.style.borderColor = 'transparent');
+        this.style.borderColor = 'var(--primary-color)';
+    });
+});
+
+// 删除技能
+function deleteSkill(skillId, skillName) {
+    if (confirm(`确定要删除技能 "${skillName}" 吗？此操作不可撤销。`)) {
+        fetch(`/admin/skills/${skillId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showMessage(data.message, 'success');
+                setTimeout(() => {
+                    window.location.href = '/admin/skills';
+                }, 1000);
+            } else {
+                showMessage(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('删除技能失败:', error);
+            showMessage('删除失败，请稍后重试', 'error');
+        });
+    }
+}
+
+// 表单验证
+document.querySelector('.admin-form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    
+    if (!name) {
+        e.preventDefault();
+        alert('请输入技能名称');
+        return;
+    }
+    
+    if (name.length > 100) {
+        e.preventDefault();
+        alert('技能名称不能超过100个字符');
+        return;
+    }
+});
+
+function showMessage(message, type) {
+    // 创建消息提示
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    messageDiv.textContent = message;
+    
+    document.body.appendChild(messageDiv);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
+    }, 3000);
+}
+</script>
+{% endblock %}

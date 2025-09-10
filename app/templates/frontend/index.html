@@ -238,84 +238,38 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- 技能展示 -->
 <div class="row">
     <div class="col-12">
+        {% if skills %}
         <h2 class="text-center mb-4 gradient-text">技术技能</h2>
         <div class="row text-center">
+            {% for skill in skills %}
             <div class="col-md-3 mb-3">
                 <div class="skill-item hover-lift scale-in">
-                    <i class="fab fa-java fa-3x text-primary mb-2"></i>
-                    <h5>Java</h5>
+                    {% if skill.icon %}
+                        {% if skill.icon.startswith('http') %}
+                            <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="skill-icon-img mb-2" style="width: 48px; height: 48px;">
+                        {% else %}
+                            <i class="{{ skill.icon }} fa-3x text-primary mb-2"></i>
+                        {% endif %}
+                    {% else %}
+                        <i class="fas fa-code fa-3x text-primary mb-2"></i>
+                    {% endif %}
+                    <h5>{{ skill.name }}</h5>
+                    {% if skill.description %}
+                    <p class="skill-description">{{ skill.description[:50] }}{% if skill.description|length > 50 %}...{% endif %}</p>
+                    {% endif %}
                     <div class="progress">
-                        <div class="progress-bar" style="width: 90%"></div>
+                        <div class="progress-bar" style="width: {{ skill.proficiency }}%"></div>
                     </div>
+                    <small class="text-muted">{{ skill.proficiency }}%</small>
                 </div>
             </div>
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fas fa-bolt fa-3x text-primary mb-2"></i>
-                    <h5>Spark</h5>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: 90%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fas fa-stream fa-3x text-primary mb-2"></i>
-                    <h5>Flink</h5>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: 90%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fas fa-exchange-alt fa-3x text-primary mb-2"></i>
-                    <h5>Kafka</h5>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: 90%"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fab fa-python fa-3x text-primary mb-2"></i>
-                    <h5>Python</h5>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: 85%"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fab fa-js-square fa-3x text-warning mb-2"></i>
-                    <h5>JavaScript</h5>
-                    <div class="progress">
-                        <div class="progress-bar bg-warning" style="width: 80%"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fab fa-react fa-3x text-info mb-2"></i>
-                    <h5>React</h5>
-                    <div class="progress">
-                        <div class="progress-bar bg-info" style="width: 90%"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    <i class="fab fa-git-alt fa-3x text-danger mb-2"></i>
-                    <h5>Git</h5>
-                    <div class="progress">
-                        <div class="progress-bar bg-danger" style="width: 95%"></div>
-                    </div>
-                </div>
-            </div>
+            {% endfor %}
         </div>
+        {% else %}
+<!--        <div class="text-center">-->
+<!--            <p class="text-muted">暂无技能数据</p>-->
+<!--        </div>-->
+        {% endif %}
     </div>
 </div>
 {% endblock %} 

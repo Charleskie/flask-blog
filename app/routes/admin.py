@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import login_required, current_user
-from app.models import Post, Project, Message, User, AboutContent, AboutContact
+from app.models import Post, Project, Message, User, AboutContent, AboutContact, Skill
 from app.models.user import db
 from app.utils import admin_required
 from datetime import datetime
@@ -693,4 +693,118 @@ def delete_about_contact(contact_id):
 
         print(f"删除联系方式错误: {e}")
     
-    return redirect(url_for('admin.admin_about')) 
+    return redirect(url_for('admin.admin_about'))
+
+
+# 技能管理
+@admin_bp.route('/admin/skills')
+@login_required
+@admin_required
+def admin_skills():
+    """技能管理页面"""
+    page = request.args.get('page', 1, type=int)
+    skills = Skill.query.order_by(Skill.sort_order.asc(), Skill.name.asc()).paginate(
+        page=page, per_page=20, error_out=False)
+    
+    return render_template('admin/admin_skills.html', skills=skills)
+
+
+@admin_bp.route('/admin/skills/new', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def new_skill():
+    """新建技能"""
+    if request.method == 'POST':
+        try:
+            skill = Skill(
+                name=request.form.get('name'),
+                icon=request.form.get('icon'),
+                proficiency=int(request.form.get('proficiency', 0)),
+                category=request.form.get('category'),
+                description=request.form.get('description'),
+                sort_order=int(request.form.get('sort_order', 0)),
+                is_active=request.form.get('is_active') == 'on'
+            )
+            
+            db.session.add(skill)
+            db.session.commit()
+            flash('技能创建成功！', 'success')
+            return redirect(url_for('admin.admin_skills'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'创建失败：{str(e)}', 'error')
+            print(f"创建技能错误: {e}")
+    
+    return render_template('admin/new_skill.html')
+
+
+@admin_bp.route('/admin/skills/<int:skill_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_skill(skill_id):
+    """编辑技能"""
+    skill = Skill.query.get_or_404(skill_id)
+    
+    if request.method == 'POST':
+        try:
+            skill.name = request.form.get('name')
+            skill.icon = request.form.get('icon')
+            skill.proficiency = int(request.form.get('proficiency', 0))
+            skill.category = request.form.get('category')
+            skill.description = request.form.get('description')
+            skill.sort_order = int(request.form.get('sort_order', 0))
+            skill.is_active = request.form.get('is_active') == 'on'
+            skill.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            flash('技能更新成功！', 'success')
+            return redirect(url_for('admin.admin_skills'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'更新失败：{str(e)}', 'error')
+            print(f"更新技能错误: {e}")
+    
+    return render_template('admin/edit_skill.html', skill=skill)
+
+
+@admin_bp.route('/admin/skills/<int:skill_id>/delete', methods=['POST'])
+@login_required
+@admin_required
+def delete_skill(skill_id):
+    """删除技能"""
+    skill = Skill.query.get_or_404(skill_id)
+    
+    try:
+        db.session.delete(skill)
+        db.session.commit()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '技能删除成功！'})
+        flash('技能删除成功！', 'success')
+    except Exception as e:
+        db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+        flash('删除失败，请稍后重试', 'error')
+        print(f"删除技能错误: {e}")
+    
+    return redirect(url_for('admin.admin_skills'))
+
+
+@admin_bp.route('/api/skills')
+def api_skills():
+    """API: 获取技能列表"""
+    category = request.args.get('category')
+    skills = Skill.get_active_skills(category=category)
+    return jsonify([skill.to_dict() for skill in skills])
+
+
+@admin_bp.route('/api/skills/categories')
+def api_skill_categories():
+    """API: 获取技能分类"""
+    categories = db.session.query(Skill.category).filter(
+        Skill.is_active == True,
+        Skill.category.isnot(None)
+    ).distinct().all()
+    return jsonify([cat[0] for cat in categories if cat[0]]) 

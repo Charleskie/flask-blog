@@ -1,0 +1,365 @@
+{% extends "base.html" %}
+
+{% block title %}新建技能 - 管理后台{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-header">
+        <h1>新建技能</h1>
+        <div class="admin-actions">
+            <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回列表
+            </a>
+        </div>
+    </div>
+
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>技能信息</h2>
+            </div>
+            
+            <div class="card-body">
+                <form method="POST" class="admin-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="name">技能名称 *</label>
+                            <input type="text" id="name" name="name" class="form-control" required 
+                                   placeholder="例如：Python、JavaScript、React">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="category">技能分类</label>
+                            <select id="category" name="category" class="form-control">
+                                <option value="">选择分类</option>
+                                <option value="前端开发">前端开发</option>
+                                <option value="后端开发">后端开发</option>
+                                <option value="数据库">数据库</option>
+                                <option value="移动开发">移动开发</option>
+                                <option value="DevOps">DevOps</option>
+                                <option value="设计">设计</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="icon">技能图标</label>
+                            <input type="text" id="icon" name="icon" class="form-control" 
+                                   placeholder="FontAwesome 图标类名，如：fab fa-python">
+                            <small class="form-text">支持 FontAwesome 图标类名或图片URL</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="proficiency">技能熟练度</label>
+                            <div class="proficiency-input">
+                                <input type="range" id="proficiency" name="proficiency" 
+                                       class="form-control-range" min="0" max="100" value="50">
+                                <span class="proficiency-value">50%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="sort_order">排序顺序</label>
+                            <input type="number" id="sort_order" name="sort_order" class="form-control" 
+                                   value="0" min="0" placeholder="数字越小排序越靠前">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="is_active" checked>
+                                <span class="checkmark"></span>
+                                启用此技能
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">技能描述</label>
+                        <textarea id="description" name="description" class="form-control" rows="4" 
+                                  placeholder="描述这个技能的特点、用途等..."></textarea>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 创建技能
+                        </button>
+                        <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> 取消
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 图标预览 -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2>图标预览</h2>
+            </div>
+            <div class="card-body">
+                <div class="icon-preview">
+                    <div class="preview-item">
+                        <i id="icon-preview" class="fas fa-code" style="font-size: 48px; color: var(--primary-color);"></i>
+                        <div class="preview-label">当前图标</div>
+                    </div>
+                </div>
+                <div class="icon-suggestions">
+                    <h4>常用图标建议：</h4>
+                    <div class="icon-grid">
+                        <div class="icon-item" data-icon="fab fa-python">
+                            <i class="fab fa-python"></i>
+                            <span>Python</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-js-square">
+                            <i class="fab fa-js-square"></i>
+                            <span>JavaScript</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-react">
+                            <i class="fab fa-react"></i>
+                            <span>React</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-vue">
+                            <i class="fab fa-vue"></i>
+                            <span>Vue</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-node-js">
+                            <i class="fab fa-node-js"></i>
+                            <span>Node.js</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-html5">
+                            <i class="fab fa-html5"></i>
+                            <span>HTML5</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-css3-alt">
+                            <i class="fab fa-css3-alt"></i>
+                            <span>CSS3</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-git-alt">
+                            <i class="fab fa-git-alt"></i>
+                            <span>Git</span>
+                        </div>
+                        <div class="icon-item" data-icon="fas fa-database">
+                            <i class="fas fa-database"></i>
+                            <span>数据库</span>
+                        </div>
+                        <div class="icon-item" data-icon="fab fa-docker">
+                            <i class="fab fa-docker"></i>
+                            <span>Docker</span>
+                        </div>
+                        <div class="icon-item" data-icon="fas fa-mobile-alt">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>移动开发</span>
+                        </div>
+                        <div class="icon-item" data-icon="fas fa-paint-brush">
+                            <i class="fas fa-paint-brush"></i>
+                            <span>设计</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.proficiency-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.proficiency-input input[type="range"] {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.proficiency-input input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.proficiency-input input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.proficiency-value {
+    font-weight: 600;
+    color: var(--primary-color);
+    min-width: 40px;
+    text-align: center;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary-color);
+}
+
+.icon-preview {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.preview-item {
+    text-align: center;
+}
+
+.preview-label {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.icon-suggestions h4 {
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.icon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 12px;
+}
+
+.icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.icon-item:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+.icon-item i {
+    font-size: 24px;
+    color: var(--primary-color);
+    margin-bottom: 4px;
+}
+
+.icon-item span {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+    padding-top: 20px;
+    border-top: 1px solid var(--bg-tertiary);
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .icon-grid {
+        grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+// 熟练度滑块实时更新
+document.getElementById('proficiency').addEventListener('input', function() {
+    document.querySelector('.proficiency-value').textContent = this.value + '%';
+});
+
+// 图标输入框实时预览
+document.getElementById('icon').addEventListener('input', function() {
+    const preview = document.getElementById('icon-preview');
+    const iconClass = this.value.trim();
+    
+    if (iconClass) {
+        preview.className = iconClass;
+        preview.style.fontSize = '48px';
+        preview.style.color = 'var(--primary-color)';
+    } else {
+        preview.className = 'fas fa-code';
+        preview.style.fontSize = '48px';
+        preview.style.color = 'var(--primary-color)';
+    }
+});
+
+// 点击图标建议
+document.querySelectorAll('.icon-item').forEach(item => {
+    item.addEventListener('click', function() {
+        const iconClass = this.dataset.icon;
+        document.getElementById('icon').value = iconClass;
+        
+        // 更新预览
+        const preview = document.getElementById('icon-preview');
+        preview.className = iconClass;
+        preview.style.fontSize = '48px';
+        preview.style.color = 'var(--primary-color)';
+        
+        // 高亮选中的图标
+        document.querySelectorAll('.icon-item').forEach(i => i.style.borderColor = 'transparent');
+        this.style.borderColor = 'var(--primary-color)';
+    });
+});
+
+// 表单验证
+document.querySelector('.admin-form').addEventListener('submit', function(e) {
+    const name = document.getElementById('name').value.trim();
+    
+    if (!name) {
+        e.preventDefault();
+        alert('请输入技能名称');
+        return;
+    }
+    
+    if (name.length > 100) {
+        e.preventDefault();
+        alert('技能名称不能超过100个字符');
+        return;
+    }
+});
+</script>
+{% endblock %}
