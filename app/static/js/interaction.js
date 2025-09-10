@@ -11,6 +11,7 @@ class InteractionManager {
     init() {
         this.currentUser = null;
         this.isAdmin = false;
+        this.tempRating = null; // 暂存评分
         this.loadCurrentUser();
         this.bindEvents();
         this.loadUserStatus();
@@ -24,10 +25,142 @@ class InteractionManager {
                 const result = await response.json();
                 this.currentUser = result.user;
                 this.isAdmin = result.user && result.user.is_admin;
+            } else if (response.status === 401) {
+                // 检查当前页面是否是登录或注册页面
+                const currentPath = window.location.pathname;
+                const isAuthPage = currentPath.includes('/login') || currentPath.includes('/register');
+                
+                console.log('当前路径:', currentPath);
+                console.log('是否为认证页面:', isAuthPage);
+                
+                // 只有在非登录/注册页面才显示登录提示
+                if (!isAuthPage) {
+                    console.log('显示登录提示弹窗');
+                    this.showLoginPrompt();
+                } else {
+                    console.log('跳过登录提示（认证页面）');
+                }
             }
         } catch (error) {
-            console.log('未登录或获取用户信息失败');
+            console.log('获取用户信息失败:', error);
         }
+    }
+
+    showLoginPrompt() {
+        console.log('开始创建登录提示弹窗');
+        // 使用和showMessage一致的样式创建登录提示
+        let messageContainer = document.getElementById('message-container');
+        if (!messageContainer) {
+            messageContainer = document.createElement('div');
+            messageContainer.id = 'message-container';
+            messageContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                max-width: 400px;
+            `;
+            document.body.appendChild(messageContainer);
+        }
+
+        // 创建消息元素
+        const messageEl = document.createElement('div');
+        messageEl.className = 'message-toast message-warning';
+        messageEl.style.cssText = `
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.3s ease-out;
+            position: relative;
+            min-width: 300px;
+        `;
+
+        messageEl.innerHTML = `
+            <i class="fas fa-sign-in-alt" style="color: #f59e0b; font-size: 1.25rem;"></i>
+            <div style="color: var(--text-primary); flex: 1;">
+                <div style="font-weight: 600; margin-bottom: 0.5rem;">需要登录</div>
+                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem;">您需要登录才能使用此功能</div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="login-btn" style="
+                        background: var(--primary-color);
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: var(--border-radius);
+                        font-size: 0.875rem;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    ">
+                        <i class="fas fa-sign-in-alt"></i> 登录
+                    </button>
+                    <button class="register-btn" style="
+                        background: transparent;
+                        color: var(--primary-color);
+                        border: 1px solid var(--primary-color);
+                        padding: 0.5rem 1rem;
+                        border-radius: var(--border-radius);
+                        font-size: 0.875rem;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    ">
+                        <i class="fas fa-user-plus"></i> 注册
+                    </button>
+                </div>
+            </div>
+            <button class="message-close" style="
+                background: none;
+                border: none;
+                color: var(--text-secondary);
+                cursor: pointer;
+                padding: 0.25rem;
+                border-radius: var(--border-radius);
+                transition: all 0.2s ease;
+            ">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        messageContainer.appendChild(messageEl);
+        
+        // 绑定事件
+        const closeBtn = messageEl.querySelector('.message-close');
+        const loginBtn = messageEl.querySelector('.login-btn');
+        const registerBtn = messageEl.querySelector('.register-btn');
+        
+        closeBtn.addEventListener('click', () => {
+            messageEl.style.animation = 'slideOutRight 0.3s ease-in';
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.remove();
+                }
+            }, 300);
+        });
+        
+        loginBtn.addEventListener('click', () => {
+            window.location.href = '/login';
+        });
+        
+        registerBtn.addEventListener('click', () => {
+            window.location.href = '/register';
+        });
+        
+        // 5秒后自动关闭
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
     }
 
     bindEvents() {
@@ -48,31 +181,35 @@ class InteractionManager {
                 this.handleFavorite(e.target.closest('.favorite-btn'));
             }
             
-//            if (e.target.closest('.comment-form')) {
-//                console.log('评论表单被提交');
-//                e.preventDefault();
-//                this.handleComment(e.target.closest('.comment-form'));
-//            }
+             // 评论提交按钮事件
+            if (e.target.closest('.comment-submit')) {
+                console.log('评论提交按钮被点击');
+                e.preventDefault();
+                const form = e.target.closest('.comment-form');
+                if (form) {
+                    this.handleComment(form);
+                }
+            }
         });
 
         // 评分选择事件 - 自动保存评分
         document.addEventListener('change', (e) => {
-            if (e.target.name === 'rating') {
+            if (e.target.name === 'rating' && e.target.closest('.rating-section')) {
                 console.log('评分被选择:', e.target.value);
                 this.handleRatingChange(e.target);
             }
         });
 
-        // 评分悬停事件
+        // 评分悬停事件（仅限互动统计模块）
         document.addEventListener('mouseover', (e) => {
-            if (e.target.closest('.rating-input label') || e.target.closest('.edit-rating-input .rating-stars label')) {
+            if (e.target.closest('.rating-section .rating-input label')) {
                 this.handleRatingHover(e.target);
             }
         });
 
         document.addEventListener('mouseout', (e) => {
-            if (e.target.closest('.rating-input') || e.target.closest('.edit-rating-input .rating-stars')) {
-                this.clearRatingHover(e.target.closest('.rating-input') || e.target.closest('.edit-rating-input .rating-stars'));
+            if (e.target.closest('.rating-section .rating-input')) {
+                this.clearRatingHover(e.target.closest('.rating-section .rating-input'));
             }
         });
         
@@ -175,14 +312,25 @@ class InteractionManager {
         }
     }
 
-    async handleRatingChange(radio) {
-        const form = radio.closest('.comment-form');
-        const contentId = form.dataset.id;
-        const contentType = form.dataset.type;
+    handleRatingChange(radio) {
+        const ratingSection = radio.closest('.rating-section');
+        const interactionButtons = ratingSection.closest('.interaction-buttons');
+        
+        // 从互动按钮获取内容ID和类型
+        const likeBtn = interactionButtons.querySelector('.like-btn');
+        const contentId = likeBtn.dataset.id;
+        const contentType = likeBtn.dataset.type;
         const rating = parseInt(radio.value);
 
+        console.log('评分选择:', { contentId, contentType, rating });
+        
+        // 立即保存评分
+        this.saveRating(contentId, contentType, rating);
+    }
+
+    async saveRating(contentId, contentType, rating) {
         try {
-            console.log('自动保存评分:', {
+            console.log('保存评分:', {
                 id: parseInt(contentId),
                 type: contentType,
                 rating: rating
@@ -209,27 +357,45 @@ class InteractionManager {
             
             if (result.success) {
                 this.updateRating(contentId, contentType, result.average_rating);
-                this.showMessage('评分已保存', 'success');
+                console.log('评分保存成功');
             } else {
-                this.showMessage(result.message || '评分保存失败', 'error');
+                console.error('评分保存失败:', result.message);
             }
         } catch (error) {
             console.error('评分保存失败:', error);
-            this.showMessage('网络错误，请重试', 'error');
         }
     }
 
     async handleComment(form) {
         const contentId = form.dataset.id;
         const contentType = form.dataset.type;
-        const contentInput = form.querySelector('.comment-content');
         
-        if (!contentId || !contentType || !contentInput) {
+        if (!contentId || !contentType) {
             this.showMessage('参数错误', 'error');
             return;
         }
 
-        let content = contentInput.value.trim();
+        // 尝试从富文本编辑器获取内容
+        let content = '';
+        const editorContainer = document.getElementById(`comment-editor-${contentId}`);
+        
+        if (editorContainer && window.RichTextEditor) {
+            // 查找富文本编辑器实例
+            const editorInstance = editorContainer.richTextEditor;
+            
+            if (editorInstance) {
+                content = editorInstance.getContent().trim();
+            }
+        }
+        
+        // 如果富文本编辑器没有内容，尝试从隐藏的textarea获取
+        if (!content) {
+            const contentInput = form.querySelector('.comment-content');
+            
+            if (contentInput) {
+                content = contentInput.value.trim();
+            }
+        }
 
         // 提交时校验评论内容
         if (!content) {
@@ -282,9 +448,27 @@ class InteractionManager {
             
             if (result.success) {
                 this.showMessage('评论添加成功', 'success');
-                contentInput.value = '';
+                
+                // 清空富文本编辑器
+                const editorContainer = document.getElementById(`comment-editor-${contentId}`);
+                if (editorContainer && editorContainer.richTextEditor) {
+                    editorContainer.richTextEditor.setContent('');
+                }
+                
+                // 清空隐藏的textarea
+                const contentInput = form.querySelector('.comment-content');
+                if (contentInput) {
+                    contentInput.value = '';
+                }
+                
                 this.updateCommentCount(contentId, contentType, result.comment_count);
                 this.loadCommentsForContent(contentId, contentType);
+                
+                // 如果有暂存的评分，一起提交
+                if (this.tempRating && this.tempRating.contentId === contentId && this.tempRating.contentType === contentType) {
+                    await this.saveRating(this.tempRating.contentId, this.tempRating.contentType, this.tempRating.rating);
+                    this.tempRating = null; // 清空暂存的评分
+                }
             } else {
                 this.showMessage(result.message || '评论失败', 'error');
             }
@@ -332,6 +516,26 @@ class InteractionManager {
         }
     }
 
+    updateRatingUI(element, userRating) {
+        const ratingSection = element.querySelector('.rating-section');
+        if (!ratingSection) return;
+        
+        const ratingInputs = ratingSection.querySelectorAll('input[name="rating"]');
+        
+        // 清除所有选中状态
+        ratingInputs.forEach(input => {
+            input.checked = false;
+        });
+        
+        // 设置用户评分
+        if (userRating && userRating > 0) {
+            const targetInput = ratingSection.querySelector(`input[name="rating"][value="${userRating}"]`);
+            if (targetInput) {
+                targetInput.checked = true;
+            }
+        }
+    }
+
     updateCommentCount(contentId, contentType, count) {
         const commentCountElement = document.querySelector(`[data-id="${contentId}"][data-type="${contentType}"] .comment-count`);
         if (commentCountElement) {
@@ -369,6 +573,9 @@ class InteractionManager {
                     if (favoriteBtn) {
                         this.updateFavoriteUI(favoriteBtn, result.is_favorited, favoriteBtn.querySelector('.count')?.textContent || 0);
                     }
+                    
+                    // 更新评分状态
+                    this.updateRatingUI(element, result.user_rating);
                 }
             } catch (error) {
                 console.error('获取用户状态失败:', error);
@@ -438,13 +645,9 @@ class InteractionManager {
                             <div class="comment-info">
                                 <span class="comment-author">${comment.user.username}</span>
                                 <span class="comment-time">${comment.created_at}</span>
-                                ${comment.rating ? `<div class="comment-rating">${this.generateStarRating(comment.rating)}</div>` : ''}
                             </div>
                             ${this.shouldShowCommentActions(comment.user.id) ? `
                             <div class="comment-actions" data-user-id="${comment.user.id}">
-                                <button class="btn-edit-comment" data-comment-id="${comment.id}" title="编辑评论">
-                                    <i class="fas fa-edit"></i>
-                                </button>
                                 <button class="btn-delete-comment" data-comment-id="${comment.id}" title="删除评论">
                                     <i class="fas fa-trash"></i>
                                 </button>
@@ -452,17 +655,28 @@ class InteractionManager {
                             ` : ''}
                         </div>
                         <div class="comment-content">${comment.content}</div>
-                        <div class="comment-edit-form" style="display: none;">
-                            <textarea class="form-control edit-comment-content" placeholder="编辑评论内容...">${comment.content}</textarea>
-                            <div class="edit-rating-input">
-                                <label>评分:</label>
-                                <div class="rating-stars">
-                                    ${this.generateRatingInputs(comment.rating || 0, comment.id)}
+                        <div class="comment-replies">
+                            <div class="replies-list" data-comment-id="${comment.id}">
+                                ${this.renderReplies(comment.replies || [])}
+                            </div>
+                            <div class="reply-form" style="display: none;" data-comment-id="${comment.id}">
+                                <div class="reply-rich-editor-container"></div>
+                                <div class="reply-actions">
+                                    <button class="btn-submit-reply" data-comment-id="${comment.id}">
+                                        <i class="fas fa-paper-plane"></i>
+                                        回复
+                                    </button>
+                                    <button class="btn-cancel-reply" data-comment-id="${comment.id}">
+                                        <i class="fas fa-times"></i>
+                                        取消
+                                    </button>
                                 </div>
                             </div>
-                            <div class="edit-actions">
-                                <button class="btn-save-edit" data-comment-id="${comment.id}">保存</button>
-                                <button class="btn-cancel-edit" data-comment-id="${comment.id}">取消</button>
+                            <div class="comment-footer">
+                                <button class="btn-reply" data-comment-id="${comment.id}">
+                                    <i class="fas fa-reply"></i> 回复
+                                    ${comment.replies_count > 0 ? `(${comment.replies_count})` : ''}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -477,6 +691,9 @@ class InteractionManager {
         
         // 为所有评论添加操作按钮事件
         this.setupCommentActions(commentsContainer);
+        
+        // 为所有回复按钮添加事件
+        this.setupReplyActions(commentsContainer);
     }
 
     setupAvatarLoading(container) {
@@ -489,15 +706,6 @@ class InteractionManager {
     }
 
     setupCommentActions(container) {
-        // 编辑按钮事件
-        container.querySelectorAll('.btn-edit-comment').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const commentId = e.target.closest('.btn-edit-comment').dataset.commentId;
-                this.showEditForm(commentId);
-            });
-        });
-
         // 删除按钮事件
         container.querySelectorAll('.btn-delete-comment').forEach(btn => {
             btn.addEventListener('click', (e) => {
@@ -507,31 +715,6 @@ class InteractionManager {
             });
         });
 
-        // 保存编辑按钮事件
-        container.querySelectorAll('.btn-save-edit').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const commentId = e.target.closest('.btn-save-edit').dataset.commentId;
-                this.saveEdit(commentId);
-            });
-        });
-
-        // 取消编辑按钮事件
-        container.querySelectorAll('.btn-cancel-edit').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const commentId = e.target.closest('.btn-cancel-edit').dataset.commentId;
-                this.cancelEdit(commentId);
-            });
-        });
-
-        // 编辑表单中的评分输入事件
-        container.querySelectorAll('input[name="edit-rating"]').forEach(input => {
-            input.addEventListener('change', (e) => {
-                // 评分选择时不需要自动保存，只在保存编辑时一起提交
-                console.log('编辑表单评分选择:', e.target.value);
-            });
-        });
     }
 
     handleAvatarError(img) {
@@ -604,156 +787,7 @@ class InteractionManager {
                (this.currentUser.id === commentUserId || this.isAdmin);
     }
 
-    generateRatingInputs(currentRating = 0, commentId = '') {
-        let html = '';
-        for (let i = 1; i <= 5; i++) {
-            const checked = i === currentRating ? 'checked' : '';
-            const uniqueId = `edit-rating-${commentId}-${i}`;
-            html += `
-                <input type="radio" id="${uniqueId}" name="edit-rating" value="${i}" ${checked}>
-                <label for="${uniqueId}">
-                    <i class="fas fa-star"></i>
-                </label>
-            `;
-        }
-        return html;
-    }
-
-    showEditForm(commentId) {
-        const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
-        if (!commentItem) return;
-
-        const contentDiv = commentItem.querySelector('.comment-content');
-        const editForm = commentItem.querySelector('.comment-edit-form');
-        const actions = commentItem.querySelector('.comment-actions');
-
-        // 隐藏原内容和操作按钮
-        contentDiv.style.display = 'none';
-        actions.style.display = 'none';
-        
-        // 显示编辑表单
-        editForm.style.display = 'block';
-    }
-
-    cancelEdit(commentId) {
-        const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
-        if (!commentItem) return;
-
-        const contentDiv = commentItem.querySelector('.comment-content');
-        const editForm = commentItem.querySelector('.comment-edit-form');
-        const actions = commentItem.querySelector('.comment-actions');
-
-        // 显示原内容和操作按钮
-        contentDiv.style.display = 'block';
-        actions.style.display = 'flex';
-        
-        // 隐藏编辑表单
-        editForm.style.display = 'none';
-    }
-
-    async saveEdit(commentId) {
-        const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
-        if (!commentItem) return;
-
-        const contentTextarea = commentItem.querySelector('.edit-comment-content');
-        const ratingInputs = commentItem.querySelectorAll('input[name="edit-rating"]');
-        
-        const newContent = contentTextarea.value.trim();
-        let newRating = null;
-        
-        console.log('保存编辑 - 查找评分输入:', ratingInputs.length);
-        for (const input of ratingInputs) {
-            console.log('评分输入:', input.value, '选中状态:', input.checked);
-            if (input.checked) {
-                newRating = parseInt(input.value);
-                break;
-            }
-        }
-
-        console.log('保存编辑 - 新内容:', newContent, '新评分:', newRating);
-
-        if (!newContent) {
-            this.showMessage('评论内容不能为空', 'error');
-            return;
-        }
-
-        try {
-            // 构建请求数据，只有当评分存在时才包含rating字段
-            const requestData = {
-                content: newContent
-            };
-            
-            // 只有当用户选择了评分时才添加rating字段
-            if (newRating !== null) {
-                requestData.rating = newRating;
-            }
-
-            console.log('保存编辑 - 请求数据:', requestData);
-
-            const response = await fetch(`/api/comment/${commentId}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestData)
-            });
-
-            if (response.status === 401) {
-                this.showMessage('请先登录', 'error');
-                return;
-            }
-
-            const result = await response.json();
-            console.log('保存编辑 - 响应结果:', result);
-            
-            if (result.success) {
-                this.showMessage('评论更新成功', 'success');
-                
-                // 更新显示内容
-                const contentDiv = commentItem.querySelector('.comment-content');
-                contentDiv.textContent = newContent;
-                
-                // 更新评分显示
-                const ratingDiv = commentItem.querySelector('.comment-rating');
-                console.log('保存编辑 - 更新评分显示:', newRating, '现有评分div:', ratingDiv);
-                
-                if (newRating !== null) {
-                    // 用户选择了评分，更新或创建评分显示
-                    if (ratingDiv) {
-                        ratingDiv.innerHTML = this.generateStarRating(newRating);
-                        console.log('保存编辑 - 更新现有评分div');
-                    } else {
-                        const commentInfo = commentItem.querySelector('.comment-info');
-                        const newRatingDiv = document.createElement('div');
-                        newRatingDiv.className = 'comment-rating';
-                        newRatingDiv.innerHTML = this.generateStarRating(newRating);
-                        commentInfo.appendChild(newRatingDiv);
-                        console.log('保存编辑 - 创建新评分div');
-                    }
-                } else {
-                    // 用户没有选择评分，保持原有评分显示不变
-                    console.log('保存编辑 - 保持原有评分显示');
-                }
-                
-                // 更新平均评分
-                const interactionSection = commentItem.closest('[data-content-id]');
-                if (interactionSection) {
-                    const contentId = interactionSection.dataset.contentId;
-                    const contentType = interactionSection.dataset.contentType;
-                    console.log('保存编辑 - 更新平均评分:', contentId, contentType, result.average_rating);
-                    this.updateRating(contentId, contentType, result.average_rating);
-                }
-                
-                // 退出编辑模式
-                this.cancelEdit(commentId);
-            } else {
-                this.showMessage(result.message || '评论更新失败', 'error');
-            }
-        } catch (error) {
-            console.error('评论更新失败:', error);
-            this.showMessage('网络错误，请重试', 'error');
-        }
-    }
+    // 评论编辑功能已移除 - 评论不可修改
 
     async deleteComment(commentId) {
         if (!confirm('确定要删除这条评论吗？')) {
@@ -807,7 +841,7 @@ class InteractionManager {
         const label = target.closest('label');
         if (!label) return;
 
-        const ratingContainer = label.closest('.rating-input') || label.closest('.edit-rating-input .rating-stars');
+        const ratingContainer = label.closest('.rating-section .rating-input');
         if (!ratingContainer) return;
 
         // 清除所有悬停效果
@@ -981,29 +1015,359 @@ class InteractionManager {
         }
     }
 
-    showMessage(message, type = 'info') {
-        // 创建消息提示
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message-toast ${type}`;
-        messageDiv.textContent = message;
-        
-        // 添加到页面
-        document.body.appendChild(messageDiv);
-        
-        // 触发显示动画
-        setTimeout(() => {
-            messageDiv.classList.add('show');
-        }, 100);
-        
-        // 3秒后自动消失
-        setTimeout(() => {
-            messageDiv.classList.remove('show');
+    showMessage(message, type = 'info', duration = 3000) {
+        // 创建消息容器（如果不存在）
+        let messageContainer = document.getElementById('message-container');
+        if (!messageContainer) {
+            messageContainer = document.createElement('div');
+            messageContainer.id = 'message-container';
+            messageContainer.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                max-width: 400px;
+            `;
+            document.body.appendChild(messageContainer);
+        }
+
+        // 创建消息元素
+        const messageEl = document.createElement('div');
+        messageEl.className = `message-toast message-${type}`;
+        messageEl.style.cssText = `
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 0.5rem;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            animation: slideInRight 0.3s ease-out;
+            position: relative;
+            min-width: 300px;
+        `;
+
+        // 根据类型设置图标和颜色
+        let icon, color;
+        switch (type) {
+            case 'success':
+                icon = 'fas fa-check-circle';
+                color = '#10b981';
+                break;
+            case 'error':
+                icon = 'fas fa-exclamation-circle';
+                color = '#ef4444';
+                break;
+            case 'warning':
+                icon = 'fas fa-exclamation-triangle';
+                color = '#f59e0b';
+                break;
+            case 'info':
+            default:
+                icon = 'fas fa-info-circle';
+                color = '#3b82f6';
+                break;
+        }
+
+        messageEl.innerHTML = `
+            <i class="${icon}" style="color: ${color}; font-size: 1.25rem;"></i>
+            <span style="color: var(--text-primary); flex: 1;">${message}</span>
+            <button class="message-close" style="
+                background: none;
+                border: none;
+                color: var(--text-secondary);
+                cursor: pointer;
+                padding: 0.25rem;
+                border-radius: var(--border-radius);
+                transition: all 0.2s ease;
+            ">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+
+        // 添加关闭按钮事件
+        const closeBtn = messageEl.querySelector('.message-close');
+        closeBtn.addEventListener('click', () => {
+            messageEl.style.animation = 'slideOutRight 0.3s ease-in';
             setTimeout(() => {
-                if (messageDiv.parentNode) {
-                    messageDiv.remove();
+                if (messageEl.parentNode) {
+                    messageEl.remove();
                 }
-            }, 400); // 等待动画完成
-        }, 3000);
+            }, 300);
+        });
+
+        // 添加到容器
+        messageContainer.appendChild(messageEl);
+
+        // 自动关闭
+        if (duration > 0) {
+            setTimeout(() => {
+                if (messageEl.parentNode) {
+                    messageEl.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (messageEl.parentNode) {
+                            messageEl.remove();
+                        }
+                    }, 300);
+                }
+            }, duration);
+        }
+
+        return messageEl;
+    }
+
+    // 回复相关函数
+    renderReplies(replies) {
+        if (!replies || replies.length === 0) {
+            return '';
+        }
+        
+        return replies.map(reply => {
+            const defaultAvatar = this.generateRandomAvatar(reply.user.username);
+            const avatar = reply.user.avatar || defaultAvatar;
+            return `
+                <div class="reply-item" data-reply-id="${reply.id}">
+                    <div class="reply-header">
+                        <img src="${avatar}" alt="${reply.user.username}" class="reply-avatar">
+                        <div class="reply-info">
+                            <span class="reply-author">${reply.user.username}</span>
+                            <span class="reply-time">${reply.created_at}</span>
+                        </div>
+                        ${this.shouldShowReplyActions(reply.user.id) ? `
+                        <div class="reply-actions">
+                            <button class="btn-delete-reply" data-reply-id="${reply.id}" title="删除回复">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="reply-content">${reply.content}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    setupReplyActions(container) {
+        // 回复按钮事件
+        container.querySelectorAll('.btn-reply').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const commentId = e.target.closest('.btn-reply').dataset.commentId;
+                this.showReplyForm(commentId);
+            });
+        });
+
+        // 提交回复按钮事件
+        container.querySelectorAll('.btn-submit-reply').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const commentId = e.target.closest('.btn-submit-reply').dataset.commentId;
+                this.submitReply(commentId);
+            });
+        });
+
+        // 取消回复按钮事件
+        container.querySelectorAll('.btn-cancel-reply').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const commentId = e.target.closest('.btn-cancel-reply').dataset.commentId;
+                this.hideReplyForm(commentId);
+            });
+        });
+
+        // 回复编辑功能已移除
+
+        // 删除回复按钮事件
+        container.querySelectorAll('.btn-delete-reply').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const replyId = e.target.closest('.btn-delete-reply').dataset.replyId;
+                this.deleteReply(replyId);
+            });
+        });
+
+        // 回复编辑功能已移除
+    }
+
+    showReplyForm(commentId) {
+        const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+        if (replyForm) {
+            replyForm.style.display = 'block';
+            
+            // 初始化富文本编辑器
+            const editorContainer = replyForm.querySelector('.reply-rich-editor-container');
+            if (editorContainer) {
+                // 检查是否已经初始化
+                if (!editorContainer.richTextEditor && (!editorContainer.dataset || editorContainer.dataset.initialized !== 'true')) {
+                    try {
+                        const editor = new RichTextEditor(editorContainer);
+                        editorContainer.dataset.initialized = 'true';
+                        editorContainer.dataset.editorInstance = 'reply-editor';
+                        editor.setContent('');
+                        editor.focus();
+                        console.log('回复富文本编辑器初始化成功');
+                    } catch (error) {
+                        console.error('回复富文本编辑器初始化失败:', error);
+                    }
+                } else if (editorContainer.richTextEditor) {
+                    // 如果已经初始化，清空内容并聚焦
+                    editorContainer.richTextEditor.setContent('');
+                    editorContainer.richTextEditor.focus();
+                } else if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
+                    // 备选方案：直接从DOM聚焦
+                    const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
+                    if (editor) {
+                        editor.focus();
+                    }
+                }
+            }
+        }
+    }
+
+    hideReplyForm(commentId) {
+        const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+        if (replyForm) {
+            replyForm.style.display = 'none';
+            
+            // 清空富文本编辑器内容
+            const editorContainer = replyForm.querySelector('.reply-rich-editor-container');
+            if (editorContainer) {
+                if (editorContainer.richTextEditor) {
+                    // 使用富文本编辑器实例清空内容
+                    editorContainer.richTextEditor.setContent('');
+                } else if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
+                    // 备选方案：直接从DOM清空内容
+                    const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
+                    if (editor) {
+                        editor.innerHTML = '';
+                    }
+                }
+            }
+        }
+    }
+
+    async submitReply(commentId) {
+        const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+        if (!replyForm) {
+            console.error('回复表单未找到:', commentId);
+            return;
+        }
+
+        // 从富文本编辑器获取内容
+        const editorContainer = replyForm.querySelector('.reply-rich-editor-container');
+        let content = '';
+        
+        if (editorContainer) {
+            // 检查富文本编辑器是否已初始化
+            if (editorContainer.richTextEditor) {
+                // 使用富文本编辑器实例获取内容
+                content = editorContainer.richTextEditor.getContent().trim();
+            } else if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
+                // 备选方案：直接从DOM获取内容
+                const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
+                if (editor) {
+                    content = editor.innerHTML.trim();
+                }
+            } else {
+                console.warn('富文本编辑器未正确初始化');
+            }
+        }
+        
+        // 检查纯文本内容
+        const textContent = this.stripHtml(content);
+        if (!textContent) {
+            this.showMessage('请输入回复内容', 'error');
+            return;
+        }
+        
+        // 处理Base64图片
+        content = await this.processBase64Images(content);
+
+        const submitBtn = replyForm.querySelector('.btn-submit-reply');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 回复中...';
+
+        try {
+            const response = await fetch(`/api/comments/${commentId}/replies`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content })
+            });
+
+            if (response.status === 401) {
+                this.showMessage('请先登录', 'error');
+                return;
+            }
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showMessage('回复成功', 'success');
+                
+                // 清空富文本编辑器内容
+                if (editorContainer && editorContainer.dataset.initialized) {
+                    const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
+                    if (editor) {
+                        editor.innerHTML = '';
+                    }
+                }
+                
+                this.hideReplyForm(commentId);
+                // 重新加载评论以显示新回复
+                const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (commentItem) {
+                    const contentId = commentItem.closest('[data-id]').dataset.id;
+                    const contentType = commentItem.closest('[data-type]').dataset.type;
+                    this.loadCommentsForContent(contentId, contentType);
+                }
+            } else {
+                this.showMessage(result.message || '回复失败', 'error');
+            }
+        } catch (error) {
+            console.error('回复操作失败:', error);
+            this.showMessage('网络错误，请重试', 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '回复';
+        }
+    }
+
+    shouldShowReplyActions(userId) {
+        return this.currentUser && (this.currentUser.id === userId || this.isAdmin);
+    }
+
+    // 回复编辑功能已移除 - 回复不可修改
+
+    async deleteReply(replyId) {
+        if (!confirm('确定要删除这条回复吗？')) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/replies/${replyId}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                this.showMessage('回复删除成功', 'success');
+                // 移除回复元素
+                const replyItem = document.querySelector(`.reply-item[data-reply-id="${replyId}"]`);
+                if (replyItem) {
+                    replyItem.remove();
+                }
+            } else {
+                this.showMessage(result.message || '删除失败', 'error');
+            }
+        } catch (error) {
+            console.error('删除回复失败:', error);
+            this.showMessage('网络错误，请重试', 'error');
+        }
     }
 }
 

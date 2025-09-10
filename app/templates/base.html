@@ -5,36 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}我的个人网站{% endblock %}</title>
     
-    <!-- 网站图标 -->
+    <!-- 网站图标 - Kim 图标 -->
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
     <link rel="icon" type="image/svg+xml" sizes="any" href="{{ url_for('static', filename='images/favicon.svg') }}">
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}">
     
     <!-- Apple Touch Icon -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="144x144" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="120x120" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="114x114" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="76x76" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="72x72" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="60x60" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="apple-touch-icon" sizes="57x57" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
     
     <!-- Android Chrome Icons -->
-    <link rel="icon" type="image/svg+xml" sizes="192x192" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="icon" type="image/svg+xml" sizes="96x96" href="{{ url_for('static', filename='images/icon-192x192.svg') }}">
-    <link rel="icon" type="image/svg+xml" sizes="48x48" href="{{ url_for('static', filename='images/icon-32x32.svg') }}">
-    <link rel="icon" type="image/svg+xml" sizes="32x32" href="{{ url_for('static', filename='images/icon-32x32.svg') }}">
-    <link rel="icon" type="image/svg+xml" sizes="16x16" href="{{ url_for('static', filename='images/icon-16x16.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="192x192" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="96x96" href="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="48x48" href="{{ url_for('static', filename='images/favicon-32x32.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="{{ url_for('static', filename='images/favicon-32x32.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="{{ url_for('static', filename='images/favicon-16x16.svg') }}">
     
     <!-- Web App Manifest -->
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     
     <!-- Microsoft Tiles -->
-    <meta name="msapplication-TileColor" content="#007bff">
-    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='images/icon-192x192.svg') }}">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="{{ url_for('static', filename='images/favicon-192x192.svg') }}">
     <meta name="msapplication-config" content="{{ url_for('static', filename='browserconfig.xml') }}">
     
     <!-- 网站元信息 -->
@@ -47,7 +47,7 @@
     <meta property="og:description" content="专注于大数据、平台开发的技术博客和项目展示">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
-    <meta property="og:image" content="{{ url_for('static', filename='images/favicon.png', _external=True) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='images/favicon.svg', _external=True) }}">
     
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -59,7 +59,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
@@ -67,10 +67,7 @@
     <!-- 导航栏 -->
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-home"></i> 我的网站
-            </a>
-            
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -178,43 +175,31 @@
 
     <!-- 主要内容 -->
     <main class="container mt-5 pt-4">
-        <!-- 消息提示 -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                        {{ message }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
         
         {% block content %}{% endblock %}
     </main>
 
     <!-- 页脚 -->
-    <footer class="py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>我的个人网站</h5>
-                    <p>欢迎访问我的个人网站，这里展示我的项目、博客和更多内容。</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <h5>联系方式</h5>
-                    <p>
-                        <i class="fas fa-envelope"></i>wdws851421092@gmail.com<br>
-                        <i class="fab fa-github"></i> <a href="https://github.com/Charleskie" class="text-light">GitHub</a><br>
-                        <i class="fab fa-linkedin"></i> <a href="#" class="text-light">LinkedIn</a>
-                    </p>
-                </div>
-            </div>
-            <hr>
-            <div class="text-center">
-                <p>&copy; 2025 我的个人网站. 保留所有权利.</p>
-            </div>
-        </div>
+    <footer class="footer">
+<!--        <div class="container">-->
+<!--            <div class="footer-content">-->
+<!--                <div class="footer-section">-->
+<!--                    <h3>Welcome</h3>-->
+<!--                    <p>Hi, 欢迎光临我的小站！</p>-->
+<!--                </div>-->
+<!--                <div class="footer-section">-->
+<!--                    <h3>联系方式</h3>-->
+<!--                    <p>-->
+<!--                        <i class="fas fa-envelope"></i> wdws851421092@gmail.com<br>-->
+<!--                        <i class="fab fa-github"></i> <a href="https://github.com/Charleskie">GitHub</a><br>-->
+<!--                        <i class="fab fa-linkedin"></i> <a href="#">LinkedIn</a>-->
+<!--                    </p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--            <div class="footer-bottom">-->
+<!--                <p>&copy; 2025 我的个人网站. 保留所有权利.</p>-->
+<!--            </div>-->
+<!--        </div>-->
     </footer>
 
 

@@ -5,7 +5,7 @@
 
 set -e
 
-SERVER_IP=${1:-"*.*.*.*"}
+SERVER_IP=${1:-"47.112.96.87"}
 SERVER_USER=${2:-"root"}
 
 echo "🚀 开始简单部署个人网站到 $SERVER_USER@$SERVER_IP"
@@ -29,8 +29,7 @@ cp db_tools.py $TEMP_DIR/
 cp check_status.sh $TEMP_DIR/
 cp check_website.sh $TEMP_DIR/
 cp restart_website.sh $TEMP_DIR/
-cp port_manager.py $TEMP_DIR/
-cp quick_port_fix.sh $TEMP_DIR/
+
 
 
 # 创建压缩包
@@ -107,8 +106,10 @@ echo "🔧 端口管理..."
 echo "🔍 检查端口8000占用情况..."
 
 # 检查端口占用并关闭进程
+echo "🔍 检查lsof命令是否可用..."
 if command -v lsof &> /dev/null; then
-    pids=\$(lsof -ti :8000 2>/dev/null)
+    echo "✅ lsof命令可用，检查端口占用..."
+    pids=\$(lsof -ti :8000 2>/dev/null || echo "")
     if [ -n "\$pids" ]; then
         echo "❌ 端口8000被占用，正在关闭占用进程..."
         for pid in \$pids; do
@@ -140,6 +141,7 @@ fi
 echo "🔍 验证端口释放..."
 sleep 2
 if command -v lsof &> /dev/null; then
+    echo "🔍 使用lsof验证端口状态..."
     if lsof -i :8000 >/dev/null 2>&1; then
         echo "⚠️  端口8000仍被占用，强制关闭所有相关进程..."
         pkill -f "python.*run.py" 2>/dev/null || true
@@ -147,11 +149,26 @@ if command -v lsof &> /dev/null; then
         pkill -f "flask" 2>/dev/null || true
         pkill -f "gunicorn" 2>/dev/null || true
         sleep 3
+        echo "✅ 强制清理完成"
     else
         echo "✅ 端口8000已成功释放"
     fi
 else
-    echo "✅ 端口管理完成（无法验证）"
+    echo "⚠️  lsof不可用，使用netstat验证..."
+    if command -v netstat &> /dev/null; then
+        if netstat -tlnp | grep :8000 >/dev/null 2>&1; then
+            echo "⚠️  端口8000仍被占用，强制关闭所有相关进程..."
+            pkill -f "python.*run.py" 2>/dev/null || true
+            pkill -f "python3.*run.py" 2>/dev/null || true
+            pkill -f "flask" 2>/dev/null || true
+            pkill -f "gunicorn" 2>/dev/null || true
+            sleep 3
+        else
+            echo "✅ 端口8000已成功释放"
+        fi
+    else
+        echo "✅ 端口管理完成（无法验证）"
+    fi
 fi
 
 echo "🗄️ 初始化数据库..."
@@ -164,20 +181,50 @@ sudo tee /etc/nginx/conf.d/website.conf << 'NGINX_EOF'
 server {
     listen 80;
     server_name shiheng.info www.shiheng.info;
+    
+    # 静态文件配置 - 使用root而不是alias
+    location /static/ {
+        root /home/website/app;
+        expires 1h;
+        add_header Cache-Control "public, no-transform";
+        add_header X-Content-Type-Options nosniff;
+        
+        # 确保文件存在时才提供
+        try_files $uri =404;
+    }
+    
+    # 主应用代理
     location / {
         proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-    location /static/ {
-        alias /home/website/app/static/;
+        proxy_set_header X-Forwarded-Proto \$scheme;
     }
 }
 NGINX_EOF
 
 echo "🔄 重启Nginx..."
 sudo systemctl restart nginx
+
+echo "🔍 测试Nginx配置:"
+sudo nginx -t
+
+echo "🔧 设置静态文件权限..."
+# 设置目录权限，确保nginx用户可以访问
+sudo chown -R root:root /home/website/
+sudo chmod -R 755 /home/website/
+sudo chmod -R 644 /home/website/app/static/css/*.css
+sudo chmod -R 644 /home/website/app/static/js/*.js
+sudo chmod -R 644 /home/website/app/static/images/*
+sudo chmod -R 644 /home/website/app/static/avatar/*
+
+echo "🔍 验证静态文件权限:"
+ls -la /home/website/app/static/css/main.css
+ls -la /home/website/app/static/js/main.js
+
+echo "🧹 清理Nginx缓存..."
+sudo rm -rf /var/cache/nginx/* 2>/dev/null || true
 
 echo "⚙️ 创建systemd服务..."
 sudo tee /etc/systemd/system/website.service << 'SERVICE_EOF'
@@ -210,9 +257,10 @@ sudo systemctl stop website 2>/dev/null || true
 sleep 2
 
 # 再次检查端口占用
-echo "再次检查端口占用..."
+echo "🔍 再次检查端口占用..."
 if command -v lsof &> /dev/null; then
-    pids=\$(lsof -ti :8000 2>/dev/null)
+    echo "🔍 使用lsof检查端口..."
+    pids=\$(lsof -ti :8000 2>/dev/null || echo "")
     if [ -n "\$pids" ]; then
         echo "❌ 端口8000仍被占用，强制关闭..."
         for pid in \$pids; do
@@ -220,16 +268,18 @@ if command -v lsof &> /dev/null; then
             kill -KILL \$pid 2>/dev/null || true
         done
         sleep 2
+        echo "✅ 强制清理完成"
     else
         echo "✅ 端口8000可用"
     fi
 else
-    echo "⚠️  无法检查端口，使用pkill清理..."
+    echo "⚠️  lsof不可用，使用pkill清理..."
     pkill -f "python.*run.py" 2>/dev/null || true
     pkill -f "python3.*run.py" 2>/dev/null || true
     pkill -f "flask" 2>/dev/null || true
     pkill -f "gunicorn" 2>/dev/null || true
     sleep 2
+    echo "✅ 清理完成"
 fi
 
 sudo systemctl daemon-reload
@@ -249,9 +299,21 @@ else
     netstat -tlnp | grep :8000 || echo "✅ 端口8000未被占用"
 fi
 
+echo "🔍 验证静态文件部署:"
+echo "📁 检查CSS文件:"
+ls -la /home/website/app/static/css/ || echo "❌ CSS目录不存在"
+echo "📁 检查JS文件:"
+ls -la /home/website/app/static/js/ || echo "❌ JS目录不存在"
+echo "📁 检查主CSS文件:"
+ls -la /home/website/app/static/css/main.css || echo "❌ main.css不存在"
+
+echo "🔍 测试静态文件访问:"
+curl -I http://localhost/static/css/main.css || echo "❌ 静态文件无法访问"
+
 echo "🌐 网站地址: http://$SERVER_IP"
 echo "🔧 管理后台: http://$SERVER_IP/admin"
 echo "📋 默认管理员: admin / admin123"
+echo "💡 如果样式有问题，请清除浏览器缓存或使用Ctrl+F5强制刷新"
 EOF
 
 echo "🎉 部署完成！"

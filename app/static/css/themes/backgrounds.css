@@ -1,0 +1,125 @@
+/* 主题背景和渐变效果 */
+
+/* 动态渐变动画 */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes radialPulse {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* 径向渐变动画 */
+@keyframes radialGradient {
+    0% { background-position: 0% 0%; }
+    25% { background-position: 100% 0%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 0% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+/* 为所有主题添加模糊渐变背景 */
+body {
+    background-attachment: fixed;
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 深色主题的渐变背景 */
+body:not([data-theme]):before,
+body[data-theme="dark"]:before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(-45deg, 
+        #0f172a 0%, 
+        #1e293b 25%, 
+        #334155 50%, 
+        #1e293b 75%, 
+        #0f172a 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -2;
+}
+
+/* 浅色主题的渐变背景 */
+body[data-theme="light"]:before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(-45deg, 
+        #ffffff 0%, 
+        #f8fafc 25%, 
+        #e2e8f0 50%, 
+        #f8fafc 75%, 
+        #ffffff 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -2;
+}
+
+/* 传统绿主题的渐变背景 */
+body[data-theme="traditional-green"]:before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(-45deg, 
+        #2d5a3d 0%, 
+        #3d6b4e 25%, 
+        #4d7c5f 50%, 
+        #3d6b4e 75%, 
+        #2d5a3d 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -2;
+}
+
+/* 青花瓷主题的渐变背景 */
+body[data-theme="blue-white"]:before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(-45deg, 
+        #0A3D62 0%, 
+        #1D5B79 25%, 
+        #2D5A4A 50%, 
+        #1D5B79 75%, 
+        #0A3D62 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 15s ease infinite;
+    z-index: -2;
+}
+
+/* 添加背景装饰 */
+body:after {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, 
+        rgba(99, 102, 241, 0.1) 0%, 
+        transparent 50%);
+    animation: radialPulse 8s ease-in-out infinite;
+    z-index: -1;
+    pointer-events: none;
+}

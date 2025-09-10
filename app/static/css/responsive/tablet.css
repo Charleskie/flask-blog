@@ -1,0 +1,373 @@
+/* 平板端响应式设计 */
+
+/* 平板端基础样式 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    /* 全局调整 */
+    body {
+        font-size: 15px;
+    }
+    
+    /* 容器调整 */
+    .container {
+        max-width: 100%;
+        padding: 0 2rem;
+    }
+    
+    /* 导航栏平板端样式 */
+    .navbar {
+        padding: 1rem 0;
+    }
+    
+    .navbar-nav {
+        gap: 1.5rem;
+    }
+    
+    .search-input {
+        width: 200px;
+    }
+    
+    /* 卡片平板端样式 */
+    .card {
+        padding: 1.75rem;
+    }
+    
+    .project-card {
+        padding: 1.25rem;
+    }
+    
+    .blog-card {
+        padding: 1.75rem;
+    }
+    
+    .skill-card {
+        padding: 1.25rem;
+    }
+    
+    /* 按钮平板端样式 */
+    .btn {
+        padding: 0.75rem 1.5rem;
+    }
+    
+    /* 交互功能平板端样式 */
+    .interaction-buttons {
+        gap: 12px;
+    }
+    
+    .interaction-btn {
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .stats-info {
+        gap: 18px;
+    }
+    
+    /* 评论系统平板端样式 */
+    .comments-section {
+        padding: 1.75rem;
+    }
+    
+    .comment-form {
+        padding: 1.25rem;
+    }
+    
+    .comment-item {
+        padding: 1.25rem;
+    }
+    
+    .editor-toolbar {
+        padding: 10px;
+        gap: 4px;
+    }
+    
+    .emoji-picker {
+        width: 260px;
+    }
+    
+    .emoji-grid {
+        grid-template-columns: repeat(7, 1fr);
+    }
+    
+    /* 评分系统平板端样式 */
+    .rating-input {
+        gap: 7px;
+    }
+    
+    .rating-input label {
+        font-size: 26px;
+    }
+    
+    .edit-rating-input .rating-stars {
+        gap: 7px;
+    }
+    
+    .edit-rating-input .rating-stars label {
+        font-size: 26px;
+    }
+    
+    /* 网格布局调整 */
+    .row {
+        margin: 0 -0.75rem;
+    }
+    
+    .col-md-6 {
+        padding: 0 0.75rem;
+    }
+    
+    .col-md-4 {
+        padding: 0 0.75rem;
+    }
+    
+    .col-md-8 {
+        padding: 0 0.75rem;
+    }
+    
+    /* 页脚平板端样式 */
+    .footer {
+        padding: 2.5rem 2rem;
+    }
+    
+    .footer-content {
+        gap: 2.5rem;
+    }
+    
+    /* 表单平板端样式 */
+    .form-control {
+        padding: 0.875rem;
+    }
+    
+    /* 模态框平板端样式 */
+    .modal-dialog {
+        margin: 2rem auto;
+        max-width: 600px;
+    }
+    
+    /* 表格平板端样式 */
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    /* 分页平板端样式 */
+    .pagination {
+        gap: 0.75rem;
+    }
+    
+    .page-link {
+        padding: 0.625rem 1rem;
+    }
+}
+
+/* 大平板端样式 */
+@media (min-width: 1025px) and (max-width: 1200px) {
+    /* 容器调整 */
+    .container {
+        max-width: 1200px;
+        padding: 0 2rem;
+    }
+    
+    /* 导航栏大平板端样式 */
+    .navbar-nav {
+        gap: 2rem;
+    }
+    
+    .search-input {
+        width: 250px;
+    }
+    
+    /* 卡片大平板端样式 */
+    .card {
+        padding: 2rem;
+    }
+    
+    .project-card {
+        padding: 1.5rem;
+    }
+    
+    .blog-card {
+        padding: 2rem;
+    }
+    
+    .skill-card {
+        padding: 1.5rem;
+    }
+    
+    /* 交互功能大平板端样式 */
+    .interaction-buttons {
+        gap: 15px;
+    }
+    
+    .interaction-btn {
+        padding: 0.75rem 1.5rem;
+    }
+    
+    .stats-info {
+        gap: 20px;
+    }
+    
+    /* 评论系统大平板端样式 */
+    .comments-section {
+        padding: 2rem;
+    }
+    
+    .comment-form {
+        padding: 1.5rem;
+    }
+    
+    .comment-item {
+        padding: 1.5rem;
+    }
+    
+    .editor-toolbar {
+        padding: 12px;
+        gap: 5px;
+    }
+    
+    .emoji-picker {
+        width: 280px;
+    }
+    
+    .emoji-grid {
+        grid-template-columns: repeat(8, 1fr);
+    }
+    
+    /* 评分系统大平板端样式 */
+    .rating-input {
+        gap: 8px;
+    }
+    
+    .rating-input label {
+        font-size: 28px;
+    }
+    
+    .edit-rating-input .rating-stars {
+        gap: 8px;
+    }
+    
+    .edit-rating-input .rating-stars label {
+        font-size: 28px;
+    }
+    
+    /* 网格布局调整 */
+    .row {
+        margin: 0 -1rem;
+    }
+    
+    .col-lg-6 {
+        padding: 0 1rem;
+    }
+    
+    .col-lg-4 {
+        padding: 0 1rem;
+    }
+    
+    .col-lg-8 {
+        padding: 0 1rem;
+    }
+    
+    /* 页脚大平板端样式 */
+    .footer {
+        padding: 3rem 2rem;
+    }
+    
+    .footer-content {
+        gap: 3rem;
+    }
+    
+    /* 表单大平板端样式 */
+    .form-control {
+        padding: 1rem;
+    }
+    
+    /* 模态框大平板端样式 */
+    .modal-dialog {
+        margin: 2.5rem auto;
+        max-width: 700px;
+    }
+    
+    /* 表格大平板端样式 */
+    .table {
+        font-size: 1rem;
+    }
+    
+    /* 分页大平板端样式 */
+    .pagination {
+        gap: 1rem;
+    }
+    
+    .page-link {
+        padding: 0.75rem 1.25rem;
+    }
+}
+
+/* 平板端横屏优化 */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: landscape) {
+    .navbar {
+        padding: 0.75rem 0;
+    }
+    
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .interaction-buttons {
+        gap: 10px;
+    }
+    
+    .stats-info {
+        gap: 15px;
+    }
+    
+    .comment-form {
+        padding: 1rem;
+    }
+    
+    .comment-item {
+        padding: 1rem;
+    }
+    
+    .rating-input label {
+        font-size: 24px;
+    }
+    
+    .edit-rating-input .rating-stars label {
+        font-size: 24px;
+    }
+}
+
+/* 平板端竖屏优化 */
+@media (min-width: 769px) and (max-width: 1024px) and (orientation: portrait) {
+    .navbar-nav {
+        gap: 1.25rem;
+    }
+    
+    .search-input {
+        width: 180px;
+    }
+    
+    .card {
+        padding: 1.5rem;
+    }
+    
+    .interaction-buttons {
+        gap: 12px;
+    }
+    
+    .stats-info {
+        gap: 16px;
+    }
+    
+    .comment-form {
+        padding: 1.25rem;
+    }
+    
+    .comment-item {
+        padding: 1.25rem;
+    }
+    
+    .rating-input label {
+        font-size: 26px;
+    }
+    
+    .edit-rating-input .rating-stars label {
+        font-size: 26px;
+    }
+}

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import db, User
@@ -37,12 +37,16 @@ def profile_settings():
             current_user.phone = phone
             
             db.session.commit()
-            flash('个人信息更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '个人信息更新成功！'})
+
             return redirect(url_for('settings.profile_settings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新个人信息错误: {e}")
     
     return render_template('settings/profile.html')
@@ -60,19 +64,25 @@ def account_settings():
         
         # 验证当前密码（只有在修改密码时才需要）
         if new_password and not check_password_hash(current_user.password_hash, current_password):
-            flash('当前密码错误', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '当前密码错误'})
+
             return render_template('settings/account.html')
         
         # 检查用户名是否已被其他用户使用
         existing_user = User.query.filter_by(username=username).first()
         if existing_user and existing_user.id != current_user.id:
-            flash('用户名已被使用', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '用户名已被使用'})
+
             return render_template('settings/account.html')
         
         # 检查邮箱是否已被其他用户使用
         existing_email = User.query.filter_by(email=email).first()
         if existing_email and existing_email.id != current_user.id:
-            flash('邮箱已被使用', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '邮箱已被使用'})
+
             return render_template('settings/account.html')
         
         try:
@@ -85,17 +95,23 @@ def account_settings():
             # 如果提供了新密码，则更新密码
             if new_password:
                 if new_password != confirm_password:
-                    flash('两次输入的新密码不一致', 'error')
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({'success': False, 'message': '两次输入的新密码不一致'})
+
                     return render_template('settings/account.html')
                 current_user.password_hash = generate_password_hash(new_password)
             
             db.session.commit()
-            flash('账户信息更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '账户信息更新成功！'})
+
             return redirect(url_for('settings.account_settings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新账户信息错误: {e}")
     
     return render_template('settings/account.html')
@@ -115,12 +131,16 @@ def theme_settings():
             current_user.timezone = timezone
             
             db.session.commit()
-            flash('主题设置更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '主题设置更新成功！'})
+
             return redirect(url_for('settings.theme_settings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新主题设置错误: {e}")
     
     return render_template('settings/theme.html')
@@ -138,12 +158,16 @@ def security_settings():
             current_user.session_timeout = session_timeout
             
             db.session.commit()
-            flash('安全设置更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '安全设置更新成功！'})
+
             return redirect(url_for('settings.security_settings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新安全设置错误: {e}")
     
     return render_template('settings/security.html')
@@ -163,27 +187,35 @@ def privacy_settings():
             current_user.show_phone = show_phone
             
             db.session.commit()
-            flash('隐私设置更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '隐私设置更新成功！'})
+
             return redirect(url_for('settings.privacy_settings'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新隐私设置错误: {e}")
     
     return render_template('settings/privacy.html')
 
-@settings_bp.route('/settings/avatar', methods=['POST'])
+@settings_bp.route('/settings/avata', methods=['POST'])
 @login_required
 def upload_avatar():
     """上传头像"""
-    if 'avatar' not in request.files:
-        flash('没有选择文件', 'error')
+    if 'avata' not in request.files:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '没有选择文件'})
+
         return redirect(url_for('settings.profile_settings'))
     
-    file = request.files['avatar']
+    file = request.files['avata']
     if file.filename == '':
-        flash('没有选择文件', 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '没有选择文件'})
+
         return redirect(url_for('settings.profile_settings'))
     
     if file:
@@ -191,7 +223,9 @@ def upload_avatar():
         allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
         if '.' not in file.filename or \
            file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
-            flash('不支持的文件类型', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '不支持的文件类型'})
+
             return redirect(url_for('settings.profile_settings'))
         
         try:
@@ -210,10 +244,13 @@ def upload_avatar():
             current_user.avatar = f'/static/uploads/avatars/{filename}'
             db.session.commit()
             
-            flash('头像上传成功！', 'success')
-            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '头像上传成功！'})
+
         except Exception as e:
-            flash('头像上传失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '头像上传失败，请稍后重试'})
+
             print(f"头像上传错误: {e}")
     
     return redirect(url_for('settings.profile_settings'))

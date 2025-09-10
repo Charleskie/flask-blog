@@ -3,6 +3,7 @@ from .post import Post
 from .project import Project
 from .message import Message
 from .about import AboutContent, AboutContact
-from .interaction import Like, Favorite, Comment
+from .interaction import UserInteraction, Comment, CommentReply
+from .version import Version
 
-__all__ = ['User', 'Post', 'Project', 'Message', 'AboutContent', 'AboutContact', 'Like', 'Favorite', 'Comment'] 
+__all__ = ['User', 'Post', 'Project', 'Message', 'AboutContent', 'AboutContact', 'UserInteraction', 'Comment', 'CommentReply', 'Version'] 

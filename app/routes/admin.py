@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from flask_login import login_required, current_user
 from app.models import Post, Project, Message, User, AboutContent, AboutContact
 from app.models.user import db
@@ -68,7 +68,9 @@ def new_post():
         slug = request.form.get('slug')
         
         if not title or not content:
-            flash('请填写标题和内容', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': '请填写标题和内容'})
+
             return render_template('admin/new_post.html')
         
         try:
@@ -94,12 +96,16 @@ def new_post():
             
             db.session.commit()
             
-            flash('文章创建成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '文章创建成功！'})
+
             return redirect(url_for('admin.admin_posts'))
             
         except Exception as e:
             db.session.rollback()
-            flash('创建失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '创建失败，请稍后重试'})
+
             print(f"创建文章错误: {e}")
     
     return render_template('admin/new_post.html')
@@ -122,7 +128,9 @@ def edit_post(post_id):
         slug = request.form.get('slug')
         
         if not title or not content:
-            flash('请填写标题和内容', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': '请填写标题和内容'})
+
             return render_template('admin/edit_post.html', post=post)
         
         try:
@@ -142,12 +150,16 @@ def edit_post(post_id):
                 post.slug = post.generate_slug()
             
             db.session.commit()
-            flash('文章更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '文章更新成功！'})
+
             return redirect(url_for('admin.admin_posts'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新文章错误: {e}")
     
     return render_template('admin/edit_post.html', post=post)
@@ -162,10 +174,14 @@ def delete_post(post_id):
     try:
         db.session.delete(post)
         db.session.commit()
-        flash('文章删除成功！', 'success')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '文章删除成功！'})
+
     except Exception as e:
         db.session.rollback()
-        flash('删除失败，请稍后重试', 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+
         print(f"删除文章错误: {e}")
     
     return redirect(url_for('admin.admin_posts'))
@@ -205,7 +221,9 @@ def new_project():
         featured = 'featured' in request.form
         
         if not title or not description:
-            flash('请填写项目标题和描述', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写项目标题和描述'})
+
             return render_template('admin/new_project.html')
         
         try:
@@ -230,12 +248,16 @@ def new_project():
             db.session.add(project)
             db.session.commit()
             
-            flash('项目创建成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '项目创建成功！'})
+
             return redirect(url_for('admin.admin_projects'))
             
         except Exception as e:
             db.session.rollback()
-            flash('创建失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '创建失败，请稍后重试'})
+
             print(f"创建项目错误: {e}")
     
     return render_template('admin/new_project.html')
@@ -264,7 +286,9 @@ def edit_project(project_id):
         featured = 'featured' in request.form
         
         if not title or not description:
-            flash('请填写项目标题和描述', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写项目标题和描述'})
+
             return render_template('admin/edit_project.html', project=project)
         
         try:
@@ -286,12 +310,16 @@ def edit_project(project_id):
             project.updated_at = datetime.utcnow()
             
             db.session.commit()
-            flash('项目更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '项目更新成功！'})
+
             return redirect(url_for('admin.admin_projects'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新项目错误: {e}")
     
     return render_template('admin/edit_project.html', project=project)
@@ -305,10 +333,14 @@ def delete_project(project_id):
     try:
         db.session.delete(project)
         db.session.commit()
-        flash('项目删除成功！', 'success')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '项目删除成功！'})
+
     except Exception as e:
         db.session.rollback()
-        flash('删除失败，请稍后重试', 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+
         print(f"删除项目错误: {e}")
     
     return redirect(url_for('admin.admin_projects'))
@@ -354,7 +386,9 @@ def reply_message(message_id):
         reply_content = request.form.get('reply_content')
         
         if not reply_content:
-            flash('请填写回复内容', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写回复内容'})
+
             return render_template('admin/reply_message.html', message=message)
         
         try:
@@ -362,12 +396,16 @@ def reply_message(message_id):
             message.mark_as_replied()
             db.session.commit()
             
-            flash('回复已发送！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '回复已发送！'})
+
             return redirect(url_for('admin.admin_messages'))
             
         except Exception as e:
             db.session.rollback()
-            flash('发送失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '发送失败，请稍后重试'})
+
             print(f"回复消息错误: {e}")
     
     return render_template('admin/reply_message.html', message=message)
@@ -381,10 +419,14 @@ def delete_message(message_id):
     try:
         db.session.delete(message)
         db.session.commit()
-        flash('消息删除成功！', 'success')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '消息删除成功！'})
+
     except Exception as e:
         db.session.rollback()
-        flash('删除失败，请稍后重试', 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+
         print(f"删除消息错误: {e}")
     
     return redirect(url_for('admin.admin_messages'))
@@ -405,10 +447,14 @@ def change_message_status(message_id):
                 message.replied_at = datetime.utcnow()
             
             db.session.commit()
-            flash('状态更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '状态更新成功！'})
+
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新消息状态错误: {e}")
     
     return redirect(url_for('admin.admin_messages'))
@@ -432,11 +478,13 @@ def new_about_content():
         section = request.form.get('section')
         title = request.form.get('title')
         content = request.form.get('content')
-        order = request.form.get('order', 0, type=int)
+        order = request.form.get('orde', 0, type=int)
         is_active = 'is_active' in request.form
         
         if not section or not title or not content:
-            flash('请填写所有必填字段', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写所有必填字段'})
+
             return render_template('admin/new_about_content.html')
         
         try:
@@ -451,12 +499,16 @@ def new_about_content():
             db.session.add(about_content)
             db.session.commit()
             
-            flash('内容创建成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '内容创建成功！'})
+
             return redirect(url_for('admin.admin_about'))
             
         except Exception as e:
             db.session.rollback()
-            flash('创建失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '创建失败，请稍后重试'})
+
             print(f"创建关于页面内容错误: {e}")
     
     return render_template('admin/new_about_content.html')
@@ -472,11 +524,13 @@ def edit_about_content(content_id):
         section = request.form.get('section')
         title = request.form.get('title')
         content_text = request.form.get('content')
-        order = request.form.get('order', 0, type=int)
+        order = request.form.get('orde', 0, type=int)
         is_active = 'is_active' in request.form
         
         if not section or not title or not content_text:
-            flash('请填写所有必填字段', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写所有必填字段'})
+
             return render_template('admin/edit_about_content.html', content=content)
         
         try:
@@ -488,12 +542,16 @@ def edit_about_content(content_id):
             content.updated_at = datetime.utcnow()
             
             db.session.commit()
-            flash('内容更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '内容更新成功！'})
+
             return redirect(url_for('admin.admin_about'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新关于页面内容错误: {e}")
     
     return render_template('admin/edit_about_content.html', content=content)
@@ -508,10 +566,14 @@ def delete_about_content(content_id):
     try:
         db.session.delete(content)
         db.session.commit()
-        flash('内容删除成功！', 'success')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '内容删除成功！'})
+
     except Exception as e:
         db.session.rollback()
-        flash('删除失败，请稍后重试', 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+
         print(f"删除关于页面内容错误: {e}")
     
     return redirect(url_for('admin.admin_about'))
@@ -526,12 +588,14 @@ def new_about_contact():
         icon = request.form.get('icon')
         url = request.form.get('url')
         text = request.form.get('text')
-        color = request.form.get('color', 'primary')
-        order = request.form.get('order', 0, type=int)
+        color = request.form.get('colo', 'primary')
+        order = request.form.get('orde', 0, type=int)
         is_active = 'is_active' in request.form
         
         if not platform or not icon or not text:
-            flash('请填写所有必填字段', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写所有必填字段'})
+
             return render_template('admin/new_about_contact.html')
         
         try:
@@ -548,12 +612,16 @@ def new_about_contact():
             db.session.add(contact)
             db.session.commit()
             
-            flash('联系方式创建成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '联系方式创建成功！'})
+
             return redirect(url_for('admin.admin_about'))
             
         except Exception as e:
             db.session.rollback()
-            flash('创建失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '创建失败，请稍后重试'})
+
             print(f"创建联系方式错误: {e}")
     
     return render_template('admin/new_about_contact.html')
@@ -570,12 +638,14 @@ def edit_about_contact(contact_id):
         icon = request.form.get('icon')
         url = request.form.get('url')
         text = request.form.get('text')
-        color = request.form.get('color', 'primary')
-        order = request.form.get('order', 0, type=int)
+        color = request.form.get('colo', 'primary')
+        order = request.form.get('orde', 0, type=int)
         is_active = 'is_active' in request.form
         
         if not platform or not icon or not text:
-            flash('请填写所有必填字段', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写所有必填字段'})
+
             return render_template('admin/edit_about_contact.html', contact=contact)
         
         try:
@@ -589,12 +659,16 @@ def edit_about_contact(contact_id):
             contact.updated_at = datetime.utcnow()
             
             db.session.commit()
-            flash('联系方式更新成功！', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '联系方式更新成功！'})
+
             return redirect(url_for('admin.admin_about'))
             
         except Exception as e:
             db.session.rollback()
-            flash('更新失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
             print(f"更新联系方式错误: {e}")
     
     return render_template('admin/edit_about_contact.html', contact=contact)
@@ -609,10 +683,14 @@ def delete_about_contact(contact_id):
     try:
         db.session.delete(contact)
         db.session.commit()
-        flash('联系方式删除成功！', 'success')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '联系方式删除成功！'})
+
     except Exception as e:
         db.session.rollback()
-        flash('删除失败，请稍后重试', 'error')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+
         print(f"删除联系方式错误: {e}")
     
     return redirect(url_for('admin.admin_about')) 

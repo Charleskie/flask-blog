@@ -1,13 +1,31 @@
+import random
+
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app.models.user import db
-from app.models import Post, Project, Like, Favorite, Comment
+from app.models import Post, Project, Comment, CommentReply, UserInteraction
 from datetime import datetime
 import os
 import uuid
 from werkzeug.utils import secure_filename
+import pytz
 
 interaction_bp = Blueprint('interaction', __name__)
+
+def to_china_time(utc_time):
+    """将UTC时间转换为中国时区时间"""
+    if utc_time is None:
+        return None
+    
+    # 确保时间是UTC时区
+    if utc_time.tzinfo is None:
+        utc_time = pytz.utc.localize(utc_time)
+    
+    # 转换为中国时区
+    china_tz = pytz.timezone('Asia/Shanghai')
+    china_time = utc_time.astimezone(china_tz)
+    
+    return china_time.strftime('%Y-%m-%d %H:%M')
 
 @interaction_bp.route('/test', methods=['GET'])
 def test_api():
@@ -44,29 +62,42 @@ def toggle_like():
         # 获取内容对象
         if content_type == 'post':
             content = Post.query.get_or_404(content_id)
+            type_code = 1  # 1-博客
         elif content_type == 'project':
             content = Project.query.get_or_404(content_id)
+            type_code = 2  # 2-项目
         else:
             return jsonify({'success': False, 'message': '类型错误'}), 400
         
-        # 检查是否已经点赞
-        existing_like = Like.query.filter_by(
+        # 查找或创建用户互动记录
+        interaction = UserInteraction.query.filter_by(
             user_id=current_user.id,
-            **{f'{content_type}_id': content_id}
+            content_id=content_id,
+            type=type_code
         ).first()
         
-        if existing_like:
-            # 取消点赞
-            db.session.delete(existing_like)
-            content.like_count = max(0, content.like_count - 1)
-            is_liked = False
+        if interaction:
+            # 切换点赞状态
+            if interaction.like == 1:
+                interaction.like = 0
+                content.like_count = max(0, content.like_count - 1)
+                is_liked = False
+            else:
+                interaction.like = 1
+                content.like_count += 1
+                is_liked = True
+            interaction.updated_at = datetime.utcnow()
         else:
-            # 添加点赞
-            new_like = Like(
+            # 创建新的互动记录
+            interaction = UserInteraction(
                 user_id=current_user.id,
-                **{f'{content_type}_id': content_id}
+                content_id=content_id,
+                type=type_code,
+                like=1,
+                favorite=0,
+                rating=0
             )
-            db.session.add(new_like)
+            db.session.add(interaction)
             content.like_count += 1
             is_liked = True
         
@@ -98,29 +129,42 @@ def toggle_favorite():
         # 获取内容对象
         if content_type == 'post':
             content = Post.query.get_or_404(content_id)
+            type_code = 1  # 1-博客
         elif content_type == 'project':
             content = Project.query.get_or_404(content_id)
+            type_code = 2  # 2-项目
         else:
             return jsonify({'success': False, 'message': '类型错误'}), 400
         
-        # 检查是否已经收藏
-        existing_favorite = Favorite.query.filter_by(
+        # 查找或创建用户互动记录
+        interaction = UserInteraction.query.filter_by(
             user_id=current_user.id,
-            **{f'{content_type}_id': content_id}
+            content_id=content_id,
+            type=type_code
         ).first()
         
-        if existing_favorite:
-            # 取消收藏
-            db.session.delete(existing_favorite)
-            content.favorite_count = max(0, content.favorite_count - 1)
-            is_favorited = False
+        if interaction:
+            # 切换收藏状态
+            if interaction.favorite == 1:
+                interaction.favorite = 0
+                content.favorite_count = max(0, content.favorite_count - 1)
+                is_favorited = False
+            else:
+                interaction.favorite = 1
+                content.favorite_count += 1
+                is_favorited = True
+            interaction.updated_at = datetime.utcnow()
         else:
-            # 添加收藏
-            new_favorite = Favorite(
+            # 创建新的互动记录
+            interaction = UserInteraction(
                 user_id=current_user.id,
-                **{f'{content_type}_id': content_id}
+                content_id=content_id,
+                type=type_code,
+                like=0,
+                favorite=1,
+                rating=0
             )
-            db.session.add(new_favorite)
+            db.session.add(interaction)
             content.favorite_count += 1
             is_favorited = True
         
@@ -161,27 +205,19 @@ def add_comment():
         else:
             return jsonify({'success': False, 'message': '类型错误'}), 400
         
-        # 查找用户是否已有评论记录
-        existing_comment = Comment.query.filter_by(
+        # 创建新的评论记录（允许多条评论）
+        new_comment = Comment(
             user_id=current_user.id,
+            content=comment_text,
             **{f'{content_type}_id': content_id}
-        ).first()
-
-        if existing_comment:
-            # 更新现有评论的内容
-            if not existing_comment.content:  # 如果之前只有评分没有内容
-                content.comment_count += 1
-            existing_comment.content = comment_text
-        else:
-            # 创建新的评论记录
-            new_comment = Comment(
-                user_id=current_user.id,
-                content=comment_text,
-                rating=None,
-                **{f'{content_type}_id': content_id}
-            )
-            db.session.add(new_comment)
-            content.comment_count += 1
+        )
+        db.session.add(new_comment)
+        
+        # 重新计算评论计数（只计算有内容的评论）
+        actual_comment_count = Comment.query.filter_by(
+            **{f'{content_type}_id': content_id}
+        ).filter(Comment.content != '').count()
+        content.comment_count = actual_comment_count
         
         db.session.commit()
         
@@ -211,25 +247,44 @@ def get_comments(content_id):
         else:
             return jsonify({'success': False, 'message': '类型错误'}), 400
         
-        # 获取评论
+        # 获取评论（只显示有内容的评论，不包括仅评分的记录）
         comments = Comment.query.filter_by(
             **{f'{content_type}_id': content_id},
             is_approved=True
-        ).order_by(Comment.created_at.desc()).paginate(
+        ).filter(Comment.content != '').order_by(Comment.created_at.desc()).paginate(
             page=page, per_page=per_page, error_out=False
         )
         
         comments_data = []
         for comment in comments.items:
+            i = random.randint(1, 4)
+            
+            # 获取评论的回复
+            replies = CommentReply.query.filter_by(comment_id=comment.id, is_approved=True).order_by(CommentReply.created_at.asc()).all()
+            replies_data = []
+            for reply in replies:
+                reply_i = random.randint(1, 4)
+                replies_data.append({
+                    'id': reply.id,
+                    'content': reply.content,
+                    'created_at': to_china_time(reply.created_at),
+                    'user': {
+                        'id': reply.user.id,
+                        'username': reply.user.username,
+                        'avatar': reply.user.avatar or f'/static/avatar/avatar{reply_i}.png'
+                    }
+                })
+            
             comments_data.append({
                 'id': comment.id,
                 'content': comment.content,
-                'rating': comment.rating,
-                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M'),
+                'created_at': to_china_time(comment.created_at),
+                'replies': replies_data,
+                'replies_count': len(replies_data),
                 'user': {
                     'id': comment.user.id,
                     'username': comment.user.username,
-                    'avatar': comment.user.avatar or '/static/images/default-avatar.png'
+                    'avatar': comment.user.avatar or f'/static/avatar/avatar{i}.png'
                 }
             })
         
@@ -257,22 +312,35 @@ def get_user_status(content_id):
     try:
         content_type = request.args.get('type', 'post')
         
-        # 检查点赞状态
-        is_liked = Like.query.filter_by(
-            user_id=current_user.id,
-            **{f'{content_type}_id': content_id}
-        ).first() is not None
+        # 确定类型代码
+        if content_type == 'post':
+            type_code = 1  # 1-博客
+        elif content_type == 'project':
+            type_code = 2  # 2-项目
+        else:
+            return jsonify({'success': False, 'message': '类型错误'}), 400
         
-        # 检查收藏状态
-        is_favorited = Favorite.query.filter_by(
+        # 获取用户互动记录
+        interaction = UserInteraction.query.filter_by(
             user_id=current_user.id,
-            **{f'{content_type}_id': content_id}
-        ).first() is not None
+            content_id=content_id,
+            type=type_code
+        ).first()
+        
+        if interaction:
+            is_liked = interaction.like == 1
+            is_favorited = interaction.favorite == 1
+            user_rating = interaction.rating if interaction.rating > 0 else None
+        else:
+            is_liked = False
+            is_favorited = False
+            user_rating = None
         
         return jsonify({
             'success': True,
             'is_liked': is_liked,
-            'is_favorited': is_favorited
+            'is_favorited': is_favorited,
+            'user_rating': user_rating
         })
         
     except Exception as e:
@@ -292,40 +360,50 @@ def save_rating():
         if not content_type or not content_id or not rating:
             return jsonify({'success': False, 'message': '参数错误: 内容、类型和评分不能为空'}), 400
 
+        if rating < 1 or rating > 5:
+            return jsonify({'success': False, 'message': '评分必须在1-5之间'}), 400
+
         if content_type == 'post':
             content = Post.query.get_or_404(content_id)
+            type_code = 1  # 1-博客
         elif content_type == 'project':
             content = Project.query.get_or_404(content_id)
+            type_code = 2  # 2-项目
         else:
             return jsonify({'success': False, 'message': '类型错误'}), 400
 
-        # 查找用户是否已有评论记录
-        existing_comment = Comment.query.filter_by(
+        # 查找或创建用户互动记录
+        interaction = UserInteraction.query.filter_by(
             user_id=current_user.id,
-            **{f'{content_type}_id': content_id}
+            content_id=content_id,
+            type=type_code
         ).first()
 
-        if existing_comment:
-            # 更新现有评论的评分
-            existing_comment.rating = rating
+        if interaction:
+            # 更新现有评分
+            interaction.rating = rating
+            interaction.updated_at = datetime.utcnow()
         else:
-            # 创建新的评论记录（仅评分，无内容）
-            new_comment = Comment(
+            # 创建新的互动记录
+            interaction = UserInteraction(
                 user_id=current_user.id,
-                content='',  # 空内容，仅评分
-                rating=rating,
-                **{f'{content_type}_id': content_id}
+                content_id=content_id,
+                type=type_code,
+                like=0,
+                favorite=0,
+                rating=rating
             )
-            db.session.add(new_comment)
+            db.session.add(interaction)
 
         # 更新平均评分
-        comments_with_rating = Comment.query.filter_by(
-            **{f'{content_type}_id': content_id}
-        ).filter(Comment.rating.isnot(None)).all()
+        interactions_with_rating = UserInteraction.query.filter_by(
+            content_id=content_id,
+            type=type_code
+        ).filter(UserInteraction.rating > 0).all()
         
-        if comments_with_rating:
-            total_rating = sum(c.rating for c in comments_with_rating)
-            content.average_rating = round(total_rating / len(comments_with_rating), 1)
+        if interactions_with_rating:
+            total_rating = sum(i.rating for i in interactions_with_rating)
+            content.average_rating = round(total_rating / len(interactions_with_rating), 1)
         else:
             content.average_rating = 0.0
 
@@ -341,87 +419,7 @@ def save_rating():
         current_app.logger.error(f"评分保存失败: {e}")
         return jsonify({'success': False, 'message': '服务器错误'}), 500
 
-@interaction_bp.route('/comment/<int:comment_id>', methods=['PUT'])
-@login_required
-def update_comment(comment_id):
-    """更新评论"""
-    try:
-        data = request.get_json()
-        new_content = data.get('content', '').strip()
-        new_rating = data.get('rating')
-
-        current_app.logger.info(f"更新评论请求 - comment_id: {comment_id}, content: {new_content}, rating: {new_rating}")
-
-        if not new_content:
-            return jsonify({'success': False, 'message': '评论内容不能为空'}), 400
-
-        if len(new_content) > 1000:
-            return jsonify({'success': False, 'message': '评论内容过长'}), 400
-
-        # 查找评论
-        comment = Comment.query.get_or_404(comment_id)
-        current_app.logger.info(f"找到评论 - id: {comment.id}, 原内容: {comment.content}, 原评分: {comment.rating}")
-        
-        # 检查权限：只有评论作者或管理员可以修改
-        if comment.user_id != current_user.id and not current_user.is_admin:
-            return jsonify({'success': False, 'message': '无权限修改此评论'}), 403
-
-        # 更新评论内容
-        comment.content = new_content
-        
-        # 更新评分（如果提供）
-        if new_rating is not None:
-            current_app.logger.info(f"更新评分 - 从 {comment.rating} 到 {new_rating}")
-            comment.rating = new_rating
-        else:
-            current_app.logger.info(f"未提供评分，保持原评分: {comment.rating}")
-        # 注意：如果new_rating为None，我们不更新评分字段，保持原有评分
-
-        # 更新平均评分
-        if comment.post_id:
-            content_type = 'post'
-            content_id = comment.post_id
-            content = Post.query.get(content_id)
-        elif comment.project_id:
-            content_type = 'project'
-            content_id = comment.project_id
-            content = Project.query.get(content_id)
-        else:
-            return jsonify({'success': False, 'message': '评论关联的内容不存在'}), 400
-
-        current_app.logger.info(f"关联内容 - type: {content_type}, id: {content_id}")
-
-        if content:
-            comments_with_rating = Comment.query.filter_by(
-                **{f'{content_type}_id': content_id}
-            ).filter(Comment.rating.isnot(None)).all()
-            
-            current_app.logger.info(f"有评分的评论数量: {len(comments_with_rating)}")
-            for c in comments_with_rating:
-                current_app.logger.info(f"评论 {c.id}: 评分 {c.rating}")
-            
-            if comments_with_rating:
-                total_rating = sum(c.rating for c in comments_with_rating)
-                new_average = round(total_rating / len(comments_with_rating), 1)
-                current_app.logger.info(f"计算平均评分: {total_rating} / {len(comments_with_rating)} = {new_average}")
-                content.average_rating = new_average
-            else:
-                current_app.logger.info("没有评分，设置平均评分为0")
-                content.average_rating = 0.0
-
-        db.session.commit()
-        current_app.logger.info(f"评论更新成功 - 新内容: {comment.content}, 新评分: {comment.rating}")
-        
-        return jsonify({
-            'success': True,
-            'message': '评论更新成功',
-            'average_rating': content.average_rating if content else 0.0
-        })
-        
-    except Exception as e:
-        db.session.rollback()
-        current_app.logger.error(f"评论更新失败: {e}")
-        return jsonify({'success': False, 'message': '服务器错误'}), 500
+# 评论编辑功能已移除 - 评论不可修改
 
 @interaction_bp.route('/comment/<int:comment_id>', methods=['DELETE'])
 @login_required
@@ -450,28 +448,19 @@ def delete_comment(comment_id):
         # 删除评论
         db.session.delete(comment)
         
-        # 更新评论计数
+        # 重新计算评论计数（只计算有内容的评论）
         if content:
-            content.comment_count = max(0, content.comment_count - 1)
-            
-            # 重新计算平均评分
-            comments_with_rating = Comment.query.filter_by(
+            actual_comment_count = Comment.query.filter_by(
                 **{f'{content_type}_id': content_id}
-            ).filter(Comment.rating.isnot(None)).all()
-            
-            if comments_with_rating:
-                total_rating = sum(c.rating for c in comments_with_rating)
-                content.average_rating = round(total_rating / len(comments_with_rating), 1)
-            else:
-                content.average_rating = 0.0
+            ).filter(Comment.content != '').count()
+            content.comment_count = actual_comment_count
 
         db.session.commit()
         
         return jsonify({
             'success': True,
             'message': '评论删除成功',
-            'comment_count': content.comment_count if content else 0,
-            'average_rating': content.average_rating if content else 0.0
+            'comment_count': content.comment_count if content else 0
         })
         
     except Exception as e:
@@ -533,3 +522,109 @@ def upload_image():
     except Exception as e:
         current_app.logger.error(f"图片上传失败: {e}")
         return jsonify({'success': False, 'message': '图片上传失败'}), 500
+
+@interaction_bp.route('/comments/<int:comment_id>/replies', methods=['GET'])
+def get_comment_replies(comment_id):
+    """获取评论的回复列表"""
+    try:
+        comment = Comment.query.get_or_404(comment_id)
+        replies = CommentReply.query.filter_by(comment_id=comment_id, is_approved=True).order_by(CommentReply.created_at.asc()).all()
+        
+        replies_data = []
+        for reply in replies:
+            # 获取用户头像
+            avatar_url = '/static/images/default-avatar.png'
+            if reply.user.avatar:
+                avatar_url = f'/static/uploads/avatars/{reply.user.avatar}'
+            
+            replies_data.append({
+                'id': reply.id,
+                'content': reply.content,
+                'created_at': to_china_time(reply.created_at),
+                'user': {
+                    'id': reply.user.id,
+                    'username': reply.user.username,
+                    'avatar': avatar_url
+                }
+            })
+        
+        return jsonify({
+            'success': True,
+            'replies': replies_data
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"获取回复失败: {e}")
+        return jsonify({'success': False, 'message': '获取回复失败'}), 500
+
+@interaction_bp.route('/comments/<int:comment_id>/replies', methods=['POST'])
+@login_required
+def add_comment_reply(comment_id):
+    """添加评论回复"""
+    try:
+        comment = Comment.query.get_or_404(comment_id)
+        data = request.get_json()
+        content = data.get('content', '').strip()
+        
+        if not content:
+            return jsonify({'success': False, 'message': '请输入回复内容'})
+        
+        reply = CommentReply(
+            comment_id=comment_id,
+            user_id=current_user.id,
+            content=content
+        )
+        
+        db.session.add(reply)
+        db.session.commit()
+        
+        # 获取用户头像
+        avatar_url = '/static/images/default-avatar.png'
+        if current_user.avatar:
+            avatar_url = f'/static/uploads/avatars/{current_user.avatar}'
+        
+        return jsonify({
+            'success': True,
+            'message': '回复成功',
+            'reply': {
+                'id': reply.id,
+                'content': reply.content,
+                'created_at': to_china_time(reply.created_at),
+                'user': {
+                    'id': current_user.id,
+                    'username': current_user.username,
+                    'avatar': avatar_url
+                }
+            }
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"添加回复失败: {e}")
+        return jsonify({'success': False, 'message': '添加回复失败'}), 500
+
+# 评论回复编辑功能已移除 - 回复不可修改
+
+@interaction_bp.route('/replies/<int:reply_id>', methods=['DELETE'])
+@login_required
+def delete_comment_reply(reply_id):
+    """删除评论回复"""
+    try:
+        reply = CommentReply.query.get_or_404(reply_id)
+        
+        # 检查权限：只有回复作者或管理员可以删除
+        if reply.user_id != current_user.id and not current_user.is_admin:
+            return jsonify({'success': False, 'message': '没有权限删除此回复'}), 403
+        
+        db.session.delete(reply)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '回复删除成功'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"删除回复失败: {e}")
+        return jsonify({'success': False, 'message': '删除回复失败'}), 500

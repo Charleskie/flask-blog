@@ -1,5 +1,197 @@
 // 主要的JavaScript功能
 
+// 全局消息提示函数
+function showMessage(message, type = 'info', duration = 3000) {
+    // 创建消息容器（如果不存在）
+    let messageContainer = document.getElementById('message-container');
+    if (!messageContainer) {
+        messageContainer = document.createElement('div');
+        messageContainer.id = 'message-container';
+        messageContainer.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            max-width: 400px;
+        `;
+        document.body.appendChild(messageContainer);
+    }
+
+    // 创建消息元素
+    const messageEl = document.createElement('div');
+    messageEl.className = `message-toast message-${type}`;
+    messageEl.style.cssText = `
+        background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 1rem 1.5rem;
+        margin-bottom: 0.5rem;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        animation: slideInRight 0.3s ease-out;
+        position: relative;
+        min-width: 300px;
+    `;
+
+    // 根据类型设置图标和颜色
+    let icon, color;
+    switch (type) {
+        case 'success':
+            icon = 'fas fa-check-circle';
+            color = '#10b981';
+            break;
+        case 'error':
+            icon = 'fas fa-exclamation-circle';
+            color = '#ef4444';
+            break;
+        case 'warning':
+            icon = 'fas fa-exclamation-triangle';
+            color = '#f59e0b';
+            break;
+        case 'info':
+        default:
+            icon = 'fas fa-info-circle';
+            color = '#3b82f6';
+            break;
+    }
+
+    messageEl.innerHTML = `
+        <i class="${icon}" style="color: ${color}; font-size: 1.25rem;"></i>
+        <span style="color: var(--text-primary); flex: 1;">${message}</span>
+        <button class="message-close" style="
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: var(--border-radius);
+            transition: all 0.2s ease;
+        ">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+
+    // 添加关闭按钮事件
+    const closeBtn = messageEl.querySelector('.message-close');
+    closeBtn.addEventListener('click', () => {
+        messageEl.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.remove();
+            }
+        }, 300);
+    });
+
+    // 添加到容器
+    messageContainer.appendChild(messageEl);
+
+    // 自动关闭
+    if (duration > 0) {
+        setTimeout(() => {
+            if (messageEl.parentNode) {
+                messageEl.style.animation = 'slideOutRight 0.3s ease-in';
+                setTimeout(() => {
+                    if (messageEl.parentNode) {
+                        messageEl.remove();
+                    }
+                }, 300);
+            }
+        }, duration);
+    }
+
+    return messageEl;
+}
+
+// 添加CSS动画
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+    
+    .message-close:hover {
+        background: var(--bg-hover) !important;
+        color: var(--text-primary) !important;
+    }
+`;
+document.head.appendChild(style);
+
+// 处理表单提交和消息显示
+function handleFormSubmit(form, options = {}) {
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(form);
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn ? submitBtn.textContent : '';
+        
+        // 显示加载状态
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+        }
+        
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showMessage(result.message, 'success');
+                
+                // 如果有重定向URL，延迟跳转
+                if (result.redirect) {
+                    setTimeout(() => {
+                        window.location.href = result.redirect;
+                    }, 1500);
+                } else if (options.onSuccess) {
+                    options.onSuccess(result);
+                }
+            } else {
+                showMessage(result.message, 'error');
+                if (options.onError) {
+                    options.onError(result);
+                }
+            }
+        } catch (error) {
+            console.error('表单提交错误:', error);
+            showMessage('请求失败，请稍后重试', 'error');
+        } finally {
+            // 恢复按钮状态
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化工具提示
     try {
@@ -10,17 +202,26 @@ document.addEventListener('DOMContentLoaded', function() {
     } catch (error) {
         console.error('工具提示初始化错误:', error);
     }
+    
+    // 自动处理带有 data-ajax-form 属性的表单
+    document.querySelectorAll('form[data-ajax-form]').forEach(form => {
+        handleFormSubmit(form);
+    });
 
     // 平滑滚动
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const href = this.getAttribute('href');
+            // 检查href是否有效（不是只有#）
+            if (href && href.length > 1) {
+                const target = document.querySelector(href);
             if (target) {
                 target.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
+                }
             }
         });
     });
@@ -186,7 +387,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (alertDiv.parentNode) {
                     alertDiv.remove();
                 }
-            }, 5000);
+            }, 3000);
         } catch (error) {
             console.error('showAlert函数错误:', error);
         }

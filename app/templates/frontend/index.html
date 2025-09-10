@@ -7,16 +7,8 @@
 <div class="hero-section text-center py-5 mb-5 fade-in-up">
     <div class="row">
         <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 fw-bold mb-4 gradient-text">欢迎来到我的个人网站</h1>
-            <p class="lead mb-4">你好！我是一名开发者，这里是我展示项目、分享想法和记录学习的地方。</p>
-            <div class="d-flex justify-content-center gap-3 mb-4">
-                <a href="{{ url_for('main.projects') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-code"></i> 查看项目
-                </a>
-                <a href="{{ url_for('main.about') }}" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-user"></i> 了解更多
-                </a>
-            </div>
+            <h1 class="display-4 fw-bold mb-4 gradient-text">Welcome</h1>
+            <p class="lead mb-4">Hi! 欢迎光临我的小站。</p>
             
             <!-- 首页搜索区域 -->
             <div class="global-search">
@@ -41,7 +33,7 @@
                 <i class="fas fa-code fa-3x text-primary mb-3"></i>
                 <h5 class="card-title">项目展示</h5>
                 <p class="card-text">查看我开发的各种项目，包括Web应用、移动应用和其他技术作品。</p>
-                                    <a href="{{ url_for('main.projects') }}" class="btn btn-outline-primary">浏览项目</a>
+                <a href="{{ url_for('main.projects') }}" class="btn btn-outline-primary">浏览项目</a>
             </div>
         </div>
     </div>
@@ -104,6 +96,144 @@
         </div>
     </div>
 </div>
+
+<!-- 版本更新记录 -->
+{% if versions %}
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="version-timeline-header">
+            <h2 class="gradient-text">版本更新记录</h2>
+<!--            <a href="{{ url_for('version.get_versions') }}" class="view-full-timeline">-->
+<!--                查看完整记录 →-->
+<!--            </a>-->
+        </div>
+        <div class="horizontal-timeline-container">
+            <div class="timeline-scroll-wrapper">
+                <div class="horizontal-timeline">
+                    {% for version in versions %}
+                    <div class="timeline-event">
+                        <div class="timeline-date">{{ version.release_date.strftime('%Y年%m月') if version.release_date else '未知日期' }}</div>
+                        <div class="timeline-icon {% if '初始' in version.title or 'v1.0' in version.version_number %}icon-rocket{% elif '交互' in version.title or '评论' in version.title %}icon-comments{% elif '回复' in version.title %}icon-reply{% elif '版本' in version.title or '管理' in version.title %}icon-cog{% elif 'UI' in version.title or '界面' in version.title %}icon-palette{% elif '功能' in version.title %}icon-star{% else %}icon-default{% endif %}">
+                            {% if '初始' in version.title or 'v1.0' in version.version_number %}
+                                <i class="fas fa-rocket"></i>
+                            {% elif '交互' in version.title or '评论' in version.title %}
+                                <i class="fas fa-comments"></i>
+                            {% elif '回复' in version.title %}
+                                <i class="fas fa-reply"></i>
+                            {% elif '版本' in version.title or '管理' in version.title %}
+                                <i class="fas fa-cog"></i>
+                            {% elif 'UI' in version.title or '界面' in version.title %}
+                                <i class="fas fa-palette"></i>
+                            {% elif '功能' in version.title %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="fas fa-code-branch"></i>
+                            {% endif %}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-title">{{ version.title }}</div>
+                            <div class="timeline-description">{{ version.description[:50] }}{% if version.description|length > 50 %}...{% endif %}</div>
+                            <div class="version-badge {% if '初始' in version.title or 'v1.0' in version.version_number %}badge-rocket{% elif '交互' in version.title or '评论' in version.title %}badge-comments{% elif '回复' in version.title %}badge-reply{% elif '版本' in version.title or '管理' in version.title %}badge-cog{% elif 'UI' in version.title or '界面' in version.title %}badge-palette{% elif '功能' in version.title %}badge-star{% else %}badge-default{% endif %}">{{ version.version_number }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="timeline-controls">
+                <button class="timeline-btn timeline-prev" onclick="scrollTimeline(-1)">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="timeline-btn timeline-next" onclick="scrollTimeline(1)">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// 时间线滑动功能
+function scrollTimeline(direction) {
+    const timeline = document.querySelector('.timeline-scroll-wrapper');
+    if (!timeline) return;
+    
+    const scrollAmount = 300; // 每次滚动的距离
+    const currentScroll = timeline.scrollLeft;
+    const newScroll = currentScroll + (direction * scrollAmount);
+    
+    timeline.scrollTo({
+        left: newScroll,
+        behavior: 'smooth'
+    });
+}
+
+// 触摸滑动支持
+document.addEventListener('DOMContentLoaded', function() {
+    const timeline = document.querySelector('.timeline-scroll-wrapper');
+    if (!timeline) return;
+    
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+    
+    timeline.addEventListener('mousedown', (e) => {
+        isDown = true;
+        timeline.classList.add('active');
+        startX = e.pageX - timeline.offsetLeft;
+        scrollLeft = timeline.scrollLeft;
+    });
+    
+    timeline.addEventListener('mouseleave', () => {
+        isDown = false;
+        timeline.classList.remove('active');
+    });
+    
+    timeline.addEventListener('mouseup', () => {
+        isDown = false;
+        timeline.classList.remove('active');
+    });
+    
+    timeline.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - timeline.offsetLeft;
+        const walk = (x - startX) * 2;
+        timeline.scrollLeft = scrollLeft - walk;
+    });
+    
+    // 触摸事件支持
+    let touchStartX = 0;
+    let touchStartY = 0;
+    
+    timeline.addEventListener('touchstart', (e) => {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+    });
+    
+    timeline.addEventListener('touchmove', (e) => {
+        if (!touchStartX || !touchStartY) return;
+        
+        const touchCurrentX = e.touches[0].clientX;
+        const touchCurrentY = e.touches[0].clientY;
+        
+        const diffX = touchStartX - touchCurrentX;
+        const diffY = touchStartY - touchCurrentY;
+        
+        // 如果是水平滑动
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            e.preventDefault();
+            timeline.scrollLeft += diffX;
+            touchStartX = touchCurrentX;
+        }
+    });
+    
+    timeline.addEventListener('touchend', () => {
+        touchStartX = 0;
+        touchStartY = 0;
+    });
+});
+</script>
 
 <!-- 技能展示 -->
 <div class="row">

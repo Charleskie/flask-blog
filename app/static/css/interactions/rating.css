@@ -1,0 +1,144 @@
+/* 评分系统样式 */
+
+/* 评分输入样式 */
+.rating-input {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label {
+    cursor: pointer;
+    font-size: 28px;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+/* 基础星星样式 */
+.rating-input label {
+    cursor: pointer;
+    font-size: 28px;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+/* 悬停效果 - 通过JavaScript控制 */
+.rating-input label.hover-active i {
+    color: #ffc107;
+    transform: scale(1.2);
+    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+}
+
+/* 选中效果 */
+.rating-input input:checked + label i,
+.rating-input input:checked ~ label i {
+    color: #ffc107;
+    transform: scale(1.2);
+    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+}
+
+/* 评分显示 */
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.rating-display .fas.fa-star {
+    color: #fbbf24;
+    font-size: 16px;
+}
+
+.rating-display .far.fa-star {
+    color: #d1d5db;
+    font-size: 16px;
+}
+
+.rating-display .rating-text,
+.comment-rating .rating-text {
+    margin-left: 8px;
+    font-size: 16px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+/* 评论中的星级评分样式 */
+.comment-rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.comment-rating .fas.fa-star {
+    color: #fbbf24;
+    font-size: 12px;
+}
+
+.comment-rating .far.fa-star {
+    color: #d1d5db;
+    font-size: 12px;
+}
+
+/* 编辑评分输入样式 */
+.edit-rating-input {
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.edit-rating-input .rating-stars {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-rating-input input[type="radio"] {
+    display: none;
+}
+
+.edit-rating-input .rating-stars label {
+    cursor: pointer;
+    font-size: 28px;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+/* 编辑评分基础星星样式 */
+.edit-rating-input .rating-stars label {
+    cursor: pointer;
+    font-size: 28px;
+    color: #ddd;
+    transition: all 0.2s ease;
+    padding: 5px;
+    border-radius: 50%;
+}
+
+/* 编辑评分悬停效果 - 通过JavaScript控制 */
+.edit-rating-input .rating-stars label.hover-active i {
+    color: #ffc107;
+    transform: scale(1.2);
+    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+}
+
+/* 编辑评分选中效果 */
+.edit-rating-input .rating-stars input:checked + label i,
+.edit-rating-input .rating-stars input:checked ~ label i {
+    color: #ffc107;
+    transform: scale(1.2);
+    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+}

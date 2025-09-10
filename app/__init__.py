@@ -33,11 +33,13 @@ def create_app():
     from app.routes import main_bp, admin_bp, auth_bp
     from app.routes.settings import settings_bp
     from app.routes.interaction import interaction_bp
+    from app.routes.version import version_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(interaction_bp, url_prefix='/api')
+    app.register_blueprint(version_bp)
     
     # 错误处理
     @app.errorhandler(404)

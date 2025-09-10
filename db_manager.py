@@ -535,6 +535,61 @@ def add_column():
     except Exception as e:
         print(f"❌ 添加字段失败: {e}")
 
+def alter_column():
+    """修改字段类型"""
+    list_tables()
+    table_name = input("\n请输入要修改字段的表名: ").strip()
+
+    if not table_name:
+        print("❌ 表名不能为空！")
+        return
+
+    print(f"\n➕ 修改表 '{table_name}' 的字段")
+    col_name = input("字段名: ").strip()
+    col_type = input("字段类型 (INTEGER/TEXT/REAL/BLOB): ").strip().upper()
+    default_value = input("默认值 (可选): ").strip()
+
+    if not col_name or not col_type:
+        print("❌ 字段名和类型都是必填的！")
+        return
+
+    try:
+        db_path = db.engine.url.database
+        if db_path == ':memory:':
+            print("❌ 内存数据库不支持此操作")
+            return
+
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+
+        # 检查表是否存在
+        cursor.execute(f"PRAGMA table_info({table_name})")
+        if not cursor.fetchall():
+            print(f"❌ 表 '{table_name}' 不存在！")
+            conn.close()
+            return
+
+        # 添加字段
+        add_sql = f"ALTER TABLE {table_name} Modify COLUMN {col_name} {col_type}"
+        if default_value:
+            add_sql += f" DEFAULT {default_value}"
+
+        print(f"\n执行的SQL:")
+        print(add_sql)
+
+        confirm = input("\n确认修改字段? (y/n): ").strip().lower()
+        if confirm == 'y':
+            cursor.execute(add_sql)
+            conn.commit()
+            print(f"✅ 字段 '{col_name}' 修改成功！")
+        else:
+            print("❌ 修改添加")
+
+        conn.close()
+
+    except Exception as e:
+        print(f"❌ 修改字段失败: {e}")
+
 def drop_table():
     """删除表"""
     list_tables()
@@ -812,6 +867,8 @@ def main():
                 reset_database()
             elif choice == '24':
                 database_info()
+            elif choice == '25':
+                alter_column()
             else:
                 print("❌ 无效选择，请重新输入！")
             

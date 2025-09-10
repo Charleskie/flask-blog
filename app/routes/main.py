@@ -1,5 +1,5 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models import Post, Project, Message, AboutContent, AboutContact
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from app.models import Post, Project, Message, AboutContent, AboutContact, Version
 from app.models.user import db
 import re
 
@@ -8,7 +8,9 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """首页"""
-    return render_template('frontend/index.html')
+    # 获取最新的版本更新记录
+    versions = Version.query.filter_by(is_active=True).order_by(Version.release_date.desc()).limit(5).all()
+    return render_template('frontend/index.html', versions=versions)
 
 @main_bp.route('/about')
 def about():
@@ -109,13 +111,9 @@ def blog():
         Post.view_count.desc()
     ).limit(5).all()
     
-    # 获取所有标签（只统计有slug的文章）
+    # 获取所有标签
     all_tags = []
-    for post in Post.query.filter(
-        Post.status == 'published',
-        Post.slug.isnot(None),
-        Post.slug != ''
-    ).all():
+    for post in Post.query.filter_by(status='published').all():
         if post.tags:
             all_tags.extend([tag.strip() for tag in post.tags.split(',')])
     
@@ -161,13 +159,17 @@ def contact():
         
         # 验证输入
         if not name or not email or not subject or not message_text:
-            flash('请填写所有必填字段', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写所有必填字段'})
+
             return render_template('frontend/contact.html')
         
         # 验证邮箱格式
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
         if not re.match(email_pattern, email):
-            flash('请输入有效的邮箱地址', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请输入有效的邮箱地址'})
+
             return render_template('frontend/contact.html')
         
         try:
@@ -184,12 +186,16 @@ def contact():
             db.session.add(message)
             db.session.commit()
             
-            flash('消息发送成功！我们会尽快回复您。', 'success')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '消息发送成功！我们会尽快回复您。'})
+
             return redirect(url_for('main.contact'))
             
         except Exception as e:
             db.session.rollback()
-            flash('发送失败，请稍后重试', 'error')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '发送失败，请稍后重试'})
+
             print(f"保存消息错误: {e}")
     
     return render_template('frontend/contact.html')
