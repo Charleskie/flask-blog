@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_login import LoginManager
 from app.models.user import db
-from app.utils import nl2br_filter
+from app.utils.filters import nl2br_filter, markdown_filter, html_filter
 import os
 
 def create_app():
@@ -28,18 +28,22 @@ def create_app():
     
     # 注册自定义过滤器
     app.template_filter('nl2br')(nl2br_filter)
+    app.template_filter('markdown')(markdown_filter)
+    app.template_filter('html')(html_filter)
     
     # 注册蓝图
     from app.routes import main_bp, admin_bp, auth_bp
     from app.routes.settings import settings_bp
     from app.routes.interaction import interaction_bp
     from app.routes.version import version_bp
+    from app.routes.notifications import notification_bp
     app.register_blueprint(main_bp)
     app.register_blueprint(admin_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(settings_bp)
     app.register_blueprint(interaction_bp, url_prefix='/api')
     app.register_blueprint(version_bp)
+    app.register_blueprint(notification_bp)
     
     # 错误处理
     @app.errorhandler(404)

@@ -421,15 +421,16 @@ def delete_message(message_id):
         db.session.commit()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': True, 'message': '消息删除成功！'})
-
+        flash('消息删除成功！', 'success')
     except Exception as e:
         db.session.rollback()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
-
+        flash('删除失败，请稍后重试', 'error')
         print(f"删除消息错误: {e}")
     
     return redirect(url_for('admin.admin_messages'))
+
 
 @admin_bp.route('/admin/messages/<int:message_id>/status', methods=['POST'])
 @login_required
@@ -438,26 +439,32 @@ def change_message_status(message_id):
     message = Message.query.get_or_404(message_id)
     new_status = request.form.get('status')
     
-    if new_status in ['unread', 'read', 'replied', 'archived']:
-        try:
-            message.status = new_status
-            if new_status == 'read' and not message.read_at:
-                message.read_at = datetime.utcnow()
-            elif new_status == 'replied' and not message.replied_at:
-                message.replied_at = datetime.utcnow()
-            
-            db.session.commit()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '状态更新成功！'})
-
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
-
-            print(f"更新消息状态错误: {e}")
+    if new_status not in ['unread', 'read', 'replied', 'archived']:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '无效的状态'})
+        flash('无效的状态', 'error')
+        return redirect(url_for('admin.admin_messages'))
+    
+    try:
+        message.status = new_status
+        if new_status == 'read' and not message.read_at:
+            message.read_at = datetime.utcnow()
+        elif new_status == 'replied' and not message.replied_at:
+            message.replied_at = datetime.utcnow()
+        
+        db.session.commit()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': True, 'message': '状态更新成功！'})
+        flash('状态更新成功！', 'success')
+    except Exception as e:
+        db.session.rollback()
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '状态更新失败，请稍后重试'})
+        flash('状态更新失败，请稍后重试', 'error')
+        print(f"更新消息状态错误: {e}")
     
     return redirect(url_for('admin.admin_messages'))
+
 
 # 关于页面管理
 @admin_bp.route('/admin/about')

@@ -3,68 +3,72 @@
 {% block title %}消息管理 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-envelope"></i> 消息管理</h1>
-                <div>
-                    <span class="badge bg-danger me-2">{{ unread_messages }} 未读</span>
-                    <span class="badge bg-secondary">{{ messages.total }} 总计</span>
-                </div>
-            </div>
+<div class="container">
+    <div class="admin-header">
+        <h1>消息管理</h1>
+        <div class="admin-actions">
+            <span class="badge bg-danger me-2">{{ messages.items | selectattr('status', 'equalto', 'unread') | list | length }} 未读</span>
+            <span class="badge bg-secondary">{{ messages.total }} 总计</span>
+        </div>
+    </div>
             
-            <!-- 筛选器 -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <form method="GET" class="row g-3">
-                        <div class="col-md-3">
-                            <label for="status" class="form-label">状态筛选</label>
-                            <select class="form-select" id="status" name="status">
-                                <option value="">全部状态</option>
-                                <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
-                                <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
-                                <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
-                                <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label">&nbsp;</label>
-                            <div>
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <i class="fas fa-filter"></i> 筛选
-                                </button>
-                                <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> 清除
-                                </a>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+    <!-- 筛选器 -->
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>消息筛选</h2>
             </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">状态筛选</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="">全部状态</option>
+                            <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
+                            <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
+                            <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
+                            <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> 筛选
+                            </button>
+                            <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 清除
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
             
-            <!-- 消息列表 -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">消息列表 (共 {{ messages.total }} 条)</h5>
-                </div>
-                <div class="card-body p-0">
-                    {% if messages.items %}
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>状态</th>
-                                        <th>发送者</th>
-                                        <th>主题</th>
-                                        <th>邮箱</th>
-                                        <th>发送时间</th>
-                                        <th>操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for message in messages.items %}
-                                    <tr class="{% if message.is_unread() %}table-warning{% endif %}">
+    <!-- 消息列表 -->
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>消息列表 (共 {{ messages.total }} 条)</h2>
+            </div>
+            <div class="card-body">
+                {% if messages.items %}
+                <div class="table-responsive">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>状态</th>
+                                <th>发送者</th>
+                                <th>主题</th>
+                                <th>邮箱</th>
+                                <th>发送时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for message in messages.items %}
+                            <tr class="{% if message.is_unread() %}unread-message{% endif %}">
                                         <td>
                                             {% if message.status == 'unread' %}
                                                 <span class="badge bg-danger">未读</span>
@@ -84,7 +88,7 @@
                                         </td>
                                         <td>
                                             <div class="fw-bold">{{ message.subject }}</div>
-                                            <small class="text-muted">{{ message.message[:50] }}...</small>
+                                            <div class="message-preview text-muted">{{ message.message[:50] }}{% if message.message|length > 50 %}...{% endif %}</div>
                                         </td>
                                         <td>
                                             <a href="mailto:{{ message.email }}" class="text-decoration-none">
@@ -99,105 +103,92 @@
                                                 <br><small class="text-info">已读: {{ message.read_at.strftime('%H:%M') }}</small>
                                             {% endif %}
                                         </td>
-                                        <td>
-                                            <div class="btn-group btn-group-sm" role="group">
-                                                <a href="{{ url_for('admin.view_message', message_id=message.id) }}" 
-                                                   class="btn btn-outline-primary" title="查看">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                                {% if not message.is_replied() %}
-                                                    <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" 
-                                                       class="btn btn-outline-success" title="回复">
-                                                        <i class="fas fa-reply"></i>
-                                                    </a>
-                                                {% endif %}
-                                                <div class="btn-group btn-group-sm" role="group">
-                                                    <button type="button" class="btn btn-outline-secondary dropdown-toggle" 
-                                                            data-bs-toggle="dropdown" title="状态">
-                                                        <i class="fas fa-cog"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><h6 class="dropdown-header">更改状态</h6></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'unread')">
-                                                            <i class="fas fa-circle text-danger"></i> 标记为未读
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'read')">
-                                                            <i class="fas fa-circle text-primary"></i> 标记为已读
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'replied')">
-                                                            <i class="fas fa-circle text-success"></i> 标记为已回复
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'archived')">
-                                                            <i class="fas fa-circle text-secondary"></i> 归档
-                                                        </a></li>
-                                                        <li><hr class="dropdown-divider"></li>
-                                                        <li><a class="dropdown-item text-danger" href="#" 
-                                                               onclick="deleteMessage({{ message.id }}, '{{ message.subject }}')">
-                                                            <i class="fas fa-trash"></i> 删除
-                                                        </a></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    {% else %}
-                        <div class="text-center py-5">
-                            <i class="fas fa-envelope fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">暂无消息</h5>
-                            <p class="text-muted">当有新的联系表单提交时，消息会显示在这里。</p>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- 分页 -->
-            {% if messages.pages > 1 %}
-                <nav aria-label="消息分页" class="mt-4">
-                    <ul class="pagination justify-content-center">
-                        {% if messages.has_prev %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.admin_messages', page=messages.prev_num, status=status_filter) }}">
-                                    <i class="fas fa-chevron-left"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                        
-                        {% for page_num in messages.iter_pages() %}
-                            {% if page_num %}
-                                {% if page_num != messages.page %}
-                                    <li class="page-item">
-                                        <a class="page-link" href="{{ url_for('admin.admin_messages', page=page_num, status=status_filter) }}">
-                                            {{ page_num }}
+                                <td>
+                                    <div class="action-buttons">
+                                        <a href="{{ url_for('admin.view_message', message_id=message.id) }}" 
+                                           class="btn btn-sm btn-primary" title="查看">
+                                            <i class="fas fa-eye"></i>
                                         </a>
-                                    </li>
-                                {% else %}
-                                    <li class="page-item active">
-                                        <span class="page-link">{{ page_num }}</span>
-                                    </li>
-                                {% endif %}
-                            {% else %}
-                                <li class="page-item disabled">
-                                    <span class="page-link">...</span>
-                                </li>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if messages.has_next %}
-                            <li class="page-item">
-                                <a class="page-link" href="{{ url_for('admin.admin_messages', page=messages.next_num, status=status_filter) }}">
-                                    <i class="fas fa-chevron-right"></i>
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
-            {% endif %}
+                                        {% if not message.is_replied() %}
+                                            <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" 
+                                               class="btn btn-sm btn-success" title="回复">
+                                                <i class="fas fa-reply"></i>
+                                            </a>
+                                        {% endif %}
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" 
+                                                    data-bs-toggle="dropdown" title="状态">
+                                                <i class="fas fa-cog"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><h6 class="dropdown-header">更改状态</h6></li>
+                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'unread')">
+                                                    <i class="fas fa-circle text-danger"></i> 标记为未读
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'read')">
+                                                    <i class="fas fa-circle text-primary"></i> 标记为已读
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'replied')">
+                                                    <i class="fas fa-circle text-success"></i> 标记为已回复
+                                                </a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'archived')">
+                                                    <i class="fas fa-circle text-secondary"></i> 归档
+                                                </a></li>
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item text-danger" href="#" 
+                                                       onclick="deleteMessage({{ message.id }}, '{{ message.subject|e }}')">
+                                                    <i class="fas fa-trash"></i> 删除
+                                                </a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-envelope fa-3x"></i>
+                    <h3>暂无消息</h3>
+                    <p>当有新的联系表单提交时，消息会显示在这里。</p>
+                </div>
+                {% endif %}
+            </div>
         </div>
     </div>
+            
+    <!-- 分页 -->
+    {% if messages.pages > 1 %}
+    <div class="pagination-wrapper">
+        <nav class="pagination">
+            {% if messages.has_prev %}
+                <a href="{{ url_for('admin.admin_messages', page=messages.prev_num, status=status_filter) }}" class="page-link">
+                    <i class="fas fa-chevron-left"></i> 上一页
+                </a>
+            {% endif %}
+            
+            {% for page_num in messages.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != messages.page %}
+                        <a href="{{ url_for('admin.admin_messages', page=page_num, status=status_filter) }}" class="page-link">{{ page_num }}</a>
+                    {% else %}
+                        <span class="page-link current">{{ page_num }}</span>
+                    {% endif %}
+                {% else %}
+                    <span class="page-link disabled">...</span>
+                {% endif %}
+            {% endfor %}
+            
+            {% if messages.has_next %}
+                <a href="{{ url_for('admin.admin_messages', page=messages.next_num, status=status_filter) }}" class="page-link">
+                    下一页 <i class="fas fa-chevron-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
 </div>
 
 <!-- 删除确认模态框 -->
@@ -228,6 +219,60 @@
     <input type="hidden" id="status-value" name="status">
 </form>
 {% endblock %}
+
+<style>
+.unread-message {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    border-left: 4px solid #ffc107;
+}
+
+.unread-message:hover {
+    background-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.action-buttons .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.message-preview {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 2px 6px;
+}
+
+.message-meta {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.message-email {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .message-preview {
+        max-width: 150px;
+    }
+}
+</style>
 
 {% block extra_js %}
 <script>

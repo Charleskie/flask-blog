@@ -3,7 +3,7 @@ import random
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app.models.user import db
-from app.models import Post, Project, Comment, CommentReply, UserInteraction
+from app.models import Post, Project, Comment, CommentReply, UserInteraction, CommentLike, Notification
 from datetime import datetime
 import os
 import uuid
@@ -101,6 +101,10 @@ def toggle_like():
             content.like_count += 1
             is_liked = True
         
+        # 创建点赞通知（如果是点赞操作且不是自己的内容）
+        if is_liked and content.author_id != current_user.id:
+            create_notification_for_like(interaction, content_type, content.title, content.author_id)
+        
         db.session.commit()
         
         return jsonify({
@@ -168,6 +172,10 @@ def toggle_favorite():
             content.favorite_count += 1
             is_favorited = True
         
+        # 创建收藏通知（如果是收藏操作且不是自己的内容）
+        if is_favorited and content.author_id != current_user.id:
+            create_notification_for_favorite(interaction, content_type, content.title, content.author_id)
+        
         db.session.commit()
         
         return jsonify({
@@ -218,6 +226,9 @@ def add_comment():
             **{f'{content_type}_id': content_id}
         ).filter(Comment.content != '').count()
         content.comment_count = actual_comment_count
+        
+        # 创建评论通知
+        create_notification_for_comment(new_comment, content_type, content.title, content.author_id)
         
         db.session.commit()
         
@@ -275,12 +286,23 @@ def get_comments(content_id):
                     }
                 })
             
+            # 检查当前用户是否已点赞此评论
+            is_liked = False
+            if current_user.is_authenticated:
+                like = CommentLike.query.filter_by(
+                    user_id=current_user.id,
+                    comment_id=comment.id
+                ).first()
+                is_liked = like is not None
+            
             comments_data.append({
                 'id': comment.id,
                 'content': comment.content,
                 'created_at': to_china_time(comment.created_at),
                 'replies': replies_data,
                 'replies_count': len(replies_data),
+                'like_count': comment.like_count or 0,
+                'is_liked': is_liked,
                 'user': {
                     'id': comment.user.id,
                     'username': comment.user.username,
@@ -407,6 +429,10 @@ def save_rating():
         else:
             content.average_rating = 0.0
 
+        # 创建评分通知（如果不是自己的内容）
+        if content.author_id != current_user.id:
+            create_notification_for_rating(interaction, content_type, content.title, content.author_id)
+
         db.session.commit()
         return jsonify({
             'success': True,
@@ -467,61 +493,83 @@ def delete_comment(comment_id):
         db.session.rollback()
         current_app.logger.error(f"评论删除失败: {e}")
         return jsonify({'success': False, 'message': '服务器错误'}), 500
-
 @interaction_bp.route('/upload-image', methods=['POST'])
 @login_required
 def upload_image():
     """上传图片"""
     try:
-        # 检查是否有文件
         if 'image' not in request.files:
             return jsonify({'success': False, 'message': '没有选择文件'}), 400
         
         file = request.files['image']
-        
-        # 检查文件名
         if file.filename == '':
             return jsonify({'success': False, 'message': '没有选择文件'}), 400
         
         # 检查文件类型
-        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
-        if not ('.' in file.filename and 
-                file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
-            return jsonify({'success': False, 'message': '不支持的文件类型'}), 400
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
+        allowed_mime_types = {'image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/svg+xml'}
         
-        # 检查文件大小 (5MB限制)
+        # 检查文件扩展名
+        has_valid_extension = ('.' in file.filename and 
+                              file.filename.rsplit('.', 1)[1].lower() in allowed_extensions)
+        
+        # 检查MIME类型
+        has_valid_mime = file.content_type in allowed_mime_types
+        
+        if not (has_valid_extension or has_valid_mime):
+            return jsonify({'success': False, 'message': f'不支持的文件类型: {file.content_type}'}), 400
+        
+        # 检查文件大小 (5MB)
         file.seek(0, 2)  # 移动到文件末尾
-        file_size = file.tell()
-        file.seek(0)  # 重置到文件开头
+        file_size = file.tell()  # 获取文件大小
+        file.seek(0)  # 重置文件指针到开头
         
-        if file_size > 5 * 1024 * 1024:  # 5MB
+        if file_size > 5 * 1024 * 1024:
             return jsonify({'success': False, 'message': '文件大小不能超过5MB'}), 400
         
         # 生成安全的文件名
-        filename = secure_filename(file.filename)
-        # 添加UUID前缀避免文件名冲突
-        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        original_filename = file.filename or 'image'
+        filename = secure_filename(original_filename)
+        
+        # 如果没有扩展名，根据MIME类型添加
+        if '.' not in filename:
+            mime_to_ext = {
+                'image/png': '.png',
+                'image/jpeg': '.jpg',
+                'image/jpg': '.jpg',
+                'image/gif': '.gif',
+                'image/webp': '.webp',
+                'image/svg+xml': '.svg'
+            }
+            ext = mime_to_ext.get(file.content_type, '.jpg')
+            filename = f"{filename}{ext}"
+        
+        # 添加时间戳避免重名
+        timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+        name, ext = os.path.splitext(filename)
+        filename = f"{name}_{timestamp}{ext}"
         
         # 确保上传目录存在
-        upload_dir = os.path.join(current_app.root_path, 'static', 'uploads', 'images')
+        upload_dir = os.path.join(current_app.static_folder, 'uploads', 'images')
         os.makedirs(upload_dir, exist_ok=True)
         
         # 保存文件
-        file_path = os.path.join(upload_dir, unique_filename)
+        file_path = os.path.join(upload_dir, filename)
         file.save(file_path)
         
         # 返回图片URL
-        image_url = f"/static/uploads/images/{unique_filename}"
+        image_url = f"/static/uploads/images/{filename}"
         
         return jsonify({
             'success': True,
             'message': '图片上传成功',
-            'image_url': image_url
+            'url': image_url,
+            'alt': name
         })
         
     except Exception as e:
         current_app.logger.error(f"图片上传失败: {e}")
-        return jsonify({'success': False, 'message': '图片上传失败'}), 500
+        return jsonify({'success': False, 'message': '上传失败'}), 500
 
 @interaction_bp.route('/comments/<int:comment_id>/replies', methods=['GET'])
 def get_comment_replies(comment_id):
@@ -576,6 +624,19 @@ def add_comment_reply(comment_id):
         )
         
         db.session.add(reply)
+        
+        # 创建回复通知
+        # 获取评论所属的内容
+        content_type = 'post' if comment.post_id else 'project'
+        content_id = comment.post_id or comment.project_id
+        if content_type == 'post':
+            content = Post.query.get(content_id)
+        else:
+            content = Project.query.get(content_id)
+        
+        if content:
+            create_notification_for_reply(reply, comment, content_type, content.title, comment.user_id)
+        
         db.session.commit()
         
         # 获取用户头像
@@ -628,3 +689,146 @@ def delete_comment_reply(reply_id):
         db.session.rollback()
         current_app.logger.error(f"删除回复失败: {e}")
         return jsonify({'success': False, 'message': '删除回复失败'}), 500
+
+
+@interaction_bp.route('/comment-like', methods=['POST'])
+@login_required
+def comment_like():
+    """评论点赞/取消点赞"""
+    try:
+        data = request.get_json()
+        comment_id = data.get('comment_id')
+        
+        if not comment_id:
+            return jsonify({'success': False, 'message': '参数错误'}), 400
+        
+        comment = Comment.query.get(comment_id)
+        if not comment:
+            return jsonify({'success': False, 'message': '评论不存在'}), 404
+        
+        # 检查是否已经点赞
+        existing_like = CommentLike.query.filter_by(
+            user_id=current_user.id,
+            comment_id=comment_id
+        ).first()
+        
+        if existing_like:
+            # 取消点赞
+            db.session.delete(existing_like)
+            comment.like_count = max(0, comment.like_count - 1)
+            liked = False
+            message = '取消点赞成功'
+        else:
+            # 添加点赞
+            like = CommentLike(
+                user_id=current_user.id,
+                comment_id=comment_id
+            )
+            db.session.add(like)
+            comment.like_count += 1
+            liked = True
+            message = '点赞成功'
+            
+            # 创建点赞通知（如果不是自己的评论）
+            if comment.user_id != current_user.id:
+                # 获取评论所属的文章或项目
+                if comment.post_id:
+                    post = Post.query.get(comment.post_id)
+                    if post:
+                        notification = Notification.create_like_notification(
+                            post.author_id, current_user.username, '文章', 
+                            post.id, post.title
+                        )
+                        db.session.add(notification)
+                elif comment.project_id:
+                    project = Project.query.get(comment.project_id)
+                    if project:
+                        notification = Notification.create_like_notification(
+                            project.author_id, current_user.username, '项目', 
+                            project.id, project.title
+                        )
+                        db.session.add(notification)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': message,
+            'liked': liked,
+            'like_count': comment.like_count
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"评论点赞失败: {e}")
+        return jsonify({'success': False, 'message': '操作失败'}), 500
+
+
+def create_notification_for_comment(comment, content_type, content_title, content_author_id):
+    """为评论创建通知"""
+    try:
+        # 如果不是自己的内容，创建通知
+        if content_author_id != comment.user_id:
+            notification = Notification.create_comment_notification(
+                content_author_id, comment.user.username, comment.content,
+                comment.post_id or comment.project_id, content_title
+            )
+            db.session.add(notification)
+    except Exception as e:
+        current_app.logger.error(f"创建评论通知失败: {e}")
+
+
+def create_notification_for_reply(reply, comment, content_type, content_title, comment_author_id):
+    """为回复创建通知"""
+    try:
+        # 如果不是回复自己的评论，创建通知
+        if comment_author_id != reply.user_id:
+            notification = Notification.create_reply_notification(
+                comment_author_id, reply.user.username, reply.content,
+                comment.id, comment.post_id or comment.project_id, content_title
+            )
+            db.session.add(notification)
+    except Exception as e:
+        current_app.logger.error(f"创建回复通知失败: {e}")
+
+
+def create_notification_for_like(interaction, content_type, content_title, content_author_id):
+    """为点赞创建通知"""
+    try:
+        # 如果不是自己的内容，创建通知
+        if content_author_id != interaction.user_id:
+            notification = Notification.create_like_notification(
+                content_author_id, interaction.user.username, content_type,
+                interaction.content_id, content_title
+            )
+            db.session.add(notification)
+    except Exception as e:
+        current_app.logger.error(f"创建点赞通知失败: {e}")
+
+
+def create_notification_for_favorite(interaction, content_type, content_title, content_author_id):
+    """为收藏创建通知"""
+    try:
+        # 如果不是自己的内容，创建通知
+        if content_author_id != interaction.user_id:
+            notification = Notification.create_favorite_notification(
+                content_author_id, interaction.user.username, content_type,
+                interaction.content_id, content_title
+            )
+            db.session.add(notification)
+    except Exception as e:
+        current_app.logger.error(f"创建收藏通知失败: {e}")
+
+
+def create_notification_for_rating(interaction, content_type, content_title, content_author_id):
+    """为评分创建通知"""
+    try:
+        # 如果不是自己的内容，创建通知
+        if content_author_id != interaction.user_id:
+            notification = Notification.create_rating_notification(
+                content_author_id, interaction.user.username, interaction.rating,
+                content_type, interaction.content_id, content_title
+            )
+            db.session.add(notification)
+    except Exception as e:
+        current_app.logger.error(f"创建评分通知失败: {e}")

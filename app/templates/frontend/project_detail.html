@@ -5,52 +5,102 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <!-- 项目标题和基本信息 -->
-            <div class="card mb-4">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div>
-                            <h1 class="card-title">{{ project.title }}</h1>
-                            {% if project.featured %}
-                                <span class="badge bg-warning">推荐项目</span>
+            <div class="project-header">
+                <h1 class="display-4 fw-bold">{{ project.title }}</h1>
+                
+                <!-- 项目元信息 -->
+                <div class="project-meta-info">
+                    <div class="meta-single-line d-flex flex-wrap align-items-center justify-content-between text-muted mb-3">
+                        <!-- 左侧：基本信息 -->
+                        <div class="meta-left d-flex flex-wrap align-items-center">
+                            <div class="me-4">
+                                <i class="fas fa-user"></i>
+                                <span>{{ project.author.username if project.author else '未知' }}</span>
+                            </div>
+                            <div class="me-4">
+                                <i class="fas fa-calendar"></i>
+                                <span>{{ project.created_at.strftime('%Y年%m月%d日') }}</span>
+                            </div>
+                            {% if project.category %}
+                            <div class="me-4">
+                                <i class="fas fa-folder"></i>
+                                <span>{{ project.category }}</span>
+                            </div>
                             {% endif %}
-                            {% if project.status == 'active' %}
-                                <span class="badge bg-success">进行中</span>
-                            {% elif project.status == 'completed' %}
-                                <span class="badge bg-primary">已完成</span>
-                            {% else %}
-                                <span class="badge bg-secondary">已归档</span>
+                            <div class="me-4">
+                                <i class="fas fa-clock"></i>
+                                <span>更新于 {{ project.updated_at.strftime('%m月%d日') }}</span>
+                            </div>
+                            
+                            <!-- 互动统计 -->
+                            <div class="me-4">
+                                <i class="fas fa-eye"></i>
+                                <span>{{ project.view_count }} 次浏览</span>
+                            </div>
+                            <div class="me-4">
+                                <i class="far fa-heart"></i>
+                                <span class="like-count">{{ project.like_count }} 点赞</span>
+                            </div>
+                            <div class="me-4">
+                                <i class="far fa-star"></i>
+                                <span class="favorite-count">{{ project.favorite_count }} 收藏</span>
+                            </div>
+                            <div class="me-4">
+                                <i class="far fa-comment"></i>
+                                <span class="comment-count">{{ project.comment_count }} 评论</span>
+                            </div>
+                            {% if project.average_rating > 0 %}
+                            <div class="me-4">
+                                <i class="fas fa-star"></i>
+                                <span class="rating-text">{{ project.average_rating }}</span>
+                            </div>
                             {% endif %}
                         </div>
-                        <div class="text-muted">
-                            <small>
-                                <i class="fas fa-eye"></i> {{ project.view_count }} 次浏览
-                            </small>
+                        
+                        <!-- 右侧：分享按钮 -->
+                        <div class="meta-right d-flex align-items-center">
+                            <div class="share-buttons">
+                                <span class="share-label me-2">分享:</span>
+                                <button class="btn btn-outline-success btn-sm share-btn" onclick="shareToWeChat(event)" title="微信分享">
+                                    <i class="fab fa-weixin"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm share-btn" onclick="shareToWeibo()" title="微博分享">
+                                    <i class="fab fa-weibo"></i>
+                                </button>
+                                <button class="btn btn-outline-secondary btn-sm share-btn" onclick="copyLink()" title="复制链接">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     
-                    {% if project.short_description %}
-                        <p class="lead text-muted">{{ project.short_description }}</p>
-                    {% endif %}
-                    
+                    <!-- 项目状态和标签 -->
                     <div class="mb-3">
-                        {% if project.category %}
-                            <span class="badge bg-info me-2">{{ project.category }}</span>
+                        {% if project.featured %}
+                            <span class="badge bg-warning me-2">推荐项目</span>
+                        {% endif %}
+                        {% if project.status == 'active' %}
+                            <span class="badge bg-success me-2">进行中</span>
+                        {% elif project.status == 'completed' %}
+                            <span class="badge bg-primary me-2">已完成</span>
+                        {% else %}
+                            <span class="badge bg-secondary me-2">已归档</span>
                         {% endif %}
                         {% for tag in project.get_tags_list() %}
                             <span class="badge bg-light text-dark me-1">{{ tag }}</span>
                         {% endfor %}
                     </div>
+                    
+                    <!-- 项目简介 -->
+                    {% if project.short_description %}
+                        <div class="project-description-short">
+                            <p class="lead text-muted mb-0">{{ project.short_description }}</p>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
-            
-            <!-- 项目图片 -->
-            {% if project.image_url %}
-                <div class="card mb-4">
-                    <img src="{{ project.image_url }}" class="card-img-top" alt="{{ project.title }}" style="max-height: 400px; object-fit: cover;">
-                </div>
-            {% endif %}
             
             <!-- 项目描述 -->
             <div class="card mb-4">
@@ -153,188 +203,315 @@
                 </div>
             </div>
         </div>
-        
-        <div class="col-lg-4 sidebar">
-            <!-- 交互功能区域 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-heart"></i> 互动统计</h5>
-                </div>
-                <div class="card-body">
-                    <div class="interaction-section" data-id="{{ project.id }}" data-type="project">
-                        <!-- 统计信息 -->
-                        <div class="stats-info">
-                            <div class="stat-item">
-                                <i class="fas fa-eye"></i>
-                                <span>{{ project.view_count }} 次浏览</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="far fa-heart"></i>
-                                <span class="like-count">{{ project.like_count }} 点赞</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="far fa-star"></i>
-                                <span class="favorite-count">{{ project.favorite_count }} 收藏</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="far fa-comment"></i>
-                                <span class="comment-count">{{ project.comment_count }} 评论</span>
-                            </div>
-                            {% if project.average_rating > 0 %}
-                            <div class="stat-item">
-                                <i class="fas fa-star"></i>
-                                <span class="rating-display">
-                                    {% for i in range(5) %}
-                                        {% if i < project.average_rating %}
-                                            <i class="fas fa-star"></i>
-                                        {% else %}
-                                            <i class="far fa-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <span class="rating-text">{{ project.average_rating }}</span>
-                                </span>
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 交互按钮 -->
-                        {% if current_user.is_authenticated %}
-                        <div class="interaction-buttons">
-                            <button class="interaction-btn like-btn" data-id="{{ project.id }}" data-type="project">
-                                <i class="far fa-heart"></i>
-                                <span class="count">{{ project.like_count }}</span>
-                            </button>
-                            <button class="interaction-btn favorite-btn" data-id="{{ project.id }}" data-type="project">
-                                <i class="far fa-star"></i>
-                                <span class="count">{{ project.favorite_count }}</span>
-                            </button>
-                            <div class="rating-section">
-                                <label class="rating-label">评分:</label>
-                                <div class="rating-input">
-                                    <input type="radio" id="rating-{{ project.id }}-1" name="rating" value="1">
-                                    <label for="rating-{{ project.id }}-1"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ project.id }}-2" name="rating" value="2">
-                                    <label for="rating-{{ project.id }}-2"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ project.id }}-3" name="rating" value="3">
-                                    <label for="rating-{{ project.id }}-3"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ project.id }}-4" name="rating" value="4">
-                                    <label for="rating-{{ project.id }}-4"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ project.id }}-5" name="rating" value="5">
-                                    <label for="rating-{{ project.id }}-5"><i class="far fa-star"></i></label>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 项目链接 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6><i class="fas fa-link"></i> 项目链接</h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        {% if project.github_url %}
-                            <a href="{{ project.github_url }}" class="btn btn-outline-dark" target="_blank">
-                                <i class="fab fa-github"></i> 查看源码
-                            </a>
-                        {% endif %}
-                        
-                        {% if project.live_url %}
-                            <a href="{{ project.live_url }}" class="btn btn-outline-primary" target="_blank">
-                                <i class="fas fa-external-link-alt"></i> 在线演示
-                            </a>
-                        {% endif %}
-                        
-                        {% if project.demo_url %}
-                            <a href="{{ project.demo_url }}" class="btn btn-outline-success" target="_blank">
-                                <i class="fas fa-play"></i> 演示视频
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 项目信息 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h6><i class="fas fa-info"></i> 项目信息</h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <small class="text-muted">创建时间</small>
-                        <div>{{ project.created_at.strftime('%Y年%m月%d日') }}</div>
-                    </div>
-                    
-                    {% if project.updated_at %}
-                        <div class="mb-3">
-                            <small class="text-muted">更新时间</small>
-                            <div>{{ project.updated_at.strftime('%Y年%m月%d日') }}</div>
-                        </div>
-                    {% endif %}
-                    
-                    <div class="mb-3">
-                        <small class="text-muted">项目状态</small>
-                        <div>
-                            {% if project.status == 'active' %}
-                                <span class="badge bg-success">进行中</span>
-                            {% elif project.status == 'completed' %}
-                                <span class="badge bg-primary">已完成</span>
-                            {% else %}
-                                <span class="badge bg-secondary">已归档</span>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    {% if project.category %}
-                        <div class="mb-3">
-                            <small class="text-muted">项目分类</small>
-                            <div>{{ project.category }}</div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-            
-            <!-- 相关项目 -->
-            {% if related_projects %}
-                <div class="card">
-                    <div class="card-header">
-                        <h6><i class="fas fa-project-diagram"></i> 相关项目</h6>
-                    </div>
-                    <div class="card-body">
-                        {% for related in related_projects %}
-                            <div class="d-flex align-items-center mb-3">
-                                {% if related.image_url %}
-                                    <img src="{{ related.image_url }}" alt="{{ related.title }}" 
-                                         class="rounded me-3" style="width: 50px; height: 50px; object-fit: cover;">
-                                {% else %}
-                                    <div class="bg-light rounded me-3 d-flex align-items-center justify-content-center" 
-                                         style="width: 50px; height: 50px;">
-                                        <i class="fas fa-code text-muted"></i>
-                                    </div>
-                                {% endif %}
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">
-                                        <a href="{{ url_for('main.project_detail', project_id=related.id) }}" 
-                                           class="text-decoration-none">{{ related.title }}</a>
-                                    </h6>
-                                    {% if related.short_description %}
-                                        <small class="text-muted">{{ related.short_description[:50] }}...</small>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% endif %}
+    </div>
+</div>
+
+<!-- 微信分享二维码小弹窗 -->
+<div id="wechatShareModal" class="qr-popup" style="display: none;">
+    <div class="qr-popup-content">
+        <div id="qrcode"></div>
+        <p class="text-muted small mt-2 mb-0">微信扫码分享</p>
+    </div>
+</div>
+
+<!-- 悬浮互动按钮 -->
+{% if current_user.is_authenticated %}
+<div class="floating-interaction-buttons">
+    <div class="floating-buttons-row">
+        <button class="floating-btn like-btn" data-id="{{ project.id }}" data-type="project" title="点赞">
+            <i class="far fa-heart"></i>
+        </button>
+        <button class="floating-btn favorite-btn" data-id="{{ project.id }}" data-type="project" title="收藏">
+            <i class="far fa-star"></i>
+        </button>
+    </div>
+    <div class="floating-rating-section">
+        <label class="rating-label">评分:</label>
+        <div class="rating-input">
+            <input type="radio" id="rating-{{ project.id }}-1" name="rating" value="1">
+            <label for="rating-{{ project.id }}-1"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ project.id }}-2" name="rating" value="2">
+            <label for="rating-{{ project.id }}-2"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ project.id }}-3" name="rating" value="3">
+            <label for="rating-{{ project.id }}-3"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ project.id }}-4" name="rating" value="4">
+            <label for="rating-{{ project.id }}-4"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ project.id }}-5" name="rating" value="5">
+            <label for="rating-{{ project.id }}-5"><i class="far fa-star"></i></label>
         </div>
     </div>
 </div>
+{% endif %}
 {% endblock %}
 
 {% block extra_css %}
+<!-- 简化版评论编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
+
+<style>
+/* 项目元信息样式 */
+.project-meta-info {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 24px;
+}
+
+.meta-single-line {
+    gap: 8px;
+}
+
+.meta-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.meta-right {
+    flex-shrink: 0;
+}
+
+.share-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.share-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.rating-text {
+    font-size: 12px;
+    color: #666;
+    margin-left: 2px;
+}
+
+/* 悬浮互动按钮样式 */
+.floating-interaction-buttons {
+    position: fixed;
+    right: 20px;
+    top: 30%;
+    transform: translateY(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 16px 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    width: 120px;
+    box-sizing: border-circle;
+}
+
+.floating-buttons-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.floating-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #666;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.floating-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.floating-btn i {
+    font-size: 18px;
+}
+
+.floating-btn.liked {
+    color: #e74c3c;
+}
+
+.floating-btn.liked i {
+    color: #e74c3c;
+}
+
+.floating-btn.favorited {
+    color: #f39c12;
+}
+
+.floating-btn.favorited i {
+    color: #f39c12;
+}
+
+.floating-rating-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.floating-rating-section .rating-label {
+    font-size: 11px;
+    color: #666;
+    margin: 0;
+    text-align: center;
+}
+
+.floating-rating-section .rating-input {
+    display: flex;
+    gap: 2px;
+}
+
+.floating-rating-section .rating-input input[type="radio"] {
+    display: none;
+}
+
+.floating-rating-section .rating-input label {
+    cursor: pointer;
+    color: #ddd;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.floating-rating-section .rating-input label:hover,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label ~ label {
+    color: #ddd;
+}
+
+/* 分享按钮样式优化 */
+.share-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.share-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.share-btn i {
+    font-size: 12px;
+}
+
+/* 二维码弹窗样式 */
+.qr-popup {
+    position: fixed;
+    z-index: 9999;
+    pointer-events: none;
+}
+
+.qr-popup-content {
+    width: 140px;
+    background: white;
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#qrcode {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#qrcode img {
+    width: 120px;
+    height: 120px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .floating-interaction-buttons {
+        right: 10px;
+        padding: 12px 8px;
+        gap: 8px;
+        width: 100px;
+    }
+    
+    .floating-buttons-row {
+        gap: 6px;
+    }
+    
+    .floating-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .floating-btn i {
+        font-size: 16px;
+    }
+    
+    .floating-rating-section {
+        padding: 8px;
+    }
+    
+    .floating-rating-section .rating-input label {
+        font-size: 12px;
+    }
+    
+    .meta-single-line {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+    
+    .meta-left {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .meta-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .share-buttons {
+        flex-shrink: 0;
+    }
+}
+</style>
+
 <style>
 .project-description {
     line-height: 1.8;
@@ -412,13 +589,20 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/rich-text-editor.js') }}"></script>
+<!-- 简化版评论编辑器 JavaScript -->
+<script src="{{ url_for('static', filename='js/simple-comment-editor.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化富文本编辑器
+    // 初始化悬浮按钮状态
+    setupFloatingButtons();
+    
+    // 初始化简化版评论编辑器
     const commentEditorContainer = document.getElementById('comment-editor-{{ project.id }}');
     if (commentEditorContainer) {
-        const editor = new RichTextEditor(commentEditorContainer);
+        const editor = new SimpleCommentEditor(commentEditorContainer, {
+            placeholder: '发表你的评论...',
+            content: ''
+        });
         
         // 在提交表单前同步编辑器内容到隐藏的textarea
         const commentForm = document.querySelector('.comment-form');
@@ -431,6 +615,181 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+    
 });
+
+// 设置悬浮按钮状态
+async function setupFloatingButtons() {
+    const floatingButtons = document.querySelector('.floating-interaction-buttons');
+    if (!floatingButtons) return;
+    
+    const likeBtn = floatingButtons.querySelector('.like-btn');
+    const favoriteBtn = floatingButtons.querySelector('.favorite-btn');
+    const ratingSection = floatingButtons.querySelector('.floating-rating-section');
+    
+    if (!likeBtn || !favoriteBtn) return;
+    
+    const contentId = likeBtn.dataset.id;
+    const contentType = likeBtn.dataset.type;
+    
+    try {
+        // 获取用户状态
+        const response = await fetch(`/api/user-status/${contentId}?type=${contentType}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            // 更新点赞状态
+            updateFloatingLikeUI(likeBtn, result.is_liked, result.like_count || 0);
+            
+            // 更新收藏状态
+            updateFloatingFavoriteUI(favoriteBtn, result.is_favorited, result.favorite_count || 0);
+            
+            // 更新评分状态
+            if (ratingSection) {
+                updateFloatingRatingUI(ratingSection, result.user_rating);
+            }
+        }
+    } catch (error) {
+        console.error('获取悬浮按钮状态失败:', error);
+    }
+}
+
+// 更新悬浮点赞按钮UI
+function updateFloatingLikeUI(button, isLiked, count) {
+    const icon = button.querySelector('i');
+    
+    if (isLiked) {
+        icon.className = 'fas fa-heart';
+        button.classList.add('liked');
+    } else {
+        icon.className = 'far fa-heart';
+        button.classList.remove('liked');
+    }
+}
+
+// 更新悬浮收藏按钮UI
+function updateFloatingFavoriteUI(button, isFavorited, count) {
+    const icon = button.querySelector('i');
+    
+    if (isFavorited) {
+        icon.className = 'fas fa-star';
+        button.classList.add('favorited');
+    } else {
+        icon.className = 'far fa-star';
+        button.classList.remove('favorited');
+    }
+}
+
+// 更新悬浮评分UI
+function updateFloatingRatingUI(ratingSection, userRating) {
+    const ratingInputs = ratingSection.querySelectorAll('input[name="rating"]');
+    
+    // 清除所有选中状态
+    ratingInputs.forEach(input => {
+        input.checked = false;
+    });
+    
+    // 设置用户评分
+    if (userRating && userRating > 0) {
+        const targetInput = ratingSection.querySelector(`input[name="rating"][value="${userRating}"]`);
+        if (targetInput) {
+            targetInput.checked = true;
+        }
+    }
+}
+
+function shareToWeChat(event) {
+    // 显示微信分享弹窗
+    const popup = document.getElementById('wechatShareModal');
+    
+    // 获取鼠标位置
+    const mouseX = event.clientX;
+    const mouseY = event.clientY;
+    
+    // 设置弹窗位置（在鼠标位置上方）
+    popup.style.left = mouseX + 'px';
+    popup.style.top = (mouseY - 160) + 'px'; // 在鼠标上方显示
+    popup.style.display = 'block';
+    
+    // 生成二维码
+    generateQRCode();
+    
+    // 点击其他地方关闭弹窗
+    document.addEventListener('click', function closePopup(e) {
+        if (!popup.contains(e.target) && !e.target.closest('.share-btn')) {
+            popup.style.display = 'none';
+            document.removeEventListener('click', closePopup);
+        }
+    });
+    
+    // 阻止事件冒泡，避免立即触发关闭
+    event.stopPropagation();
+}
+
+function shareToWeibo() {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(document.title);
+    const weiboUrl = `https://service.weibo.com/share/share.php?url=${url}&title=${title}`;
+    window.open(weiboUrl, '_blank');
+}
+
+function copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+        // 使用更友好的提示
+        showToast('链接已复制到剪贴板', 'success');
+    }).catch(() => {
+        // 降级方案
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('链接已复制到剪贴板', 'success');
+    });
+}
+
+function generateQRCode() {
+    const qrContainer = document.getElementById('qrcode');
+    if (!qrContainer) return;
+    
+    // 清空之前的内容
+    qrContainer.innerHTML = '';
+    
+    const url = window.location.href;
+    
+    // 使用在线二维码生成服务，调整为120x120尺寸
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}`;
+    
+    // 创建二维码图片
+    const qrImg = document.createElement('img');
+    qrImg.src = qrUrl;
+    qrImg.alt = '微信分享二维码';
+    qrImg.style.borderRadius = '8px';
+    qrImg.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+    
+    qrContainer.appendChild(qrImg);
+}
+
+function showToast(message, type = 'info') {
+    // 创建简单的提示框
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'info'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 200px;';
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
+        ${message}
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
 </script>
 {% endblock %} 

@@ -16,7 +16,7 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <div class="card">
                 <div class="card-header">
                     <h5><i class="fas fa-edit"></i> 文章信息</h5>
@@ -32,7 +32,7 @@
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="mb-3">
+                                <div class="mb-1">
                                     <label for="category" class="form-label">文章分类</label>
                                     <select class="form-select" id="category" name="category">
                                         <option value="">选择分类</option>
@@ -55,11 +55,8 @@
 
                         <div class="mb-3">
                             <label for="content" class="form-label">文章内容 *</label>
-                            <textarea class="form-control" id="content" name="content" 
-                                      rows="12" required placeholder="使用Markdown格式编写文章内容">{{ post.content }}</textarea>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle"></i> 支持Markdown格式，可以使用 # ## ### 等标题，**粗体**，*斜体*，[链接](url)等
-                            </div>
+                            <div id="tiptap-container"></div>
+                            <textarea id="content" name="content" style="display:none;">{{ post.content }}</textarea>
                         </div>
 
                         <div class="row">
@@ -73,16 +70,6 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="featured_image" class="form-label">特色图片URL</label>
-                                    <input type="url" class="form-control" id="featured_image" name="featured_image" 
-                                           value="{{ post.featured_image or '' }}" placeholder="https://...">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
                                     <label for="status" class="form-label">发布状态</label>
                                     <select class="form-select" id="status" name="status">
                                         <option value="draft" {{ 'selected' if post.status == 'draft' }}>草稿</option>
@@ -90,95 +77,25 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="slug" class="form-label">URL别名</label>
-                                    <input type="text" class="form-control" id="slug" name="slug" 
-                                           value="{{ post.slug or '' }}" placeholder="自动生成或手动设置">
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle"></i> 留空将根据标题自动生成
-                                    </div>
-                                </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center btn-actions">
+                            <div>
+                                <button type="button" class="btn btn-outline-danger delete-post-btn" 
+                                        data-post-id="{{ post.id }}">
+                                    <i class="fas fa-trash"></i> 删除文章
+                                </button>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> 取消
+                                </a>
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas fa-save"></i> 保存更改
+                                </button>
                             </div>
                         </div>
-
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn-submit">
-                                <i class="fas fa-save"></i> 保存更改
-                            </button>
-                            <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-times"></i> 取消
-                            </a>
-                        </div>
                     </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <!-- 文章预览 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-eye"></i> 文章预览</h5>
-                </div>
-                <div class="card-body">
-                    <div id="post-preview">
-                        <div class="text-center text-muted">
-                            <i class="fas fa-file-alt fa-3x mb-3"></i>
-                            <p>填写文章信息后，这里将显示预览</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Markdown 帮助 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-question-circle"></i> Markdown 语法</h5>
-                </div>
-                <div class="card-body">
-                    <div class="small">
-                        <p><strong>标题：</strong></p>
-                        <code># 一级标题</code><br>
-                        <code>## 二级标题</code><br>
-                        <code>### 三级标题</code>
-                        
-                        <p class="mt-2"><strong>文本格式：</strong></p>
-                        <code>**粗体**</code><br>
-                        <code>*斜体*</code><br>
-                        <code>`代码`</code>
-                        
-                        <p class="mt-2"><strong>链接：</strong></p>
-                        <code>[链接文本](URL)</code>
-                        
-                        <p class="mt-2"><strong>列表：</strong></p>
-                        <code>- 无序列表项</code><br>
-                        <code>1. 有序列表项</code>
-                        
-                        <p class="mt-2"><strong>代码块：</strong></p>
-                        <code>```python<br>print("Hello World")<br>```</code>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 快速操作 -->
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-tools"></i> 快速操作</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        {% if post.status == 'published' and post.slug %}
-                                                       <a href="{{ url_for('main.post_detail', slug=post.slug) }}" 
-                           class="btn btn-outline-primary" target="_blank">
-                            <i class="fas fa-external-link-alt"></i> 查看文章页面
-                        </a>
-                        {% endif %}
-                        <button type="button" class="btn btn-outline-danger" 
-                                onclick="deletePost({{ post.id }})">
-                            <i class="fas fa-trash"></i> 删除文章
-                        </button>
-                    </div>
                 </div>
             </div>
         </div>
@@ -205,86 +122,109 @@
         </div>
     </div>
 </div>
+
+{% endblock %}
+
+{% block extra_css %}
+<!-- Tiptap 编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
+<!-- 图片模态框样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
+
+<style>
+/* 按钮布局样式 */
+.btn-actions {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-actions .btn {
+    min-width: 120px;
+    font-weight: 500;
+}
+
+.btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-submit:hover {
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.btn-outline-danger {
+    border-color: rgba(220, 53, 69, 0.5);
+    color: rgba(220, 53, 69, 0.8);
+    background: transparent;
+}
+
+.btn-outline-danger:hover {
+    background: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.8);
+    color: rgba(220, 53, 69, 1);
+}
+
+.btn-outline-secondary {
+    border-color: rgba(255, 255, 255, 0.3);
+    color: rgba(255, 255, 255, 0.8);
+    background: transparent;
+}
+
+.btn-outline-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.5);
+    color: rgba(255, 255, 255, 1);
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
+<!-- 简化版 Tiptap 编辑器 JavaScript -->
+<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 实时预览功能
+    // 初始化简化版 Tiptap 编辑器
+    const tiptapContainer = document.getElementById('tiptap-container');
+    const contentTextarea = document.getElementById('content');
+    
+    const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
+        placeholder: '开始写作...',
+        content: contentTextarea.value || ''
+    });
+    
+    // 监听内容变化，同步到隐藏的 textarea
+    tiptapEditor.onContentChange = function(htmlContent) {
+        contentTextarea.value = htmlContent;
+    };
+    
+    // 获取表单元素
     const titleInput = document.getElementById('title');
     const excerptInput = document.getElementById('excerpt');
-    const contentInput = document.getElementById('content');
     const categorySelect = document.getElementById('category');
-    const featuredImageInput = document.getElementById('featured_image');
-    const previewDiv = document.getElementById('post-preview');
-
-    function updatePreview() {
-        const title = titleInput.value || '文章标题';
-        const excerpt = excerptInput.value || '文章摘要';
-        const content = contentInput.value || '文章内容';
-        const category = categorySelect.value || '技术分享';
-        const featuredImage = featuredImageInput.value;
-
-        // 简单的Markdown解析
-        const parsedContent = parseMarkdown(content);
-        
-        let previewHTML = `
-            <article class="blog-post">
-                <header class="mb-3">
-                    <h4 class="card-title">${title}</h4>
-                    <div class="text-muted small">
-                        <i class="fas fa-folder"></i> ${category}
-                        <i class="fas fa-calendar ms-2"></i> ${new Date().toLocaleDateString()}
-                    </div>
-                </header>
-                
-                ${featuredImage ? 
-                    `<img src="${featuredImage}" class="img-fluid rounded mb-3" alt="${title}" style="max-height: 150px; object-fit: cover;">` : ''
-                }
-                
-                ${excerpt ? `<p class="text-muted">${excerpt}</p>` : ''}
-                
-                <div class="blog-content">
-                    ${parsedContent}
-                </div>
-            </article>
-        `;
-
-        previewDiv.innerHTML = previewHTML;
+    
+    // 监听编辑器内容变化
+    tiptapEditor.onContentChange = function(htmlContent) {
+        contentTextarea.value = htmlContent;
+    };
+    
+    // 删除文章按钮事件
+    const deleteBtn = document.querySelector('.delete-post-btn');
+    if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            deleteModal.show();
+        });
     }
-
-    function parseMarkdown(text) {
-        if (!text) return '';
-        
-        return text
-            // 标题
-            .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-            .replace(/^## (.*$)/gim, '<h4>$1</h4>')
-            .replace(/^# (.*$)/gim, '<h5>$1</h5>')
-            // 粗体和斜体
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            // 代码
-            .replace(/`(.*?)`/g, '<code>$1</code>')
-            // 链接
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>')
-            // 换行
-            .replace(/\n/g, '<br>');
-    }
-
-    // 绑定事件
-    [titleInput, excerptInput, contentInput, categorySelect, featuredImageInput].forEach(element => {
-        element.addEventListener('input', updatePreview);
-        element.addEventListener('change', updatePreview);
-    });
-
-    // 初始预览
-    updatePreview();
 });
-
-function deletePost(postId) {
-    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-    deleteModal.show();
-}
 </script>
 {% endblock %} 

@@ -29,11 +29,8 @@
                                 <!-- 内容 -->
                                 <div class="mb-3">
                                     <label for="content" class="form-label">文章内容 *</label>
-                                    <textarea class="form-control" id="content" name="content" rows="15" 
-                                              required placeholder="请输入文章内容，支持Markdown格式"></textarea>
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle"></i> 支持Markdown格式，可以使用 **粗体**、*斜体*、[链接](url) 等
-                                    </div>
+                                    <div id="tiptap-container"></div>
+                                    <textarea id="content" name="content" style="display:none;"></textarea>
                                 </div>
                                 
                                 <!-- 摘要 -->
@@ -77,23 +74,6 @@
                                             <input type="text" class="form-control" id="tags" name="tags" 
                                                    placeholder="用逗号分隔多个标签">
                                             <div class="form-text">例如：Python, Flask, 教程</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- 特色图片 -->
-                                <div class="card mb-3">
-                                    <div class="card-header">
-                                        <h6><i class="fas fa-image"></i> 特色图片</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <label for="featured_image" class="form-label">图片URL</label>
-                                            <input type="url" class="form-control" id="featured_image" name="featured_image" 
-                                                   placeholder="https://example.com/image.jpg">
-                                        </div>
-                                        <div id="image-preview" class="text-center" style="display: none;">
-                                            <img id="preview-img" src="" alt="预览" class="img-fluid rounded">
                                         </div>
                                     </div>
                                 </div>
@@ -143,6 +123,9 @@
 {% endblock %}
 
 {% block extra_css %}
+<!-- 图片模态框样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
+
 <style>
     .form-control:focus, .form-select:focus {
         border-color: #007bff;
@@ -162,101 +145,117 @@
 </style>
 {% endblock %}
 
+{% block extra_css %}
+<!-- Tiptap 编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
+{% endblock %}
+
 {% block extra_js %}
+<!-- 简化版 Tiptap 编辑器 JavaScript -->
+<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化简化版 Tiptap 编辑器
+    const tiptapContainer = document.getElementById('tiptap-container');
+    const contentTextarea = document.getElementById('content');
+    
+    const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
+        placeholder: '开始写作...',
+        content: ''
+    });
+    
+    // 监听内容变化，同步到隐藏的 textarea
+    tiptapEditor.onContentChange = function(htmlContent) {
+        contentTextarea.value = htmlContent;
+    };
+    
     const titleInput = document.getElementById('title');
-    const contentInput = document.getElementById('content');
     const excerptInput = document.getElementById('excerpt');
-    const featuredImageInput = document.getElementById('featured_image');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
     const previewBtn = document.getElementById('preview-btn');
-    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    const previewModal = document.getElementById('previewModal');
     const previewContent = document.getElementById('preview-content');
     
     // 自动生成摘要
-    contentInput.addEventListener('input', function() {
-        if (!excerptInput.value && this.value.length > 50) {
-            const excerpt = this.value.substring(0, 200).replace(/\n/g, ' ').trim();
+    tiptapEditor.onContentChange = function(htmlContent) {
+        contentTextarea.value = htmlContent;
+        
+        // 自动生成摘要
+        if (excerptInput && !excerptInput.value && htmlContent.length > 50) {
+            // 从 HTML 中提取纯文本
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            const excerpt = textContent.substring(0, 200).replace(/\n/g, ' ').trim();
             excerptInput.value = excerpt + (excerpt.length === 200 ? '...' : '');
         }
-    });
-    
-    // 图片预览
-    featuredImageInput.addEventListener('input', function() {
-        if (this.value) {
-            previewImg.src = this.value;
-            imagePreview.style.display = 'block';
-        } else {
-            imagePreview.style.display = 'none';
-        }
-    });
+    };
     
     // 预览功能
-    previewBtn.addEventListener('click', function() {
-        const title = titleInput.value || '文章标题';
-        const content = contentInput.value || '文章内容';
-        const excerpt = excerptInput.value || content.substring(0, 200);
+    if (previewBtn && previewModal && previewContent) {
+        const modal = new bootstrap.Modal(previewModal);
         
-        // 简单的Markdown转HTML（基础功能）
-        let htmlContent = content
-            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-            .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>')
-            .replace(/\n/g, '<br>');
-        
-        const previewHTML = `
-            <article class="blog-post">
-                <header class="mb-4">
-                    <h1 class="display-4">${title}</h1>
-                    <div class="text-muted">
-                        <small>作者：{{ current_user.username }} | 发布时间：${new Date().toLocaleDateString()}</small>
+        previewBtn.addEventListener('click', function() {
+            const title = titleInput.value || '文章标题';
+            const content = contentTextarea.value || '文章内容';
+            const excerpt = excerptInput.value || '';
+            
+            const previewHTML = `
+                <article class="blog-post">
+                    <header class="mb-4">
+                        <h1 class="display-4">${title}</h1>
+                        <div class="text-muted">
+                            <small>作者：{{ current_user.username }} | 发布时间：${new Date().toLocaleDateString()}</small>
+                        </div>
+                    </header>
+                    
+                    ${excerpt ? `<div class="lead mb-4">${excerpt}</div>` : ''}
+                    
+                    <div class="blog-content">
+                        ${content}
                     </div>
-                </header>
-                
-                ${excerpt ? `<div class="lead mb-4">${excerpt}</div>` : ''}
-                
-                <div class="blog-content">
-                    ${htmlContent}
-                </div>
-            </article>
-        `;
-        
-        previewContent.innerHTML = previewHTML;
-        previewModal.show();
-    });
+                </article>
+            `;
+            
+            previewContent.innerHTML = previewHTML;
+            modal.show();
+        });
+    }
     
     // 表单验证
     const form = document.getElementById('post-form');
-    form.addEventListener('submit', function(e) {
-        const title = titleInput.value.trim();
-        const content = contentInput.value.trim();
-        
-        if (!title) {
-            e.preventDefault();
-            alert('请输入文章标题');
-            titleInput.focus();
-            return;
-        }
-        
-        if (!content) {
-            e.preventDefault();
-            alert('请输入文章内容');
-            contentInput.focus();
-            return;
-        }
-        
-        // 显示保存提示
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
-        submitBtn.disabled = true;
-    });
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const title = titleInput.value.trim();
+            const content = contentTextarea.value.trim();
+            
+            if (!title) {
+                e.preventDefault();
+                alert('请输入文章标题');
+                titleInput.focus();
+                return;
+            }
+            
+            if (!content) {
+                e.preventDefault();
+                alert('请输入文章内容');
+                tiptapEditor.focus();
+                return;
+            }
+            
+            // 显示保存提示
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
     
     // 字数统计
     function updateWordCount() {
-        const content = contentInput.value;
+        const content = contentTextarea.value;
         const wordCount = content.length;
         const charCount = content.replace(/\s/g, '').length;
         
@@ -264,7 +263,21 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log(`字符数：${wordCount}，非空字符数：${charCount}`);
     }
     
-    contentInput.addEventListener('input', updateWordCount);
+    // 更新编辑器内容变化处理函数
+    tiptapEditor.onContentChange = function(htmlContent) {
+        contentTextarea.value = htmlContent;
+        updateWordCount();
+        
+        // 自动生成摘要
+        if (excerptInput && !excerptInput.value && htmlContent.length > 50) {
+            // 从 HTML 中提取纯文本
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            const textContent = tempDiv.textContent || tempDiv.innerText || '';
+            const excerpt = textContent.substring(0, 200).replace(/\n/g, ' ').trim();
+            excerptInput.value = excerpt + (excerpt.length === 200 ? '...' : '');
+        }
+    };
 });
 </script>
 {% endblock %} 

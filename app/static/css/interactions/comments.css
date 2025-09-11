@@ -744,6 +744,51 @@
     margin-bottom: 0.5rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--bg-tertiary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.comment-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.comment-like-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.comment-like-btn:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.comment-like-btn.liked {
+    color: #e74c3c;
+}
+
+.comment-like-btn.liked:hover {
+    color: #c0392b;
+}
+
+.comment-like-btn i {
+    font-size: 0.8rem;
+}
+
+.like-count {
+    font-size: 0.8rem;
+    font-weight: 500;
 }
 
 .btn-reply {

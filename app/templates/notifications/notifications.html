@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}消息通知 - 我的个人网站{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="admin-header">
+        <h1>消息通知</h1>
+        <div class="admin-actions">
+            <button class="btn btn-primary" onclick="markAllRead()">
+                <i class="fas fa-check-double"></i> 全部已读
+            </button>
+        </div>
+    </div>
+
+    <!-- 筛选器 -->
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>消息筛选</h2>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="type" class="form-label">类型筛选</label>
+                        <select class="form-select" id="type" name="type">
+                            <option value="">全部类型</option>
+                            <option value="comment" {% if type_filter == 'comment' %}selected{% endif %}>评论</option>
+                            <option value="reply" {% if type_filter == 'reply' %}selected{% endif %}>回复</option>
+                            <option value="like" {% if type_filter == 'like' %}selected{% endif %}>点赞</option>
+                            <option value="favorite" {% if type_filter == 'favorite' %}selected{% endif %}>收藏</option>
+                            <option value="rating" {% if type_filter == 'rating' %}selected{% endif %}>评分</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter"></i> 筛选
+                            </button>
+                            <a href="{{ url_for('notification.notifications') }}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> 清除
+                            </a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 消息列表 -->
+    <div class="admin-content">
+        <div class="content-card">
+            <div class="card-header">
+                <h2>消息列表 (共 {{ notifications.total }} 条)</h2>
+            </div>
+            <div class="card-body">
+                {% if notifications.items %}
+                <div class="notification-list">
+                    {% for notification in notifications.items %}
+                    <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
+                         data-notification-id="{{ notification.id }}">
+                        <div class="notification-icon">
+                            {% if notification.type == 'comment' %}
+                                <i class="fas fa-comment text-primary"></i>
+                            {% elif notification.type == 'reply' %}
+                                <i class="fas fa-reply text-success"></i>
+                            {% elif notification.type == 'like' %}
+                                <i class="fas fa-heart text-danger"></i>
+                            {% elif notification.type == 'favorite' %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% elif notification.type == 'rating' %}
+                                <i class="fas fa-star text-info"></i>
+                            {% else %}
+                                <i class="fas fa-bell text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="notification-content">
+                            <div class="notification-header">
+                                <h5 class="notification-title">{{ notification.title }}</h5>
+                                <span class="notification-time">{{ notification.created_at.strftime('%m-%d %H:%M') }}</span>
+                            </div>
+                            <div class="notification-body">
+                                <p class="notification-text">{{ notification.content }}</p>
+                                {% if notification.sender_name %}
+                                <small class="notification-sender">来自: {{ notification.sender_name }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="notification-actions">
+                            {% if notification.related_url %}
+                            <a href="{{ url_for('notification.view_notification', notification_id=notification.id) }}" 
+                               class="btn btn-sm btn-primary" title="查看详情">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            {% endif %}
+                            {% if not notification.is_read %}
+                            <button class="btn btn-sm btn-success" 
+                                    onclick="markAsRead({{ notification.id }})" 
+                                    title="标记已读">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            {% endif %}
+                            <button class="btn btn-sm btn-danger" 
+                                    onclick="deleteNotification({{ notification.id }})" 
+                                    title="删除">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- 分页 -->
+                {% if notifications.pages > 1 %}
+                <div class="pagination-wrapper">
+                    <nav class="pagination">
+                        {% if notifications.has_prev %}
+                            <a href="{{ url_for('notification.notifications', page=notifications.prev_num, type=type_filter) }}" class="page-link">
+                                <i class="fas fa-chevron-left"></i> 上一页
+                            </a>
+                        {% endif %}
+                        
+                        {% for page_num in notifications.iter_pages() %}
+                            {% if page_num %}
+                                {% if page_num != notifications.page %}
+                                    <a href="{{ url_for('notification.notifications', page=page_num, type=type_filter) }}" class="page-link">{{ page_num }}</a>
+                                {% else %}
+                                    <span class="page-link current">{{ page_num }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="page-link disabled">...</span>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if notifications.has_next %}
+                            <a href="{{ url_for('notification.notifications', page=notifications.next_num, type=type_filter) }}" class="page-link">
+                                下一页 <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </nav>
+                </div>
+                {% endif %}
+
+                {% else %}
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash fa-3x"></i>
+                    <h3>暂无消息</h3>
+                    <p>当有人评论、点赞或收藏你的内容时，消息会显示在这里。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.notification-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.notification-item:hover {
+    background: var(--bg-tertiary);
+    border-color: var(--primary-color);
+}
+
+.notification-item.unread {
+    background: rgba(13, 110, 253, 0.1);
+    border-left: 4px solid var(--primary-color);
+}
+
+.notification-item.unread::before {
+    content: '';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 8px;
+    height: 8px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-primary);
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.notification-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.notification-time {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.notification-body {
+    margin-bottom: 8px;
+}
+
+.notification-text {
+    margin: 0 0 4px 0;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+
+.notification-sender {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.notification-actions .btn {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .notification-item {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .notification-header {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .notification-actions {
+        align-self: flex-end;
+    }
+}
+</style>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+            if (item) {
+                item.classList.remove('unread');
+                const markBtn = item.querySelector('button[onclick*="markAsRead"]');
+                if (markBtn) {
+                    markBtn.remove();
+                }
+            }
+            updateUnreadCount();
+        }
+    })
+    .catch(error => {
+        console.error('标记已读失败:', error);
+    });
+}
+
+function deleteNotification(notificationId) {
+    if (confirm('确定要删除这条消息吗？')) {
+        fetch(`/api/notifications/${notificationId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (item) {
+                    item.remove();
+                }
+                updateUnreadCount();
+            }
+        })
+        .catch(error => {
+            console.error('删除消息失败:', error);
+        });
+    }
+}
+
+function markAllRead() {
+    if (confirm('确定要标记所有消息为已读吗？')) {
+        fetch('/api/notifications/mark-all-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 移除所有未读标记
+                document.querySelectorAll('.notification-item.unread').forEach(item => {
+                    item.classList.remove('unread');
+                    const markBtn = item.querySelector('button[onclick*="markAsRead"]');
+                    if (markBtn) {
+                        markBtn.remove();
+                    }
+                });
+                updateUnreadCount();
+            }
+        })
+        .catch(error => {
+            console.error('标记全部已读失败:', error);
+        });
+    }
+}
+
+function updateUnreadCount() {
+    fetch('/api/notifications/unread-count')
+    .then(response => response.json())
+    .then(data => {
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            if (data.count > 0) {
+                badge.textContent = data.count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    });
+}
+
+// 自动提交筛选表单
+document.getElementById('type').addEventListener('change', function() {
+    this.form.submit();
+});
+</script>
+{% endblock %}

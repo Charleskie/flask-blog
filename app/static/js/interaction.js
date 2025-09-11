@@ -181,6 +181,12 @@ class InteractionManager {
                 this.handleFavorite(e.target.closest('.favorite-btn'));
             }
             
+            if (e.target.closest('.comment-like-btn')) {
+                console.log('评论点赞按钮被点击');
+                e.preventDefault();
+                this.handleCommentLike(e.target.closest('.comment-like-btn'));
+            }
+            
              // 评论提交按钮事件
             if (e.target.closest('.comment-submit')) {
                 console.log('评论提交按钮被点击');
@@ -194,7 +200,7 @@ class InteractionManager {
 
         // 评分选择事件 - 自动保存评分
         document.addEventListener('change', (e) => {
-            if (e.target.name === 'rating' && e.target.closest('.rating-section')) {
+            if (e.target.name === 'rating' && (e.target.closest('.rating-section') || e.target.closest('.floating-rating-section'))) {
                 console.log('评分被选择:', e.target.value);
                 this.handleRatingChange(e.target);
             }
@@ -252,6 +258,7 @@ class InteractionManager {
             
             if (result.success) {
                 this.updateLikeUI(button, result.is_liked, result.like_count);
+                this.updateFloatingLikeUI(contentId, contentType, result.is_liked, result.like_count);
                 this.showMessage(result.is_liked ? '点赞成功' : '取消点赞', result.is_liked ? 'success' : 'info');
             } else {
                 this.showMessage(result.message || '操作失败', 'error');
@@ -300,6 +307,7 @@ class InteractionManager {
             
             if (result.success) {
                 this.updateFavoriteUI(button, result.is_favorited, result.favorite_count);
+                this.updateFloatingFavoriteUI(contentId, contentType, result.is_favorited, result.favorite_count);
                 this.showMessage(result.is_favorited ? '收藏成功' : '取消收藏', result.is_favorited ? 'success' : 'info');
             } else {
                 this.showMessage(result.message || '操作失败', 'error');
@@ -312,12 +320,90 @@ class InteractionManager {
         }
     }
 
-    handleRatingChange(radio) {
-        const ratingSection = radio.closest('.rating-section');
-        const interactionButtons = ratingSection.closest('.interaction-buttons');
+    async handleCommentLike(button) {
+        const commentId = button.dataset.commentId;
         
-        // 从互动按钮获取内容ID和类型
-        const likeBtn = interactionButtons.querySelector('.like-btn');
+        if (!commentId) {
+            this.showMessage('参数错误', 'error');
+            return;
+        }
+
+        if (!this.currentUser) {
+            this.showMessage('请先登录', 'error');
+            return;
+        }
+
+        try {
+            button.disabled = true;
+            console.log('发送评论点赞请求:', { commentId: parseInt(commentId) });
+            
+            const response = await fetch('/api/comment-like', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    comment_id: parseInt(commentId)
+                })
+            });
+
+            console.log('评论点赞响应状态:', response.status);
+            
+            if (response.status === 401) {
+                this.showMessage('请先登录', 'error');
+                return;
+            }
+
+            const result = await response.json();
+            console.log('评论点赞响应结果:', result);
+
+            if (result.success) {
+                // 更新按钮状态
+                const icon = button.querySelector('i');
+                const countSpan = button.querySelector('.like-count');
+                
+                if (result.liked) {
+                    // 已点赞
+                    icon.className = 'fas fa-heart';
+                    button.classList.add('liked');
+                } else {
+                    // 取消点赞
+                    icon.className = 'far fa-heart';
+                    button.classList.remove('liked');
+                }
+                
+                // 更新点赞数
+                if (countSpan) {
+                    countSpan.textContent = result.like_count;
+                }
+                
+                this.showMessage(result.message, 'success');
+            } else {
+                this.showMessage(result.message || '操作失败', 'error');
+            }
+        } catch (error) {
+            console.error('评论点赞操作失败:', error);
+            this.showMessage('操作失败，请稍后重试', 'error');
+        } finally {
+            button.disabled = false;
+        }
+    }
+
+    handleRatingChange(radio) {
+        const ratingSection = radio.closest('.rating-section') || radio.closest('.floating-rating-section');
+        let interactionButtons, likeBtn;
+        
+        if (ratingSection.closest('.interaction-buttons')) {
+            // 普通互动按钮
+            interactionButtons = ratingSection.closest('.interaction-buttons');
+            likeBtn = interactionButtons.querySelector('.like-btn');
+        } else if (ratingSection.closest('.floating-interaction-buttons')) {
+            // 悬浮互动按钮
+            likeBtn = ratingSection.closest('.floating-interaction-buttons').querySelector('.like-btn');
+        }
+        
+        if (!likeBtn) return;
+        
         const contentId = likeBtn.dataset.id;
         const contentType = likeBtn.dataset.type;
         const rating = parseInt(radio.value);
@@ -375,13 +461,13 @@ class InteractionManager {
             return;
         }
 
-        // 尝试从富文本编辑器获取内容
+        // 尝试从简化版评论编辑器获取内容
         let content = '';
         const editorContainer = document.getElementById(`comment-editor-${contentId}`);
         
-        if (editorContainer && window.RichTextEditor) {
-            // 查找富文本编辑器实例
-            const editorInstance = editorContainer.richTextEditor;
+        if (editorContainer && window.SimpleCommentEditor) {
+            // 查找简化版评论编辑器实例
+            const editorInstance = editorContainer.simpleCommentEditor;
             
             if (editorInstance) {
                 content = editorInstance.getContent().trim();
@@ -515,9 +601,31 @@ class InteractionManager {
             countSpan.textContent = count;
         }
     }
+    
+    // 更新悬浮点赞按钮UI
+    updateFloatingLikeUI(contentId, contentType, isLiked, count) {
+        const floatingButtons = document.querySelector('.floating-interaction-buttons');
+        if (!floatingButtons) return;
+        
+        const likeBtn = floatingButtons.querySelector('.like-btn');
+        if (likeBtn && likeBtn.dataset.id === contentId && likeBtn.dataset.type === contentType) {
+            this.updateLikeUI(likeBtn, isLiked, count);
+        }
+    }
+    
+    // 更新悬浮收藏按钮UI
+    updateFloatingFavoriteUI(contentId, contentType, isFavorited, count) {
+        const floatingButtons = document.querySelector('.floating-interaction-buttons');
+        if (!floatingButtons) return;
+        
+        const favoriteBtn = floatingButtons.querySelector('.favorite-btn');
+        if (favoriteBtn && favoriteBtn.dataset.id === contentId && favoriteBtn.dataset.type === contentType) {
+            this.updateFavoriteUI(favoriteBtn, isFavorited, count);
+        }
+    }
 
     updateRatingUI(element, userRating) {
-        const ratingSection = element.querySelector('.rating-section');
+        const ratingSection = element.querySelector('.rating-section') || element.querySelector('.floating-rating-section');
         if (!ratingSection) return;
         
         const ratingInputs = ratingSection.querySelectorAll('input[name="rating"]');
@@ -576,9 +684,37 @@ class InteractionManager {
                     
                     // 更新评分状态
                     this.updateRatingUI(element, result.user_rating);
+                    
+                    // 更新悬浮按钮状态
+                    this.updateFloatingButtonsStatus(contentId, contentType, result);
                 }
             } catch (error) {
                 console.error('获取用户状态失败:', error);
+            }
+        }
+    }
+    
+    // 更新悬浮按钮状态
+    updateFloatingButtonsStatus(contentId, contentType, result) {
+        const floatingButtons = document.querySelector('.floating-interaction-buttons');
+        if (!floatingButtons) return;
+        
+        const likeBtn = floatingButtons.querySelector('.like-btn');
+        const favoriteBtn = floatingButtons.querySelector('.favorite-btn');
+        const ratingSection = floatingButtons.querySelector('.floating-rating-section');
+        
+        // 检查是否是同一个内容
+        if (likeBtn && likeBtn.dataset.id === contentId && likeBtn.dataset.type === contentType) {
+            if (likeBtn) {
+                this.updateLikeUI(likeBtn, result.is_liked, result.like_count || 0);
+            }
+            
+            if (favoriteBtn) {
+                this.updateFavoriteUI(favoriteBtn, result.is_favorited, result.favorite_count || 0);
+            }
+            
+            if (ratingSection) {
+                this.updateRatingUI(floatingButtons, result.user_rating);
             }
         }
     }
@@ -660,7 +796,7 @@ class InteractionManager {
                                 ${this.renderReplies(comment.replies || [])}
                             </div>
                             <div class="reply-form" style="display: none;" data-comment-id="${comment.id}">
-                                <div class="reply-rich-editor-container"></div>
+                                <div class="reply-simple-editor-container"></div>
                                 <div class="reply-actions">
                                     <button class="btn-submit-reply" data-comment-id="${comment.id}">
                                         <i class="fas fa-paper-plane"></i>
@@ -677,6 +813,14 @@ class InteractionManager {
                                     <i class="fas fa-reply"></i> 回复
                                     ${comment.replies_count > 0 ? `(${comment.replies_count})` : ''}
                                 </button>
+                                <div class="comment-actions">
+                                    <button class="comment-like-btn ${comment.is_liked ? 'liked' : ''}" 
+                                            data-comment-id="${comment.id}" 
+                                            title="${comment.is_liked ? '取消点赞' : '点赞'}">
+                                        <i class="${comment.is_liked ? 'fas' : 'far'} fa-heart"></i>
+                                        <span class="like-count">${comment.like_count || 0}</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1221,31 +1365,28 @@ class InteractionManager {
         if (replyForm) {
             replyForm.style.display = 'block';
             
-            // 初始化富文本编辑器
-            const editorContainer = replyForm.querySelector('.reply-rich-editor-container');
+            // 初始化简化版评论编辑器
+            const editorContainer = replyForm.querySelector('.reply-simple-editor-container');
             if (editorContainer) {
                 // 检查是否已经初始化
-                if (!editorContainer.richTextEditor && (!editorContainer.dataset || editorContainer.dataset.initialized !== 'true')) {
+                if (!editorContainer.simpleCommentEditor && (!editorContainer.dataset || editorContainer.dataset.initialized !== 'true')) {
                     try {
-                        const editor = new RichTextEditor(editorContainer);
+                        const editor = new SimpleCommentEditor(editorContainer, {
+                            placeholder: '回复评论...',
+                            content: ''
+                        });
+                        editorContainer.simpleCommentEditor = editor;
                         editorContainer.dataset.initialized = 'true';
                         editorContainer.dataset.editorInstance = 'reply-editor';
-                        editor.setContent('');
                         editor.focus();
-                        console.log('回复富文本编辑器初始化成功');
+                        console.log('回复简化版评论编辑器初始化成功');
                     } catch (error) {
-                        console.error('回复富文本编辑器初始化失败:', error);
+                        console.error('回复简化版评论编辑器初始化失败:', error);
                     }
-                } else if (editorContainer.richTextEditor) {
+                } else if (editorContainer.simpleCommentEditor) {
                     // 如果已经初始化，清空内容并聚焦
-                    editorContainer.richTextEditor.setContent('');
-                    editorContainer.richTextEditor.focus();
-                } else if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
-                    // 备选方案：直接从DOM聚焦
-                    const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
-                    if (editor) {
-                        editor.focus();
-                    }
+                    editorContainer.simpleCommentEditor.clear();
+                    editorContainer.simpleCommentEditor.focus();
                 }
             }
         }
@@ -1256,18 +1397,12 @@ class InteractionManager {
         if (replyForm) {
             replyForm.style.display = 'none';
             
-            // 清空富文本编辑器内容
-            const editorContainer = replyForm.querySelector('.reply-rich-editor-container');
+            // 清空简化版评论编辑器内容
+            const editorContainer = replyForm.querySelector('.reply-simple-editor-container');
             if (editorContainer) {
-                if (editorContainer.richTextEditor) {
-                    // 使用富文本编辑器实例清空内容
-                    editorContainer.richTextEditor.setContent('');
-                } else if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
-                    // 备选方案：直接从DOM清空内容
-                    const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
-                    if (editor) {
-                        editor.innerHTML = '';
-                    }
+                if (editorContainer.simpleCommentEditor) {
+                    // 使用简化版评论编辑器实例清空内容
+                    editorContainer.simpleCommentEditor.clear();
                 }
             }
         }
@@ -1280,23 +1415,17 @@ class InteractionManager {
             return;
         }
 
-        // 从富文本编辑器获取内容
-        const editorContainer = replyForm.querySelector('.reply-rich-editor-container');
+        // 从简化版评论编辑器获取内容
+        const editorContainer = replyForm.querySelector('.reply-simple-editor-container');
         let content = '';
         
         if (editorContainer) {
-            // 检查富文本编辑器是否已初始化
-            if (editorContainer.richTextEditor) {
-                // 使用富文本编辑器实例获取内容
-                content = editorContainer.richTextEditor.getContent().trim();
-            } else if (editorContainer.dataset && editorContainer.dataset.initialized === 'true') {
-                // 备选方案：直接从DOM获取内容
-                const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
-                if (editor) {
-                    content = editor.innerHTML.trim();
-                }
+            // 检查简化版评论编辑器是否已初始化
+            if (editorContainer.simpleCommentEditor) {
+                // 使用简化版评论编辑器实例获取内容
+                content = editorContainer.simpleCommentEditor.getContent().trim();
             } else {
-                console.warn('富文本编辑器未正确初始化');
+                console.warn('简化版评论编辑器未正确初始化');
             }
         }
         
@@ -1333,12 +1462,9 @@ class InteractionManager {
             if (result.success) {
                 this.showMessage('回复成功', 'success');
                 
-                // 清空富文本编辑器内容
-                if (editorContainer && editorContainer.dataset.initialized) {
-                    const editor = editorContainer.querySelector('.rich-text-editor .editor-content');
-                    if (editor) {
-                        editor.innerHTML = '';
-                    }
+                // 清空简化版评论编辑器内容
+                if (editorContainer && editorContainer.simpleCommentEditor) {
+                    editorContainer.simpleCommentEditor.clear();
                 }
                 
                 this.hideReplyForm(commentId);

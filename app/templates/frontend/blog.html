@@ -2,6 +2,40 @@
 
 {% block title %}博客 - 我的个人网站{% endblock %}
 
+{% block extra_css %}
+<style>
+/* 毛玻璃效果卡片 */
+.card {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+}
+
+/* 文章卡片特殊样式 */
+article.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+article.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-12">

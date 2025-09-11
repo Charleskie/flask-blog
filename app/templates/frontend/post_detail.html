@@ -3,52 +3,108 @@
 {% block title %}{{ post.title }} - 博客{% endblock %}
 
 {% block content %}
+<!-- 左侧悬浮目录 -->
+<div id="floating-toc" class="floating-toc">
+    <div class="toc-header">
+        <button id="toc-toggle" class="toc-toggle-btn">
+            <i class="fas fa-list"></i>
+        </button>
+        <span class="toc-title">目录</span>
+    </div>
+    <div class="toc-content" id="toc-content">
+        <nav id="floating-table-of-contents">
+            <!-- 目录将通过JavaScript动态生成 -->
+        </nav>
+    </div>
+</div>
+
 <div class="container mt-4">
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-lg-12">
             <!-- 文章头部 -->
             <article class="blog-post">
                 <header class="mb-4">
                     <h1 class="display-4 fw-bold">{{ post.title }}</h1>
                     
                     <!-- 文章元信息 -->
-                    <div class="d-flex flex-wrap align-items-center text-muted mb-3">
-                        <div class="me-4">
-                            <i class="fas fa-user"></i>
-                            <span>{{ post.author.username }}</span>
+                    <div class="post-meta-info">
+                        <div class="meta-single-line d-flex flex-wrap align-items-center justify-content-between text-muted mb-3">
+                            <!-- 左侧：基本信息 -->
+                            <div class="meta-left d-flex flex-wrap align-items-center">
+                                <div class="me-4">
+                                    <i class="fas fa-user"></i>
+                                    <span>{{ post.author.username }}</span>
+                                </div>
+                                <div class="me-4">
+                                    <i class="fas fa-calendar"></i>
+                                    <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
+                                </div>
+                                {% if post.category %}
+                                <div class="me-4">
+                                    <i class="fas fa-folder"></i>
+                                    <span>{{ post.category }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="me-4">
+                                    <i class="fas fa-clock"></i>
+                                    <span>更新于 {{ post.updated_at.strftime('%m月%d日') }}</span>
+                                </div>
+                                
+                                <!-- 互动统计 -->
+                                <div class="me-4">
+                                    <i class="fas fa-eye"></i>
+                                    <span>{{ post.view_count }} 次浏览</span>
+                                </div>
+                                <div class="me-4">
+                                    <i class="far fa-heart"></i>
+                                    <span class="like-count">{{ post.like_count }} 点赞</span>
+                                </div>
+                                <div class="me-4">
+                                    <i class="far fa-star"></i>
+                                    <span class="favorite-count">{{ post.favorite_count }} 收藏</span>
+                                </div>
+                                <div class="me-4">
+                                    <i class="far fa-comment"></i>
+                                    <span class="comment-count">{{ post.comment_count }} 评论</span>
+                                </div>
+                                {% if post.average_rating > 0 %}
+                                <div class="me-4">
+                                    <i class="fas fa-star"></i>
+                                    <span class="rating-text">{{ post.average_rating }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- 右侧：分享按钮 -->
+                            <div class="meta-right d-flex align-items-center">
+                                <!-- 分享按钮 -->
+                                <div class="share-buttons">
+                                    <span class="share-label me-2">分享:</span>
+                                    <button class="btn btn-outline-success btn-sm share-btn" onclick="shareToWeChat(event)" title="微信分享">
+                                        <i class="fab fa-weixin"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm share-btn" onclick="shareToWeibo()" title="微博分享">
+                                        <i class="fab fa-weibo"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm share-btn" onclick="copyLink()" title="复制链接">
+                                        <i class="fas fa-link"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="me-4">
-                            <i class="fas fa-calendar"></i>
-                            <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
-                        </div>
-                        <div class="me-4">
-                            <i class="fas fa-eye"></i>
-                            <span>{{ post.view_count }} 次浏览</span>
-                        </div>
-                        {% if post.category %}
-                        <div class="me-4">
-                            <i class="fas fa-folder"></i>
-                            <span>{{ post.category }}</span>
+                        
+                        <!-- 标签 -->
+                        {% if post.tags %}
+                        <div class="mb-3">
+                            {% for tag in post.get_tags_list() %}
+                            <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                            {% endfor %}
                         </div>
                         {% endif %}
                     </div>
-                    
-                    <!-- 标签 -->
-                    {% if post.tags %}
-                    <div class="mb-3">
-                        {% for tag in post.get_tags_list() %}
-                        <span class="badge bg-light text-dark me-1">{{ tag }}</span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
                 </header>
                 
-                <!-- 特色图片 -->
-                {% if post.featured_image %}
-                <div class="mb-4">
-                    <img src="{{ post.featured_image }}" class="img-fluid rounded" alt="{{ post.title }}">
-                </div>
-                {% endif %}
+
                 
                 <!-- 文章摘要 -->
                 {% if post.excerpt %}
@@ -59,8 +115,8 @@
                 {% endif %}
                 
                 <!-- 文章内容 -->
-                <div class="blog-content">
-                    {{ post.content|nl2br|safe }}
+                <div class="blog-content rich-text-content">
+                    {{ post.content|safe }}
                 </div>
             </article>
             
@@ -96,120 +152,6 @@
         </div>
         
         <div class="col-lg-4 sidebar">
-            <!-- 文章目录 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-list"></i> 文章目录</h5>
-                </div>
-                <div class="card-body">
-                    <nav id="table-of-contents">
-                        <!-- 目录将通过JavaScript动态生成 -->
-                    </nav>
-                </div>
-            </div>
-            
-            <!-- 交互功能区域 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-heart"></i> 互动统计</h5>
-                </div>
-                <div class="card-body">
-                    <div class="interaction-section" data-id="{{ post.id }}" data-type="post">
-                        <!-- 统计信息 -->
-                        <div class="stats-info">
-                            <div class="stat-item">
-                                <i class="fas fa-eye"></i>
-                                <span>{{ post.view_count }} 次浏览</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="far fa-heart"></i>
-                                <span class="like-count">{{ post.like_count }} 点赞</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="far fa-star"></i>
-                                <span class="favorite-count">{{ post.favorite_count }} 收藏</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="far fa-comment"></i>
-                                <span class="comment-count">{{ post.comment_count }} 评论</span>
-                            </div>
-                            {% if post.average_rating > 0 %}
-                            <div class="stat-item">
-                                <i class="fas fa-star"></i>
-                                <span class="rating-display">
-                                    {% for i in range(5) %}
-                                        {% if i < post.average_rating %}
-                                            <i class="fas fa-star"></i>
-                                        {% else %}
-                                            <i class="far fa-star"></i>
-                                        {% endif %}
-                                    {% endfor %}
-                                    <span class="rating-text">{{ post.average_rating }}</span>
-                                </span>
-                            </div>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- 交互按钮 -->
-                        {% if current_user.is_authenticated %}
-                        <div class="interaction-buttons">
-                            <button class="interaction-btn like-btn" data-id="{{ post.id }}" data-type="post">
-                                <i class="far fa-heart"></i>
-                                <span class="count">{{ post.like_count }}</span>
-                            </button>
-                            <button class="interaction-btn favorite-btn" data-id="{{ post.id }}" data-type="post">
-                                <i class="far fa-star"></i>
-                                <span class="count">{{ post.favorite_count }}</span>
-                            </button>
-                            <div class="rating-section">
-                                <label class="rating-label">评分:</label>
-                                <div class="rating-input">
-                                    <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="1">
-                                    <label for="rating-{{ post.id }}-1"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="2">
-                                    <label for="rating-{{ post.id }}-2"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
-                                    <label for="rating-{{ post.id }}-3"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="4">
-                                    <label for="rating-{{ post.id }}-4"><i class="far fa-star"></i></label>
-                                    <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="5">
-                                    <label for="rating-{{ post.id }}-5"><i class="far fa-star"></i></label>
-                                </div>
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 文章底部信息 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> 更新时间</h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-muted mb-3">
-                        <small>
-                            <i class="fas fa-clock"></i>
-                            最后更新：{{ post.updated_at.strftime('%Y年%m月%d日 %H:%M') }}
-                        </small>
-                    </div>
-                    <div class="share-buttons">
-                        <h6 class="mb-3">分享文章</h6>
-                        <div class="d-flex justify-content-center gap-2">
-                            <button class="btn btn-outline-success share-btn" onclick="shareToWeChat(event)" title="微信分享">
-                                <i class="fab fa-weixin"></i>
-                            </button>
-                            <button class="btn btn-outline-danger share-btn" onclick="shareToWeibo()" title="微博分享">
-                                <i class="fab fa-weibo"></i>
-                            </button>
-                            <button class="btn btn-outline-secondary share-btn" onclick="copyLink()" title="复制链接">
-                                <i class="fas fa-link"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
             
             <!-- 相关文章 -->
             {% if related_posts %}
@@ -259,17 +201,721 @@
         <p class="text-muted small mt-2 mb-0">微信扫码分享</p>
     </div>
 </div>
+
+<!-- 悬浮互动按钮 -->
+{% if current_user.is_authenticated %}
+<div class="floating-interaction-buttons">
+    <div class="floating-buttons-row">
+        <button class="floating-btn like-btn" data-id="{{ post.id }}" data-type="post" title="点赞">
+            <i class="far fa-heart"></i>
+        </button>
+        <button class="floating-btn favorite-btn" data-id="{{ post.id }}" data-type="post" title="收藏">
+            <i class="far fa-star"></i>
+        </button>
+    </div>
+    <div class="floating-rating-section">
+        <label class="rating-label">评分:</label>
+        <div class="rating-input">
+            <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="1">
+            <label for="rating-{{ post.id }}-1"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="2">
+            <label for="rating-{{ post.id }}-2"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
+            <label for="rating-{{ post.id }}-3"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="4">
+            <label for="rating-{{ post.id }}-4"><i class="far fa-star"></i></label>
+            <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="5">
+            <label for="rating-{{ post.id }}-5"><i class="far fa-star"></i></label>
+        </div>
+    </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_css %}
+<!-- 简化版评论编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
+
 <style>
+/* 左侧悬浮目录样式 */
+.floating-toc {
+    position: fixed;
+    left: 20px;
+    top: 30%;
+    transform: translateY(-50%);
+    z-index: 1000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    max-width: 280px;
+    min-width: 200px;
+}
+
+.floating-toc.collapsed {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+}
+
+.floating-toc.collapsed .toc-content {
+    display: none;
+}
+
+.floating-toc.collapsed .toc-title {
+    display: none;
+}
+
+.toc-header {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    user-select: none;
+}
+
+.toc-toggle-btn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    color: #666;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin-right: 8px;
+}
+
+.toc-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.1);
+    color: #333;
+}
+
+.toc-title {
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+.toc-content {
+    padding: 12px 16px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.toc-content::-webkit-scrollbar {
+    width: 4px;
+}
+
+.toc-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+.toc-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 2px;
+}
+
+.toc-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+#floating-table-of-contents ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#floating-table-of-contents li {
+    margin: 4px 0;
+}
+
+#floating-table-of-contents a {
+    display: block;
+    padding: 6px 8px;
+    color: #666;
+    text-decoration: none;
+    font-size: 13px;
+    line-height: 1.4;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+#floating-table-of-contents a:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: #333;
+    border-left-color: #007bff;
+}
+
+#floating-table-of-contents a.active {
+    background: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    border-left-color: #007bff;
+    font-weight: 500;
+}
+
+#floating-table-of-contents ul ul {
+    margin-left: 12px;
+}
+
+#floating-table-of-contents ul ul a {
+    font-size: 12px;
+    padding: 4px 8px;
+}
+
+/* 文章元信息样式 */
+.post-meta-info {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border-radius: 12px;
+    padding: 16px 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 24px;
+
+}
+
+.meta-single-line {
+    gap: 8px;
+}
+
+.meta-left {
+    flex: 1;
+    min-width: 0;
+}
+
+.meta-right {
+    flex-shrink: 0;
+}
+
+.share-buttons {
+    display: flex;
+    align-items: center;
+}
+
+.share-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.rating-section {
+    display: flex;
+    align-items: center;
+}
+
+.rating-label {
+    font-size: 12px;
+    color: #666;
+    margin-right: 6px;
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.rating-input {
+    display: flex;
+    gap: 1px;
+}
+
+.rating-input input[type="radio"] {
+    display: none;
+}
+
+.rating-input label {
+    cursor: pointer;
+    color: #ddd;
+    font-size: 12px;
+    transition: color 0.2s ease;
+}
+
+.rating-input label:hover,
+.rating-input input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+.rating-input input[type="radio"]:checked ~ label ~ label {
+    color: #ddd;
+}
+
+/* 评分星星样式 */
+.rating-star {
+    position: relative;
+    color: #ddd;
+    font-size: 16px;
+    margin-right: 4px;
+}
+
+.rating-star::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: var(--rating-width, 0%);
+    height: 100%;
+    color: #ffc107;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.rating-star::after {
+    content: '\f005';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    color: #ffc107;
+    z-index: 2;
+    clip-path: inset(0 var(--rating-clip, 100%) 0 0);
+}
+
+.rating-text {
+    font-size: 12px;
+    color: #666;
+    margin-left: 2px;
+}
+
+/* 悬浮互动按钮样式 */
+.floating-interaction-buttons {
+    position: fixed;
+    right: 20px;
+    top: 30%;
+    transform: translateY(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 16px 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    width: 120px;
+    box-sizing: border-box;
+}
+
+.floating-buttons-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.floating-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 50px;
+    height: 50px;
+    border: none;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #666;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.floating-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #333;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.floating-btn i {
+    font-size: 18px;
+}
+
+.floating-btn .count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #666;
+}
+
+.floating-btn.liked {
+    color: #e74c3c;
+}
+
+.floating-btn.liked i {
+    color: #e74c3c;
+}
+
+.floating-btn.favorited {
+    color: #f39c12;
+}
+
+.floating-btn.favorited i {
+    color: #f39c12;
+}
+
+.floating-rating-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.floating-rating-section .rating-label {
+    font-size: 11px;
+    color: #666;
+    margin: 0;
+    text-align: center;
+}
+
+.floating-rating-section .rating-input {
+    display: flex;
+    gap: 2px;
+}
+
+.floating-rating-section .rating-input input[type="radio"] {
+    display: none;
+}
+
+.floating-rating-section .rating-input label {
+    cursor: pointer;
+    color: #ddd;
+    font-size: 14px;
+    transition: color 0.2s ease;
+}
+
+.floating-rating-section .rating-input label:hover,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label {
+    color: #ffc107;
+}
+
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label ~ label {
+    color: #ddd;
+}
+
+/* 分享按钮样式优化 */
+.share-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.share-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.share-btn i {
+    font-size: 12px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .floating-toc {
+        left: 10px;
+        max-width: 250px;
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 768px) {
+    .floating-toc {
+        display: none;
+    }
+    
+    .floating-interaction-buttons {
+        right: 10px;
+        padding: 12px 8px;
+        gap: 8px;
+        width: 100px;
+    }
+    
+    .floating-buttons-row {
+        gap: 6px;
+    }
+    
+    .floating-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .floating-btn i {
+        font-size: 16px;
+    }
+    
+    .floating-rating-section {
+        padding: 8px;
+    }
+    
+    .floating-rating-section .rating-input label {
+        font-size: 12px;
+    }
+    
+    .meta-single-line {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+    
+    .meta-left {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .meta-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .share-buttons {
+        flex-shrink: 0;
+    }
+}
 .blog-post {
     line-height: 1.8;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
 }
 
 .blog-content {
     font-size: 16px;
     line-height: 1.8;
+}
+
+/* 富文本内容样式优化 */
+.rich-text-content {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    color: #24292e;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.rich-text-content h1,
+.rich-text-content h2,
+.rich-text-content h3,
+.rich-text-content h4,
+.rich-text-content h5,
+.rich-text-content h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: #24292e;
+}
+
+.rich-text-content h1 {
+    font-size: 2em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.rich-text-content h2 {
+    font-size: 1.5em;
+    border-bottom: 1px solid #eaecef;
+    padding-bottom: 0.3em;
+}
+
+.rich-text-content h3 {
+    font-size: 1.25em;
+}
+
+.rich-text-content h4 {
+    font-size: 1em;
+}
+
+.rich-text-content h5 {
+    font-size: 0.875em;
+}
+
+.rich-text-content h6 {
+    font-size: 0.85em;
+    color: #6a737d;
+}
+
+.rich-text-content p {
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.rich-text-content blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+    margin: 0 0 16px 0;
+}
+
+.rich-text-content ul,
+.rich-text-content ol {
+    padding-left: 2em;
+    margin-top: 0;
+    margin-bottom: 16px;
+}
+
+.rich-text-content li {
+    margin-bottom: 0.25em;
+}
+
+.rich-text-content code {
+    padding: 0.2em 0.4em;
+    margin: 0;
+    font-size: 85%;
+    background-color: rgba(27, 31, 35, 0.05);
+    border-radius: 3px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.rich-text-content pre {
+    padding: 16px;
+    overflow: auto;
+    font-size: 85%;
+    line-height: 1.45;
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.rich-text-content pre code {
+    display: inline;
+    max-width: auto;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
+    line-height: inherit;
+    word-wrap: normal;
+    background-color: transparent;
+    border: 0;
+}
+
+.rich-text-content table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-top: 0;
+    margin-bottom: 16px;
+    width: 100%;
+}
+
+.rich-text-content table th,
+.rich-text-content table td {
+    padding: 6px 13px;
+    border: 1px solid #dfe2e5;
+}
+
+.rich-text-content table th {
+    font-weight: 600;
+    background-color: #f6f8fa;
+}
+
+.rich-text-content table tr {
+    background-color: #fff;
+    border-top: 1px solid #c6cbd1;
+}
+
+.rich-text-content table tr:nth-child(2n) {
+    background-color: #f6f8fa;
+}
+
+.rich-text-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+    margin: 16px 0;
+}
+
+.rich-text-content hr {
+    height: 0.25em;
+    padding: 0;
+    margin: 24px 0;
+    background-color: #e1e4e8;
+    border: 0;
+}
+
+.rich-text-content a {
+    color: #0366d6;
+    text-decoration: none;
+}
+
+.rich-text-content a:hover {
+    text-decoration: underline;
+}
+
+/* 任务列表样式 */
+.rich-text-content ul[data-type="taskList"] {
+    list-style: none;
+    padding-left: 0;
+}
+
+.rich-text-content ul[data-type="taskList"] li {
+    display: flex;
+    align-items: flex-start;
+    margin: 0.5rem 0;
+}
+
+.rich-text-content ul[data-type="taskList"] li > label {
+    margin-right: 0.5rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.rich-text-content ul[data-type="taskList"] li > div {
+    flex: 1;
+}
+
+.rich-text-content ul[data-type="taskList"] li[data-checked="true"] > div {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+/* 高亮样式 */
+.rich-text-content mark {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.125rem 0.25rem;
+    border-radius: 3px;
+}
+
+/* 代码高亮样式 */
+.markdown-body .highlight {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    margin-bottom: 16px;
+}
+
+.markdown-body .highlight pre {
+    background-color: transparent;
+    border: 0;
+    margin: 0;
+    padding: 16px;
 }
 
 .blog-content h1,
@@ -361,6 +1007,38 @@
 .blog-content table th {
     background-color: #f8f9fa;
     font-weight: 600;
+}
+
+/* 毛玻璃效果卡片 */
+.card {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+}
+
+/* 评论区域毛玻璃效果 */
+.comments-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
 }
 
 /* 目录样式 */
@@ -475,31 +1153,31 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/rich-text-editor.js') }}"></script>
+<!-- 简化版 Tiptap 编辑器 JavaScript -->
+<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+<!-- 简化版评论编辑器 JavaScript -->
+<script src="{{ url_for('static', filename='js/simple-comment-editor.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 生成文章目录
+    // 生成悬浮目录
     generateTableOfContents();
     
-    // 平滑滚动到目录项
-    document.querySelectorAll('#table-of-contents a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href').substring(1);
-            const targetElement = document.getElementById(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
+    // 设置悬浮目录功能
+    setupFloatingToc();
     
-    // 初始化富文本编辑器
+    // 设置评分星星颜色
+    setupRatingStars();
+    
+    // 初始化悬浮按钮状态
+    setupFloatingButtons();
+    
+    // 初始化简化版评论编辑器
     const commentEditorContainer = document.getElementById('comment-editor-{{ post.id }}');
     if (commentEditorContainer) {
-        const editor = new RichTextEditor(commentEditorContainer);
+        const editor = new SimpleCommentEditor(commentEditorContainer, {
+            placeholder: '发表你的评论...',
+            content: ''
+        });
         
         // 在提交表单前同步编辑器内容到隐藏的textarea
         const commentForm = document.querySelector('.comment-form');
@@ -512,15 +1190,22 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
+    
 });
 
 function generateTableOfContents() {
     const content = document.querySelector('.blog-content');
-    const toc = document.getElementById('table-of-contents');
+    const toc = document.getElementById('floating-table-of-contents');
     
     if (!content || !toc) return;
     
     const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    
+    if (headings.length === 0) {
+        toc.innerHTML = '<p class="text-muted small">暂无目录</p>';
+        return;
+    }
+    
     const tocList = document.createElement('ul');
     
     headings.forEach((heading, index) => {
@@ -535,11 +1220,195 @@ function generateTableOfContents() {
         a.textContent = heading.textContent;
         a.className = `toc-${heading.tagName.toLowerCase()}`;
         
+        // 添加点击事件，平滑滚动
+        a.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.getElementById(headingId);
+            if (target) {
+                target.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        });
+        
         li.appendChild(a);
         tocList.appendChild(li);
     });
     
     toc.appendChild(tocList);
+    
+    // 设置滚动监听，高亮当前章节
+    setupTocHighlight();
+}
+
+// 设置目录高亮
+function setupTocHighlight() {
+    const headings = document.querySelectorAll('.blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4, .blog-content h5, .blog-content h6');
+    const tocLinks = document.querySelectorAll('#floating-table-of-contents a');
+    
+    if (headings.length === 0 || tocLinks.length === 0) return;
+    
+    // 创建Intersection Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                // 移除所有active类
+                tocLinks.forEach(link => link.classList.remove('active'));
+                
+                // 找到对应的目录链接并添加active类
+                const targetId = entry.target.id;
+                const correspondingLink = document.querySelector(`#floating-table-of-contents a[href="#${targetId}"]`);
+                if (correspondingLink) {
+                    correspondingLink.classList.add('active');
+                }
+            }
+        });
+    }, {
+        rootMargin: '-20% 0px -70% 0px',
+        threshold: 0
+    });
+    
+    // 观察所有标题
+    headings.forEach(heading => {
+        observer.observe(heading);
+    });
+}
+
+// 悬浮目录切换功能
+function setupFloatingToc() {
+    const tocToggle = document.getElementById('toc-toggle');
+    const floatingToc = document.getElementById('floating-toc');
+    
+    if (!tocToggle || !floatingToc) return;
+    
+    // 点击切换展开/收起
+    tocToggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        floatingToc.classList.toggle('collapsed');
+        
+        // 更新图标
+        const icon = tocToggle.querySelector('i');
+        if (floatingToc.classList.contains('collapsed')) {
+            icon.className = 'fas fa-chevron-right';
+        } else {
+            icon.className = 'fas fa-list';
+        }
+    });
+    
+    // 点击标题区域也可以切换
+    const tocHeader = floatingToc.querySelector('.toc-header');
+    if (tocHeader) {
+        tocHeader.addEventListener('click', function(e) {
+            if (e.target !== tocToggle) {
+                tocToggle.click();
+            }
+        });
+    }
+}
+
+// 设置评分星星颜色
+function setupRatingStars() {
+    const ratingStars = document.querySelectorAll('.rating-star');
+    
+    ratingStars.forEach(star => {
+        const rating = parseFloat(star.getAttribute('data-rating'));
+        if (rating && rating > 0) {
+            const percentage = (rating / 5) * 100;
+            star.style.setProperty('--rating-clip', `${100 - percentage}%`);
+        }
+    });
+}
+
+// 设置悬浮按钮状态
+async function setupFloatingButtons() {
+    const floatingButtons = document.querySelector('.floating-interaction-buttons');
+    if (!floatingButtons) return;
+    
+    const likeBtn = floatingButtons.querySelector('.like-btn');
+    const favoriteBtn = floatingButtons.querySelector('.favorite-btn');
+    const ratingSection = floatingButtons.querySelector('.floating-rating-section');
+    
+    if (!likeBtn || !favoriteBtn) return;
+    
+    const contentId = likeBtn.dataset.id;
+    const contentType = likeBtn.dataset.type;
+    
+    try {
+        // 获取用户状态
+        const response = await fetch(`/api/user-status/${contentId}?type=${contentType}`);
+        const result = await response.json();
+        
+        if (result.success) {
+            // 更新点赞状态
+            updateFloatingLikeUI(likeBtn, result.is_liked, result.like_count || 0);
+            
+            // 更新收藏状态
+            updateFloatingFavoriteUI(favoriteBtn, result.is_favorited, result.favorite_count || 0);
+            
+            // 更新评分状态
+            if (ratingSection) {
+                updateFloatingRatingUI(ratingSection, result.user_rating);
+            }
+        }
+    } catch (error) {
+        console.error('获取悬浮按钮状态失败:', error);
+    }
+}
+
+// 更新悬浮点赞按钮UI
+function updateFloatingLikeUI(button, isLiked, count) {
+    const icon = button.querySelector('i');
+    const countSpan = button.querySelector('.count');
+    
+    if (isLiked) {
+        icon.className = 'fas fa-heart';
+        button.classList.add('liked');
+    } else {
+        icon.className = 'far fa-heart';
+        button.classList.remove('liked');
+    }
+    
+    if (countSpan) {
+        countSpan.textContent = count;
+    }
+}
+
+// 更新悬浮收藏按钮UI
+function updateFloatingFavoriteUI(button, isFavorited, count) {
+    const icon = button.querySelector('i');
+    const countSpan = button.querySelector('.count');
+    
+    if (isFavorited) {
+        icon.className = 'fas fa-star';
+        button.classList.add('favorited');
+    } else {
+        icon.className = 'far fa-star';
+        button.classList.remove('favorited');
+    }
+    
+    if (countSpan) {
+        countSpan.textContent = count;
+    }
+}
+
+// 更新悬浮评分UI
+function updateFloatingRatingUI(ratingSection, userRating) {
+    const ratingInputs = ratingSection.querySelectorAll('input[name="rating"]');
+    
+    // 清除所有选中状态
+    ratingInputs.forEach(input => {
+        input.checked = false;
+    });
+    
+    // 设置用户评分
+    if (userRating && userRating > 0) {
+        const targetInput = ratingSection.querySelector(`input[name="rating"][value="${userRating}"]`);
+        console.log(targetInput)
+        if (targetInput) {
+            targetInput.checked = true;
+        }
+    }
 }
 
 function shareToWeChat(event) {

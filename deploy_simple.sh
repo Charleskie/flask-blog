@@ -5,7 +5,7 @@
 
 set -e
 
-SERVER_IP=${1:-"*.*.*.*"}
+SERVER_IP=${1:-"47.112.96.87"}
 SERVER_USER=${2:-"root"}
 
 echo "🚀 开始简单部署个人网站到 $SERVER_USER@$SERVER_IP"
