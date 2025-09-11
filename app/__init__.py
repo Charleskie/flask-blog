@@ -2,6 +2,7 @@ from flask import Flask
 from flask_login import LoginManager
 from app.models.user import db
 from app.utils.filters import nl2br_filter, markdown_filter, html_filter
+from app.utils.logger import setup_app_logging, log_manager
 import os
 
 def create_app():
@@ -45,20 +46,27 @@ def create_app():
     app.register_blueprint(version_bp)
     app.register_blueprint(notification_bp)
     
+    # 设置日志
+    setup_app_logging(app)
+    app.logger.info("应用初始化完成")
+    
     # 错误处理
     @app.errorhandler(404)
     def not_found_error(error):
         from flask import render_template
+        app.logger.warning(f"404错误: {error}")
         return render_template('errors/404.html'), 404
     
     @app.errorhandler(403)
     def forbidden_error(error):
         from flask import render_template
+        app.logger.warning(f"403错误: {error}")
         return render_template('errors/403.html'), 403
     
     @app.errorhandler(500)
     def internal_error(error):
         from flask import render_template
+        app.logger.error(f"500内部服务器错误: {error}", exc_info=True)
         db.session.rollback()
         return render_template('errors/500.html'), 500
     

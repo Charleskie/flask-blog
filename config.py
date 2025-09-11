@@ -30,7 +30,26 @@ class Config:
     
     # 日志配置
     LOG_LEVEL = os.environ.get('LOG_LEVEL') or 'INFO'
-    LOG_FILE = os.environ.get('LOG_FILE') or 'app.log'
+    LOG_RETENTION_DAYS = int(os.environ.get('LOG_RETENTION_DAYS') or 7)
+    
+    # 根据环境设置日志路径
+    @staticmethod
+    def get_log_dir():
+        """根据环境获取日志目录"""
+        env = os.environ.get('FLASK_ENV', 'development')
+        if env == 'production':
+            return os.environ.get('LOG_DIR') or '/root/kim/temp/blog/logs'
+        else:
+            return os.environ.get('LOG_DIR') or 'logs'
+    
+    @staticmethod
+    def get_log_file():
+        """根据环境获取日志文件名"""
+        env = os.environ.get('FLASK_ENV', 'development')
+        if env == 'production':
+            return os.environ.get('LOG_FILE') or 'app.log'
+        else:
+            return os.environ.get('LOG_FILE') or 'app.log'
 
 class DevelopmentConfig(Config):
     """开发环境配置"""

@@ -358,7 +358,12 @@ function markAllRead() {
 
 function updateUnreadCount() {
     fetch('/api/notifications/unread-count')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
     .then(data => {
         const badge = document.querySelector('.notification-badge');
         if (badge) {
@@ -368,6 +373,14 @@ function updateUnreadCount() {
             } else {
                 badge.style.display = 'none';
             }
+        }
+    })
+    .catch(error => {
+        console.warn('获取消息数量失败:', error.message);
+        // 如果服务器未运行，隐藏通知徽章
+        const badge = document.querySelector('.notification-badge');
+        if (badge) {
+            badge.style.display = 'none';
         }
     });
 }

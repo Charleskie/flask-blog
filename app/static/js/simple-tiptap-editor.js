@@ -129,9 +129,6 @@ class SimpleTiptapEditor {
                         <button class="toolbar-btn" data-action="setLink" title="插入链接">
                             <i class="fas fa-link"></i>
                         </button>
-                        <button class="toolbar-btn" data-action="setImage" title="插入图片">
-                            <i class="fas fa-image"></i>
-                        </button>
                     </div>
                     
                     <div class="toolbar-separator"></div>
@@ -208,8 +205,11 @@ class SimpleTiptapEditor {
             this.updateToolbarState();
         });
 
-        // 键盘快捷键
+        // 键盘快捷键和光标导航
         this.content.addEventListener('keydown', (e) => {
+            // 处理光标导航
+            this.handleSimpleCursorNavigation(e);
+            
             if (e.ctrlKey || e.metaKey) {
                 switch (e.key) {
                     case 'b':
@@ -238,6 +238,18 @@ class SimpleTiptapEditor {
             const text = (e.clipboardData || window.clipboardData).getData('text/plain');
             document.execCommand('insertText', false, text);
         });
+
+        // 链接点击事件处理
+        this.content.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && e.target.classList.contains('tiptap-link')) {
+                console.log('检测到链接点击事件');
+                e.preventDefault();
+                const url = e.target.href;
+                console.log(`打开链接: ${url}`);
+                window.open(url, '_blank');
+            }
+        });
+
     }
 
     handleToolbarAction(action, value = null) {
@@ -298,9 +310,6 @@ class SimpleTiptapEditor {
             case 'setLink':
                 this.setLink();
                 break;
-            case 'setImage':
-                this.setImage();
-                break;
             case 'alignLeft':
                 this.execCommand('justifyLeft');
                 break;
@@ -322,12 +331,424 @@ class SimpleTiptapEditor {
         this.content.focus();
         return document.execCommand(command, false, value);
     }
+    
+    handleSimpleCursorNavigation(e) {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        
+        // 检查是否在行内代码中
+        const inlineCode = this.findParentElement(container, 'code');
+        // 检查是否在代码块中
+        const codeBlock = this.findParentElement(container, 'pre');
+        
+        console.log('光标导航检查:', { 
+            key: e.key, 
+            inlineCode: !!inlineCode, 
+            codeBlock: !!codeBlock,
+            endContainer: range.endContainer.nodeType,
+            endOffset: range.endOffset,
+            container: container,
+            containerType: container.nodeType,
+            containerText: container.textContent ? container.textContent.substring(0, 20) : 'N/A',
+            parentNode: container.parentNode,
+            parentTagName: container.parentNode ? container.parentNode.tagName : 'N/A'
+        });
+        
+        // 行内代码退出逻辑
+        if (inlineCode && !codeBlock) {
+            if (e.key === 'ArrowRight' || e.key === ' ') {
+                const endContainer = range.endContainer;
+                const endOffset = range.endOffset;
+                
+                console.log('行内代码检查:', {
+                    endContainer: endContainer.nodeType,
+                    endOffset: endOffset,
+                    textLength: endContainer.textContent ? endContainer.textContent.length : 0,
+                    isLastChild: endContainer === inlineCode.lastChild
+                });
+                
+                // 检查是否在行内代码的末尾
+                if (endContainer.nodeType === Node.TEXT_NODE && 
+                    endContainer === inlineCode.lastChild && 
+                    endOffset === endContainer.textContent.length) {
+                    
+                    console.log('触发行内代码退出');
+                    e.preventDefault();
+                    this.exitInlineCodeTiptapStyle(inlineCode);
+                }
+            }
+        }
+        
+        // 代码块退出逻辑
+        if (codeBlock) {
+            // 处理三次回车退出
+            if (e.key === 'Enter') {
+                if (!this.enterCount) this.enterCount = 0;
+                this.enterCount++;
+                
+                console.log('代码块回车计数:', this.enterCount);
+                
+                // 检查是否在代码块的末尾
+                const endContainer = range.endContainer;
+                const endOffset = range.endOffset;
+                
+                if (endContainer.nodeType === Node.TEXT_NODE) {
+                    const textContent = endContainer.textContent;
+                    const lastNewlineIndex = textContent.lastIndexOf('\n');
+                    
+                    console.log('代码块检查:', {
+                        lastNewlineIndex: lastNewlineIndex,
+                        endOffset: endOffset,
+                        isAtEnd: lastNewlineIndex === -1 || endOffset > lastNewlineIndex
+                    });
+                    
+                    // 如果光标在最后一行且连续按了三次回车
+                    if ((lastNewlineIndex === -1 || endOffset > lastNewlineIndex) && this.enterCount >= 3) {
+                        console.log('触发代码块退出（三次回车）');
+                        e.preventDefault();
+                        this.exitCodeBlockTiptapStyle(codeBlock);
+                        this.enterCount = 0;
+                    }
+                }
+            } else {
+                // 重置回车计数
+                this.enterCount = 0;
+            }
+            
+            // 处理向下箭头退出
+            if (e.key === 'ArrowDown') {
+                const endContainer = range.endContainer;
+                const endOffset = range.endOffset;
+                
+                // 检查是否在代码块的末尾
+                if (endContainer.nodeType === Node.TEXT_NODE) {
+                    const textContent = endContainer.textContent;
+                    const lastNewlineIndex = textContent.lastIndexOf('\n');
+                    
+                    // 如果光标在最后一行
+                    if (lastNewlineIndex === -1 || endOffset > lastNewlineIndex) {
+                        console.log('触发代码块退出（向下箭头）');
+                        e.preventDefault();
+                        this.exitCodeBlockTiptapStyle(codeBlock);
+                    }
+                }
+            }
+        }
+    }
+    
+    exitInlineCodeTiptapStyle(inlineCode) {
+        console.log('Tiptap风格退出行内代码');
+        
+        // 在行内代码后面插入一个零宽空格字符，防止浏览器合并文本节点
+        const textNode = document.createTextNode('\u200B'); // 零宽空格
+        inlineCode.parentNode.insertBefore(textNode, inlineCode.nextSibling);
+        
+        // 将光标移动到新插入的文本节点
+        const range = document.createRange();
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, 0);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 触发内容变化
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+        
+        console.log('行内代码退出完成');
+    }
+    
+    exitCodeBlockTiptapStyle(codeBlock) {
+        console.log('Tiptap风格退出代码块');
+        
+        // 在代码块后面插入一个段落
+        const paragraph = document.createElement('p');
+        const br = document.createElement('br');
+        paragraph.appendChild(br);
+        
+        codeBlock.parentNode.insertBefore(paragraph, codeBlock.nextSibling);
+        
+        // 将光标移动到新插入的段落
+        const range = document.createRange();
+        range.setStart(paragraph, 0);
+        range.setEnd(paragraph, 0);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 触发内容变化
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+        
+        console.log('代码块退出完成');
+    }
+    
+    handleCursorNavigation(e) {
+        const selection = window.getSelection();
+        if (selection.rangeCount === 0) return;
+        
+        const range = selection.getRangeAt(0);
+        const container = range.commonAncestorContainer;
+        
+        // 检查是否在行内代码中
+        const inlineCode = this.findParentElement(container, 'code');
+        // 检查是否在代码块中
+        const codeBlock = this.findParentElement(container, 'pre');
+        
+        console.log('光标导航检查:', { 
+            inlineCode: !!inlineCode, 
+            codeBlock: !!codeBlock, 
+            key: e.key 
+        });
+        
+        if (inlineCode && !codeBlock) {
+            // 在行内代码中
+            this.handleInlineCodeNavigation(e, inlineCode, range);
+        } else if (codeBlock) {
+            // 在代码块中
+            this.handleCodeBlockNavigation(e, codeBlock, range);
+        }
+    }
+    
+    findParentElement(node, tagName) {
+        let current = node;
+        
+        // 如果是文本节点，先找到父元素
+        while (current && current.nodeType !== Node.ELEMENT_NODE) {
+            current = current.parentNode;
+        }
+        
+        // 从当前元素开始查找（包括当前元素）
+        while (current) {
+            if (current.tagName && current.tagName.toLowerCase() === tagName.toLowerCase()) {
+                return current;
+            }
+            current = current.parentNode;
+        }
+        return null;
+    }
+    
+    handleInlineCodeNavigation(e, inlineCode, range) {
+        console.log('处理行内代码导航:', e.key);
+        
+        if (e.key === 'ArrowRight') {
+            // 检查光标是否在行内代码的末尾
+            if (this.isAtEndOfElement(range, inlineCode)) {
+                console.log('光标在行内代码末尾，按右箭头');
+                e.preventDefault();
+                this.exitInlineCodeAfter(inlineCode, range);
+            }
+        } else if (e.key === 'ArrowLeft') {
+            // 检查光标是否在行内代码的开头
+            if (this.isAtStartOfElement(range, inlineCode)) {
+                console.log('光标在行内代码开头，按左箭头');
+                e.preventDefault();
+                this.exitInlineCodeBefore(inlineCode, range);
+            }
+        }
+    }
+    
+    handleCodeBlockNavigation(e, codeBlock, range) {
+        console.log('处理代码块导航:', e.key);
+        
+        if (e.key === 'ArrowDown') {
+            // 检查光标是否在代码块的最后一行
+            if (this.isAtLastLineOfCodeBlock(range, codeBlock)) {
+                console.log('光标在代码块最后一行，按下箭头');
+                e.preventDefault();
+                this.exitCodeBlockAfter(codeBlock, range);
+            }
+        } else if (e.key === 'ArrowUp') {
+            // 检查光标是否在代码块的第一行
+            if (this.isAtFirstLineOfCodeBlock(range, codeBlock)) {
+                console.log('光标在代码块第一行，按上箭头');
+                e.preventDefault();
+                this.exitCodeBlockBefore(codeBlock, range);
+            }
+        }
+    }
+    
+    isAtEndOfElement(range, element) {
+        const endContainer = range.endContainer;
+        const endOffset = range.endOffset;
+        
+        // 如果光标在元素的最后一个文本节点
+        if (endContainer.nodeType === Node.TEXT_NODE) {
+            return endContainer === element.lastChild && endOffset === endContainer.textContent.length;
+        }
+        
+        // 如果光标在元素的最后一个子元素之后
+        if (endContainer.nodeType === Node.ELEMENT_NODE) {
+            return endContainer === element && endOffset === element.childNodes.length;
+        }
+        
+        return false;
+    }
+    
+    isAtStartOfElement(range, element) {
+        const startContainer = range.startContainer;
+        const startOffset = range.startOffset;
+        
+        // 如果光标在元素的第一个文本节点
+        if (startContainer.nodeType === Node.TEXT_NODE) {
+            return startContainer === element.firstChild && startOffset === 0;
+        }
+        
+        // 如果光标在元素的第一个子元素之前
+        if (startContainer.nodeType === Node.ELEMENT_NODE) {
+            return startContainer === element && startOffset === 0;
+        }
+        
+        return false;
+    }
+    
+    isAtLastLineOfCodeBlock(range, codeBlock) {
+        const endContainer = range.endContainer;
+        const endOffset = range.endOffset;
+        
+        // 检查是否在代码块的最后一个文本节点
+        if (endContainer.nodeType === Node.TEXT_NODE) {
+            const textContent = endContainer.textContent;
+            const lastNewlineIndex = textContent.lastIndexOf('\n');
+            
+            // 如果光标在最后一个换行符之后，或者没有换行符且光标在末尾
+            if (lastNewlineIndex === -1) {
+                return endOffset === textContent.length;
+            } else {
+                return endOffset > lastNewlineIndex;
+            }
+        }
+        
+        return false;
+    }
+    
+    isAtFirstLineOfCodeBlock(range, codeBlock) {
+        const startContainer = range.startContainer;
+        const startOffset = range.startOffset;
+        
+        // 检查是否在代码块的第一个文本节点
+        if (startContainer.nodeType === Node.TEXT_NODE) {
+            const textContent = startContainer.textContent;
+            const firstNewlineIndex = textContent.indexOf('\n');
+            
+            // 如果光标在第一个换行符之前，或者没有换行符且光标在开头
+            if (firstNewlineIndex === -1) {
+                return startOffset === 0;
+            } else {
+                return startOffset <= firstNewlineIndex;
+            }
+        }
+        
+        return false;
+    }
+    
+    exitInlineCodeAfter(inlineCode, range) {
+        console.log('退出行内代码（向后）');
+        
+        // 在行内代码后面插入一个文本节点
+        const textNode = document.createTextNode('');
+        inlineCode.parentNode.insertBefore(textNode, inlineCode.nextSibling);
+        
+        // 将光标移动到新插入的文本节点
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, 0);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 触发内容变化
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+    }
+    
+    exitInlineCodeBefore(inlineCode, range) {
+        console.log('退出行内代码（向前）');
+        
+        // 在行内代码前面插入一个文本节点
+        const textNode = document.createTextNode('');
+        inlineCode.parentNode.insertBefore(textNode, inlineCode);
+        
+        // 将光标移动到新插入的文本节点
+        range.setStart(textNode, 0);
+        range.setEnd(textNode, 0);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 触发内容变化
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+    }
+    
+    exitCodeBlockAfter(codeBlock, range) {
+        console.log('退出代码块（向后）');
+        
+        // 在代码块后面插入一个段落
+        const paragraph = document.createElement('p');
+        const br = document.createElement('br');
+        paragraph.appendChild(br);
+        
+        codeBlock.parentNode.insertBefore(paragraph, codeBlock.nextSibling);
+        
+        // 将光标移动到新插入的段落
+        range.setStart(paragraph, 0);
+        range.setEnd(paragraph, 0);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 触发内容变化
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+    }
+    
+    exitCodeBlockBefore(codeBlock, range) {
+        console.log('退出代码块（向前）');
+        
+        // 在代码块前面插入一个段落
+        const paragraph = document.createElement('p');
+        const br = document.createElement('br');
+        paragraph.appendChild(br);
+        
+        codeBlock.parentNode.insertBefore(paragraph, codeBlock);
+        
+        // 将光标移动到新插入的段落
+        range.setStart(paragraph, 0);
+        range.setEnd(paragraph, 0);
+        
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        // 触发内容变化
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+    }
 
     setLink() {
+        console.log('setLink 被调用');
+        
         this.content.focus();
         const selection = window.getSelection();
         
+        console.log('选择范围数量:', selection.rangeCount);
+        
         if (selection.rangeCount === 0) {
+            console.log('没有选择范围');
             alert('请先选中要设置为链接的文字');
             return;
         }
@@ -335,11 +756,19 @@ class SimpleTiptapEditor {
         const range = selection.getRangeAt(0);
         const selectedText = range.toString();
         
+        console.log('选中的文本:', selectedText);
+        
         if (!selectedText) {
+            console.log('选中的文本为空');
             alert('请先选中要设置为链接的文字');
             return;
         }
         
+        // 保存选中的范围
+        this.savedRange = range.cloneRange();
+        console.log('已保存选中范围');
+        
+        console.log('显示链接模态框');
         // 创建链接模态框
         this.showLinkModal(selectedText, '');
     }
@@ -380,6 +809,12 @@ class SimpleTiptapEditor {
         // 显示模态框
         setTimeout(() => {
             modal.classList.add('show');
+            // 聚焦到第一个输入框
+            const textInput = modal.querySelector('#link-text');
+            if (textInput) {
+                textInput.focus();
+                textInput.select();
+            }
         }, 10);
         
         // 绑定事件
@@ -443,8 +878,15 @@ class SimpleTiptapEditor {
     }
     
     insertLink(text, url) {
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
+        console.log('insertLink 被调用:', { text, url });
+        
+        if (!this.savedRange) {
+            console.error('没有保存的选中范围');
+            alert('请先选中要设置为链接的文字');
+            return;
+        }
+        
+        console.log('使用保存的范围:', this.savedRange.toString());
         
         // 创建链接元素
         const linkElement = document.createElement('a');
@@ -452,22 +894,37 @@ class SimpleTiptapEditor {
         linkElement.textContent = text;
         linkElement.target = '_blank';
         linkElement.rel = 'noopener noreferrer';
+        linkElement.className = 'tiptap-link';
         
-        // 替换选中的文本
-        range.deleteContents();
-        range.insertNode(linkElement);
+        console.log('创建的链接元素:', linkElement);
         
-        // 选中新创建的链接
-        range.selectNode(linkElement);
-        selection.removeAllRanges();
-        selection.addRange(range);
-        
-        this.onContentChange();
+        try {
+            // 使用保存的范围替换选中的文本
+            this.savedRange.deleteContents();
+            this.savedRange.insertNode(linkElement);
+            
+            // 选中新创建的链接
+            const selection = window.getSelection();
+            const newRange = document.createRange();
+            newRange.selectNode(linkElement);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            
+            console.log('链接插入成功');
+            
+            // 清除保存的范围
+            this.savedRange = null;
+            
+            // 触发内容变化
+            if (this.onContentChange) {
+                this.onContentChange(this.getContent());
+            }
+        } catch (error) {
+            console.error('插入链接时出错:', error);
+            alert('插入链接失败，请重试');
+        }
     }
 
-    setImage() {
-        this.showImageModal();
-    }
 
     createTaskList() {
         const selection = window.getSelection();
@@ -558,10 +1015,57 @@ class SimpleTiptapEditor {
     }
 
     getContent() {
-        return this.content.innerHTML;
+        try {
+            // 获取HTML内容
+            let htmlContent = this.content.innerHTML;
+            
+            // 调试日志
+            console.log('SimpleTiptapEditor.getContent() - 原始内容:', htmlContent);
+            
+            // 确保内容不为undefined或null
+            if (htmlContent === undefined || htmlContent === null) {
+                console.log('SimpleTiptapEditor.getContent() - 内容为 undefined/null，设置为空字符串');
+                htmlContent = '';
+            }
+            
+            // 处理代码块，确保特殊字符被正确转义
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = htmlContent;
+            
+            // 处理所有代码块
+            const codeElements = tempDiv.querySelectorAll('code');
+            console.log('SimpleTiptapEditor.getContent() - 找到代码块数量:', codeElements.length);
+            
+            codeElements.forEach((codeElement, index) => {
+                // 确保代码内容被正确转义
+                const textContent = codeElement.textContent || codeElement.innerText || '';
+                console.log(`SimpleTiptapEditor.getContent() - 代码块 ${index + 1} 原始内容:`, textContent);
+                codeElement.innerHTML = this.escapeHtml(textContent);
+                console.log(`SimpleTiptapEditor.getContent() - 代码块 ${index + 1} 转义后:`, codeElement.innerHTML);
+            });
+            
+            const result = tempDiv.innerHTML;
+            console.log('SimpleTiptapEditor.getContent() - 最终结果:', result);
+            return result;
+        } catch (error) {
+            console.error('SimpleTiptapEditor.getContent() - 错误:', error);
+            return '';
+        }
+    }
+    
+    // HTML转义函数
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     setContent(content) {
+        // 确保内容不为undefined或null
+        if (content === undefined || content === null) {
+            content = '';
+        }
+        
         this.content.innerHTML = content;
         this.updatePlaceholder();
         this.updateToolbarState();
@@ -580,333 +1084,12 @@ class SimpleTiptapEditor {
         this.content.focus();
     }
 
-    showImageModal() {
-        // 创建图片选择模态框
-        const modal = document.createElement('div');
-        modal.className = 'image-modal';
-        modal.innerHTML = `
-            <div class="image-modal-overlay">
-                <div class="image-modal-content">
-                    <div class="image-modal-header">
-                        <h3>插入图片</h3>
-                        <button class="image-modal-close">&times;</button>
-                    </div>
-                    <div class="image-modal-body">
-                        <div class="image-tabs">
-                            <button class="image-tab active" data-tab="url">图片链接</button>
-                            <button class="image-tab" data-tab="upload">上传图片</button>
-                        </div>
-                        
-                        <div class="image-tab-content active" id="url-tab">
-                            <div class="form-group">
-                                <label for="image-url">图片地址</label>
-                                <input type="url" id="image-url" placeholder="https://example.com/image.jpg" class="form-control">
-                            </div>
-                            <div class="form-group">
-                                <label for="image-alt">图片描述（可选）</label>
-                                <input type="text" id="image-alt" placeholder="图片描述" class="form-control">
-                            </div>
-                        </div>
-                        
-                        <div class="image-tab-content" id="upload-tab">
-                            <div class="upload-area" id="upload-area">
-                                <div class="upload-icon">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                </div>
-                                <p>点击选择图片或拖拽图片到此处</p>
-                                <p class="upload-hint">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
-                                <input type="file" id="image-file" accept="image/*" style="display: none;">
-                            </div>
-                            <div class="upload-preview" id="upload-preview" style="display: none;">
-                                <img id="preview-img" src="" alt="预览">
-                                <div class="preview-info">
-                                    <p id="preview-name"></p>
-                                    <p id="preview-size"></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="image-modal-footer">
-                        <button class="btn btn-secondary" id="cancel-image">取消</button>
-                        <button class="btn btn-primary" id="insert-image" disabled>插入图片</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        document.body.appendChild(modal);
-        
-        // 绑定事件
-        this.bindImageModalEvents(modal);
-    }
 
-    bindImageModalEvents(modal) {
-        const closeBtn = modal.querySelector('.image-modal-close');
-        const cancelBtn = modal.querySelector('#cancel-image');
-        const insertBtn = modal.querySelector('#insert-image');
-        const tabs = modal.querySelectorAll('.image-tab');
-        const tabContents = modal.querySelectorAll('.image-tab-content');
-        const urlInput = modal.querySelector('#image-url');
-        const altInput = modal.querySelector('#image-alt');
-        const uploadArea = modal.querySelector('#upload-area');
-        const fileInput = modal.querySelector('#image-file');
-        const uploadPreview = modal.querySelector('#upload-preview');
-        const previewImg = modal.querySelector('#preview-img');
-        const previewName = modal.querySelector('#preview-name');
-        const previewSize = modal.querySelector('#preview-size');
-        
-        let selectedFile = null;
-        let currentTab = 'url';
-        
-        // 关闭模态框
-        const closeModal = () => {
-            document.body.removeChild(modal);
-        };
-        
-        closeBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
-        modal.querySelector('.image-modal-overlay').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) {
-                closeModal();
-            }
-        });
-        
-        // 标签页切换
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                // 更新标签页状态
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                
-                // 更新内容显示
-                tabContents.forEach(content => {
-                    content.classList.remove('active');
-                });
-                modal.querySelector(`#${tabName}-tab`).classList.add('active');
-                
-                currentTab = tabName;
-                updateInsertButton();
-            });
-        });
-        
-        // URL输入变化
-        urlInput.addEventListener('input', () => {
-            updateInsertButton();
-        });
-        
-        // 文件上传区域
-        uploadArea.addEventListener('click', () => {
-            fileInput.click();
-        });
-        
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('drag-over');
-        });
-        
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('drag-over');
-        });
-        
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('drag-over');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFileSelect(files[0]);
-            }
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
-            }
-        });
-        
-        // 处理文件选择
-        const handleFileSelect = (file) => {
-            // 检查文件类型
-            if (!file.type.startsWith('image/')) {
-                alert('请选择图片文件');
-                return;
-            }
-            
-            // 检查文件大小 (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('图片大小不能超过5MB');
-                return;
-            }
-            
-            selectedFile = file;
-            
-            // 显示预览
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImg.src = e.target.result;
-                previewName.textContent = file.name;
-                previewSize.textContent = this.formatFileSize(file.size);
-                uploadArea.style.display = 'none';
-                uploadPreview.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
-            
-            updateInsertButton();
-        };
-        
-        // 更新插入按钮状态
-        const updateInsertButton = () => {
-            let canInsert = false;
-            
-            if (currentTab === 'url') {
-                canInsert = urlInput.value.trim() !== '';
-            } else if (currentTab === 'upload') {
-                canInsert = selectedFile !== null;
-            }
-            
-            insertBtn.disabled = !canInsert;
-        };
-        
-        // 插入图片
-        insertBtn.addEventListener('click', async () => {
-            if (currentTab === 'url') {
-                const url = urlInput.value.trim();
-                const alt = altInput.value.trim();
-                this.insertImage(url, alt);
-                closeModal();
-            } else if (currentTab === 'upload' && selectedFile) {
-                insertBtn.disabled = true;
-                insertBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中...';
-                
-                try {
-                    const imageUrl = await this.uploadImage(selectedFile);
-                    if (imageUrl) {
-                        this.insertImage(imageUrl, selectedFile.name);
-                        closeModal();
-                    } else {
-                        alert('图片上传失败');
-                    }
-                } catch (error) {
-                    console.error('上传错误:', error);
-                    alert('图片上传失败');
-                } finally {
-                    insertBtn.disabled = false;
-                    insertBtn.innerHTML = '插入图片';
-                }
-            }
-        });
-    }
 
-    insertImage(url, alt = '') {
-        this.content.focus();
-        const img = document.createElement('img');
-        img.src = url;
-        img.alt = alt;
-        img.style.maxWidth = '100%';
-        img.style.height = 'auto';
-        img.style.borderRadius = '6px';
-        img.style.margin = '4px 0';
-        img.style.display = 'block';
-        img.style.transition = 'all 0.2s ease';
-        
-        // 插入图片
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-            const range = selection.getRangeAt(0);
-            range.insertNode(img);
-            // 移动光标到图片后面
-            range.setStartAfter(img);
-            range.setEndAfter(img);
-            selection.removeAllRanges();
-            selection.addRange(range);
-        } else {
-            this.content.appendChild(img);
-        }
-        
-        // 在图片插入到DOM后添加调整大小功能
-        this.makeImageResizable(img);
-    }
+    
 
-    async uploadImage(file) {
-        try {
-            // 压缩图片
-            const compressedFile = await this.compressImage(file);
-            
-            // 创建FormData对象
-            const formData = new FormData();
-            formData.append('image', compressedFile);
-            
-            // 发送到服务器上传
-            const response = await fetch('/api/upload-image', {
-                method: 'POST',
-                body: formData
-            });
-            
-            if (response.ok) {
-                const result = await response.json();
-                if (result.success) {
-                    return result.url;
-                } else {
-                    throw new Error(result.message || '上传失败');
-                }
-            } else {
-                // 尝试获取错误信息
-                let errorMessage = '上传失败';
-                try {
-                    const errorResult = await response.json();
-                    errorMessage = errorResult.message || errorMessage;
-                } catch (e) {
-                    errorMessage = `上传失败 (${response.status}: ${response.statusText})`;
-                }
-                throw new Error(errorMessage);
-            }
-        } catch (error) {
-            console.error('图片上传错误:', error);
-            throw error;
-        }
-    }
 
-    async compressImage(file, maxWidth = 800, maxHeight = 600, quality = 0.8) {
-        return new Promise((resolve) => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            
-            img.onload = () => {
-                // 计算压缩后的尺寸
-                let { width, height } = img;
-                
-                if (width > maxWidth || height > maxHeight) {
-                    const ratio = Math.min(maxWidth / width, maxHeight / height);
-                    width *= ratio;
-                    height *= ratio;
-                }
-                
-                canvas.width = width;
-                canvas.height = height;
-                
-                // 绘制压缩后的图片
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                // 转换为Blob
-                canvas.toBlob((blob) => {
-                    resolve(blob);
-                }, file.type, quality);
-            };
-            
-            img.src = URL.createObjectURL(file);
-        });
-    }
 
-    formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
 
 
     toggleInlineCode() {
@@ -923,8 +1106,9 @@ class SimpleTiptapEditor {
                 range.deleteContents();
                 range.insertNode(codeElement);
                 
-                // 选中插入的代码元素
-                range.selectNode(codeElement);
+                // 将光标移动到代码元素内部
+                range.setStart(codeElement, codeElement.textContent.length);
+                range.setEnd(codeElement, codeElement.textContent.length);
                 selection.removeAllRanges();
                 selection.addRange(range);
             } else {
@@ -933,13 +1117,16 @@ class SimpleTiptapEditor {
                 codeElement.textContent = '代码';
                 range.insertNode(codeElement);
                 
-                // 选中插入的代码元素内容
-                range.selectNodeContents(codeElement);
+                // 将光标移动到代码元素内部
+                range.setStart(codeElement, codeElement.textContent.length);
+                range.setEnd(codeElement, codeElement.textContent.length);
                 selection.removeAllRanges();
                 selection.addRange(range);
             }
         }
-        this.onContentChange();
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
     }
 
     insertCodeBlock() {
@@ -973,7 +1160,9 @@ class SimpleTiptapEditor {
             selection.removeAllRanges();
             selection.addRange(range);
         }
-        this.onContentChange();
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
     }
     
     insertCodeBlockWithLanguage(language = 'javascript') {
@@ -1007,7 +1196,9 @@ class SimpleTiptapEditor {
             selection.removeAllRanges();
             selection.addRange(range);
         }
-        this.onContentChange();
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
     }
     
     getExampleCode(language) {
@@ -1038,98 +1229,6 @@ class SimpleTiptapEditor {
     }
     
 
-    makeImageResizable(img) {
-        // 检查图片是否在DOM中
-        if (!img.parentNode) {
-            console.warn('图片尚未插入到DOM中，无法添加调整大小功能');
-            return;
-        }
-        
-        // 创建包装容器
-        const wrapper = document.createElement('div');
-        wrapper.className = 'image-resize-wrapper';
-        wrapper.style.position = 'relative';
-        wrapper.style.display = 'inline-block';
-        wrapper.style.maxWidth = '100%';
-        
-        // 将图片包装在容器中
-        img.parentNode.insertBefore(wrapper, img);
-        wrapper.appendChild(img);
-        
-        // 添加resizable类到包装器
-        wrapper.classList.add('resizable');
-        
-        // 创建调整大小控制点
-        const handles = ['nw', 'ne', 'sw', 'se'];
-        handles.forEach(handle => {
-            const resizeHandle = document.createElement('div');
-            resizeHandle.className = `resize-handle ${handle}`;
-            wrapper.appendChild(resizeHandle);
-            
-            // 添加拖拽调整大小功能
-            resizeHandle.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                const startX = e.clientX;
-                const startY = e.clientY;
-                const startWidth = wrapper.offsetWidth;
-                const startHeight = wrapper.offsetHeight;
-                const startLeft = wrapper.offsetLeft;
-                const startTop = wrapper.offsetTop;
-                
-                const handleMouseMove = (e) => {
-                    const deltaX = e.clientX - startX;
-                    const deltaY = e.clientY - startY;
-                    
-                    let newWidth = startWidth;
-                    let newHeight = startHeight;
-                    let newLeft = startLeft;
-                    let newTop = startTop;
-                    
-                    // 根据控制点位置调整大小
-                    if (handle.includes('e')) {
-                        newWidth = Math.max(50, startWidth + deltaX);
-                    }
-                    if (handle.includes('w')) {
-                        newWidth = Math.max(50, startWidth - deltaX);
-                        newLeft = startLeft + deltaX;
-                    }
-                    if (handle.includes('s')) {
-                        newHeight = Math.max(50, startHeight + deltaY);
-                    }
-                    if (handle.includes('n')) {
-                        newHeight = Math.max(50, startHeight - deltaY);
-                        newTop = startTop + deltaY;
-                    }
-                    
-                    // 限制最大尺寸（不超过编辑器宽度）
-                    const maxWidth = this.content.offsetWidth - 32; // 留出边距
-                    newWidth = Math.min(newWidth, maxWidth);
-                    
-                    // 应用新尺寸到包装器
-                    wrapper.style.width = newWidth + 'px';
-                    wrapper.style.height = newHeight + 'px';
-                    wrapper.style.left = newLeft + 'px';
-                    wrapper.style.top = newTop + 'px';
-                    wrapper.style.position = 'relative';
-                    
-                    // 图片填满包装器
-                    img.style.width = '100%';
-                    img.style.height = '100%';
-                    img.style.objectFit = 'cover';
-                };
-                
-                const handleMouseUp = () => {
-                    document.removeEventListener('mousemove', handleMouseMove);
-                    document.removeEventListener('mouseup', handleMouseUp);
-                };
-                
-                document.addEventListener('mousemove', handleMouseMove);
-                document.addEventListener('mouseup', handleMouseUp);
-            });
-        });
-    }
 
 
     destroy() {

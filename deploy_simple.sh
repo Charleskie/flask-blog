@@ -5,7 +5,7 @@
 
 set -e
 
-SERVER_IP=${1:-"47.112.96.87"}
+SERVER_IP=${1:-"*.*.*.*"}
 SERVER_USER=${2:-"root"}
 
 echo "🚀 开始简单部署个人网站到 $SERVER_USER@$SERVER_IP"
@@ -21,15 +21,15 @@ echo "📋 复制项目文件到临时目录..."
 cp -r app $TEMP_DIR/
 cp -r static $TEMP_DIR/ 2>/dev/null || echo "⚠️ static目录不存在，跳过"
 cp run.py $TEMP_DIR/
+cp config.py $TEMP_DIR/
 cp requirements.txt $TEMP_DIR/
 cp requirements_compatible.txt $TEMP_DIR/
 cp requirements_python36.txt $TEMP_DIR/
 cp README.md $TEMP_DIR/
 cp db_manager.py $TEMP_DIR/
 cp db_tools.py $TEMP_DIR/
-cp check_status.sh $TEMP_DIR/
-cp check_website.sh $TEMP_DIR/
-cp restart_website.sh $TEMP_DIR/
+cp cleanup_logs.py $TEMP_DIR/
+cp setup_log_cleanup.sh $TEMP_DIR/
 
 
 

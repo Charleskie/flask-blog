@@ -25,6 +25,13 @@
                                            required maxlength="200" placeholder="请输入文章标题">
                                     <div class="form-text">标题将自动生成URL友好的链接</div>
                                 </div>
+                                <!-- 摘要 -->
+                                <div class="mb-3">
+                                    <label for="excerpt" class="form-label">文章摘要</label>
+                                    <textarea class="form-control" id="excerpt" name="excerpt" rows="3"
+                                              placeholder="请输入文章摘要（可选）"></textarea>
+                                    <div class="form-text">摘要将显示在文章列表中，如果不填写将自动截取内容前200字符</div>
+                                </div>
                                 
                                 <!-- 内容 -->
                                 <div class="mb-3">
@@ -32,14 +39,7 @@
                                     <div id="tiptap-container"></div>
                                     <textarea id="content" name="content" style="display:none;"></textarea>
                                 </div>
-                                
-                                <!-- 摘要 -->
-                                <div class="mb-3">
-                                    <label for="excerpt" class="form-label">文章摘要</label>
-                                    <textarea class="form-control" id="excerpt" name="excerpt" rows="3" 
-                                              placeholder="请输入文章摘要（可选）"></textarea>
-                                    <div class="form-text">摘要将显示在文章列表中，如果不填写将自动截取内容前200字符</div>
-                                </div>
+
                             </div>
                             
                             <div class="col-md-4">
@@ -125,6 +125,8 @@
 {% block extra_css %}
 <!-- 图片模态框样式 -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
+<!-- Tiptap 编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
 
 <style>
     .form-control:focus, .form-select:focus {
@@ -145,11 +147,6 @@
 </style>
 {% endblock %}
 
-{% block extra_css %}
-<!-- Tiptap 编辑器样式 -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
-{% endblock %}
-
 {% block extra_js %}
 <!-- 简化版 Tiptap 编辑器 JavaScript -->
 <script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
@@ -165,20 +162,44 @@ document.addEventListener('DOMContentLoaded', function() {
         content: ''
     });
     
-    // 监听内容变化，同步到隐藏的 textarea
-    tiptapEditor.onContentChange = function(htmlContent) {
-        contentTextarea.value = htmlContent;
-    };
-    
     const titleInput = document.getElementById('title');
     const excerptInput = document.getElementById('excerpt');
     const previewBtn = document.getElementById('preview-btn');
     const previewModal = document.getElementById('previewModal');
     const previewContent = document.getElementById('preview-content');
     
-    // 自动生成摘要
+    // 字数统计
+    function updateWordCount() {
+        const content = contentTextarea.value;
+        const wordCount = content.length;
+        const charCount = content.replace(/\s/g, '').length;
+        
+        // 可以在这里添加字数统计显示
+        console.log(`字符数：${wordCount}，非空字符数：${charCount}`);
+    }
+    
+    // 统一的内容变化处理函数
     tiptapEditor.onContentChange = function(htmlContent) {
+        console.log('onContentChange 被调用，参数:', htmlContent);
+        console.log('参数类型:', typeof htmlContent);
+        console.log('是否为 undefined:', htmlContent === undefined);
+        console.log('是否为 null:', htmlContent === null);
+        
+        // 确保内容不为空或undefined
+        if (htmlContent === undefined || htmlContent === null) {
+            console.log('内容为 undefined/null，设置为空字符串');
+            htmlContent = '';
+        }
+        
+        console.log('处理后的内容:', htmlContent);
+        console.log('内容长度:', htmlContent.length);
+        
+        // 同步到隐藏的 textarea
         contentTextarea.value = htmlContent;
+        console.log('textarea 值已更新:', contentTextarea.value);
+        
+        // 更新字数统计
+        updateWordCount();
         
         // 自动生成摘要
         if (excerptInput && !excerptInput.value && htmlContent.length > 50) {
@@ -229,6 +250,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const title = titleInput.value.trim();
             const content = contentTextarea.value.trim();
             
+            console.log('表单提交 - 标题:', title);
+            console.log('表单提交 - 内容:', content);
+            console.log('表单提交 - 内容类型:', typeof content);
+            console.log('表单提交 - 内容长度:', content.length);
+            console.log('表单提交 - 是否为 undefined:', content === 'undefined');
+            
             if (!title) {
                 e.preventDefault();
                 alert('请输入文章标题');
@@ -253,31 +280,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 字数统计
-    function updateWordCount() {
-        const content = contentTextarea.value;
-        const wordCount = content.length;
-        const charCount = content.replace(/\s/g, '').length;
-        
-        // 可以在这里添加字数统计显示
-        console.log(`字符数：${wordCount}，非空字符数：${charCount}`);
-    }
-    
-    // 更新编辑器内容变化处理函数
-    tiptapEditor.onContentChange = function(htmlContent) {
-        contentTextarea.value = htmlContent;
-        updateWordCount();
-        
-        // 自动生成摘要
-        if (excerptInput && !excerptInput.value && htmlContent.length > 50) {
-            // 从 HTML 中提取纯文本
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = htmlContent;
-            const textContent = tempDiv.textContent || tempDiv.innerText || '';
-            const excerpt = textContent.substring(0, 200).replace(/\n/g, ' ').trim();
-            excerptInput.value = excerpt + (excerpt.length === 200 ? '...' : '');
-        }
-    };
 });
 </script>
 {% endblock %} 

@@ -435,63 +435,44 @@
     border-bottom-color: var(--primary-color, #3b82f6);
 }
 
-.tiptap-content img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    margin: 1rem 0;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
-    position: relative;
+/* 编辑器中的链接样式 */
+.tiptap-link {
+    color: var(--primary-color, #3b82f6);
+    text-decoration: underline;
+    transition: all 0.15s ease;
 }
 
-/* 图片调整大小控制点 */
-.tiptap-content .image-resize-wrapper.resizable {
-    position: relative;
-    display: inline-block;
-    max-width: 100%;
+.tiptap-link:hover {
+    color: var(--primary-hover-color, #2563eb);
+    text-decoration: underline;
 }
 
-.tiptap-content .image-resize-wrapper.resizable .resize-handle {
-    position: absolute;
-    background: #3b82f6;
-    border: 2px solid white;
-    border-radius: 50%;
-    width: 12px;
-    height: 12px;
-    cursor: nw-resize;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    z-index: 10;
+
+
+/* 对齐选项样式 */
+.align-options {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
 }
 
-.tiptap-content .image-resize-wrapper.resizable:hover .resize-handle {
-    opacity: 1;
+.align-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
-.tiptap-content .image-resize-wrapper.resizable .resize-handle.se {
-    bottom: -6px;
-    right: -6px;
-    cursor: se-resize;
+.align-option input[type="radio"] {
+    margin: 0;
 }
 
-.tiptap-content .image-resize-wrapper.resizable .resize-handle.sw {
-    bottom: -6px;
-    left: -6px;
-    cursor: sw-resize;
+.align-option:hover {
+    color: var(--primary-color, #3b82f6);
 }
 
-.tiptap-content .image-resize-wrapper.resizable .resize-handle.ne {
-    top: -6px;
-    right: -6px;
-    cursor: ne-resize;
-}
 
-.tiptap-content .image-resize-wrapper.resizable .resize-handle.nw {
-    top: -6px;
-    left: -6px;
-    cursor: nw-resize;
-}
 
 /* 链接模态框样式 */
 .link-modal {
@@ -890,6 +871,41 @@
     
     .tiptap-content h3 {
         font-size: 1.25rem;
+    }
+    
+    /* 移动端图片尺寸优化 */
+    .tiptap-image-container[data-align="left"],
+    .tiptap-image-container[data-align="right"] {
+        max-width: 150px;
+        width: 150px;
+        float: none;
+        display: block;
+        margin: 1rem auto;
+    }
+    
+    .tiptap-image-container[data-align="center"] {
+        max-width: 300px;
+    }
+    
+    .tiptap-image {
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    /* 小屏幕设备进一步优化 */
+    .tiptap-image-container[data-align="left"],
+    .tiptap-image-container[data-align="right"],
+    .tiptap-image-container[data-align="center"] {
+        max-width: 120px;
+        width: 120px;
+        margin: 1rem auto;
+        float: none;
+        display: block;
+    }
+    
+    .tiptap-image {
+        max-height: 120px;
     }
 }
 

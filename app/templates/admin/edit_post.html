@@ -202,18 +202,19 @@ document.addEventListener('DOMContentLoaded', function() {
         content: contentTextarea.value || ''
     });
     
-    // 监听内容变化，同步到隐藏的 textarea
-    tiptapEditor.onContentChange = function(htmlContent) {
-        contentTextarea.value = htmlContent;
-    };
-    
     // 获取表单元素
     const titleInput = document.getElementById('title');
     const excerptInput = document.getElementById('excerpt');
     const categorySelect = document.getElementById('category');
     
-    // 监听编辑器内容变化
+    // 统一的内容变化处理函数
     tiptapEditor.onContentChange = function(htmlContent) {
+        // 确保内容不为空或undefined
+        if (htmlContent === undefined || htmlContent === null) {
+            htmlContent = '';
+        }
+        
+        // 同步到隐藏的 textarea
         contentTextarea.value = htmlContent;
     };
     
