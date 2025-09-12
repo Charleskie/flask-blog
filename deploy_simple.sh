@@ -7,6 +7,12 @@ set -e
 
 SERVER_IP=${1:-"47.112.96.87"}
 SERVER_USER=${2:-"root"}
+# 设置生产环境变量
+export FLASK_ENV=production
+export FLASK_DEBUG=False
+export LOG_LEVEL=INFO
+export LOG_DIR=/root/kim/temp/blog/logs
+export LOG_FILE=app.log
 
 echo "🚀 开始简单部署个人网站到 $SERVER_USER@$SERVER_IP"
 
@@ -340,14 +346,12 @@ curl -I http://localhost/static/css/main.css || echo "❌ 静态文件无法访�
 
 echo "🌐 网站地址: http://$SERVER_IP"
 echo "🔧 管理后台: http://$SERVER_IP/admin"
-echo "📋 默认管理员: admin / admin123"
 echo "💡 如果样式有问题，请清除浏览器缓存或使用Ctrl+F5强制刷新"
 EOF
 
 echo "🎉 部署完成！"
 echo "🌐 网站地址: http://$SERVER_IP"
 echo "🔧 管理后台: http://$SERVER_IP/admin"
-echo "📋 默认管理员: admin / admin123"
 
 # 清理本地文件
 rm $PACKAGE_NAME 

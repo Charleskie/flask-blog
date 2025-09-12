@@ -229,7 +229,6 @@ if [ "$SUCCESS" = true ]; then
     echo ""
     echo "🌐 网站地址: http://$SERVER_IP"
     echo "🔧 管理后台: http://$SERVER_IP/admin"
-    echo "📋 默认管理员: admin / admin123"
 else
     echo "⚠️  网站重启过程中遇到问题"
     echo ""

@@ -713,24 +713,7 @@ def init_database():
         # 创建所有表
         db.create_all()
         print("✅ 数据库表创建成功！")
-        
-        # 创建默认管理员用户
-        admin_user = User.query.filter_by(username='admin').first()
-        if not admin_user:
-            admin_user = User(
-                username='admin',
-                email='admin@example.com',
-                password_hash=generate_password_hash('admin123'),
-                is_admin=True
-            )
-            db.session.add(admin_user)
-            db.session.commit()
-            print("✅ 默认管理员用户创建成功！")
-            print("   用户名: admin")
-            print("   密码: admin123")
-        else:
-            print("ℹ️  管理员用户已存在")
-        
+
     except Exception as e:
         print(f"❌ 初始化失败: {e}")
         db.session.rollback()
@@ -750,20 +733,7 @@ def reset_database():
         # 重新创建表
         db.create_all()
         print("✅ 数据库表重新创建成功！")
-        
-        # 创建默认管理员用户
-        admin_user = User(
-            username='admin',
-            email='admin@example.com',
-            password_hash=generate_password_hash('admin123'),
-            is_admin=True
-        )
-        db.session.add(admin_user)
-        db.session.commit()
-        print("✅ 默认管理员用户创建成功！")
-        print("   用户名: admin")
-        print("   密码: admin123")
-        
+
     except Exception as e:
         print(f"❌ 重置失败: {e}")
         db.session.rollback()
