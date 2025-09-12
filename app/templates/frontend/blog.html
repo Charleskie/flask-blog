@@ -39,15 +39,11 @@ article.card:hover {
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="text-center mb-3">技术博客</h1>
-        <p class="text-center lead mb-4">分享我的技术心得、学习笔记和行业见解。</p>
-        
+        <h1 class="text-center mb-3 fs-3 fw-bold">文章</h1>
+
         <!-- 面包屑导航 -->
         <nav aria-label="breadcrumb" class="mb-4">
             <ol class="breadcrumb justify-content-center">
-                <li class="breadcrumb-item">
-                    <a href="{{ url_for('main.blog') }}">全部文章</a>
-                </li>
                 {% if current_category %}
                 <li class="breadcrumb-item active" aria-current="page">
                     {{ current_category }}
