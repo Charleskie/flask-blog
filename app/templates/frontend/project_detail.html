@@ -8,7 +8,7 @@
         <div class="col-lg-12">
             <!-- 项目标题和基本信息 -->
             <div class="project-header">
-                <h1 class="display-4 fw-bold">{{ project.title }}</h1>
+                <h1 class="display-2 fw-bold custom-title">{{ project.title }}</h1>
                 
                 <!-- 项目元信息 -->
                 <div class="project-meta-info">
@@ -58,6 +58,22 @@
                             </div>
                             {% endif %}
                         </div>
+                        <!-- 项目状态和标签 -->
+                        <div class="me-4">
+                            {% if project.featured %}
+                                <span class="badge bg-warning me-2">推荐项目</span>
+                            {% endif %}
+                            {% if project.status == 'active' %}
+                                <span class="badge bg-success me-2">进行中</span>
+                            {% elif project.status == 'completed' %}
+                                <span class="badge bg-primary me-2">已完成</span>
+                            {% else %}
+                                <span class="badge bg-secondary me-2">已归档</span>
+                            {% endif %}
+                            {% for tag in project.get_tags_list() %}
+                                <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
                         
                         <!-- 右侧：分享按钮 -->
                         <div class="meta-right d-flex align-items-center">
@@ -74,23 +90,6 @@
                                 </button>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- 项目状态和标签 -->
-                    <div class="mb-3">
-                        {% if project.featured %}
-                            <span class="badge bg-warning me-2">推荐项目</span>
-                        {% endif %}
-                        {% if project.status == 'active' %}
-                            <span class="badge bg-success me-2">进行中</span>
-                        {% elif project.status == 'completed' %}
-                            <span class="badge bg-primary me-2">已完成</span>
-                        {% else %}
-                            <span class="badge bg-secondary me-2">已归档</span>
-                        {% endif %}
-                        {% for tag in project.get_tags_list() %}
-                            <span class="badge bg-light text-dark me-1">{{ tag }}</span>
-                        {% endfor %}
                     </div>
                     
                     <!-- 项目简介 -->
@@ -251,13 +250,26 @@
 <style>
 /* 项目元信息样式 */
 .project-meta-info {
-    background: rgba(255, 255, 255, 0.05);
     backdrop-filter: blur(5px);
     -webkit-backdrop-filter: blur(5px);
     border-radius: 12px;
     padding: 16px 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
     margin-bottom: 24px;
+}
+
+@font-face {
+  font-family: 'FZKai';
+  src: url('/fonts/FZKai.woff2') format('woff2'),
+       url('/fonts/FZKai.woff') format('woff'),
+       url('/fonts/FZKai.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.custom-title {
+  font-family: 'FZKai', 'KaiTi', 'STKaiti', serif;
+  font-size: 28px; /* 可以换成Bootstrap fs-3 */
+  font-weight: bold;
 }
 
 .meta-single-line {
@@ -301,7 +313,7 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(0, 0, 0, 0);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 16px;
@@ -328,7 +340,7 @@
     height: 50px;
     border: none;
     border-radius: 12px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0);
     color: #666;
     transition: all 0.3s ease;
     cursor: pointer;
@@ -337,7 +349,7 @@
 }
 
 .floating-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(0, 0, 0, 0);
     color: #333;
     transform: translateY(-2px);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
@@ -369,9 +381,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0);
     border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .floating-rating-section .rating-label {
@@ -415,8 +426,7 @@
     align-items: center;
     justify-content: center;
     transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(0, 0, 0, 0);
 }
 
 .share-btn:hover {
