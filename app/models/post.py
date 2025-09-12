@@ -42,6 +42,13 @@ class Post(db.Model):
         
         return slug
     
+    @property
+    def safe_slug(self):
+        """获取安全的slug，如果没有则生成一个"""
+        if self.slug:
+            return self.slug
+        return self.generate_slug()
+    
     def get_tags_list(self):
         """获取标签列表"""
         if self.tags:

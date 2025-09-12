@@ -24,9 +24,23 @@
             <!-- 文章头部 -->
             <article class="blog-post">
                 <header class="mb-4">
-                    <h1 class="fs-3 fw-bold custom-title">
-                        {{ post.title }}
-                    </h1>
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h1 class="fs-3 fw-bold custom-title mb-0">
+                            {{ post.title }}
+                        </h1>
+                        {% if current_user.is_authenticated and current_user.is_admin %}
+                        <div class="admin-actions">
+                            <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" 
+                               class="btn btn-outline-primary btn-sm me-2" title="编辑文章">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                            <button class="btn btn-outline-danger btn-sm" 
+                                    onclick="deletePost({{ post.id }})" title="删除文章">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
                     
                     <!-- 文章元信息 -->
                     <div class="post-meta-info">
@@ -535,7 +549,6 @@
 .floating-btn.favorited i {
     color: #f39c12;
 }
-
 .floating-rating-section {
     display: flex;
     flex-direction: column;
@@ -556,6 +569,8 @@
 .floating-rating-section .rating-input {
     display: flex;
     gap: 2px;
+    flex-direction: row-reverse; /* 反转顺序以实现从左到右的选中效果 */
+    justify-content: center;
 }
 
 .floating-rating-section .rating-input input[type="radio"] {
@@ -569,15 +584,13 @@
     transition: color 0.2s ease;
 }
 
+/* 鼠标悬停效果 */
 .floating-rating-section .rating-input label:hover,
+.floating-rating-section .rating-input label:hover ~ label,
+/* 选中状态效果 */
 .floating-rating-section .rating-input input[type="radio"]:checked ~ label {
     color: #ffc107;
 }
-
-.floating-rating-section .rating-input input[type="radio"]:checked ~ label ~ label {
-    color: #ddd;
-}
-
 /* 分享按钮样式优化 */
 .share-btn {
     width: 28px;
@@ -1100,8 +1113,48 @@
 
 
 
+/* 管理员操作按钮样式 */
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.admin-actions .btn {
+    border-radius: 8px;
+    font-size: 13px;
+    padding: 6px 12px;
+    transition: all 0.2s ease;
+}
+
+.admin-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.admin-actions .btn-outline-primary:hover {
+    background-color: #007bff;
+    border-color: #007bff;
+    color: white;
+}
+
+.admin-actions .btn-outline-danger:hover {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
 /* 响应式调整 */
 @media (max-width: 768px) {
+    .admin-actions {
+        flex-direction: column;
+        gap: 4px;
+    }
+    
+    .admin-actions .btn {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
     .blog-post h1 {
         font-size: 1.75rem;
     }
@@ -1469,6 +1522,35 @@ function showToast(message, type = 'info') {
             toast.parentNode.removeChild(toast);
         }
     }, 3000);
+}
+
+// 删除文章函数
+function deletePost(postId) {
+    if (confirm('确定要删除这篇文章吗？此操作不可撤销！')) {
+        fetch(`/admin/posts/${postId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message, 'success');
+                // 延迟跳转到博客列表页
+                setTimeout(() => {
+                    window.location.href = '/blog';
+                }, 1500);
+            } else {
+                showToast(data.message || '删除失败', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('删除文章失败:', error);
+            showToast('删除失败，请稍后重试', 'error');
+        });
+    }
 }
 </script>
 {% endblock %} 

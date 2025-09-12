@@ -1,291 +1,157 @@
 {% extends "base.html" %}
 
-{% block title %}博客 - 我的个人网站{% endblock %}
-
-{% block extra_css %}
-<style>
-/* 毛玻璃效果卡片 */
-.card {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-}
-
-.card-header {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.card-body {
-    background: transparent !important;
-}
-
-/* 文章卡片特殊样式 */
-article.card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-article.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
-}
-</style>
-{% endblock %}
+{% block title %}博客 - Kim's Blog{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="text-center mb-3 fs-3 fw-bold">文章</h1>
-
-        <!-- 面包屑导航 -->
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb justify-content-center">
-                {% if current_category %}
-                <li class="breadcrumb-item active" aria-current="page">
-                    {{ current_category }}
-                </li>
-                {% endif %}
-                {% if search %}
-                <li class="breadcrumb-item active" aria-current="page">
-                    搜索结果: "{{ search }}"
-                </li>
-                {% endif %}
-            </ol>
-        </nav>
+<div class="flex flex-col md:flex-row">
+    <!-- 文章列表 -->
+    <div class="w-full md:w-2/3 lg:w-3/4 md:pr-8">
+        <h1 class="text-3xl font-bold mb-8 text-indigo-300">最新文章</h1>
         
-        <!-- 当前筛选状态 -->
-        {% if current_category or search %}
-        <div class="text-center mb-4">
-            <div class="d-inline-flex align-items-center gap-2">
-                {% if current_category %}
-                <span class="badge bg-primary">
-                    <i class="fas fa-folder"></i> {{ current_category }}
-                </span>
-                {% endif %}
-                {% if search %}
-                <span class="badge bg-info">
-                    <i class="fas fa-search"></i> "{{ search }}"
-                </span>
-                {% endif %}
-                <a href="{{ url_for('main.blog') }}" class="btn btn-sm btn-outline-secondary">
-                    <i class="fas fa-times"></i> 清除筛选
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-</div>
-
-<!-- 博客文章列表 -->
-<div class="row">
-    <div class="col-lg-8">
-        {% if posts.items %}
+        <!-- 文章卡片 -->
+        <div class="grid grid-cols-1 gap-8">
             {% for post in posts.items %}
-            <article class="card mb-4">
-                <div class="card-body">
-                    <h2 class="card-title">
-                        {% if post.slug %}
-                        <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none">{{ post.title }}</a>
-                        {% else %}
-                        <span class="text-decoration-none">{{ post.title }}</span>
-                        {% endif %}
-                    </h2>
-                    <p class="card-text text-muted">
-                        <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%Y年%m月%d日') }}
-                        <i class="fas fa-user ms-3"></i> {{ post.author.username if post.author else '管理员' }}
-                        {% if post.view_count %}
-                        <i class="fas fa-eye ms-3"></i> {{ post.view_count }} 次浏览
-                        {% endif %}
-                    </p>
-                    <p class="card-text">{{ post.excerpt or post.content[:200] + '...' if post.content|length > 200 else post.content }}</p>
-                    {% if post.slug %}
-                    <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="btn btn-primary">阅读更多</a>
-                    {% else %}
-                    <span class="btn btn-secondary disabled">暂无链接</span>
-                    {% endif %}
+            <article class="glass-card rounded-xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-sm text-indigo-300">{{ post.category or '未分类' }}</span>
+                    <span class="text-sm text-slate-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
+                </div>
+                
+                <h2 class="text-2xl font-bold mb-3 hover:text-indigo-300 cursor-pointer">
+                    <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}">{{ post.title }}</a>
+                </h2>
+                
+                <p class="text-slate-300 mb-4">{{ post.excerpt or post.content[:200] + '...' if post.content|length > 200 else post.content }}</p>
+                
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2 text-sm text-slate-400">
+                            <i class="fas fa-user"></i>
+                            <span>{{ post.author.username if post.author else '未知' }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm text-slate-400">
+                            <i class="fas fa-eye"></i>
+                            <span>{{ post.view_count }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm text-slate-400">
+                            <i class="far fa-heart"></i>
+                            <span>{{ post.like_count }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-sm text-slate-400">
+                            <i class="far fa-comment"></i>
+                            <span>{{ post.comment_count }}</span>
+                        </div>
+                    </div>
+                    
+                    <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium inline-flex items-center">
+                        阅读更多 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
                 </div>
             </article>
             {% endfor %}
-        {% else %}
-            <!-- 无文章或搜索结果为空 -->
-            {% if search %}
-            <div class="text-center py-5">
-                <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">没有找到相关文章</h4>
-                <p class="text-muted">尝试使用其他关键词搜索，或者浏览所有文章。</p>
-                <a href="{{ url_for('main.blog') }}" class="btn btn-primary">
-                    <i class="fas fa-list"></i> 查看所有文章
-                </a>
-            </div>
-            {% elif current_category %}
-            <div class="text-center py-5">
-                <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">该分类下暂无文章</h4>
-                <p class="text-muted">"{{ current_category }}" 分类下还没有发布任何文章。</p>
-                <a href="{{ url_for('main.blog') }}" class="btn btn-primary">
-                    <i class="fas fa-list"></i> 查看所有文章
-                </a>
-            </div>
-            {% else %}
-            {% endif %}
-        {% endif %}
-
+        </div>
+        
         <!-- 分页 -->
         {% if posts.pages > 1 %}
-        <nav aria-label="博客分页">
-            <ul class="pagination justify-content-center">
+        <div class="flex justify-center mt-10">
+            <nav class="flex items-center space-x-2">
                 {% if posts.has_prev %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search) }}">上一页</a>
-                </li>
+                <a href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search) }}" 
+                   class="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white">
+                    <i class="fas fa-chevron-left"></i>
+                </a>
                 {% endif %}
                 
                 {% for page_num in posts.iter_pages() %}
                     {% if page_num %}
                         {% if page_num != posts.page %}
-                        <li class="page-item">
-                            <a class="page-link" href="{{ url_for('main.blog', page=page_num, category=current_category, search=search) }}">{{ page_num }}</a>
-                        </li>
+                        <a href="{{ url_for('main.blog', page=page_num, category=current_category, search=search) }}" 
+                           class="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white">
+                            {{ page_num }}
+                        </a>
                         {% else %}
-                        <li class="page-item active">
-                            <span class="page-link">{{ page_num }}</span>
-                        </li>
+                        <span class="px-4 py-2 rounded-md bg-indigo-600 text-white">{{ page_num }}</span>
                         {% endif %}
                     {% else %}
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
+                    <span class="px-4 py-2 text-slate-400">...</span>
                     {% endif %}
                 {% endfor %}
                 
                 {% if posts.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search) }}">下一页</a>
-                </li>
+                <a href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search) }}" 
+                   class="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white">
+                    <i class="fas fa-chevron-right"></i>
+                </a>
                 {% endif %}
-            </ul>
-        </nav>
+            </nav>
+        </div>
         {% endif %}
     </div>
-
+    
     <!-- 侧边栏 -->
-    <div class="col-lg-4">
-        <!-- 搜索框 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-search"></i> 搜索文章</h5>
-            </div>
-            <div class="card-body">
-                <form method="GET" action="{{ url_for('main.blog') }}">
-                    <div class="input-group">
-                        <input type="text" class="form-control" name="search" 
-                               placeholder="搜索关键词..." value="{{ search or '' }}">
-                        <button class="btn-submit" type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- 分类 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-tags"></i> 文章分类</h5>
-            </div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                    <li class="mb-2">
-                        <a href="{{ url_for('main.blog') }}" 
-                           class="text-decoration-none {% if not current_category %}fw-bold text-primary{% endif %}">
-                            <i class="fas fa-list"></i> 全部文章
-                        </a>
-                    </li>
-                    {% for category in categories %}
-                    <li class="mb-2">
-                        <a href="{{ url_for('main.blog', category=category) }}" 
-                           class="text-decoration-none {% if current_category == category %}fw-bold text-primary{% endif %}">
-                            <i class="fas fa-folder"></i> {{ category }}
-                        </a>
-                    </li>
-                    {% endfor %}
-                    {% if not categories %}
-                    <li class="mb-2 text-muted">
-                        <i class="fas fa-info-circle"></i> 暂无分类
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-
-        <!-- 热门文章 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-fire"></i> 热门文章</h5>
-            </div>
-            <div class="card-body">
-                {% if popular_posts %}
-                <ul class="list-unstyled">
-                    {% for post in popular_posts %}
-                    <li class="mb-3">
-                        {% if post.slug %}
-                        <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none">
-                            <h6 class="mb-1">{{ post.title }}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-eye"></i> {{ post.view_count }} 次浏览
-                                <span class="ms-2">
-                                    <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%m月%d日') }}
-                                </span>
-                            </small>
-                        </a>
-                        {% else %}
-                        <div class="text-decoration-none">
-                            <h6 class="mb-1">{{ post.title }}</h6>
-                            <small class="text-muted">
-                                <i class="fas fa-eye"></i> {{ post.view_count }} 次浏览
-                                <span class="ms-2">
-                                    <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%m月%d日') }}
-                                </span>
-                            </small>
-                        </div>
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="text-muted mb-0">
-                    <i class="fas fa-info-circle"></i> 暂无热门文章
-                </p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- 标签云 -->
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-tags"></i> 标签云</h5>
-            </div>
-            <div class="card-body">
-                {% if popular_tags %}
-                <div class="d-flex flex-wrap gap-2">
-                    {% for tag, count in popular_tags %}
-                    <span class="badge bg-primary" title="{{ count }} 篇文章">
-                        {{ tag }}
-                        <small class="ms-1">({{ count }})</small>
-                    </span>
-                    {% endfor %}
+    <aside class="w-full md:w-1/3 lg:w-1/4 mt-8 md:mt-0">
+        <div class="glass-card rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
+                <i class="fas fa-search mr-2"></i> 搜索
+            </h3>
+            <form method="GET" action="{{ url_for('main.blog') }}">
+                <div class="relative">
+                    <input type="text" name="search" placeholder="搜索文章..." 
+                           value="{{ search or '' }}"
+                           class="bg-slate-800/50 border border-slate-700 rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full">
+                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
                 </div>
-                {% else %}
-                <p class="text-muted mb-0">
-                    <i class="fas fa-info-circle"></i> 暂无标签
-                </p>
-                {% endif %}
-            </div>
+            </form>
         </div>
-    </div>
+        
+        <div class="glass-card rounded-xl p-6 mb-6">
+            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
+                <i class="fas fa-tags mr-2"></i> 文章分类
+            </h3>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ url_for('main.blog') }}" class="flex items-center justify-between text-slate-300 hover:text-indigo-300">
+                        <span>所有文章</span>
+                        <span class="text-xs bg-slate-800 px-2 py-1 rounded-full">{{ posts.total }}</span>
+                    </a>
+                </li>
+                {% for category in categories %}
+                <li>
+                    <a href="{{ url_for('main.blog', category=category) }}" class="flex items-center justify-between text-slate-300 hover:text-indigo-300">
+                        <span>{{ category }}</span>
+                        <span class="text-xs bg-slate-800 px-2 py-1 rounded-full">{{ category_count[category] if category_count else 0 }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="glass-card rounded-xl p-6">
+            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
+                <i class="fas fa-fire mr-2"></i> 热门文章
+            </h3>
+            <ul class="space-y-4">
+                {% for popular_post in popular_posts %}
+                <li>
+                    <a href="{{ url_for('main.post_detail', slug=popular_post.safe_slug) }}" class="flex items-start space-x-3 group">
+                        <div class="w-16 h-16 bg-slate-700 rounded-md overflow-hidden flex-shrink-0">
+                            {% if popular_post.featured_image %}
+                            <img src="{{ popular_post.featured_image }}" alt="{{ popular_post.title }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <div class="w-full h-full flex items-center justify-center">
+                                <i class="fas fa-file-alt text-slate-400"></i>
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium group-hover:text-indigo-300">{{ popular_post.title }}</h4>
+                            <p class="text-xs text-slate-400 mt-1">{{ popular_post.view_count }} 浏览</p>
+                        </div>
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </aside>
 </div>
-{% endblock %} 
+{% endblock %}
