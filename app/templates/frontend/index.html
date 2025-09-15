@@ -81,7 +81,7 @@
                 <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}">{{ post.title }}</a>
             </h3>
             
-            <p class="text-slate-300 text-sm mb-4 line-clamp-3">{{ post.excerpt or post.content[:100] + '...' if post.content|length > 100 else post.content }}</p>
+            <p class="text-slate-300 text-sm mb-4 line-clamp-3">{{ (post.excerpt or post.content[:100] + '...' if post.content|length > 100 else post.content)|striptags }}</p>
             
             <div class="flex items-center justify-between text-sm text-slate-400">
                 <div class="flex items-center space-x-3">
@@ -130,7 +130,7 @@
                     
                     <h3 class="text-lg font-bold mb-2 text-white hover:text-indigo-300 transition-colors">{{ project.title }}</h3>
                     
-                    <p class="text-slate-300 text-sm mb-4 line-clamp-2">{{ project.short_description or project.description[:80] + '...' if project.description|length > 80 else project.description }}</p>
+                    <p class="text-slate-300 text-sm mb-4 line-clamp-2">{{ (project.short_description or project.description[:80] + '...' if project.description|length > 80 else project.description)|striptags }}</p>
                     
                     <div class="flex items-center justify-between text-sm text-slate-400">
                         <div class="flex items-center space-x-3">
@@ -157,16 +157,20 @@
         <div class="glass-card rounded-xl p-4 text-center hover:transform hover:scale-105 transition-all duration-300">
             <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
                 {% if skill.icon %}
-                <i class="{{ skill.icon }} text-2xl text-indigo-300"></i>
+                    {% if skill.icon.startswith('http') %}
+                        <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="w-8 h-8 object-contain">
+                    {% else %}
+                        <i class="{{ skill.icon }} text-2xl text-indigo-300"></i>
+                    {% endif %}
                 {% else %}
-                <i class="fas fa-code text-2xl text-indigo-300"></i>
+                    <i class="fas fa-code text-2xl text-indigo-300"></i>
                 {% endif %}
             </div>
             <h4 class="text-sm font-medium text-white">{{ skill.name }}</h4>
-            {% if skill.level %}
+            {% if skill.proficiency %}
             <div class="mt-2">
                 <div class="w-full bg-slate-700 rounded-full h-1">
-                    <div class="bg-indigo-500 h-1 rounded-full" style="width: {{ skill.level }}%"></div>
+                    <div class="bg-indigo-500 h-1 rounded-full" style="width: {{ skill.proficiency }}%"></div>
                 </div>
             </div>
             {% endif %}

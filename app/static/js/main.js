@@ -228,11 +228,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 导航栏滚动效果
     window.addEventListener('scroll', function() {
-        const navbar = document.querySelector('.navbar');
+        const navbar = safeQuerySelector('header');
         if (window.scrollY > 50) {
-            navbar.classList.add('navbar-scrolled');
+            safeClassListOperation(navbar, 'add', 'navbar-scrolled');
         } else {
-            navbar.classList.remove('navbar-scrolled');
+            safeClassListOperation(navbar, 'remove', 'navbar-scrolled');
         }
     });
 
@@ -354,10 +354,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // 显示/隐藏返回顶部按钮
     window.addEventListener('scroll', function() {
-        if (window.scrollY > 300) {
-            backToTopBtn.style.display = 'block';
-        } else {
-            backToTopBtn.style.display = 'none';
+        try {
+            if (backToTopBtn && backToTopBtn.style) {
+                if (window.scrollY > 300) {
+                    backToTopBtn.style.display = 'block';
+                } else {
+                    backToTopBtn.style.display = 'none';
+                }
+            }
+        } catch (error) {
+            console.error('返回顶部按钮滚动效果错误:', error);
         }
     });
 
@@ -657,9 +663,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ctrl/Cmd + K 打开搜索
         if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
             e.preventDefault();
-            if (homeSearchInput) {
+            if (homeSearchInput && homeSearchInput.focus) {
                 homeSearchInput.focus();
-            } else if (globalSearchInput) {
+            } else if (globalSearchInput && globalSearchInput.focus) {
                 globalSearchInput.focus();
             }
         }
@@ -699,6 +705,29 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// 全局classList操作保护函数
+function safeClassListOperation(element, operation, ...classes) {
+    try {
+        if (element && element.classList && typeof element.classList[operation] === 'function') {
+            element.classList[operation](...classes);
+            return true;
+        }
+    } catch (error) {
+        console.error(`classList ${operation} 操作失败:`, error);
+    }
+    return false;
+}
+
+// 全局元素查找保护函数
+function safeQuerySelector(selector) {
+    try {
+        return document.querySelector(selector);
+    } catch (error) {
+        console.error(`查找元素失败 (${selector}):`, error);
+        return null;
+    }
+}
+
 // 工具函数
 function debounce(func, wait) {
     let timeout;
@@ -729,5 +758,7 @@ function throttle(func, limit) {
 window.utils = {
     debounce,
     throttle,
-    showAlert: window.showAlert
+    showAlert: window.showAlert,
+    safeClassListOperation,
+    safeQuerySelector
 }; 

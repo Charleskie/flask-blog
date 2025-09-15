@@ -57,7 +57,12 @@
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="icon">技能图标</label>
+                            <div class="icon-label-wrap">
+                              <label for="icon">技能图标</label>
+                              <a href="https://fontawesome.com/icons" target="_blank" title="icons查找">
+                                <i class="fa-solid fa-circle-question"></i>
+                              </a>
+                            </div>
                             <input type="text" id="icon" name="icon" class="form-control" 
                                    value="{{ skill.icon or '' }}" placeholder="FontAwesome 图标类名，如：fab fa-python">
                             <small class="form-text">支持 FontAwesome 图标类名或图片URL</small>
@@ -193,6 +198,22 @@
     display: flex;
     gap: 20px;
     margin-top: 8px;
+}
+
+.icon-label-wrap {
+  display: inline-flex;      /* 一行展示 */
+  align-items: center;       /* 垂直居中 */
+  gap: 6px;                  /* label和图标间距 */
+}
+
+.icon-label-wrap a {
+  color: #007bff;            /* 链接颜色 */
+  text-decoration: none;     /* 去掉下划线 */
+  transition: color 0.2s;
+}
+
+.icon-label-wrap a:hover {
+  color: #0056b3;            /* 悬停颜色 */
 }
 
 .meta-item {
