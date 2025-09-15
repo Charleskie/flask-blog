@@ -6,7 +6,16 @@
 <div class="flex flex-col md:flex-row">
     <!-- 项目列表 -->
     <div class="w-full md:w-2/3 lg:w-3/4 md:pr-8">
-        <h1 class="text-3xl font-bold mb-8 text-indigo-300">项目展示</h1>
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-indigo-300">项目展示</h1>
+            {% if current_user.is_authenticated and current_user.is_admin %}
+            <div class="flex space-x-2">
+                <a href="{{ url_for('admin.new_project') }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium inline-flex items-center">
+                    <i class="fas fa-plus mr-2"></i> 新增项目
+                </a>
+            </div>
+            {% endif %}
+        </div>
         
         <!-- 项目筛选 -->
         <div class="flex justify-center flex-wrap gap-2 mb-8">
@@ -77,6 +86,11 @@
                                 <a href="{{ project.live_url }}" target="_blank" class="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors" title="在线演示">
                                     <i class="fas fa-external-link-alt"></i>
                                 </a>
+                                {% endif %}
+                                {% if current_user.is_authenticated and current_user.is_admin %}
+                                <button onclick="deleteProject({{ project.id }})" class="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" title="删除项目">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                                 {% endif %}
                             </div>
                         </div>
@@ -191,5 +205,52 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// 删除项目函数
+function deleteProject(projectId) {
+    if (confirm('确定要删除这个项目吗？此操作不可撤销！')) {
+        fetch(`/admin/projects/${projectId}/delete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 显示成功消息
+                showToast(data.message, 'success');
+                // 延迟刷新页面
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showToast(data.message || '删除失败', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('删除项目失败:', error);
+            showToast('删除失败，请稍后重试', 'error');
+        });
+    }
+}
+
+// 显示提示消息
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+    }`;
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
 </script>
 {% endblock %}
