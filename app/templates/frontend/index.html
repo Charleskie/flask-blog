@@ -1,101 +1,182 @@
 {% extends "base.html" %}
 
-{% block title %}首页 - 我的个人网站{% endblock %}
+{% block title %}首页 - Kim's Blog{% endblock %}
 
 {% block content %}
 <!-- 英雄区域 -->
-<div class="hero-section text-center py-5 mb-5 fade-in-up">
-    <div class="row">
-        <div class="col-lg-8 mx-auto">
-            <h1 class="display-4 fw-bold mb-4 gradient-text">Welcome</h1>
-            <p class="lead mb-4">Hi! 欢迎光临我的小站。</p>
-            
-            <!-- 首页搜索区域 -->
-            <div class="global-search">
-                <form method="GET" action="{{ url_for('main.search') }}">
-                    <input type="text" class="search-input" name="q" placeholder="搜索文章、项目、技术内容..." 
-                           value="{{ request.args.get('q', '') }}" id="homeSearchInput">
-                    <button type="submit" class="search-btn">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </form>
-                <div class="search-suggestions" id="homeSearchSuggestions" style="display: none;"></div>
-            </div>
+<div class="text-center py-16 mb-12">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            Welcome
+        </h1>
+        <p class="text-xl text-slate-300 mb-8">Hi! 欢迎光临我的小站，这是我分享技术与思考的社区</p>
+        
+        <!-- 首页搜索区域 -->
+        <div class="max-w-md mx-auto">
+            <form method="GET" action="{{ url_for('main.search') }}" class="relative">
+                <input type="text" name="q" placeholder="搜索文章、项目、技术内容..." 
+                       value="{{ request.args.get('q', '') }}"
+                       class="w-full bg-slate-800/50 border border-slate-700 rounded-full py-3 px-6 pl-12 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
+            </form>
         </div>
     </div>
 </div>
 
 <!-- 特色内容 -->
-<div class="row mb-5">
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm hover-lift slide-in-left">
-            <div class="card-body text-center">
-                <i class="fas fa-code fa-3x text-primary mb-3"></i>
-                <h5 class="card-title">项目展示</h5>
-                <p class="card-text">查看我开发的各种项目，包括Web应用、移动应用和其他技术作品。</p>
-                <a href="{{ url_for('main.projects') }}" class="btn btn-outline-primary">浏览项目</a>
-            </div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+    <div class="glass-card rounded-xl p-8 text-center hover:transform hover:scale-105 transition-all duration-300">
+        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-code text-2xl text-white"></i>
         </div>
+        <h3 class="text-xl font-bold mb-3 text-white">项目展示</h3>
+        <p class="text-slate-300 mb-6">查看我开发的各种项目，包括Web应用、移动应用和其他技术作品。</p>
+        <a href="{{ url_for('main.projects') }}" class="btn-primary text-white px-6 py-2 rounded-full text-sm font-medium inline-flex items-center">
+            浏览项目 <i class="fas fa-arrow-right ml-2"></i>
+        </a>
     </div>
     
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm hover-lift fade-in-up">
-            <div class="card-body text-center">
-                <i class="fas fa-blog fa-3x text-success mb-3"></i>
-                <h5 class="card-title">技术博客</h5>
-                <p class="card-text">分享我的技术心得、学习笔记和行业见解。</p>
-                                    <a href="{{ url_for('main.blog') }}" class="btn btn-outline-success">阅读博客</a>
-            </div>
+    <div class="glass-card rounded-xl p-8 text-center hover:transform hover:scale-105 transition-all duration-300">
+        <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-blog text-2xl text-white"></i>
         </div>
+        <h3 class="text-xl font-bold mb-3 text-white">技术博客</h3>
+        <p class="text-slate-300 mb-6">分享我的技术心得、学习笔记和行业见解。</p>
+        <a href="{{ url_for('main.blog') }}" class="btn-primary text-white px-6 py-2 rounded-full text-sm font-medium inline-flex items-center">
+            阅读博客 <i class="fas fa-arrow-right ml-2"></i>
+        </a>
     </div>
     
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm hover-lift slide-in-right">
-            <div class="card-body text-center">
-                <i class="fas fa-envelope fa-3x text-info mb-3"></i>
-                <h5 class="card-title">联系我</h5>
-                <p class="card-text">有任何问题或合作意向？欢迎随时联系我。</p>
-                                    <a href="{{ url_for('main.contact') }}" class="btn btn-outline-info">联系我</a>
-            </div>
+    <div class="glass-card rounded-xl p-8 text-center hover:transform hover:scale-105 transition-all duration-300">
+        <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-user text-2xl text-white"></i>
         </div>
+        <h3 class="text-xl font-bold mb-3 text-white">关于我</h3>
+        <p class="text-slate-300 mb-6">了解我的技术背景、工作经历和个人兴趣。</p>
+        <a href="{{ url_for('main.about') }}" class="btn-primary text-white px-6 py-2 rounded-full text-sm font-medium inline-flex items-center">
+            了解更多 <i class="fas fa-arrow-right ml-2"></i>
+        </a>
     </div>
 </div>
 
-<!-- 最新项目预览 -->
-<div class="row mb-5">
-    <div class="col-12">
-        <h2 class="text-center mb-4">最新项目</h2>
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">项目名称 1</h5>
-                        <p class="card-text">这是一个示例项目描述，展示了项目的技术栈和功能特点。</p>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-primary">Python</span>
-                            <span class="badge bg-secondary">Flask</span>
-                            <span class="badge bg-info">Bootstrap</span>
-                        </div>
-                    </div>
-                </div>
+<!-- 最新文章 -->
+{% if recent_posts %}
+<div class="mb-12">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold text-indigo-300">最新文章</h2>
+        <a href="{{ url_for('main.blog') }}" class="text-indigo-300 hover:text-indigo-200 flex items-center">
+            查看全部 <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for post in recent_posts[:3] %}
+        <article class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-sm text-indigo-300">{{ post.category or '未分类' }}</span>
+                <span class="text-sm text-slate-400">{{ post.created_at.strftime('%m-%d') }}</span>
             </div>
             
-            <div class="col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">项目名称 2</h5>
-                        <p class="card-text">另一个示例项目，展示了不同的技术组合和实现方案。</p>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-primary">JavaScript</span>
-                            <span class="badge bg-secondary">React</span>
-                            <span class="badge bg-info">Node.js</span>
-                        </div>
-                    </div>
+            <h3 class="text-lg font-bold mb-3 text-white hover:text-indigo-300 transition-colors">
+                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}">{{ post.title }}</a>
+            </h3>
+            
+            <p class="text-slate-300 text-sm mb-4 line-clamp-3">{{ post.excerpt or post.content[:100] + '...' if post.content|length > 100 else post.content }}</p>
+            
+            <div class="flex items-center justify-between text-sm text-slate-400">
+                <div class="flex items-center space-x-3">
+                    <span><i class="fas fa-eye mr-1"></i>{{ post.view_count }}</span>
+                    <span><i class="far fa-heart mr-1"></i>{{ post.like_count }}</span>
                 </div>
+                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="text-indigo-300 hover:text-indigo-200">
+                    阅读更多 <i class="fas fa-arrow-right ml-1"></i>
+                </a>
             </div>
-        </div>
+        </article>
+        {% endfor %}
     </div>
 </div>
+{% endif %}
+
+<!-- 最新项目 -->
+{% if recent_projects %}
+<div class="mb-12">
+    <div class="flex items-center justify-between mb-8">
+        <h2 class="text-3xl font-bold text-indigo-300">最新项目</h2>
+        <a href="{{ url_for('main.projects') }}" class="text-indigo-300 hover:text-indigo-200 flex items-center">
+            查看全部 <i class="fas fa-arrow-right ml-2"></i>
+        </a>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for project in recent_projects[:3] %}
+        <div class="glass-card rounded-xl overflow-hidden hover:transform hover:scale-105 transition-all duration-300">
+            <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="block">
+                {% if project.image_url %}
+                <div class="h-40 overflow-hidden">
+                    <img src="{{ project.image_url }}" alt="{{ project.title }}" class="w-full h-full object-cover">
+                </div>
+                {% else %}
+                <div class="h-40 bg-slate-700 flex items-center justify-center">
+                    <i class="fas fa-code fa-2x text-slate-400"></i>
+                </div>
+                {% endif %}
+                
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm text-indigo-300">{{ project.category or '未分类' }}</span>
+                        <span class="text-sm text-slate-400">{{ project.created_at.strftime('%m-%d') }}</span>
+                    </div>
+                    
+                    <h3 class="text-lg font-bold mb-2 text-white hover:text-indigo-300 transition-colors">{{ project.title }}</h3>
+                    
+                    <p class="text-slate-300 text-sm mb-4 line-clamp-2">{{ project.short_description or project.description[:80] + '...' if project.description|length > 80 else project.description }}</p>
+                    
+                    <div class="flex items-center justify-between text-sm text-slate-400">
+                        <div class="flex items-center space-x-3">
+                            <span><i class="fas fa-eye mr-1"></i>{{ project.view_count }}</span>
+                            <span><i class="far fa-heart mr-1"></i>{{ project.like_count }}</span>
+                        </div>
+                        <span class="text-indigo-300">查看详情</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- 技能展示 -->
+{% if skills %}
+<div class="mb-12">
+    <h2 class="text-3xl font-bold text-indigo-300 mb-8 text-center">技术栈</h2>
+    
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        {% for skill in skills[:12] %}
+        <div class="glass-card rounded-xl p-4 text-center hover:transform hover:scale-105 transition-all duration-300">
+            <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
+                {% if skill.icon %}
+                <i class="{{ skill.icon }} text-2xl text-indigo-300"></i>
+                {% else %}
+                <i class="fas fa-code text-2xl text-indigo-300"></i>
+                {% endif %}
+            </div>
+            <h4 class="text-sm font-medium text-white">{{ skill.name }}</h4>
+            {% if skill.level %}
+            <div class="mt-2">
+                <div class="w-full bg-slate-700 rounded-full h-1">
+                    <div class="bg-indigo-500 h-1 rounded-full" style="width: {{ skill.level }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- 版本更新 -->
 
 <!-- 版本更新记录 -->
 {% if versions %}
@@ -157,11 +238,11 @@
 function scrollTimeline(direction) {
     const timeline = document.querySelector('.timeline-scroll-wrapper');
     if (!timeline) return;
-    
+
     const scrollAmount = 300; // 每次滚动的距离
     const currentScroll = timeline.scrollLeft;
     const newScroll = currentScroll + (direction * scrollAmount);
-    
+
     timeline.scrollTo({
         left: newScroll,
         behavior: 'smooth'
@@ -172,28 +253,28 @@ function scrollTimeline(direction) {
 document.addEventListener('DOMContentLoaded', function() {
     const timeline = document.querySelector('.timeline-scroll-wrapper');
     if (!timeline) return;
-    
+
     let isDown = false;
     let startX;
     let scrollLeft;
-    
+
     timeline.addEventListener('mousedown', (e) => {
         isDown = true;
         timeline.classList.add('active');
         startX = e.pageX - timeline.offsetLeft;
         scrollLeft = timeline.scrollLeft;
     });
-    
+
     timeline.addEventListener('mouseleave', () => {
         isDown = false;
         timeline.classList.remove('active');
     });
-    
+
     timeline.addEventListener('mouseup', () => {
         isDown = false;
         timeline.classList.remove('active');
     });
-    
+
     timeline.addEventListener('mousemove', (e) => {
         if (!isDown) return;
         e.preventDefault();
@@ -201,25 +282,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const walk = (x - startX) * 2;
         timeline.scrollLeft = scrollLeft - walk;
     });
-    
+
     // 触摸事件支持
     let touchStartX = 0;
     let touchStartY = 0;
-    
+
     timeline.addEventListener('touchstart', (e) => {
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
     });
-    
+
     timeline.addEventListener('touchmove', (e) => {
         if (!touchStartX || !touchStartY) return;
-        
+
         const touchCurrentX = e.touches[0].clientX;
         const touchCurrentY = e.touches[0].clientY;
-        
+
         const diffX = touchStartX - touchCurrentX;
         const diffY = touchStartY - touchCurrentY;
-        
+
         // 如果是水平滑动
         if (Math.abs(diffX) > Math.abs(diffY)) {
             e.preventDefault();
@@ -227,7 +308,7 @@ document.addEventListener('DOMContentLoaded', function() {
             touchStartX = touchCurrentX;
         }
     });
-    
+
     timeline.addEventListener('touchend', () => {
         touchStartX = 0;
         touchStartY = 0;
@@ -235,41 +316,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<!-- 技能展示 -->
-<div class="row">
-    <div class="col-12">
-        {% if skills %}
-        <h2 class="text-center mb-4 gradient-text">技术技能</h2>
-        <div class="row text-center">
-            {% for skill in skills %}
-            <div class="col-md-3 mb-3">
-                <div class="skill-item hover-lift scale-in">
-                    {% if skill.icon %}
-                        {% if skill.icon.startswith('http') %}
-                            <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="skill-icon-img mb-2" style="width: 48px; height: 48px;">
-                        {% else %}
-                            <i class="{{ skill.icon }} fa-3x text-primary mb-2"></i>
-                        {% endif %}
-                    {% else %}
-                        <i class="fas fa-code fa-3x text-primary mb-2"></i>
-                    {% endif %}
-                    <h5>{{ skill.name }}</h5>
-                    {% if skill.description %}
-                    <p class="skill-description">{{ skill.description[:50] }}{% if skill.description|length > 50 %}...{% endif %}</p>
-                    {% endif %}
-                    <div class="progress">
-                        <div class="progress-bar" style="width: {{ skill.proficiency }}%"></div>
-                    </div>
-                    <small class="text-muted">{{ skill.proficiency }}%</small>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-<!--        <div class="text-center">-->
-<!--            <p class="text-muted">暂无技能数据</p>-->
-<!--        </div>-->
-        {% endif %}
-    </div>
-</div>
-{% endblock %} 
+{% endblock %}

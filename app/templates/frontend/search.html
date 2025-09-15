@@ -39,14 +39,9 @@
                             <div class="card h-100 hover-lift">
                                 <div class="card-body">
                                     <h5 class="card-title">
-                                        {% if post.slug %}
-                                        <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="text-decoration-none">
+                                        <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="text-decoration-none">
                                             {{ post.title }}
                                         </a>
-                                        {% else %}
-                                        <span class="text-muted">{{ post.title }}</span>
-                                        <small class="text-muted d-block">（文章正在处理中）</small>
-                                        {% endif %}
                                     </h5>
                                     <p class="card-text text-muted">
                                         <i class="fas fa-calendar"></i> {{ post.created_at.strftime('%Y年%m月%d日') }}
@@ -58,15 +53,9 @@
                                     <p class="card-text">
                                         {{ post.excerpt or post.content[:150] + '...' if post.content|length > 150 else post.content }}
                                     </p>
-                                    {% if post.slug %}
-                                    <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="btn btn-primary btn-sm">
+                                    <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn btn-primary btn-sm">
                                         阅读更多
                                     </a>
-                                    {% else %}
-                                    <span class="btn btn-secondary btn-sm disabled">
-                                        暂无链接
-                                    </span>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>

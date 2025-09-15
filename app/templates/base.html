@@ -54,163 +54,267 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     
     {% block extra_css %}{% endblock %}
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #818cf8;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .nav-link.active::after {
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+        
+        .mobile-menu {
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-menu.open {
+            transform: translateX(0);
+        }
+        
+        .theme-switch {
+            width: 40px;
+            height: 20px;
+            background: #1e293b;
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .theme-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: #6366f1;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-switch.dark::after {
+            transform: translateX(20px);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+        }
+    </style>
 </head>
-<body>
-    <!-- 导航栏 -->
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.index') }}">首页</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.about') }}">关于</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.projects') }}">项目</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.blog') }}">博客</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('main.contact') }}">联系</a>
-                    </li>
-                </ul>
+<body class="min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-slate-800">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-8">
+                <a href="{{ url_for('main.index') }}" class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+                    <i class="fas fa-blog mr-2"></i>Kim's Blog
+                </a>
                 
-                <!-- 全局搜索 -->
-                <div class="global-search me-3">
-                    <form method="GET" action="{{ url_for('main.search') }}" class="d-flex">
-                        <input type="text" class="search-input" name="q" placeholder="搜索文章、项目..." 
-                               value="{{ request.args.get('q', '') }}" id="globalSearchInput">
-                        <button type="submit" class="search-btn">
-                            <i class="fas fa-search"></i>
-                        </button>
+                <nav class="hidden md:flex space-x-6">
+                    <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">首页</a>
+                    <a href="{{ url_for('main.about') }}" class="nav-link {% if request.endpoint == 'main.about' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">关于</a>
+                    <a href="{{ url_for('main.projects') }}" class="nav-link {% if request.endpoint == 'main.projects' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">项目</a>
+                    <a href="{{ url_for('main.blog') }}" class="nav-link {% if request.endpoint == 'main.blog' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">博客</a>
+                    <a href="{{ url_for('main.contact') }}" class="nav-link {% if request.endpoint == 'main.contact' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">联系</a>
+                </nav>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="relative hidden md:block">
+                    <form method="GET" action="{{ url_for('main.search') }}">
+                        <input type="text" name="q" placeholder="搜索..." 
+                               value="{{ request.args.get('q', '') }}"
+                               class="bg-slate-800/50 border border-slate-700 rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-48">
+                        <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
                     </form>
-                    <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
                 </div>
                 
-                <ul class="navbar-nav">
-                    <!-- 主题切换下拉菜单 -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="themeDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-palette"></i> Theme
-                        </a>
-                        <ul class="dropdown-menu theme-dropdown">
-<!--                            <li><h6 class="dropdown-header">Choose Theme</h6></li>-->
-                            <li>
-                                <a class="dropdown-item theme-option-item" href="#" data-theme="dark">
-                                    <div class="theme-preview theme-dark"></div>
-                                    <span>Dark</span>
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item theme-option-item" href="#" data-theme="light">
-                                    <div class="theme-preview theme-light"></div>
-                                    <span>Light</span>
-                                </a>
-                            </li>
-                <li>
-                    <a class="dropdown-item theme-option-item" href="#" data-theme="traditional-green">
-                        <div class="theme-preview theme-traditional-green"></div>
-                        <span>Traditional Green</span>
-                    </a>
-                </li>
-                <li>
-                    <a class="dropdown-item theme-option-item" href="#" data-theme="blue-white">
-                        <div class="theme-preview theme-blue-white"></div>
-                        <span>Blue & White</span>
-                    </a>
-                </li>
-                        </ul>
-                    </li>
+                <div class="flex items-center space-x-2">
+                    <div class="theme-switch dark mr-2"></div>
                     
                     {% if current_user.is_authenticated %}
-                        <!-- 消息通知 -->
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" href="{{ url_for('notification.notifications') }}" title="消息通知">
+                        <button class="relative p-2 text-slate-300 hover:text-indigo-300">
+                            <a href="{{ url_for('notification.notifications') }}" class="text-slate-300 hover:text-indigo-300">
                                 <i class="fas fa-bell"></i>
-                                <span class="notification-badge badge bg-danger position-absolute top-0 start-100 translate-middle" 
-                                      style="display: none; font-size: 0.7rem; min-width: 18px; height: 18px; line-height: 18px;">
-                                    0
-                                </span>
                             </a>
-                        </li>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
                         
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user"></i> {{ current_user.username }}
-                            </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
-                                    <i class="fas fa-user-circle"></i> 个人资料
-                                </a></li>
-                                <li><a class="dropdown-item" href="{{ url_for('settings.settings') }}">
-                                    <i class="fas fa-cog"></i> 设置
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('admin.admin') }}">
-                                    <i class="fas fa-tools"></i> 管理后台
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                    <i class="fas fa-sign-out-alt"></i> 退出登录
-                                </a></li>
-                            </ul>
-                        </li>
+                        <div class="relative" id="userDropdown">
+                            <button id="userDropdownButton" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-300">
+                                {% if current_user.avatar %}
+                                    <img src="{{ current_user.avatar }}" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='avatar/avatar' + (current_user.id % 4 + 1)|string + '.png') }}" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                                {% endif %}
+                                <span>{{ current_user.get_display_name() }}</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            
+                            <!-- 用户下拉菜单 -->
+                            <div id="userDropdownMenu" class="absolute right-0 mt-2 w-48 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-lg opacity-0 invisible transition-all duration-200 transform translate-y-2">
+                                <div class="py-2">
+                                    <a href="{{ url_for('auth.profile') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-indigo-300">
+                                        <i class="fas fa-user mr-3"></i>
+                                        个人资料
+                                    </a>
+                                    <a href="{{ url_for('settings.settings') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-indigo-300">
+                                        <i class="fas fa-cog mr-3"></i>
+                                        设置
+                                    </a>
+                                    {% if current_user.is_admin %}
+                                    <a href="{{ url_for('admin.admin') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-indigo-300">
+                                        <i class="fas fa-tools mr-3"></i>
+                                        管理后台
+                                    </a>
+                                    {% endif %}
+                                    <hr class="my-2 border-slate-700">
+                                    <a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300">
+                                        <i class="fas fa-sign-out-alt mr-3"></i>
+                                        退出登录
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
                     {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.login') }}">登录</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('auth.register') }}">注册</a>
-                        </li>
+                        <a href="{{ url_for('auth.login') }}" class="text-slate-300 hover:text-indigo-300 px-3 py-1 rounded-md border border-slate-600 hover:border-indigo-500">
+                            登录
+                        </a>
+                        <a href="{{ url_for('auth.register') }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium">
+                            注册
+                        </a>
                     {% endif %}
-                </ul>
+                </div>
+                
+                <button id="mobileMenuButton" class="md:hidden text-slate-300 hover:text-indigo-300">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
             </div>
         </div>
-    </nav>
-
-    <!-- 主要内容 -->
-    <main class="container mt-5 pt-4">
+    </header>
+    
+    <!-- 移动端菜单 -->
+    <div id="mobileMenu" class="mobile-menu fixed inset-0 bg-slate-900/95 z-40 pt-20 px-6">
+        <div class="flex flex-col space-y-6">
+            <a href="{{ url_for('main.index') }}" class="text-xl {% if request.endpoint == 'main.index' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">首页</a>
+            <a href="{{ url_for('main.about') }}" class="text-xl {% if request.endpoint == 'main.about' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">关于</a>
+            <a href="{{ url_for('main.projects') }}" class="text-xl {% if request.endpoint == 'main.projects' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">项目</a>
+            <a href="{{ url_for('main.blog') }}" class="text-xl {% if request.endpoint == 'main.blog' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">博客</a>
+            <a href="{{ url_for('main.contact') }}" class="text-xl {% if request.endpoint == 'main.contact' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">联系</a>
+            
+            <div class="relative mt-6">
+                <form method="GET" action="{{ url_for('main.search') }}">
+                    <input type="text" name="q" placeholder="搜索..." 
+                           value="{{ request.args.get('q', '') }}"
+                           class="bg-slate-800/50 border border-slate-700 rounded-full py-3 px-4 pl-12 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full">
+                    <i class="fas fa-search absolute left-5 top-4 text-slate-400"></i>
+                </form>
+            </div>
+        </div>
         
+        <button class="absolute top-6 right-6 text-slate-300 hover:text-indigo-300">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-8">
         {% block content %}{% endblock %}
     </main>
 
     <!-- 页脚 -->
-    <footer class="footer">
-<!--        <div class="container">-->
-<!--            <div class="footer-content">-->
-<!--                <div class="footer-section">-->
-<!--                    <h3>Welcome</h3>-->
-<!--                    <p>Hi, 欢迎光临我的小站！</p>-->
-<!--                </div>-->
-<!--                <div class="footer-section">-->
-<!--                    <h3>联系方式</h3>-->
-<!--                    <p>-->
-<!--                        <i class="fas fa-envelope"></i> wdws851421092@gmail.com<br>-->
-<!--                        <i class="fab fa-github"></i> <a href="https://github.com/Charleskie">GitHub</a><br>-->
-<!--                        <i class="fab fa-linkedin"></i> <a href="#">LinkedIn</a>-->
-<!--                    </p>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--            <div class="footer-bottom">-->
-<!--                <p>&copy; 2025 我的个人网站. 保留所有权利.</p>-->
-<!--            </div>-->
-<!--        </div>-->
+    <footer class="bg-slate-900/80 border-t border-slate-800 mt-12 py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <a href="{{ url_for('main.index') }}" class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+                        <i class="fas fa-blog mr-2"></i>Kim's Blog
+                    </a>
+                    <p class="text-sm text-slate-400 mt-2">分享技术与设计思考</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="https://github.com/Charleskie" class="text-slate-400 hover:text-indigo-300">
+                        <i class="fab fa-github"></i>
+                    </a>
+                    <a href="mailto:wdws851421092@gmail.com" class="text-slate-400 hover:text-indigo-300">
+                        <i class="fas fa-envelope"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-indigo-300">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
+                    <a href="#" class="text-slate-400 hover:text-indigo-300">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="border-t border-slate-800 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-slate-400 mb-4 md:mb-0">© 2025 Kim's Blog. 保留所有权利.</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-sm text-slate-400 hover:text-indigo-300">隐私政策</a>
+                    <a href="#" class="text-sm text-slate-400 hover:text-indigo-300">服务条款</a>
+                    <a href="{{ url_for('main.contact') }}" class="text-sm text-slate-400 hover:text-indigo-300">联系我们</a>
+                </div>
+            </div>
+        </div>
     </footer>
 
 
@@ -221,6 +325,89 @@
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script src="{{ url_for('static', filename='js/interaction.js') }}"></script>
+    
+    <script>
+        // 移动端菜单切换
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('open');
+                
+                // 切换图标
+                const icon = this.querySelector('i');
+                if (mobileMenu.classList.contains('open')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+        }
+        
+        // 用户下拉菜单切换
+        const userDropdownButton = document.getElementById('userDropdownButton');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
+        
+        if (userDropdownButton && userDropdownMenu) {
+            userDropdownButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle('opacity-0');
+                userDropdownMenu.classList.toggle('invisible');
+                userDropdownMenu.classList.toggle('translate-y-2');
+            });
+            
+            // 点击其他地方关闭下拉菜单
+            document.addEventListener('click', function(e) {
+                if (!userDropdownButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    userDropdownMenu.classList.add('opacity-0', 'invisible', 'translate-y-2');
+                }
+            });
+            
+            // 点击关闭按钮关闭菜单
+            const closeButton = mobileMenu.querySelector('.fa-times').parentElement;
+            closeButton.addEventListener('click', function() {
+                mobileMenu.classList.remove('open');
+                const icon = mobileMenuButton.querySelector('i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        }
+        
+        // 主题切换
+        const themeSwitch = document.querySelector('.theme-switch');
+        
+        if (themeSwitch) {
+            themeSwitch.addEventListener('click', function() {
+                this.classList.toggle('dark');
+                
+                // 这里可以添加主题切换的逻辑
+                if (this.classList.contains('dark')) {
+                    document.body.classList.remove('bg-slate-900');
+                    document.body.classList.add('bg-white');
+                    document.body.classList.remove('text-slate-200');
+                    document.body.classList.add('text-slate-800');
+                } else {
+                    document.body.classList.add('bg-slate-900');
+                    document.body.classList.remove('bg-white');
+                    document.body.classList.add('text-slate-200');
+                    document.body.classList.remove('text-slate-800');
+                }
+            });
+        }
+        
+        // 导航链接高亮
+        const navLinks = document.querySelectorAll('.nav-link');
+        
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                navLinks.forEach(l => l.classList.remove('active', 'text-indigo-300'));
+                this.classList.add('active', 'text-indigo-300');
+            });
+        });
+    </script>
     
     <!-- 错误处理脚本 -->
     <script>
