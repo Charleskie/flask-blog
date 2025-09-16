@@ -20,15 +20,16 @@
             <div class="card-body">
                 <form id="contact-form" data-ajax-form>
                     <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="name" class="form-label">姓名 *</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">邮箱</label>
-                            <input type="email" class="form-control" id="email" name="email">
-                        </div>
+                      <div class="col-12 col-md-6 mb-3">
+                        <label for="name" class="form-label">姓名 *</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                      </div>
+                      <div class="col-12 col-md-6 mb-3">
+                        <label for="email" class="form-label">邮箱</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                      </div>
                     </div>
+
                     
                     <div class="mb-3">
                         <label for="subject" class="form-label">主题 *</label>
@@ -40,7 +41,7 @@
                         <textarea class="form-control" id="message" name="message" rows="6" required></textarea>
                     </div>
                     
-                    <button type="submit" class="btn-submit btn-lg">
+                    <button type="submit" class="btn btn-primary btn-sm me-2">
                         <i class="fas fa-paper-plane"></i> 发送消息
                     </button>
                 </form>
@@ -63,7 +64,7 @@
                     </li>
                     <li class="mb-3">
                         <i class="fas fa-phone text-success me-2"></i>
-                        <span>+86 135 3115 8704</span>
+                        <span>+86 135 **** ****</span>
                     </li>
                     <li class="mb-3">
                         <i class="fas fa-map-marker-alt text-danger me-2"></i>
@@ -169,8 +170,8 @@
                                 <label for="office-select" class="form-label">选择办公地点</label>
                                 <select class="form-select" id="office-select" onchange="changeOffice()">
                                     <option value="2">深圳 - 南山高新园</option>
-                                    <option value="0">上海 - 张江高科技园区</option>
-                                    <option value="1">北京 - 望京SOHO</option>
+<!--                                    <option value="0">上海 - 张江高科技园区</option>-->
+<!--                                    <option value="1">北京 - 望京SOHO</option>-->
                                 </select>
                             </div>
                             
@@ -185,7 +186,7 @@
                                 </p>
                                 <p class="mb-2">
                                     <i class="fas fa-envelope text-success"></i>
-                                    <span id="office-email">shenzhen@example.com</span>
+                                    <span id="office-email">wdws851421092@163.com</span>
                                 </p>
                                 <p class="mb-3">
                                     <i class="fas fa-clock text-warning"></i>
@@ -271,6 +272,7 @@
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(40,167,69,0.3);
 }
+
 </style>
 {% endblock %}
 
@@ -278,24 +280,6 @@
 <script>
 // 办公地址配置
 const OFFICE_LOCATIONS = [
-    {
-        name: '上海 - 张江高科技园区',
-        address: '上海市浦东新区张江高科技园区',
-        lat: 31.2304,
-        lng: 121.4737,
-        phone: '+86 138-0000-0000',
-        email: 'contact@example.com',
-        workingHours: '工作时间：周一至周五 9:00-18:00'
-    },
-    {
-        name: '北京 - 望京SOHO',
-        address: '北京市朝阳区望京SOHO',
-        lat: 39.9042,
-        lng: 116.4074,
-        phone: '+86 139-0000-0000',
-        email: 'beijing@example.com',
-        workingHours: '工作时间：周一至周五 9:00-18:00'
-    },
     {
         name: '深圳 - 南山高新园',
         address: '深圳市南山区高新南一道',

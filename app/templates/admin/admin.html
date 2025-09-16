@@ -9,81 +9,10 @@
         <p class="lead">欢迎回来，{{ current_user.username }}！</p>
     </div>
 </div>
-
-<!-- 统计卡片 -->
-<div class="row mb-4">
-    <div class="col-md-3 mb-3 h-80">
-        <div class="card bg-primary text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4 class="card-title">文章</h4>
-                        <h2>{{ total_posts }}</h2>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-blog fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3 h-80">
-        <div class="card bg-success text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4 class="card-title">项目</h4>
-                        <h2>{{ total_projects }}</h2>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-code fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3 h-80">
-        <div class="card bg-warning text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4 class="card-title">访问量</h4>
-                        <h2>1,234</h2>
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-eye fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-3 mb-3 h-80">
-        <div class="card bg-info text-white">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <div>
-                        <h4 class="card-title">消息</h4>
-                        <h2>{{ total_messages }}</h2>
-                        {% if unread_messages > 0 %}
-                            <small>{{ unread_messages }} 未读</small>
-                        {% endif %}
-                    </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-envelope fa-2x"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- 管理功能 -->
 <div class="row">
-    <div class="col-lg-4 col-md-6 mb-3">
-        <div class="card h-80">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-40">
             <div class="card-header py-2">
                 <h6 class="mb-0"><i class="fas fa-blog"></i> 文章管理</h6>
             </div>
@@ -103,8 +32,8 @@
         </div>
     </div>
     
-    <div class="col-lg-4 col-md-6 mb-3">
-        <div class="card h-80">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-40">
             <div class="card-header py-2">
                 <h6 class="mb-0"><i class="fas fa-code"></i> 项目管理</h6>
             </div>
@@ -124,8 +53,8 @@
         </div>
     </div>
     
-    <div class="col-lg-4 col-md-6 mb-3">
-        <div class="card h-80">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-40">
             <div class="card-header py-2">
                 <h6 class="mb-0"><i class="fas fa-user-circle"></i> 关于页面</h6>
             </div>
@@ -145,8 +74,8 @@
         </div>
     </div>
     
-    <div class="col-lg-4 col-md-6 mb-3">
-        <div class="card h-80">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-40">
             <div class="card-header py-2">
                 <h6 class="mb-0"><i class="fas fa-code-branch"></i> 版本管理</h6>
             </div>
@@ -163,8 +92,8 @@
         </div>
     </div>
     
-    <div class="col-lg-4 col-md-6 mb-3">
-        <div class="card h-80">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-40">
             <div class="card-header py-2">
                 <h6 class="mb-0"><i class="fas fa-tools"></i> 技能管理</h6>
             </div>
