@@ -31,10 +31,10 @@
                         {% if current_user.is_authenticated and current_user.is_admin %}
                         <div class="admin-actions">
                             <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" 
-                               class="btn btn-outline-primary btn-sm me-2" title="编辑文章">
+                               class="btn btn-primary btn-sm me-2" title="编辑文章">
                                 <i class="fas fa-edit"></i> 编辑
                             </a>
-                            <button class="btn btn-outline-danger btn-sm" 
+                            <button class="btn btn-danger btn-sm"
                                     onclick="deletePost({{ post.id }})" title="删除文章">
                                 <i class="fas fa-trash"></i> 删除
                             </button>
@@ -371,12 +371,26 @@
 }
 
 .meta-single-line {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
     gap: 8px;
+    flex-wrap: nowrap !important;
 }
 
 .meta-left {
     flex: 1;
     min-width: 0;
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.meta-left > div {
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .meta-right {
@@ -656,19 +670,20 @@
     }
     
     .meta-single-line {
-        flex-direction: column;
-        align-items: flex-start !important;
-        gap: 12px;
+        flex-direction: row;
+        align-items: center !important;
+        gap: 8px;
+        flex-wrap: wrap;
     }
     
     .meta-left {
-        width: 100%;
+        width: auto;
         flex-wrap: wrap;
     }
     
     .meta-right {
-        width: 100%;
-        justify-content: space-between;
+        width: auto;
+        justify-content: flex-end;
     }
     
     .share-buttons {
@@ -1118,6 +1133,7 @@
     display: flex;
     gap: 8px;
     flex-shrink: 0;
+    justify-content: flex-end; /* 靠右对齐 */
 }
 
 .admin-actions .btn {
@@ -1125,23 +1141,33 @@
     font-size: 13px;
     padding: 6px 12px;
     transition: all 0.2s ease;
+    display: flex;
+    justify-content: flex-end; /* 靠右对齐 */
 }
 
 .admin-actions .btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    display: flex;
+    justify-content: flex-end; /* 靠右对齐 */
 }
 
-.admin-actions .btn-outline-primary:hover {
-    background-color: #007bff;
-    border-color: #007bff;
-    color: white;
+.admin-actions .btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    display: flex;
+    justify-content: flex-end; /* 靠右对齐 */
 }
 
-.admin-actions .btn-outline-danger:hover {
-    background-color: #dc3545;
-    border-color: #dc3545;
-    color: white;
+.admin-actions .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #c82333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    display: flex;
+    justify-content: flex-end; /* 靠右对齐 */
 }
 
 /* 响应式调整 */
