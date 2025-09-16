@@ -24,6 +24,7 @@ class Project(db.Model):
     comment_count = db.Column(db.Integer, default=0)  # 评论数
     average_rating = db.Column(db.Float, default=0.0)  # 平均评分
     featured = db.Column(db.Boolean, default=False)  # 是否推荐项目
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
