@@ -775,11 +775,11 @@
 }
 
 .comment-like-btn.liked {
-    color: #e74c3c;
+    color: #ffffff;
 }
 
 .comment-like-btn.liked:hover {
-    color: #c0392b;
+    color: #ffffff;
 }
 
 .comment-like-btn i {

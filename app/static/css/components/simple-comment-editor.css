@@ -280,7 +280,7 @@
 
 .image-modal-header h3 {
     margin: 0;
-    color: #1e293b;
+    color: #ffffff;
     font-size: 18px;
     font-weight: 600;
 }
@@ -289,7 +289,7 @@
     background: none;
     border: none;
     font-size: 24px;
-    color: #64748b;
+    color: #ffffff;
     cursor: pointer;
     padding: 4px;
     border-radius: 4px;
@@ -298,7 +298,7 @@
 
 .image-modal-close:hover {
     background: rgba(0, 0, 0, 0.1);
-    color: #1e293b;
+    color: #ffffff;
 }
 
 .image-modal-body {
@@ -316,7 +316,7 @@
     border: none;
     padding: 12px 20px;
     cursor: pointer;
-    color: #64748b;
+    color: #ffffff;
     font-weight: 500;
     border-bottom: 2px solid transparent;
     transition: all 0.2s ease;
@@ -341,14 +341,12 @@
 
 .form-group {
     margin-bottom: 16px;
-}
-
 .form-group label {
     display: block;
     margin-bottom: 6px;
-    color: #374151;
+    color: #ffffff;
     font-weight: 500;
-    font-size: 14px;
+}   font-size: 14px;
 }
 
 .form-control {

@@ -14,8 +14,19 @@ def notifications():
     type_filter = request.args.get('type', '')
     
     query = Notification.query.filter_by(user_id=current_user.id)
+    
+    # 处理不同类型的消息过滤
     if type_filter:
-        query = query.filter_by(type=type_filter)
+        if ',' in type_filter:
+            # 处理多类型过滤，如"赞和收藏"
+            types = type_filter.split(',')
+            query = query.filter(Notification.type.in_(types))
+        elif type_filter == 'message':
+            # 处理私信类型
+            query = query.filter_by(type='message')
+        else:
+            # 单一类型过滤
+            query = query.filter_by(type=type_filter)
     
     notifications = query.order_by(Notification.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False

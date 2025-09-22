@@ -16,10 +16,10 @@
 .rating-input label {
     cursor: pointer;
     font-size: 28px;
-    color: #ddd;
-    transition: all 0.2s ease;
-    padding: 5px;
-    border-radius: 50%;
+    color: #ffffff;
+transition: all 0.2s ease;
+padding: 5px;
+border-radius: 50%;
 }
 
 /* 基础星星样式 */

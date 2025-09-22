@@ -4,46 +4,28 @@
 
 {% block content %}
 <div class="container">
-    <div class="admin-header">
-        <h1>消息通知</h1>
-        <div class="admin-actions">
-            <button class="btn btn-primary" onclick="markAllRead()">
-                <i class="fas fa-check-double"></i> 全部已读
-            </button>
-        </div>
-    </div>
 
-    <!-- 筛选器 -->
+    <!-- 消息导航按钮 -->
     <div class="admin-content">
         <div class="content-card">
-            <div class="card-header">
-                <h2>消息筛选</h2>
-            </div>
             <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="type" class="form-label">类型筛选</label>
-                        <select class="form-select" id="type" name="type">
-                            <option value="">全部类型</option>
-                            <option value="comment" {% if type_filter == 'comment' %}selected{% endif %}>评论</option>
-                            <option value="reply" {% if type_filter == 'reply' %}selected{% endif %}>回复</option>
-                            <option value="like" {% if type_filter == 'like' %}selected{% endif %}>点赞</option>
-                            <option value="favorite" {% if type_filter == 'favorite' %}selected{% endif %}>收藏</option>
-                            <option value="rating" {% if type_filter == 'rating' %}selected{% endif %}>评分</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> 筛选
-                            </button>
-                            <a href="{{ url_for('notification.notifications') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> 清除
-                            </a>
-                        </div>
-                    </div>
-                </form>
+                <div class="notification-nav">
+                    <a href="{{ url_for('notification.notifications') }}" class="nav-btn {% if not type_filter %}active{% endif %}">
+                        全部
+                    </a>
+                    <a href="{{ url_for('notification.notifications', type='comment') }}" class="nav-btn {% if type_filter == 'comment' %}active{% endif %}">
+                        评论
+                    </a>
+                    <a href="{{ url_for('notification.notifications', type='reply') }}" class="nav-btn {% if type_filter == 'reply' %}active{% endif %}">
+                        回复
+                    </a>
+                    <a href="{{ url_for('notification.notifications', type='like,favorite') }}" class="nav-btn {% if type_filter in ['like,favorite'] %}active{% endif %}">
+                        赞和收藏
+                    </a>
+                    <a href="{{ url_for('notification.notifications', type='message') }}" class="nav-btn {% if type_filter == 'message' %}active{% endif %}">
+                        私信
+                    </a>
+                </div>
             </div>
         </div>
     </div>
@@ -155,6 +137,38 @@
 </div>
 
 <style>
+/* 消息导航按钮样式 */
+.notification-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.notification-nav .nav-btn {
+    padding: 8px 16px;
+    border-radius: 10px;
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 400;
+    font-size: 0.8rem;
+}
+
+.notification-nav .nav-btn:hover {
+    background-color: var(--bg-tertiary);
+    transform: translateY(-2px);
+}
+
+.notification-nav .nav-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
 .notification-list {
     display: flex;
     flex-direction: column;
