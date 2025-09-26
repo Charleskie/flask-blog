@@ -3,188 +3,207 @@
 {% block title %}消息管理 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="admin-header">
-        <h1>消息管理</h1>
-        <div class="admin-actions">
-            <span class="badge bg-danger me-2">{{ messages.items | selectattr('status', 'equalto', 'unread') | list | length }} 未读</span>
-            <span class="badge bg-secondary">{{ messages.total }} 总计</span>
+<!-- 页面头部 -->
+<div class="text-center py-6 mb-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            消息管理
+        </h1>
+        <p class="text-slate-300">管理联系表单和用户消息</p>
+    </div>
+</div>
+
+<!-- 主要内容 -->
+<div class="max-w-6xl mx-auto px-4">
+    <!-- 统计信息 -->
+    <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-4">
+            <div class="glass-card rounded-lg px-4 py-2">
+                <span class="text-white font-medium">共 {{ messages.total }} 条消息</span>
+            </div>
+            <div class="glass-card rounded-lg px-4 py-2 bg-red-600/20 border-red-600/30">
+                <span class="text-red-400 font-medium">{{ messages.items | selectattr('status', 'equalto', 'unread') | list | length }} 未读</span>
+            </div>
         </div>
     </div>
-            
+    
     <!-- 筛选器 -->
-    <div class="admin-content">
-        <div class="content-card">
-            <div class="card-header">
-                <h2>消息筛选</h2>
+    <div class="glass-card rounded-xl p-6 mb-6">
+        <form method="GET" class="flex items-center gap-4">
+            <div class="flex-1">
+                <label for="status" class="block text-sm font-medium text-slate-300 mb-2">状态筛选</label>
+                <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                        id="status" name="status">
+                    <option value="">全部状态</option>
+                    <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
+                    <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
+                    <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
+                    <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
+                </select>
             </div>
-            <div class="card-body">
-                <form method="GET" class="row g-3">
-                    <div class="col-md-4">
-                        <label for="status" class="form-label">状态筛选</label>
-                        <select class="form-select" id="status" name="status">
-                            <option value="">全部状态</option>
-                            <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
-                            <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
-                            <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
-                            <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label">&nbsp;</label>
-                        <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-filter"></i> 筛选
-                            </button>
-                            <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> 清除
-                            </a>
-                        </div>
-                    </div>
-                </form>
+            <div class="flex gap-2">
+                <button type="submit" class="btn-secondary">
+                    <i class="fas fa-filter"></i> 筛选
+                </button>
+                <a href="{{ url_for('admin.admin_messages') }}" class="btn-secondary">
+                    <i class="fas fa-times"></i> 清除
+                </a>
             </div>
-        </div>
+        </form>
     </div>
-            
+    
     <!-- 消息列表 -->
-    <div class="admin-content">
-        <div class="content-card">
-            <div class="card-header">
-                <h2>消息列表 (共 {{ messages.total }} 条)</h2>
-            </div>
-            <div class="card-body">
-                {% if messages.items %}
-                <div class="table-responsive">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>状态</th>
-                                <th>发送者</th>
-                                <th>主题</th>
-                                <th>邮箱</th>
-                                <th>发送时间</th>
-                                <th>操作</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for message in messages.items %}
-                            <tr class="{% if message.is_unread() %}unread-message{% endif %}">
-                                        <td>
-                                            {% if message.status == 'unread' %}
-                                                <span class="badge bg-danger">未读</span>
-                                            {% elif message.status == 'read' %}
-                                                <span class="badge bg-primary">已读</span>
-                                            {% elif message.status == 'replied' %}
-                                                <span class="badge bg-success">已回复</span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">已归档</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="fw-bold">{{ message.name }}</div>
-                                            {% if message.ip_address %}
-                                                <small class="text-muted">IP: {{ message.ip_address }}</small>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="fw-bold">{{ message.subject }}</div>
-                                            <div class="message-preview text-muted">{{ message.message[:50] }}{% if message.message|length > 50 %}...{% endif %}</div>
-                                        </td>
-                                        <td>
-                                            <a href="mailto:{{ message.email }}" class="text-decoration-none">
+    <div class="glass-card rounded-xl p-6">
+        {% if messages.items %}
+            <div class="space-y-4">
+                {% for message in messages.items %}
+                <div class="message-card bg-slate-800/50 border border-slate-600 rounded-lg p-4 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer {% if message.is_unread() %}border-l-4 border-l-red-500{% endif %}" 
+                     onclick="viewMessage({{ message.id }})" 
+                     data-message-id="{{ message.id }}"
+                     style="position: relative; z-index: 1;">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-start gap-4">
+                                <!-- 发送者头像 -->
+                                <div class="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user text-slate-400"></i>
+                                </div>
+                                
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <h3 class="text-white font-semibold">{{ message.name }}</h3>
+                                        <!-- 状态标签 -->
+                                        {% if message.status == 'unread' %}
+                                            <span class="px-2 py-1 bg-red-600/20 text-red-400 rounded text-xs">未读</span>
+                                        {% elif message.status == 'read' %}
+                                            <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">已读</span>
+                                        {% elif message.status == 'replied' %}
+                                            <span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs">已回复</span>
+                                        {% else %}
+                                            <span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs">已归档</span>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <h4 class="text-lg font-medium text-white mb-2 hover:text-indigo-300 transition-colors">{{ message.subject }}</h4>
+                                    <p class="text-slate-300 text-sm mb-3 line-clamp-2">{{ message.message[:100] }}{% if message.message|length > 100 %}...{% endif %}</p>
+                                    
+                                    <div class="flex items-center gap-4 text-sm">
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-envelope text-slate-400"></i>
+                                            <a href="mailto:{{ message.email }}" class="text-indigo-400 hover:text-indigo-300" onclick="event.stopPropagation()">
                                                 {{ message.email }}
                                             </a>
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">
-                                                {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                            </small>
-                                            {% if message.read_at %}
-                                                <br><small class="text-info">已读: {{ message.read_at.strftime('%H:%M') }}</small>
-                                            {% endif %}
-                                        </td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <a href="{{ url_for('admin.view_message', message_id=message.id) }}" 
-                                           class="btn btn-sm btn-primary" title="查看">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        {% if not message.is_replied() %}
-                                            <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" 
-                                               class="btn btn-sm btn-success" title="回复">
-                                                <i class="fas fa-reply"></i>
-                                            </a>
-                                        {% endif %}
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" 
-                                                    data-bs-toggle="dropdown" title="状态">
-                                                <i class="fas fa-cog"></i>
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><h6 class="dropdown-header">更改状态</h6></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'unread')">
-                                                    <i class="fas fa-circle text-danger"></i> 标记为未读
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'read')">
-                                                    <i class="fas fa-circle text-primary"></i> 标记为已读
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'replied')">
-                                                    <i class="fas fa-circle text-success"></i> 标记为已回复
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ message.id }}, 'archived')">
-                                                    <i class="fas fa-circle text-secondary"></i> 归档
-                                                </a></li>
-                                                <li><hr class="dropdown-divider"></li>
-                                                <li><a class="dropdown-item text-danger" href="#" 
-                                                       onclick="deleteMessage({{ message.id }}, '{{ message.subject|e }}')">
-                                                    <i class="fas fa-trash"></i> 删除
-                                                </a></li>
-                                            </ul>
                                         </div>
+                                        
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-clock text-slate-400"></i>
+                                            <span class="text-slate-300">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                        </div>
+                                        
+                                        {% if message.ip_address %}
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-globe text-slate-400"></i>
+                                            <span class="text-slate-300">{{ message.ip_address }}</span>
+                                        </div>
+                                        {% endif %}
+                                        
+                                        {% if message.read_at %}
+                                        <div class="flex items-center gap-2">
+                                            <i class="fas fa-eye text-slate-400"></i>
+                                            <span class="text-slate-300">已读: {{ message.read_at.strftime('%H:%M') }}</span>
+                                        </div>
+                                        {% endif %}
                                     </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-2 ml-4" onclick="event.stopPropagation()">
+                            <!-- 操作按钮 -->
+                            <div class="flex gap-1">
+                                <a href="{{ url_for('admin.view_message', message_id=message.id) }}" 
+                                   class="btn-action" title="查看">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if not message.is_replied() %}
+                                <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" 
+                                   class="btn-action btn-action-success" title="回复">
+                                    <i class="fas fa-reply"></i>
+                                </a>
+                                {% endif %}
+                                <div class="relative">
+                                    <button type="button" class="btn-action" 
+                                            onclick="toggleDropdown({{ message.id }})" title="更多操作">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div id="dropdown-{{ message.id }}" class="dropdown-menu hidden">
+                                        <a href="#" onclick="changeStatus({{ message.id }}, 'unread')" class="dropdown-item">
+                                            <i class="fas fa-circle text-red-400"></i> 标记为未读
+                                        </a>
+                                        <a href="#" onclick="changeStatus({{ message.id }}, 'read')" class="dropdown-item">
+                                            <i class="fas fa-circle text-blue-400"></i> 标记为已读
+                                        </a>
+                                        <a href="#" onclick="changeStatus({{ message.id }}, 'replied')" class="dropdown-item">
+                                            <i class="fas fa-circle text-green-400"></i> 标记为已回复
+                                        </a>
+                                        <a href="#" onclick="changeStatus({{ message.id }}, 'archived')" class="dropdown-item">
+                                            <i class="fas fa-circle text-slate-400"></i> 归档
+                                        </a>
+                                        <hr class="dropdown-divider">
+                                        <a href="#" onclick="deleteMessage({{ message.id }}, '{{ message.subject|e }}')" 
+                                           class="dropdown-item text-red-400">
+                                            <i class="fas fa-trash"></i> 删除
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-envelope fa-3x"></i>
-                    <h3>暂无消息</h3>
-                    <p>当有新的联系表单提交时，消息会显示在这里。</p>
-                </div>
-                {% endif %}
+                {% endfor %}
             </div>
-        </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="w-20 h-20 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-envelope text-slate-400 text-2xl"></i>
+                </div>
+                <h3 class="text-white font-semibold mb-2">暂无消息</h3>
+                <p class="text-slate-300">当有新的联系表单提交时，消息会显示在这里。</p>
+            </div>
+        {% endif %}
     </div>
-            
+    
     <!-- 分页 -->
     {% if messages.pages > 1 %}
-    <div class="pagination-wrapper">
-        <nav class="pagination">
+    <div class="flex justify-center mt-8">
+        <nav class="flex items-center gap-2">
             {% if messages.has_prev %}
-                <a href="{{ url_for('admin.admin_messages', page=messages.prev_num, status=status_filter) }}" class="page-link">
-                    <i class="fas fa-chevron-left"></i> 上一页
-                </a>
+            <a href="{{ url_for('admin.admin_messages', page=messages.prev_num, status=status_filter) }}" 
+               class="btn-pagination">
+                <i class="fas fa-chevron-left"></i>
+            </a>
             {% endif %}
             
             {% for page_num in messages.iter_pages() %}
                 {% if page_num %}
                     {% if page_num != messages.page %}
-                        <a href="{{ url_for('admin.admin_messages', page=page_num, status=status_filter) }}" class="page-link">{{ page_num }}</a>
+                    <a href="{{ url_for('admin.admin_messages', page=page_num, status=status_filter) }}" 
+                       class="btn-pagination">
+                        {{ page_num }}
+                    </a>
                     {% else %}
-                        <span class="page-link current">{{ page_num }}</span>
+                    <span class="btn-pagination btn-pagination-active">{{ page_num }}</span>
                     {% endif %}
                 {% else %}
-                    <span class="page-link disabled">...</span>
+                <span class="btn-pagination btn-pagination-disabled">...</span>
                 {% endif %}
             {% endfor %}
             
             {% if messages.has_next %}
-                <a href="{{ url_for('admin.admin_messages', page=messages.next_num, status=status_filter) }}" class="page-link">
-                    下一页 <i class="fas fa-chevron-right"></i>
-                </a>
+            <a href="{{ url_for('admin.admin_messages', page=messages.next_num, status=status_filter) }}" 
+               class="btn-pagination">
+                <i class="fas fa-chevron-right"></i>
+            </a>
             {% endif %}
         </nav>
     </div>
@@ -194,19 +213,19 @@
 <!-- 删除确认模态框 -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">确认删除</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content bg-slate-800 border border-slate-600">
+            <div class="modal-header border-b border-slate-600">
+                <h5 class="modal-title text-white">确认删除</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>您确定要删除消息 "<span id="delete-message-subject"></span>" 吗？</p>
-                <p class="text-danger"><small>此操作不可撤销！</small></p>
+                <p class="text-slate-300">您确定要删除消息 "<span id="delete-message-subject" class="text-white font-medium"></span>" 吗？</p>
+                <p class="text-red-400 text-sm mt-2"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <div class="modal-footer border-t border-slate-600">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
                 <form id="delete-form" method="POST" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">确认删除</button>
+                    <button type="submit" class="btn-danger">确认删除</button>
                 </form>
             </div>
         </div>
@@ -218,64 +237,227 @@
     <input type="hidden" id="status-message-id" name="message_id">
     <input type="hidden" id="status-value" name="status">
 </form>
-{% endblock %}
 
 <style>
-.unread-message {
-    background-color: rgba(255, 193, 7, 0.1) !important;
-    border-left: 4px solid #ffc107;
-}
-
-.unread-message:hover {
-    background-color: rgba(255, 193, 7, 0.2) !important;
-}
-
-.action-buttons {
-    display: flex;
-    gap: 4px;
+.btn-secondary {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
 }
 
-.action-buttons .btn {
-    padding: 4px 8px;
-    font-size: 0.8rem;
+.btn-secondary:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
 }
 
-.message-preview {
-    max-width: 200px;
+.btn-action {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    text-decoration: none;
+}
+
+.btn-action:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-action-success {
+    background: rgba(34, 197, 94, 0.8);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.btn-action-success:hover {
+    background: rgba(34, 197, 94, 1);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+.btn-pagination {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    text-decoration: none;
+}
+
+.btn-pagination:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-pagination-active {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: white;
+}
+
+.btn-pagination-disabled {
+    background: rgba(100, 116, 139, 0.3);
+    border: 1px solid rgba(100, 116, 139, 0.1);
+    color: rgba(100, 116, 139, 0.5);
+    cursor: not-allowed;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0;
+    min-width: 160px;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+}
+
+.dropdown-menu.hidden {
+    display: none;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(71, 85, 105, 0.5);
+    text-decoration: none;
+    color: white;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: rgba(71, 85, 105, 0.3);
+    margin: 0.5rem 0;
+    border: none;
+}
+
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
 }
 
-.status-badge {
-    font-size: 0.75rem;
-    padding: 2px 6px;
+.message-card {
+    position: relative;
+    overflow: hidden;
 }
 
-.message-meta {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+.message-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
 }
 
-.message-email {
-    font-size: 0.9rem;
+.message-card:hover::before {
+    left: 100%;
 }
 
-@media (max-width: 768px) {
-    .action-buttons {
-        flex-direction: column;
-        gap: 2px;
-    }
-    
-    .message-preview {
-        max-width: 150px;
-    }
+.message-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.message-card:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* 确保点击区域正确 */
+.message-card {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* 操作按钮区域样式 */
+.message-card .flex.items-center.gap-2.ml-4 {
+    position: relative;
+    z-index: 10;
 }
 </style>
+{% endblock %}
+
 
 {% block extra_js %}
 <script>
+// 查看消息详情
+function viewMessage(messageId) {
+    console.log('点击查看消息详情:', messageId);
+    try {
+        window.location.href = `/admin/messages/${messageId}`;
+    } catch (error) {
+        console.error('跳转失败:', error);
+        // 备用跳转方式
+        window.open(`/admin/messages/${messageId}`, '_self');
+    }
+}
+
 function deleteMessage(messageId, messageSubject) {
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     const deleteSubject = document.getElementById('delete-message-subject');
@@ -297,9 +479,63 @@ function changeStatus(messageId, status) {
     statusForm.submit();
 }
 
+function toggleDropdown(messageId) {
+    const dropdown = document.getElementById(`dropdown-${messageId}`);
+    const isHidden = dropdown.classList.contains('hidden');
+    
+    // 关闭所有其他下拉菜单
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu.id !== `dropdown-${messageId}`) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // 切换当前下拉菜单
+    if (isHidden) {
+        dropdown.classList.remove('hidden');
+    } else {
+        dropdown.classList.add('hidden');
+    }
+}
+
+// 点击外部关闭下拉菜单
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.relative')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.add('hidden');
+        });
+    }
+});
+
 // 自动提交筛选表单
 document.getElementById('status').addEventListener('change', function() {
     this.form.submit();
+});
+
+// 页面加载完成后的调试信息
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('消息列表页面加载完成');
+    
+    // 检查消息卡片
+    const messageCards = document.querySelectorAll('.message-card');
+    console.log(`找到 ${messageCards.length} 个消息卡片`);
+    
+    // 为每个消息卡片添加点击事件监听器（备用方案）
+    messageCards.forEach((card, index) => {
+        const messageId = card.getAttribute('data-message-id');
+        console.log(`消息卡片 ${index + 1}: ID = ${messageId}`);
+        
+        // 添加备用点击事件
+        card.addEventListener('click', function(e) {
+            // 如果点击的是操作按钮区域，不处理
+            if (e.target.closest('.flex.items-center.gap-2.ml-4')) {
+                return;
+            }
+            
+            console.log('备用点击事件触发:', messageId);
+            viewMessage(messageId);
+        });
+    });
 });
 </script>
 {% endblock %} 

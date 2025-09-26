@@ -3,144 +3,163 @@
 {% block title %}查看消息 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-envelope-open"></i> 查看消息</h1>
-                <div>
-                    <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> 返回消息列表
-                    </a>
-                    {% if not message.is_replied() %}
-                        <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn btn-success">
-                            <i class="fas fa-reply"></i> 回复
+<!-- 页面头部 -->
+<div class="text-center py-6 mb-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            查看消息
+        </h1>
+        <p class="text-slate-300">来自 {{ message.name }} 的消息详情</p>
+    </div>
+</div>
+
+<!-- 主要内容 -->
+<div class="max-w-6xl mx-auto px-4">
+    <div class="flex items-center justify-between mb-6">
+        <a href="{{ url_for('admin.admin_messages') }}" class="btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i> 返回消息列表
+        </a>
+        {% if not message.is_replied() %}
+        <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn-primary">
+            <i class="fas fa-reply mr-2"></i> 回复消息
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 消息内容 -->
+        <div class="lg:col-span-2">
+            <div class="glass-card rounded-xl p-8">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
+                            <i class="fas fa-envelope-open text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-white">{{ message.subject }}</h2>
+                            <p class="text-slate-400">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                    </div>
+                    <div>
+                        {% if message.status == 'unread' %}
+                            <span class="px-3 py-1 bg-red-600/20 text-red-400 rounded-full text-sm">未读</span>
+                        {% elif message.status == 'read' %}
+                            <span class="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm">已读</span>
+                        {% elif message.status == 'replied' %}
+                            <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm">已回复</span>
+                        {% else %}
+                            <span class="px-3 py-1 bg-slate-600/20 text-slate-400 rounded-full text-sm">已归档</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
+                    <div class="message-content text-slate-300 leading-relaxed">
+                        {{ message.message|nl2br }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 侧边栏信息 -->
+        <div class="space-y-6">
+            <!-- 发送者信息 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-user text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">发送者信息</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">姓名</label>
+                        <p class="text-white">{{ message.name }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">邮箱</label>
+                        <a href="mailto:{{ message.email }}" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                            {{ message.email }}
                         </a>
+                    </div>
+                    {% if message.ip_address %}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">IP地址</label>
+                        <p class="text-slate-400">{{ message.ip_address }}</p>
+                    </div>
                     {% endif %}
                 </div>
             </div>
             
-            <div class="row">
-                <div class="col-md-8">
-                    <!-- 消息内容 -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">{{ message.subject }}</h5>
-                                <div>
-                                    {% if message.status == 'unread' %}
-                                        <span class="badge bg-danger">未读</span>
-                                    {% elif message.status == 'read' %}
-                                        <span class="badge bg-primary">已读</span>
-                                    {% elif message.status == 'replied' %}
-                                        <span class="badge bg-success">已回复</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">已归档</span>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="message-content">
-                                {{ message.message|nl2br }}
-                            </div>
-                        </div>
+            <!-- 时间信息 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-clock text-white"></i>
                     </div>
+                    <h3 class="text-lg font-semibold text-white">时间信息</h3>
                 </div>
                 
-                <div class="col-md-4">
-                    <!-- 发送者信息 -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h6><i class="fas fa-user"></i> 发送者信息</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">姓名</label>
-                                <p class="mb-0">{{ message.name }}</p>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">邮箱</label>
-                                <p class="mb-0">
-                                    <a href="mailto:{{ message.email }}" class="text-decoration-none">
-                                        {{ message.email }}
-                                    </a>
-                                </p>
-                            </div>
-                            {% if message.ip_address %}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">IP地址</label>
-                                <p class="mb-0 text-muted">{{ message.ip_address }}</p>
-                            </div>
-                            {% endif %}
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">发送时间</label>
+                        <p class="text-white">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    {% if message.read_at %}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">阅读时间</label>
+                        <p class="text-blue-400">{{ message.read_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    {% endif %}
+                    {% if message.replied_at %}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">回复时间</label>
+                        <p class="text-green-400">{{ message.replied_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-cogs text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">操作</h3>
+                </div>
+                
+                <div class="space-y-3">
+                    {% if not message.is_replied() %}
+                    <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn-primary w-full text-center">
+                        <i class="fas fa-reply mr-2"></i> 回复消息
+                    </a>
+                    {% endif %}
+                    
+                    <div class="relative">
+                        <button type="button" class="btn-secondary w-full" onclick="toggleStatusDropdown()">
+                            <i class="fas fa-cog mr-2"></i> 更改状态
+                        </button>
+                        <div id="status-dropdown" class="dropdown-menu hidden">
+                            <a href="#" onclick="changeStatus('unread')" class="dropdown-item">
+                                <i class="fas fa-circle text-red-400"></i> 标记为未读
+                            </a>
+                            <a href="#" onclick="changeStatus('read')" class="dropdown-item">
+                                <i class="fas fa-circle text-blue-400"></i> 标记为已读
+                            </a>
+                            <a href="#" onclick="changeStatus('replied')" class="dropdown-item">
+                                <i class="fas fa-circle text-green-400"></i> 标记为已回复
+                            </a>
+                            <a href="#" onclick="changeStatus('archived')" class="dropdown-item">
+                                <i class="fas fa-circle text-slate-400"></i> 归档
+                            </a>
                         </div>
                     </div>
                     
-                    <!-- 时间信息 -->
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h6><i class="fas fa-clock"></i> 时间信息</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">发送时间</label>
-                                <p class="mb-0">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                            </div>
-                            {% if message.read_at %}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">阅读时间</label>
-                                <p class="mb-0 text-info">{{ message.read_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                            </div>
-                            {% endif %}
-                            {% if message.replied_at %}
-                            <div class="mb-3">
-                                <label class="form-label fw-bold">回复时间</label>
-                                <p class="mb-0 text-success">{{ message.replied_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- 操作按钮 -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h6><i class="fas fa-cogs"></i> 操作</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-grid gap-2">
-                                {% if not message.is_replied() %}
-                                    <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn btn-success">
-                                        <i class="fas fa-reply"></i> 回复消息
-                                    </a>
-                                {% endif %}
-                                
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-                                        <i class="fas fa-cog"></i> 更改状态
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li><a class="dropdown-item" href="#" onclick="changeStatus('unread')">
-                                            <i class="fas fa-circle text-danger"></i> 标记为未读
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="changeStatus('read')">
-                                            <i class="fas fa-circle text-primary"></i> 标记为已读
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="changeStatus('replied')">
-                                            <i class="fas fa-circle text-success"></i> 标记为已回复
-                                        </a></li>
-                                        <li><a class="dropdown-item" href="#" onclick="changeStatus('archived')">
-                                            <i class="fas fa-circle text-secondary"></i> 归档
-                                        </a></li>
-                                    </ul>
-                                </div>
-                                
-                                <button type="button" class="btn btn-outline-danger" 
-                                        onclick="deleteMessage('{{ message.subject }}')">
-                                    <i class="fas fa-trash"></i> 删除消息
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <button type="button" class="btn-danger w-full" onclick="deleteMessage('{{ message.subject }}')">
+                        <i class="fas fa-trash mr-2"></i> 删除消息
+                    </button>
                 </div>
             </div>
         </div>
@@ -150,19 +169,19 @@
 <!-- 删除确认模态框 -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">确认删除</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-content bg-slate-800 border border-slate-600">
+            <div class="modal-header border-b border-slate-600">
+                <h5 class="modal-title text-white">确认删除</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>您确定要删除这条消息吗？</p>
-                <p class="text-danger"><small>此操作不可撤销！</small></p>
+                <p class="text-slate-300">您确定要删除这条消息吗？</p>
+                <p class="text-red-400 text-sm mt-2"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+            <div class="modal-footer border-t border-slate-600">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
                 <form method="POST" action="{{ url_for('admin.delete_message', message_id=message.id) }}" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">确认删除</button>
+                    <button type="submit" class="btn-danger">确认删除</button>
                 </form>
             </div>
         </div>
@@ -173,6 +192,83 @@
 <form id="status-form" method="POST" style="display: none;">
     <input type="hidden" id="status-value" name="status">
 </form>
+
+<style>
+.btn-secondary {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.btn-secondary:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0;
+    z-index: 50;
+    backdrop-filter: blur(10px);
+}
+
+.dropdown-menu.hidden {
+    display: none;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: white;
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+    background: rgba(71, 85, 105, 0.5);
+    text-decoration: none;
+    color: white;
+}
+</style>
 {% endblock %}
 
 {% block extra_css %}
@@ -197,7 +293,7 @@ function changeStatus(status) {
     const statusInput = document.getElementById('status-value');
     
     statusInput.value = status;
-    statusForm.action = "{{ url_for('change_message_status', message_id=message.id) }}";
+    statusForm.action = "{{ url_for('admin.change_message_status', message_id=message.id) }}";
     statusForm.submit();
 }
 
@@ -205,5 +301,38 @@ function deleteMessage(subject) {
     const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
     deleteModal.show();
 }
+
+function toggleStatusDropdown() {
+    const dropdown = document.getElementById('status-dropdown');
+    const isHidden = dropdown.classList.contains('hidden');
+    
+    if (isHidden) {
+        dropdown.classList.remove('hidden');
+    } else {
+        dropdown.classList.add('hidden');
+    }
+}
+
+// 点击外部关闭下拉菜单
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.relative')) {
+        document.getElementById('status-dropdown').classList.add('hidden');
+    }
+});
+
+// 页面加载时自动标记为已读
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果消息是未读状态，自动标记为已读
+    {% if message.status == 'unread' %}
+    fetch("{{ url_for('admin.change_message_status', message_id=message.id) }}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: 'status=read'
+    });
+    {% endif %}
+});
 </script>
 {% endblock %} 

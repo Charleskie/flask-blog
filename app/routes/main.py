@@ -188,6 +188,13 @@ def contact():
             )
             
             db.session.add(message)
+            db.session.flush()  # 获取消息ID
+            
+            # 创建消息通知
+            notification = Message.create_message_notification(message)
+            if notification:
+                db.session.add(notification)
+            
             db.session.commit()
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

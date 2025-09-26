@@ -34,4 +34,26 @@ class Message(db.Model):
     
     def is_replied(self):
         """检查是否已回复"""
-        return self.status == 'replied' 
+        return self.status == 'replied'
+    
+    @classmethod
+    def create_message_notification(cls, message):
+        """创建新消息通知"""
+        from .notification import Notification
+        
+        # 获取管理员用户（这里假设ID为1的用户是管理员）
+        admin_user = db.session.query(db.Model.metadata.tables['user']).filter_by(id=1).first()
+        if not admin_user:
+            return None
+            
+        notification = Notification(
+            user_id=1,  # 管理员用户ID
+            type='message',
+            title=f'新消息：{message.subject}',
+            content=f'来自 {message.name} 的消息：{message.message[:100]}{"..." if len(message.message) > 100 else ""}',
+            related_id=message.id,
+            related_type='message',
+            related_url=f'/admin/messages/{message.id}',
+            sender_name=message.name
+        )
+        return notification 

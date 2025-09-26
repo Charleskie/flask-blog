@@ -60,6 +60,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactions/comments.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
     
@@ -152,6 +153,30 @@
         .theme-switch.dark::after {
             transform: translateX(20px);
         }
+        
+        /* 消息徽章样式 */
+        #message-badge, #notification-badge {
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        
+        /* 消息图标悬停效果 */
+        .relative a:hover i {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
         .form-control {
           display: block;
           background-color: transparent !important; /* 背景透明 */
@@ -212,12 +237,23 @@
                     <div class="theme-switch dark mr-2"></div>
                     
                     {% if current_user.is_authenticated %}
-                        <button class="relative p-2 text-slate-300 hover:text-indigo-300">
-                            <a href="{{ url_for('notification.notifications') }}" class="text-slate-300 hover:text-indigo-300">
-                                <i class="fas fa-bell"></i>
+                        <!-- 消息通知图标 -->
+                        {% if current_user.is_admin %}
+                        <div class="relative">
+                            <a href="{{ url_for('admin.admin_messages') }}" class="relative p-2 text-slate-300 hover:text-indigo-300 transition-colors">
+                                <i class="fas fa-envelope text-lg"></i>
+                                <span id="message-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium hidden">0</span>
                             </a>
-                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- 系统通知图标 -->
+                        <div class="relative">
+                            <a href="{{ url_for('notification.notifications') }}" class="relative p-2 text-slate-300 hover:text-indigo-300 transition-colors">
+                                <i class="fas fa-bell text-lg"></i>
+                                <span id="notification-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium hidden">0</span>
+                            </a>
+                        </div>
                         
                         <div class="relative" id="userDropdown">
                             <button id="userDropdownButton" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-300">
@@ -488,6 +524,38 @@
     {% if current_user.is_authenticated %}
     <script>
     // 更新未读消息数量
+    function updateMessageCount() {
+        {% if current_user.is_admin %}
+        fetch('/api/messages/unread-count')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            const badge = document.getElementById('message-badge');
+            if (badge) {
+                if (data.success && data.count > 0) {
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+            }
+        })
+        .catch(error => {
+            console.warn('获取未读消息数量失败:', error.message);
+            // 如果服务器未运行，隐藏消息徽章
+            const badge = document.getElementById('message-badge');
+            if (badge) {
+                badge.classList.add('hidden');
+            }
+        });
+        {% endif %}
+    }
+    
+    // 更新系统通知数量
     function updateNotificationCount() {
         fetch('/api/notifications/unread-count')
         .then(response => {
@@ -497,32 +565,36 @@
             return response.json();
         })
         .then(data => {
-            const badge = document.querySelector('.notification-badge');
+            const badge = document.getElementById('notification-badge');
             if (badge) {
                 if (data.count > 0) {
-                    badge.textContent = data.count;
-                    badge.style.display = 'inline';
+                    badge.textContent = data.count > 99 ? '99+' : data.count;
+                    badge.classList.remove('hidden');
                 } else {
-                    badge.style.display = 'none';
+                    badge.classList.add('hidden');
                 }
             }
         })
         .catch(error => {
-            console.warn('获取消息数量失败:', error.message);
+            console.warn('获取通知数量失败:', error.message);
             // 如果服务器未运行，隐藏通知徽章
-            const badge = document.querySelector('.notification-badge');
+            const badge = document.getElementById('notification-badge');
             if (badge) {
-                badge.style.display = 'none';
+                badge.classList.add('hidden');
             }
         });
     }
     
     // 页面加载时更新消息数量
     document.addEventListener('DOMContentLoaded', function() {
+        updateMessageCount();
         updateNotificationCount();
         
         // 每30秒更新一次消息数量
-        setInterval(updateNotificationCount, 30000);
+        setInterval(function() {
+            updateMessageCount();
+            updateNotificationCount();
+        }, 30000);
     });
     </script>
     {% endif %}

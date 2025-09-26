@@ -3,147 +3,173 @@
 {% block title %}联系我 - 我的个人网站{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <h1 class="text-center mb-5">联系我</h1>
-        <p class="text-center lead mb-5">如果你有合作意向或建议和意见？欢迎随时联系我。</p>
+<!-- 页面头部 -->
+<div class="text-center py-16 mb-12">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            联系我
+        </h1>
+        <p class="text-xl text-slate-300 mb-8">如果你有合作意向或建议和意见？欢迎随时联系我。</p>
     </div>
 </div>
 
-<div class="row">
-    <!-- 联系表单 -->
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h4><i class="fas fa-envelope"></i> 发送消息</h4>
-            </div>
-            <div class="card-body">
-                <form id="contact-form" data-ajax-form>
-                    <div class="row">
-                      <div class="col-12 col-md-6 mb-3">
-                        <label for="name" class="form-label">姓名 *</label>
-                        <input type="text" class="form-control" id="name" name="name" required>
-                      </div>
-                      <div class="col-12 col-md-6 mb-3">
-                        <label for="email" class="form-label">邮箱</label>
-                        <input type="email" class="form-control" id="email" name="email">
-                      </div>
+<div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- 联系表单 -->
+        <div class="lg:col-span-2">
+            <div class="glass-card rounded-xl p-8">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-envelope text-white text-xl"></i>
                     </div>
-
-                    
-                    <div class="mb-3">
-                        <label for="subject" class="form-label">主题 *</label>
-                        <input type="text" class="form-control" id="subject" name="subject" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="message" class="form-label">消息内容 *</label>
-                        <textarea class="form-control" id="message" name="message" rows="6" required></textarea>
+                    <h2 class="text-2xl font-bold text-white">发送消息</h2>
+                </div>
+                
+                <form id="contact-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-slate-300 mb-2">姓名 *</label>
+                            <input type="text" 
+                                   class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                                   id="name" name="name" placeholder="请输入您的姓名" required>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-slate-300 mb-2">邮箱 *</label>
+                            <input type="email" 
+                                   class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                                   id="email" name="email" placeholder="请输入您的邮箱" required>
+                        </div>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary btn-sm me-2">
-                        <i class="fas fa-paper-plane"></i> 发送消息
-                    </button>
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-slate-300 mb-2">主题 *</label>
+                        <input type="text" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="subject" name="subject" placeholder="请输入消息主题" required>
+                    </div>
+                    
+                    <div>
+                        <label for="message" class="block text-sm font-medium text-slate-300 mb-2">消息内容 *</label>
+                        <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" 
+                                  id="message" name="message" rows="6" placeholder="请输入您的消息内容..." required></textarea>
+                    </div>
+                    
+                    <div class="flex items-center gap-4">
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane mr-2"></i> 发送消息
+                        </button>
+                        <div class="text-sm text-slate-400">
+                            <i class="fas fa-shield-alt mr-1"></i> 您的信息将被安全保护
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
-    </div>
 
-    <!-- 联系信息 -->
-    <div class="col-lg-4">
-        <!-- 联系信息卡片 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-address-card"></i> 联系信息</h5>
+        <!-- 联系信息 -->
+        <div class="space-y-6">
+            <!-- 联系信息卡片 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-address-card text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">联系信息</h3>
+                </div>
+                <div class="space-y-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-envelope text-white text-sm"></i>
+                        </div>
+                        <a href="mailto:wdws851421092@gmail.com" class="text-indigo-400 hover:text-indigo-300 transition-colors">
+                            wdws851421092@gmail.com
+                        </a>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-phone text-white text-sm"></i>
+                        </div>
+                        <span class="text-slate-300">+86 135 **** ****</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                        </div>
+                        <span class="text-slate-300">深圳，中国</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-clock text-white text-sm"></i>
+                        </div>
+                        <span class="text-slate-300">周一至周五 9:00-18:00</span>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <ul class="list-unstyled">
-                    <li class="mb-3">
-                        <i class="fas fa-envelope text-primary me-2"></i>
-                        <a href="mailto:wdws851421092@gmail.com" class="text-decoration-none">wdws851421092@gmail.com</a>
-                    </li>
-                    <li class="mb-3">
-                        <i class="fas fa-phone text-success me-2"></i>
-                        <span>+86 135 **** ****</span>
-                    </li>
-                    <li class="mb-3">
-                        <i class="fas fa-map-marker-alt text-danger me-2"></i>
-                        <span>深圳，中国</span>
-                    </li>
-                    <li class="mb-3">
-                        <i class="fas fa-clock text-warning me-2"></i>
-                        <span>周一至周五 9:00-18:00</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
 
-        <!-- 社交媒体 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-share-alt"></i> 社交媒体</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="https://github.com/Charleskie" class="btn btn-outline-dark" target="_blank">
-                        <i class="fab fa-github"></i> GitHub
+            <!-- 社交媒体 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-share-alt text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">社交媒体</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <a href="https://github.com/Charleskie" class="social-btn bg-slate-800 hover:bg-slate-700" target="_blank">
+                        <i class="fab fa-github"></i>
+                        <span>GitHub</span>
                     </a>
-                    <a href="" class="btn btn-outline-primary" target="_blank">
-                        <i class="fab fa-linkedin"></i> LinkedIn
+                    <a href="#" class="social-btn bg-blue-600 hover:bg-blue-500" target="_blank">
+                        <i class="fab fa-linkedin"></i>
+                        <span>LinkedIn</span>
                     </a>
-                    <a href="" class="btn btn-outline-info" target="_blank">
-                        <i class="fab fa-twitter"></i> Twitter
+                    <a href="#" class="social-btn bg-sky-500 hover:bg-sky-400" target="_blank">
+                        <i class="fab fa-twitter"></i>
+                        <span>Twitter</span>
                     </a>
-                    <a href="" class="btn btn-outline-danger" target="_blank">
-                        <i class="fab fa-weibo"></i> 微博
+                    <a href="#" class="social-btn bg-red-600 hover:bg-red-500" target="_blank">
+                        <i class="fab fa-weibo"></i>
+                        <span>微博</span>
                     </a>
                 </div>
             </div>
-        </div>
 
-        <!-- 快速回复 -->
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-comments"></i> 常见问题</h5>
-            </div>
-            <div class="card-body">
-                <div class="accordion" id="faqAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                如何开始合作项目？
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                请通过联系表单发送详细的项目需求，我会在24小时内回复您。
-                            </div>
+            <!-- 常见问题 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-comments text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">常见问题</h3>
+                </div>
+                <div class="space-y-3">
+                    <div class="faq-item">
+                        <button class="faq-button" onclick="toggleFaq('faq1')">
+                            <span>如何开始合作项目？</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div id="faq1" class="faq-content hidden">
+                            <p class="text-slate-300 text-sm">请通过联系表单发送详细的项目需求，我会在24小时内回复您。</p>
                         </div>
                     </div>
                     
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                提供哪些技术服务？
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                包括Web开发、移动应用开发、API设计、数据库设计、系统架构等。
-                            </div>
+                    <div class="faq-item">
+                        <button class="faq-button" onclick="toggleFaq('faq2')">
+                            <span>提供哪些技术服务？</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div id="faq2" class="faq-content hidden">
+                            <p class="text-slate-300 text-sm">包括Web开发、移动应用开发、API设计、数据库设计、系统架构等。</p>
                         </div>
                     </div>
                     
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                项目周期大概多久？
-                            </button>
-                        </h2>
-                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                根据项目复杂度，通常2-8周不等，具体时间会在项目开始前确定。
-                            </div>
+                    <div class="faq-item">
+                        <button class="faq-button" onclick="toggleFaq('faq3')">
+                            <span>项目周期大概多久？</span>
+                            <i class="fas fa-chevron-down faq-icon"></i>
+                        </button>
+                        <div id="faq3" class="faq-content hidden">
+                            <p class="text-slate-300 text-sm">根据项目复杂度，通常2-8周不等，具体时间会在项目开始前确定。</p>
                         </div>
                     </div>
                 </div>
@@ -153,75 +179,76 @@
 </div>
 
 <!-- 地图区域 -->
-<div class="row mt-5">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-map-marker-alt"></i> 位置信息</h5>
+<div class="max-w-6xl mx-auto px-4 mt-12">
+    <div class="glass-card rounded-xl p-8">
+        <div class="flex items-center mb-6">
+            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
+                <i class="fas fa-map-marker-alt text-white text-xl"></i>
             </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="location-info">
-                            <h6><i class="fas fa-building"></i> 办公地址</h6>
-                            
-                            <!-- 地址选择器 -->
-                            <div class="mb-3">
-                                <label for="office-select" class="form-label">选择办公地点</label>
-                                <select class="form-select" id="office-select" onchange="changeOffice()">
-                                    <option value="0">深圳 - 南山高新园</option>
-<!--                                    <option value="0">上海 - 张江高科技园区</option>-->
-<!--                                    <option value="1">北京 - 望京SOHO</option>-->
-                                </select>
-                            </div>
-                            
-                            <div id="office-info">
-                                <p class="mb-2">
-                                    <i class="fas fa-map-marker-alt text-danger"></i>
-                                    <span id="office-address">深圳市南山区高新南一道</span>
-                                </p>
-                                <p class="mb-2">
-                                    <i class="fas fa-phone text-primary"></i>
-                                    <span id="office-phone">+86 137-0000-0000</span>
-                                </p>
-                                <p class="mb-2">
-                                    <i class="fas fa-envelope text-success"></i>
-                                    <span id="office-email">wdws851421092@163.com</span>
-                                </p>
-                                <p class="mb-3">
-                                    <i class="fas fa-clock text-warning"></i>
-                                    <span id="office-hours">工作时间：周一至周五 9:00-18:00</span>
-                                </p>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                                <button class="btn btn-outline-primary" onclick="getCurrentLocation()">
-                                    <i class="fas fa-location-arrow"></i> 获取我的位置
-                                </button>
-                                <button class="btn btn-outline-success" onclick="openInMaps()">
-                                    <i class="fas fa-external-link-alt"></i> 在导航中打开
-                                </button>
-                            </div>
-                            
-                            <div id="location-status" class="mt-3" style="display: none;">
-                                <div class="alert alert-info">
-                                    <i class="fas fa-spinner fa-spin"></i> 正在获取位置...
-                                </div>
-                            </div>
+            <h2 class="text-2xl font-bold text-white">位置信息</h2>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="space-y-6">
+                <div>
+                    <label for="office-select" class="block text-sm font-medium text-slate-300 mb-2">选择办公地点</label>
+                    <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                            id="office-select" onchange="changeOffice()">
+                        <option value="0">深圳 - 南山高新园</option>
+                    </select>
+                </div>
+                
+                <div id="office-info" class="space-y-4">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                        </div>
+                        <span id="office-address" class="text-slate-300">深圳市南山区高新南一道</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-phone text-white text-sm"></i>
+                        </div>
+                        <span id="office-phone" class="text-slate-300">+86 137-0000-0000</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-envelope text-white text-sm"></i>
+                        </div>
+                        <span id="office-email" class="text-slate-300">wdws851421092@163.com</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-clock text-white text-sm"></i>
+                        </div>
+                        <span id="office-hours" class="text-slate-300">工作时间：周一至周五 9:00-18:00</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-3">
+                    <button class="btn-secondary flex-1" onclick="getCurrentLocation()">
+                        <i class="fas fa-location-arrow mr-2"></i> 获取我的位置
+                    </button>
+                    <button class="btn-secondary flex-1" onclick="openInMaps()">
+                        <i class="fas fa-external-link-alt mr-2"></i> 在导航中打开
+                    </button>
+                </div>
+                
+                <div id="location-status" class="hidden">
+                    <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-spinner fa-spin text-blue-400 mr-2"></i>
+                            <span class="text-blue-400">正在获取位置...</span>
                         </div>
                     </div>
-                    
-                    <div class="col-md-6">
-                        <div class="map-container">
-                            <div id="map" style="height: 300px; border-radius: 8px; overflow: hidden;">
-                                <div class="d-flex align-items-center justify-content-center h-100 bg-light">
-                                    <div class="text-center">
-                                        <i class="fas fa-map fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted">点击上方按钮加载地图</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map" class="w-full h-80 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center">
+                    <div class="text-center">
+                        <i class="fas fa-map fa-3x text-slate-400 mb-3"></i>
+                        <p class="text-slate-400">点击上方按钮加载地图</p>
                     </div>
                 </div>
             </div>
@@ -232,18 +259,84 @@
 
 {% block extra_css %}
 <style>
-.location-info h6 {
-    color: #495057;
-    margin-bottom: 1rem;
+.social-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    min-height: 80px;
 }
 
-.location-info p {
+.social-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    text-decoration: none;
+    color: white;
+}
+
+.social-btn i {
+    font-size: 1.5rem;
     margin-bottom: 0.5rem;
 }
 
-.location-info i {
-    width: 20px;
-    margin-right: 8px;
+.social-btn span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.faq-item {
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.faq-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    background: rgba(30, 41, 59, 0.5);
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.faq-button:hover {
+    background: rgba(30, 41, 59, 0.8);
+}
+
+.faq-icon {
+    transition: transform 0.3s ease;
+}
+
+.faq-button.active .faq-icon {
+    transform: rotate(180deg);
+}
+
+.faq-content {
+    padding: 0 1rem;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: rgba(30, 41, 59, 0.3);
+}
+
+.faq-content:not(.hidden) {
+    padding: 1rem;
+    max-height: 200px;
+}
+
+.faq-content.hidden {
+    padding: 0 1rem;
+    max-height: 0;
 }
 
 .map-container {
@@ -258,88 +351,27 @@
     transform: scale(1.02);
 }
 
-#location-status .alert {
-    margin-bottom: 0;
-    font-size: 14px;
+.btn-secondary {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
 }
 
-.btn-outline-primary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,123,255,0.3);
+.btn-secondary:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
 }
-
-.btn-outline-success:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(40,167,69,0.3);
-}
-
-/* 修复手风琴样式问题 */
-.accordion-collapse {
-    transition: none !important;
-    overflow: visible !important;
-}
-
-.accordion-collapse.show {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-}
-
-.accordion-collapse:not(.show) {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-}
-
-.accordion-body {
-    color: #6c757d !important;
-    padding: 1rem 1.25rem !important;
-    background-color: #ffffff !important;
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    position: relative !important;
-    z-index: 1 !important;
-}
-
-.accordion-button {
-    color: #212529 !important;
-    background-color: #ffffff !important;
-    border: 1px solid rgba(0,0,0,.125) !important;
-}
-
-.accordion-button:not(.collapsed) {
-    color: #0c63e4 !important;
-    background-color: #e7f1ff !important;
-    border-color: #b6d7ff !important;
-}
-
-.accordion-button:focus {
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-}
-
-/* 禁用所有可能干扰的动画 */
-.accordion-collapse * {
-    transition: none !important;
-    animation: none !important;
-}
-
-/* 确保手风琴项目容器稳定 */
-.accordion-item {
-    border: 1px solid rgba(0,0,0,.125) !important;
-    margin-bottom: 0 !important;
-}
-
-.accordion-item:first-of-type {
-    border-top-left-radius: 0.375rem !important;
-    border-top-right-radius: 0.375rem !important;
-}
-
-.accordion-item:last-of-type {
-    border-bottom-left-radius: 0.375rem !important;
-    border-bottom-right-radius: 0.375rem !important;
-}
-
 </style>
 {% endblock %}
 
@@ -364,6 +396,23 @@ let map = null;
 let userMarker = null;
 let officeMarker = null;
 
+// FAQ切换功能
+function toggleFaq(faqId) {
+    const content = document.getElementById(faqId);
+    const button = content.previousElementSibling;
+    const icon = button.querySelector('.faq-icon');
+    
+    if (content.classList.contains('hidden')) {
+        // 展开
+        content.classList.remove('hidden');
+        button.classList.add('active');
+    } else {
+        // 折叠
+        content.classList.add('hidden');
+        button.classList.remove('active');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contact-form');
     
@@ -372,21 +421,73 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // 获取表单数据
         const formData = new FormData(contactForm);
-        const data = Object.fromEntries(formData);
         
-        // 这里可以添加表单验证逻辑
+        // 显示加载状态
+        const submitBtn = contactForm.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
+        submitBtn.disabled = true;
         
-        // 模拟发送消息
-        alert('消息已发送！我会尽快回复您。');
-        contactForm.reset();
+        // 发送AJAX请求
+        fetch('/contact', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 显示成功提示
+                showToast('success', data.message || '消息发送成功！我们会尽快回复您。');
+                contactForm.reset();
+            } else {
+                // 显示错误提示
+                showToast('error', data.message || '发送失败，请稍后重试');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', '发送失败，请稍后重试');
+        })
+        .finally(() => {
+            // 恢复按钮状态
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
     });
 });
+
+// 显示提示消息
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+    toast.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${icon} mr-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 3秒后移除
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
 
 // 获取用户当前位置
 function getCurrentLocation() {
     const statusDiv = document.getElementById('location-status');
-    statusDiv.style.display = 'block';
-    statusDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> 正在获取位置...</div>';
+    statusDiv.classList.remove('hidden');
+    statusDiv.innerHTML = '<div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4"><div class="flex items-center"><i class="fas fa-spinner fa-spin text-blue-400 mr-2"></i><span class="text-blue-400">正在获取位置...</span></div></div>';
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -397,9 +498,12 @@ function getCurrentLocation() {
                 
                 // 显示位置信息
                 statusDiv.innerHTML = `
-                    <div class="alert alert-success">
-                        <i class="fas fa-check-circle"></i> 位置获取成功！
-                        <br><small>精度: ${Math.round(accuracy)}米</small>
+                    <div class="bg-green-600/20 border border-green-600/30 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle text-green-400 mr-2"></i>
+                            <span class="text-green-400">位置获取成功！</span>
+                        </div>
+                        <div class="text-green-300 text-sm mt-1">精度: ${Math.round(accuracy)}米</div>
                     </div>
                 `;
                 
@@ -427,9 +531,12 @@ function getCurrentLocation() {
                 }
                 
                 statusDiv.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> ${errorMessage}
-                        <br><small>将显示默认办公地址</small>
+                    <div class="bg-yellow-600/20 border border-yellow-600/30 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                            <span class="text-yellow-400">${errorMessage}</span>
+                        </div>
+                        <div class="text-yellow-300 text-sm mt-1">将显示默认办公地址</div>
                     </div>
                 `;
                 
@@ -445,9 +552,12 @@ function getCurrentLocation() {
         );
     } else {
         statusDiv.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i> 浏览器不支持地理定位
-                <br><small>将显示默认办公地址</small>
+            <div class="bg-yellow-600/20 border border-yellow-600/30 rounded-lg p-4">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
+                    <span class="text-yellow-400">浏览器不支持地理定位</span>
+                </div>
+                <div class="text-yellow-300 text-sm mt-1">将显示默认办公地址</div>
             </div>
         `;
         const office = OFFICE_LOCATIONS[currentOfficeIndex];
@@ -482,18 +592,18 @@ function initMap(userLat, userLng) {
     // 如果图片加载失败，显示备用方案
     img.onerror = function() {
         mapContainer.innerHTML = `
-            <div class="d-flex align-items-center justify-content-center h-100 bg-light" style="border-radius: 8px;">
+            <div class="flex items-center justify-center h-full bg-slate-800 rounded-lg">
                 <div class="text-center">
-                    <i class="fas fa-map-marker-alt fa-3x text-primary mb-3"></i>
-                    <h6>位置信息</h6>
-                    <p class="text-muted">纬度: ${userLat.toFixed(6)}</p>
-                    <p class="text-muted">经度: ${userLng.toFixed(6)}</p>
-                    <div class="d-grid gap-2">
-                        <a href="https://www.amap.com/place/${userLng},${userLat}" target="_blank" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-external-link-alt"></i> 在高德地图中查看
+                    <i class="fas fa-map-marker-alt fa-3x text-indigo-400 mb-3"></i>
+                    <h6 class="text-white font-semibold mb-2">位置信息</h6>
+                    <p class="text-slate-300 text-sm">纬度: ${userLat.toFixed(6)}</p>
+                    <p class="text-slate-300 text-sm">经度: ${userLng.toFixed(6)}</p>
+                    <div class="flex gap-2 mt-4">
+                        <a href="https://www.amap.com/place/${userLng},${userLat}" target="_blank" class="btn-secondary text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i> 高德地图
                         </a>
-                        <a href="https://maps.google.com/?q=${userLat},${userLng}" target="_blank" class="btn btn-sm btn-outline-success">
-                            <i class="fas fa-external-link-alt"></i> 在Google地图中查看
+                        <a href="https://maps.google.com/?q=${userLat},${userLng}" target="_blank" class="btn-secondary text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i> Google地图
                         </a>
                     </div>
                 </div>
@@ -541,8 +651,11 @@ function showDistanceInfo(distance, officeName) {
     const currentContent = statusDiv.innerHTML;
     
     statusDiv.innerHTML = currentContent + `
-        <div class="alert alert-info mt-2">
-            <i class="fas fa-route"></i> 距离${officeName}: ${distance.toFixed(1)} 公里
+        <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4 mt-2">
+            <div class="flex items-center">
+                <i class="fas fa-route text-blue-400 mr-2"></i>
+                <span class="text-blue-400">距离${officeName}: ${distance.toFixed(1)} 公里</span>
+            </div>
         </div>
     `;
 }
@@ -564,7 +677,7 @@ function changeOffice() {
     
     // 清除位置状态
     const statusDiv = document.getElementById('location-status');
-    statusDiv.style.display = 'none';
+    statusDiv.classList.add('hidden');
 }
 
 // 在导航中打开
@@ -581,78 +694,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const office = OFFICE_LOCATIONS[currentOfficeIndex];
         initMap(office.lat, office.lng);
     }, 1000);
-    
-    // 自定义手风琴功能，完全绕过Bootstrap
-    const accordionButtons = document.querySelectorAll('.accordion-button');
-    accordionButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            console.log('手风琴按钮被点击:', this);
-            
-            const targetId = this.getAttribute('data-bs-target');
-            const target = document.querySelector(targetId);
-            
-            if (target) {
-                console.log('找到目标元素:', target);
-                
-                // 检查当前状态 - 通过检查目标元素的显示状态来判断
-                const isCurrentlyVisible = target.style.display === 'block' || 
-                                         target.classList.contains('show') || 
-                                         window.getComputedStyle(target).display !== 'none';
-                
-                console.log('当前状态 - 是否可见:', isCurrentlyVisible);
-                console.log('按钮collapsed类:', this.classList.contains('collapsed'));
-                console.log('目标show类:', target.classList.contains('show'));
-                console.log('目标display样式:', target.style.display);
-                
-                if (!isCurrentlyVisible) {
-                    // 展开
-                    console.log('展开手风琴');
-                    this.classList.remove('collapsed');
-                    target.classList.add('show');
-                    target.style.display = 'block';
-                    target.style.visibility = 'visible';
-                    target.style.opacity = '1';
-                    target.style.height = 'auto';
-                    
-                    const body = target.querySelector('.accordion-body');
-                    if (body) {
-                        body.style.display = 'block';
-                        body.style.visibility = 'visible';
-                        body.style.opacity = '1';
-                        body.style.color = '#6c757d';
-                        body.style.backgroundColor = '#ffffff';
-                        body.style.padding = '1rem 1.25rem';
-                    }
-                } else {
-                    // 折叠
-                    console.log('折叠手风琴');
-                    this.classList.add('collapsed');
-                    target.classList.remove('show');
-                    target.style.display = 'none';
-                    target.style.visibility = 'hidden';
-                    target.style.opacity = '0';
-                }
-            }
-        });
-    });
-    
-    // 初始化手风琴状态
-    const accordionCollapses = document.querySelectorAll('.accordion-collapse');
-    accordionCollapses.forEach(collapse => {
-        const button = document.querySelector(`[data-bs-target="#${collapse.id}"]`);
-        if (button && button.classList.contains('collapsed')) {
-            collapse.style.display = 'none';
-            collapse.style.visibility = 'hidden';
-            collapse.style.opacity = '0';
-        } else {
-            collapse.style.display = 'block';
-            collapse.style.visibility = 'visible';
-            collapse.style.opacity = '1';
-        }
-    });
 });
 </script>
 {% endblock %} 
