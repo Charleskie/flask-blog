@@ -8,18 +8,90 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h2><i class="fas fa-code-branch"></i> 版本管理</h2>
-                <a href="{{ url_for('version.new_version') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> 新建版本
-                </a>
+                <div>
+                    <button class="btn btn-outline-secondary me-2" onclick="toggleFilters()">
+                        <i class="fas fa-filter"></i> 筛选
+                    </button>
+                    <button class="btn btn-outline-primary me-2" onclick="refreshVersions()">
+                        <i class="fas fa-sync-alt"></i> 刷新
+                    </button>
+                    <a href="{{ url_for('version.new_version') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 新建版本
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 筛选器 -->
+            <div id="versionFilters" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="versionSearch" class="form-label">搜索版本</label>
+                            <input type="text" class="form-control" id="versionSearch" name="search" 
+                                   placeholder="搜索版本号或标题..." value="{{ request.args.get('search', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="versionStatus" class="form-label">状态筛选</label>
+                            <select class="form-select" id="versionStatus" name="status">
+                                <option value="">全部状态</option>
+                                <option value="active" {{ 'selected' if request.args.get('status') == 'active' }}>激活</option>
+                                <option value="inactive" {{ 'selected' if request.args.get('status') == 'inactive' }}>禁用</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="versionDate" class="form-label">发布日期</label>
+                            <select class="form-select" id="versionDate" name="date_filter">
+                                <option value="">全部日期</option>
+                                <option value="released" {{ 'selected' if request.args.get('date_filter') == 'released' }}>已发布</option>
+                                <option value="unreleased" {{ 'selected' if request.args.get('date_filter') == 'unreleased' }}>未发布</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                            <a href="{{ url_for('version.admin_versions') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> 清除
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
                     {% if versions %}
+                        <!-- 批量操作 -->
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAllVersions" onchange="toggleAllVersions(this)">
+                                    <label class="form-check-label" for="selectAllVersions">全选</label>
+                                </div>
+                                <div id="versionBatchActions" class="d-flex gap-2" style="display: none;">
+                                    <button class="btn btn-sm btn-success" onclick="batchActionVersions('activate')">
+                                        <i class="fas fa-check"></i> 批量激活
+                                    </button>
+                                    <button class="btn btn-sm btn-warning" onclick="batchActionVersions('deactivate')">
+                                        <i class="fas fa-times"></i> 批量禁用
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" onclick="batchActionVersions('delete')">
+                                        <i class="fas fa-trash"></i> 批量删除
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-muted">
+                                共 {{ versions|length }} 个版本
+                            </div>
+                        </div>
+                        
                         <div class="table-responsive">
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
+                                        <th width="50">
+                                            <input type="checkbox" class="form-check-input" id="selectAllVersionsHeader" onchange="toggleAllVersions(this)">
+                                        </th>
                                         <th>版本号</th>
                                         <th>标题</th>
                                         <th>发布日期</th>
@@ -31,6 +103,10 @@
                                 <tbody>
                                     {% for version in versions %}
                                     <tr>
+                                        <td>
+                                            <input type="checkbox" class="form-check-input version-checkbox" 
+                                                   value="{{ version.id }}" onchange="updateVersionBatchActions()">
+                                        </td>
                                         <td>
                                             <span class="badge bg-primary">{{ version.version_number }}</span>
                                         </td>
@@ -74,7 +150,147 @@
     </div>
 </div>
 
+{% block extra_css %}
+<style>
+/* 卡片背景透明化 */
+.card {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: none !important;
+}
+
+.card-header {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+/* 表格背景透明化 */
+.table {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+.table thead th {
+    background: rgba(15, 23, 42, 0.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.table tbody tr {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.table td {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+}
+
+/* 统计卡片背景透明化 */
+.bg-primary, .bg-success, .bg-info, .bg-warning {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* 表单控件透明化 */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.form-label {
+    color: white !important;
+}
+
+/* 按钮透明化 */
+.btn-outline-secondary, .btn-outline-primary {
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+.btn-outline-secondary:hover, .btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: white !important;
+}
+
+/* 徽章透明化 */
+.badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.badge.bg-primary {
+    background: rgba(13, 110, 253, 0.3) !important;
+}
+
+.badge.bg-success {
+    background: rgba(25, 135, 84, 0.3) !important;
+}
+
+.badge.bg-secondary {
+    background: rgba(108, 117, 125, 0.3) !important;
+}
+
+/* 链接透明化 */
+a {
+    color: #60a5fa !important;
+}
+
+a:hover {
+    color: #93c5fd !important;
+}
+
+/* 文本颜色调整 */
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 复选框透明化 */
+.form-check-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.form-check-input:checked {
+    background: #007bff !important;
+    border-color: #007bff !important;
+}
+
+.form-check-label {
+    color: white !important;
+}
+</style>
+{% endblock %}
+
 <script>
+// 删除功能
 function deleteVersion(versionId, versionNumber) {
     if (confirm(`确定要删除版本 ${versionNumber} 吗？此操作不可撤销。`)) {
         fetch(`/admin/versions/${versionId}/delete`, {
@@ -101,5 +317,90 @@ function deleteVersion(versionId, versionNumber) {
         });
     }
 }
+
+// 筛选器切换
+function toggleFilters() {
+    const filters = document.getElementById('versionFilters');
+    filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+
+// 刷新功能
+function refreshVersions() {
+    location.reload();
+}
+
+// 版本批量操作
+function toggleAllVersions(checkbox) {
+    const checkboxes = document.querySelectorAll('.version-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateVersionBatchActions();
+}
+
+function updateVersionBatchActions() {
+    const checkedBoxes = document.querySelectorAll('.version-checkbox:checked');
+    const batchActions = document.getElementById('versionBatchActions');
+    
+    if (checkedBoxes.length > 0) {
+        batchActions.style.display = 'flex';
+    } else {
+        batchActions.style.display = 'none';
+    }
+}
+
+function batchActionVersions(action) {
+    const checkedBoxes = document.querySelectorAll('.version-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请先选择要操作的版本');
+        return;
+    }
+    
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+    const actionText = {
+        'activate': '激活',
+        'deactivate': '禁用',
+        'delete': '删除'
+    };
+    
+    if (confirm(`确定要${actionText[action]}选中的 ${ids.length} 个版本吗？`)) {
+        // 这里可以添加AJAX请求来处理批量操作
+        console.log(`批量${actionText[action]}版本:`, ids);
+        alert(`批量${actionText[action]}功能待实现`);
+    }
+}
+
+// 消息提示功能
+function showMessage(message, type) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 12px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 300px;
+        word-wrap: break-word;
+    `;
+    messageDiv.textContent = message;
+    
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
+    }, 3000);
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果有搜索参数，显示筛选器
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('search') || urlParams.get('status') || urlParams.get('date_filter')) {
+        document.getElementById('versionFilters').style.display = 'block';
+    }
+});
 </script>
 {% endblock %}

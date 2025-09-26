@@ -31,6 +31,15 @@
     <div class="glass-card rounded-xl p-6 mb-6">
         <form method="GET" class="flex items-center gap-4">
             <div class="flex-1">
+                <label for="search" class="block text-sm font-medium text-slate-300 mb-2">搜索文章</label>
+                <input type="text" 
+                       class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                       id="search" 
+                       name="search" 
+                       value="{{ search_query or '' }}"
+                       placeholder="搜索标题、内容、摘要、分类或标签...">
+            </div>
+            <div class="flex-1">
                 <label for="status" class="block text-sm font-medium text-slate-300 mb-2">状态筛选</label>
                 <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
                         id="status" name="status">
@@ -39,9 +48,9 @@
                     <option value="published" {% if status_filter == 'published' %}selected{% endif %}>已发布</option>
                 </select>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 self-end">
                 <button type="submit" class="btn-secondary">
-                    <i class="fas fa-filter"></i> 筛选
+                    <i class="fas fa-search"></i> 搜索
                 </button>
                 <a href="{{ url_for('admin.admin_posts') }}" class="btn-secondary">
                     <i class="fas fa-times"></i> 清除
@@ -152,7 +161,7 @@
     <div class="flex justify-center mt-8">
         <nav class="flex items-center gap-2">
             {% if posts.has_prev %}
-            <a href="{{ url_for('admin.admin_posts', page=posts.prev_num, status=status_filter) }}" 
+            <a href="{{ url_for('admin.admin_posts', page=posts.prev_num, status=status_filter, search=search_query) }}" 
                class="btn-pagination">
                 <i class="fas fa-chevron-left"></i>
             </a>
@@ -161,7 +170,7 @@
             {% for page_num in posts.iter_pages() %}
                 {% if page_num %}
                     {% if page_num != posts.page %}
-                    <a href="{{ url_for('admin.admin_posts', page=page_num, status=status_filter) }}" 
+                    <a href="{{ url_for('admin.admin_posts', page=page_num, status=status_filter, search=search_query) }}" 
                        class="btn-pagination">
                         {{ page_num }}
                     </a>
@@ -174,7 +183,7 @@
             {% endfor %}
             
             {% if posts.has_next %}
-            <a href="{{ url_for('admin.admin_posts', page=posts.next_num, status=status_filter) }}" 
+            <a href="{{ url_for('admin.admin_posts', page=posts.next_num, status=status_filter, search=search_query) }}" 
                class="btn-pagination">
                 <i class="fas fa-chevron-right"></i>
             </a>
@@ -361,9 +370,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// 自动提交筛选表单
-document.getElementById('status').addEventListener('change', function() {
-    this.form.submit();
+// 搜索框回车提交
+document.getElementById('search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        this.form.submit();
+    }
 });
 </script>
 {% endblock %} 

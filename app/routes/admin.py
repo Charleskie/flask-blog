@@ -47,10 +47,36 @@ def admin():
 def admin_posts():
     """文章管理页面"""
     page = request.args.get('page', 1, type=int)
-    posts = Post.query.order_by(Post.created_at.desc()).paginate(
+    status_filter = request.args.get('status', '')
+    search_query = request.args.get('search', '')
+    
+    # 构建查询
+    query = Post.query
+    
+    # 状态筛选
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    
+    # 搜索功能
+    if search_query:
+        query = query.filter(
+            db.or_(
+                Post.title.contains(search_query),
+                Post.content.contains(search_query),
+                Post.excerpt.contains(search_query),
+                Post.category.contains(search_query),
+                Post.tags.contains(search_query)
+            )
+        )
+    
+    posts = query.order_by(Post.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
-    return render_template('admin/admin_posts.html', posts=posts)
+    
+    return render_template('admin/admin_posts.html', 
+                         posts=posts, 
+                         status_filter=status_filter,
+                         search_query=search_query)
 
 @admin_bp.route('/admin/posts/new', methods=['GET', 'POST'])
 @login_required
@@ -193,10 +219,37 @@ def delete_post(post_id):
 def admin_projects():
     """项目管理页面"""
     page = request.args.get('page', 1, type=int)
-    projects = Project.query.order_by(Project.created_at.desc()).paginate(
+    status_filter = request.args.get('status', '')
+    search_query = request.args.get('search', '')
+    
+    # 构建查询
+    query = Project.query
+    
+    # 状态筛选
+    if status_filter:
+        query = query.filter_by(status=status_filter)
+    
+    # 搜索功能
+    if search_query:
+        query = query.filter(
+            db.or_(
+                Project.title.contains(search_query),
+                Project.description.contains(search_query),
+                Project.short_description.contains(search_query),
+                Project.category.contains(search_query),
+                Project.tags.contains(search_query),
+                Project.technologies.contains(search_query)
+            )
+        )
+    
+    projects = query.order_by(Project.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
-    return render_template('admin/admin_projects.html', projects=projects)
+    
+    return render_template('admin/admin_projects.html', 
+                         projects=projects, 
+                         status_filter=status_filter,
+                         search_query=search_query)
 
 @admin_bp.route('/admin/projects/new', methods=['GET', 'POST'])
 @login_required

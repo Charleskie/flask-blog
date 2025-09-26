@@ -135,10 +135,27 @@
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <label for="image_url" class="form-label">项目图片</label>
-                                            <input type="url" class="form-control" id="image_url" name="image_url" 
-                                                   placeholder="https://example.com/project-image.jpg">
-                                            <div id="image-preview" class="text-center mt-2" style="display: none;">
-                                                <img id="preview-img" src="" alt="预览" class="img-fluid rounded" style="max-height: 150px;">
+                                            <div class="image-upload-container">
+                                                <div class="image-upload-area" id="image-upload-area">
+                                                    <div class="upload-placeholder">
+                                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                                        <p class="text-muted">点击或拖拽上传图片</p>
+                                                        <p class="text-muted small">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
+                                                    </div>
+                                                    <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+                                                </div>
+                                                <div class="image-preview" id="image-preview" style="display: none;">
+                                                    <img id="preview-image" src="" alt="预览图片" class="img-fluid rounded">
+                                                    <div class="image-actions">
+                                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="changeImage()">
+                                                            <i class="fas fa-edit"></i> 更换
+                                                        </button>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage()">
+                                                            <i class="fas fa-trash"></i> 删除
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="image_url" name="image_url" value="">
                                             </div>
                                         </div>
                                         
@@ -222,6 +239,96 @@
         background-color: #007bff;
         border-color: #007bff;
     }
+    
+    /* 编辑表单输入框文字颜色 */
+    .form-control {
+        color: white !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .form-control:focus {
+        color: white !important;
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.6) !important;
+    }
+
+    .form-select {
+        color: white !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .form-select:focus {
+        color: white !important;
+        background-color: rgba(255, 255, 255, 0.15) !important;
+        border-color: rgba(255, 255, 255, 0.4) !important;
+        box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+    }
+
+    .form-label {
+        color: white !important;
+    }
+    
+    .form-text {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    .form-check-label {
+        color: white !important;
+    }
+    
+    /* 图片上传样式 */
+    .image-upload-container {
+        border: 2px dashed rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .image-upload-container:hover {
+        border-color: rgba(255, 255, 255, 0.5);
+        background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .image-upload-area {
+        cursor: pointer;
+    }
+    
+    .upload-placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .image-preview {
+        position: relative;
+        max-width: 100%;
+    }
+    
+    .image-preview img {
+        max-width: 100%;
+        max-height: 300px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
+    
+    .image-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+    }
+    
+    .upload-progress {
+        margin-top: 10px;
+        display: none;
+    }
 </style>
 {% endblock %}
 
@@ -232,11 +339,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const descriptionInput = document.getElementById('description');
     const shortDescriptionInput = document.getElementById('short_description');
     const imageUrlInput = document.getElementById('image_url');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImg = document.getElementById('preview-img');
     const previewBtn = document.getElementById('preview-btn');
     const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
     const previewContent = document.getElementById('preview-content');
+    
+    // 图片上传相关元素
+    const imageUploadArea = document.getElementById('image-upload-area');
+    const imageUploadInput = document.getElementById('image-upload-input');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImage = document.getElementById('preview-image');
     
     // 自动生成简短描述
     descriptionInput.addEventListener('input', function() {
@@ -323,6 +434,139 @@ document.addEventListener('DOMContentLoaded', function() {
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
         submitBtn.disabled = true;
     });
+    
+    // 图片上传功能
+    if (imageUploadArea && imageUploadInput) {
+        // 点击上传区域
+        imageUploadArea.addEventListener('click', function() {
+            imageUploadInput.click();
+        });
+        
+        // 文件选择
+        imageUploadInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadImage(file);
+            }
+        });
+        
+        // 拖拽上传
+        imageUploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.7)';
+        });
+        
+        imageUploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        });
+        
+        imageUploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            imageUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                uploadImage(files[0]);
+            }
+        });
+    }
 });
+
+// 图片上传函数
+function uploadImage(file) {
+    // 检查文件类型
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('请选择图片文件（JPG、PNG、GIF、WebP）');
+        return;
+    }
+    
+    // 检查文件大小（5MB）
+    if (file.size > 5 * 1024 * 1024) {
+        alert('图片大小不能超过5MB');
+        return;
+    }
+    
+    // 显示上传进度
+    const uploadArea = document.getElementById('image-upload-area');
+    uploadArea.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>上传中...</p>';
+    
+    // 创建FormData
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    // 上传图片
+    fetch('/api/upload-image', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 显示预览
+            showImagePreview(data.url);
+            document.getElementById('image_url').value = data.url;
+        } else {
+            alert('上传失败：' + data.message);
+            resetUploadArea();
+        }
+    })
+    .catch(error => {
+        console.error('上传错误:', error);
+        alert('上传失败，请稍后重试');
+        resetUploadArea();
+    });
+}
+
+// 显示图片预览
+function showImagePreview(imageUrl) {
+    const uploadArea = document.getElementById('image-upload-area');
+    const imagePreview = document.getElementById('image-preview');
+    const previewImage = document.getElementById('preview-image');
+    
+    previewImage.src = imageUrl;
+    uploadArea.style.display = 'none';
+    imagePreview.style.display = 'block';
+}
+
+// 重置上传区域
+function resetUploadArea() {
+    const uploadArea = document.getElementById('image-upload-area');
+    uploadArea.innerHTML = `
+        <div class="upload-placeholder">
+            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+            <p class="text-muted">点击或拖拽上传图片</p>
+            <p class="text-muted small">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
+        </div>
+        <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+    `;
+    
+    // 重新绑定事件
+    const newInput = uploadArea.querySelector('#image-upload-input');
+    newInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            uploadImage(file);
+        }
+    });
+}
+
+// 更换图片
+function changeImage() {
+    document.getElementById('image-upload-input').click();
+}
+
+// 删除图片
+function removeImage() {
+    const uploadArea = document.getElementById('image-upload-area');
+    const imagePreview = document.getElementById('image-preview');
+    const imageUrlInput = document.getElementById('image_url');
+    
+    imageUrlInput.value = '';
+    imagePreview.style.display = 'none';
+    uploadArea.style.display = 'block';
+    resetUploadArea();
+}
 </script>
 {% endblock %} 

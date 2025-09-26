@@ -31,6 +31,15 @@
     <div class="glass-card rounded-xl p-6 mb-6">
         <form method="GET" class="flex items-center gap-4">
             <div class="flex-1">
+                <label for="search" class="block text-sm font-medium text-slate-300 mb-2">搜索项目</label>
+                <input type="text" 
+                       class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                       id="search" 
+                       name="search" 
+                       value="{{ search_query or '' }}"
+                       placeholder="搜索标题、描述、分类、标签或技术栈...">
+            </div>
+            <div class="flex-1">
                 <label for="status" class="block text-sm font-medium text-slate-300 mb-2">状态筛选</label>
                 <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
                         id="status" name="status">
@@ -40,9 +49,9 @@
                     <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
                 </select>
             </div>
-            <div class="flex gap-2">
+            <div class="flex gap-2 self-end">
                 <button type="submit" class="btn-secondary">
-                    <i class="fas fa-filter"></i> 筛选
+                    <i class="fas fa-search"></i> 搜索
                 </button>
                 <a href="{{ url_for('admin.admin_projects') }}" class="btn-secondary">
                     <i class="fas fa-times"></i> 清除
@@ -167,7 +176,7 @@
     <div class="flex justify-center mt-8">
         <nav class="flex items-center gap-2">
             {% if projects.has_prev %}
-            <a href="{{ url_for('admin.admin_projects', page=projects.prev_num, status=status_filter) }}" 
+            <a href="{{ url_for('admin.admin_projects', page=projects.prev_num, status=status_filter, search=search_query) }}" 
                class="btn-pagination">
                 <i class="fas fa-chevron-left"></i>
             </a>
@@ -176,7 +185,7 @@
             {% for page_num in projects.iter_pages() %}
                 {% if page_num %}
                     {% if page_num != projects.page %}
-                    <a href="{{ url_for('admin.admin_projects', page=page_num, status=status_filter) }}" 
+                    <a href="{{ url_for('admin.admin_projects', page=page_num, status=status_filter, search=search_query) }}" 
                        class="btn-pagination">
                         {{ page_num }}
                     </a>
@@ -189,7 +198,7 @@
             {% endfor %}
             
             {% if projects.has_next %}
-            <a href="{{ url_for('admin.admin_projects', page=projects.next_num, status=status_filter) }}" 
+            <a href="{{ url_for('admin.admin_projects', page=projects.next_num, status=status_filter, search=search_query) }}" 
                class="btn-pagination">
                 <i class="fas fa-chevron-right"></i>
             </a>
@@ -368,9 +377,11 @@ function deleteProject(projectId, projectTitle) {
     deleteModal.show();
 }
 
-// 自动提交筛选表单
-document.getElementById('status').addEventListener('change', function() {
-    this.form.submit();
+// 搜索框回车提交
+document.getElementById('search').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        this.form.submit();
+    }
 });
 </script>
 {% endblock %} 

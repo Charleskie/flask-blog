@@ -3,48 +3,76 @@
 {% block title %}技能管理 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="admin-header">
-        <h1>技能管理</h1>
-        <div class="admin-actions">
-            <a href="{{ url_for('admin.new_skill') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> 新建技能
-            </a>
-        </div>
-    </div>
-
-    <!-- 统计信息 -->
-    <div class="admin-stats">
-        <div class="stat-card">
-            <div class="stat-number">{{ skills.total }}</div>
-            <div class="stat-label">总技能数</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ skills.items | selectattr('is_active') | list | length }}</div>
-            <div class="stat-label">启用技能</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-number">{{ skills.items | selectattr('is_active', 'equalto', false) | list | length }}</div>
-            <div class="stat-label">禁用技能</div>
-        </div>
-    </div>
-
-    <!-- 技能列表 -->
-    <div class="admin-content">
-        <div class="content-card">
-            <div class="card-header">
-                <h2>技能列表</h2>
-                <div class="card-actions">
-                    <button class="btn btn-secondary" onclick="refreshSkills()">
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1><i class="fas fa-code"></i> 技能管理</h1>
+                <div>
+                    <button class="btn btn-outline-primary me-2" onclick="refreshSkills()">
                         <i class="fas fa-sync-alt"></i> 刷新
                     </button>
+                    <a href="{{ url_for('admin.new_skill') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> 新建技能
+                    </a>
                 </div>
             </div>
             
-            <div class="card-body">
+            <!-- 筛选器 -->
+            <div id="skillFilters" class="card mb-4" style="display: none;">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="skillSearch" class="form-label">搜索技能</label>
+                            <input type="text" class="form-control" id="skillSearch" name="search" 
+                                   placeholder="搜索技能名称或描述..." value="{{ request.args.get('search', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="skillStatus" class="form-label">状态筛选</label>
+                            <select class="form-select" id="skillStatus" name="status">
+                                <option value="">全部状态</option>
+                                <option value="active" {{ 'selected' if request.args.get('status') == 'active' }}>启用</option>
+                                <option value="inactive" {{ 'selected' if request.args.get('status') == 'inactive' }}>禁用</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="skillCategory" class="form-label">分类筛选</label>
+                            <select class="form-select" id="skillCategory" name="category">
+                                <option value="">全部分类</option>
+                                {% for skill in skills.items if skills %}
+                                {% if skill.category %}
+                                <option value="{{ skill.category }}" {{ 'selected' if request.args.get('category') == skill.category }}>
+                                    {{ skill.category }}
+                                </option>
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                            <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> 清除
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 技能列表 -->
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="fas fa-list"></i> 技能列表</h5>
+                    <div class="text-muted">
+                        共 {{ skills.total if skills else 0 }} 个技能
+                    </div>
+                </div>
+                
+                <div class="card-body">
                 {% if skills.items %}
                 <div class="table-responsive">
-                    <table class="admin-table">
+                    <table class="table table-hover">
                         <thead>
                             <tr>
                                 <th>排序</th>
@@ -61,53 +89,61 @@
                             {% for skill in skills.items %}
                             <tr>
                                 <td>
-                                    <span class="sort-order">{{ skill.sort_order }}</span>
+                                    <span class="badge bg-secondary">{{ skill.sort_order }}</span>
                                 </td>
                                 <td>
                                     {% if skill.icon %}
                                         {% if skill.icon.startswith('http') %}
-                                            <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="skill-icon" style="width: 24px; height: 24px;">
+                                            <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="rounded" style="width: 24px; height: 24px; object-fit: cover;">
                                         {% else %}
-                                            <i class="{{ skill.icon }}" style="font-size: 24px; color: var(--primary-color);"></i>
+                                            <i class="{{ skill.icon }}" style="font-size: 24px; color: #007bff;"></i>
                                         {% endif %}
                                     {% else %}
-                                        <i class="fas fa-code" style="font-size: 24px; color: var(--text-muted);"></i>
+                                        <i class="fas fa-code" style="font-size: 24px; color: #6c757d;"></i>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <div class="skill-name">
+                                    <div>
                                         <strong>{{ skill.name }}</strong>
                                         {% if skill.description %}
-                                        <div class="skill-description">{{ skill.description[:50] }}{% if skill.description|length > 50 %}...{% endif %}</div>
+                                        <div class="text-muted small">{{ skill.description[:50] }}{% if skill.description|length > 50 %}...{% endif %}</div>
                                         {% endif %}
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="skill-category">{{ skill.category or '未分类' }}</span>
+                                    {% if skill.category %}
+                                    <span class="badge bg-info">{{ skill.category }}</span>
+                                    {% else %}
+                                    <span class="text-muted">未分类</span>
+                                    {% endif %}
                                 </td>
                                 <td>
-                                    <div class="proficiency-bar">
-                                        <div class="proficiency-fill" style="width: {{ skill.proficiency }}%"></div>
-                                        <span class="proficiency-text">{{ skill.proficiency }}%</span>
+                                    <div class="progress" style="width: 80px; height: 20px;">
+                                        <div class="progress-bar bg-success" role="progressbar" 
+                                             style="width: {{ skill.proficiency }}%" 
+                                             aria-valuenow="{{ skill.proficiency }}" 
+                                             aria-valuemin="0" aria-valuemax="100">
+                                            {{ skill.proficiency }}%
+                                        </div>
                                     </div>
                                 </td>
                                 <td>
                                     {% if skill.is_active %}
-                                        <span class="status-badge status-active">启用</span>
+                                        <span class="badge bg-success">启用</span>
                                     {% else %}
-                                        <span class="status-badge status-inactive">禁用</span>
+                                        <span class="badge bg-secondary">禁用</span>
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="date-text">{{ skill.created_at.strftime('%Y-%m-%d') }}</span>
+                                    <small class="text-muted">{{ skill.created_at.strftime('%Y-%m-%d') }}</small>
                                 </td>
                                 <td>
-                                    <div class="action-buttons">
+                                    <div class="btn-group btn-group-sm" role="group">
                                         <a href="{{ url_for('admin.edit_skill', skill_id=skill.id) }}" 
-                                           class="btn btn-sm btn-primary" title="编辑">
+                                           class="btn btn-outline-primary" title="编辑">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <button class="btn btn-sm btn-danger" 
+                                        <button class="btn btn-outline-danger" 
                                                 onclick="deleteSkill({{ skill.id }}, '{{ skill.name }}')" 
                                                 title="删除">
                                             <i class="fas fa-trash"></i>
@@ -122,141 +158,223 @@
 
                 <!-- 分页 -->
                 {% if skills.pages > 1 %}
-                <div class="pagination-wrapper">
-                    <nav class="pagination">
+                <nav aria-label="技能分页">
+                    <ul class="pagination justify-content-center">
                         {% if skills.has_prev %}
-                            <a href="{{ url_for('admin.admin_skills', page=skills.prev_num) }}" class="page-link">
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.admin_skills', page=skills.prev_num) }}">
                                 <i class="fas fa-chevron-left"></i> 上一页
                             </a>
+                        </li>
                         {% endif %}
                         
                         {% for page_num in skills.iter_pages() %}
                             {% if page_num %}
                                 {% if page_num != skills.page %}
-                                    <a href="{{ url_for('admin.admin_skills', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('admin.admin_skills', page=page_num) }}">{{ page_num }}</a>
+                                </li>
                                 {% else %}
-                                    <span class="page-link current">{{ page_num }}</span>
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
                                 {% endif %}
                             {% else %}
-                                <span class="page-link disabled">...</span>
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
                             {% endif %}
                         {% endfor %}
                         
                         {% if skills.has_next %}
-                            <a href="{{ url_for('admin.admin_skills', page=skills.next_num) }}" class="page-link">
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('admin.admin_skills', page=skills.next_num) }}">
                                 下一页 <i class="fas fa-chevron-right"></i>
                             </a>
+                        </li>
                         {% endif %}
-                    </nav>
-                </div>
+                    </ul>
+                </nav>
                 {% endif %}
 
                 {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-code fa-3x"></i>
-                    <h3>暂无技能</h3>
-                    <p>还没有添加任何技能，点击上方按钮创建第一个技能吧！</p>
+                <div class="text-center py-5">
+                    <i class="fas fa-code fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">暂无技能</h5>
+                    <p class="text-muted">还没有添加任何技能，点击上方按钮创建第一个技能吧！</p>
                     <a href="{{ url_for('admin.new_skill') }}" class="btn btn-primary">
                         <i class="fas fa-plus"></i> 新建技能
                     </a>
                 </div>
                 {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <style>
-.skill-icon {
-    border-radius: 4px;
-    object-fit: cover;
+/* 卡片背景透明化 */
+.card {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: none !important;
 }
 
-.skill-name {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+.card-header {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
 }
 
-.skill-description {
-    font-size: 0.8rem;
-    color: var(--text-muted);
-    line-height: 1.3;
+.card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
 }
 
-.skill-category {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
+/* 表格背景透明化 */
+.table {
+    background: transparent !important;
+    color: #94a3b8 !important;
 }
 
-.proficiency-bar {
-    position: relative;
-    width: 80px;
-    height: 20px;
-    background: var(--bg-tertiary);
-    border-radius: 10px;
-    overflow: hidden;
+.table thead th {
+    background: rgba(15, 23, 42, 0.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
 }
 
-.proficiency-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #10b981, #059669);
-    border-radius: 10px;
-    transition: width 0.3s ease;
+.table tbody tr {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
 }
 
-.proficiency-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 0.7rem;
-    font-weight: 600;
-    color: white;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+.table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
 }
 
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
+.table td {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
 }
 
-.status-active {
-    background: #d1fae5;
-    color: #065f46;
+/* 统计卡片背景透明化 */
+.bg-primary, .bg-success, .bg-info, .bg-warning {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
 }
 
-.status-inactive {
-    background: #fee2e2;
-    color: #991b1b;
+/* 表单控件透明化 */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 4px;
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
 }
 
-.action-buttons .btn {
-    padding: 4px 8px;
-    font-size: 0.8rem;
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
 }
 
-.sort-order {
-    background: var(--bg-tertiary);
-    color: var(--text-secondary);
-    padding: 2px 6px;
-    border-radius: 8px;
-    font-size: 0.8rem;
-    font-weight: 500;
+.form-label {
+    color: white !important;
+}
+
+/* 按钮透明化 */
+.btn-outline-secondary, .btn-outline-primary {
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+.btn-outline-secondary:hover, .btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: white !important;
+}
+
+/* 徽章透明化 */
+.badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.badge.bg-primary {
+    background: rgba(13, 110, 253, 0.3) !important;
+}
+
+.badge.bg-success {
+    background: rgba(25, 135, 84, 0.3) !important;
+}
+
+.badge.bg-secondary {
+    background: rgba(108, 117, 125, 0.3) !important;
+}
+
+.badge.bg-info {
+    background: rgba(13, 202, 240, 0.3) !important;
+}
+
+/* 进度条透明化 */
+.progress {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.progress-bar {
+    background: linear-gradient(90deg, #10b981, #059669) !important;
+}
+
+/* 链接透明化 */
+a {
+    color: #60a5fa !important;
+}
+
+a:hover {
+    color: #93c5fd !important;
+}
+
+/* 文本颜色调整 */
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 分页透明化 */
+.pagination .page-link {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.pagination .page-link:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+.pagination .page-item.active .page-link {
+    background: #007bff !important;
+    border-color: #007bff !important;
+    color: white !important;
+}
+
+.pagination .page-item.disabled .page-link {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.3) !important;
 }
 </style>
 
 <script>
+// 删除功能
 function deleteSkill(skillId, skillName) {
     if (confirm(`确定要删除技能 "${skillName}" 吗？此操作不可撤销。`)) {
         fetch(`/admin/skills/${skillId}/delete`, {
@@ -284,12 +402,19 @@ function deleteSkill(skillId, skillName) {
     }
 }
 
+// 筛选器切换
+function toggleFilters() {
+    const filters = document.getElementById('skillFilters');
+    filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+
+// 刷新功能
 function refreshSkills() {
     location.reload();
 }
 
+// 消息提示功能
 function showMessage(message, type) {
-    // 创建消息提示
     const messageDiv = document.createElement('div');
     messageDiv.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
     messageDiv.style.cssText = `
@@ -307,12 +432,20 @@ function showMessage(message, type) {
     
     document.body.appendChild(messageDiv);
     
-    // 3秒后自动移除
     setTimeout(() => {
         if (messageDiv.parentNode) {
             messageDiv.parentNode.removeChild(messageDiv);
         }
     }, 3000);
 }
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果有搜索参数，显示筛选器
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('search') || urlParams.get('status') || urlParams.get('category')) {
+        document.getElementById('skillFilters').style.display = 'block';
+    }
+});
 </script>
 {% endblock %}
