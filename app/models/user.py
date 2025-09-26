@@ -23,10 +23,6 @@ class User(UserMixin, db.Model):
     job_title = db.Column(db.String(100))  # 职位
     phone = db.Column(db.String(20))  # 电话
     
-    # 主题设置
-    theme = db.Column(db.String(20), default='light')  # light, dark, auto
-    language = db.Column(db.String(10), default='zh-CN')  # zh-CN, en-US
-    timezone = db.Column(db.String(50), default='Asia/Shanghai')
     
     # 安全设置
     two_factor_enabled = db.Column(db.Boolean, default=False)  # 双因素认证
@@ -51,8 +47,9 @@ class User(UserMixin, db.Model):
         """获取头像URL"""
         if self.avatar:
             return self.avatar
-        # 默认头像，使用Gravatar或本地默认头像
-        return f"https://www.gravatar.com/avatar/{hash(self.email)}?d=identicon&s=200"
+        # 使用本地默认头像，根据用户ID选择不同的默认头像
+        default_avatar = f"/static/avatar/avatar{(self.id % 4) + 1}.png"
+        return default_avatar
     
     def update_last_login(self, ip_address):
         """更新最后登录信息"""

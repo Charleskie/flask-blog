@@ -10,7 +10,44 @@
                 <h4><i class="fas fa-user-plus"></i> 用户注册</h4>
             </div>
             <div class="card-body">
-                <form method="POST" id="register-form" class="needs-validation" novalidate data-ajax-form>
+                <form method="POST" id="register-form" class="needs-validation" novalidate data-ajax-form enctype="multipart/form-data">
+                    <!-- 头像上传区域 - 放在最上面并居中 -->
+                    <div class="mb-4 text-center">
+                        <h5 class="mb-3">设置头像</h5>
+                        <div class="d-flex justify-content-center">
+                            <div class="avatar-section">
+                                <!-- 头像预览区域 -->
+                                <div class="mb-3">
+                                    <img id="avatar-preview" src="/static/avatar/avatar1.png" alt="头像预览" 
+                                         class="img-fluid rounded-circle mb-2" 
+                                         style="width: 150px; height: 150px; object-fit: cover;">
+                                    <div>
+                                        <small class="text-muted" id="avatar-preview-text">请选择头像文件</small>
+                                    </div>
+                                </div>
+                                
+                                <!-- 头像上传区域 -->
+                                <div class="avatar-upload-area" id="avatar-upload-area" style="max-width: 300px;">
+                                    <input type="file" class="form-control d-none" id="avatar" name="avatar" 
+                                           accept="image/*" required>
+                                    <div class="upload-placeholder text-center p-3 border rounded" style="cursor: pointer;">
+                                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                                        <p class="mb-0 text-muted">点击选择头像或拖拽文件到此处</p>
+                                        <small class="text-muted">支持 PNG、JPG、JPEG、GIF、WebP 格式，文件大小不超过 5MB</small>
+                                    </div>
+                                </div>
+                                <div class="invalid-feedback">
+                                    请选择头像文件
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <!-- 基本信息 -->
+                    <h5 class="mb-3">基本信息</h5>
+                    
                     <div class="mb-3">
                         <label for="username" class="form-label">用户名 *</label>
                         <input type="text" class="form-control" id="username" name="username" required 
@@ -20,6 +57,15 @@
                         </div>
                         <div class="invalid-feedback">
                             请输入有效的用户名
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="nickname" class="form-label">昵称</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname" 
+                               maxlength="20" placeholder="如果不填写，将使用用户名作为昵称">
+                        <div class="form-text">
+                            昵称长度最多20位，可以包含中文、字母、数字等
                         </div>
                     </div>
                     
@@ -157,6 +203,73 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+.avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.avatar-upload-area .upload-placeholder {
+    transition: all 0.3s ease;
+    border: 2px dashed #dee2e6;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.avatar-upload-area .upload-placeholder:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,123,255,0.1);
+}
+
+.avatar-upload-area .upload-placeholder.border-primary {
+    border-color: #007bff !important;
+    background-color: #e3f2fd !important;
+}
+
+#avatar-preview {
+    border: 4px solid #dee2e6;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+#avatar-preview:hover {
+    border-color: #007bff;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,123,255,0.2);
+}
+
+.avatar-section h5 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .avatar-section {
+        gap: 0.5rem;
+    }
+    
+    #avatar-preview {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .avatar-upload-area {
+        max-width: 280px !important;
+    }
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -165,6 +278,84 @@ document.addEventListener('DOMContentLoaded', function() {
     const confirmPassword = document.getElementById('confirm_password');
     const togglePassword = document.getElementById('togglePassword');
     const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatar-preview');
+    const avatarPreviewContainer = document.getElementById('avatar-preview-container');
+    const avatarPreviewText = document.getElementById('avatar-preview-text');
+    const avatarUploadArea = document.getElementById('avatar-upload-area');
+    const uploadPlaceholder = avatarUploadArea.querySelector('.upload-placeholder');
+    
+    // 点击上传区域触发文件选择
+    uploadPlaceholder.addEventListener('click', function() {
+        avatarInput.click();
+    });
+    
+    // 拖拽上传功能
+    uploadPlaceholder.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('border-primary', 'bg-light');
+    });
+    
+    uploadPlaceholder.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-light');
+    });
+    
+    uploadPlaceholder.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary', 'bg-light');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                // 创建FileList对象
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                avatarInput.files = dataTransfer.files;
+                
+                // 触发change事件
+                avatarInput.dispatchEvent(new Event('change'));
+            } else {
+                alert('请选择图片文件');
+            }
+        }
+    });
+    
+    // 头像预览功能
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 验证文件类型
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                alert('不支持的文件类型，请选择 PNG、JPG、JPEG、GIF 或 WebP 格式的图片');
+                this.value = '';
+                return;
+            }
+            
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('文件大小不能超过 5MB');
+                this.value = '';
+                return;
+            }
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+                avatarPreviewText.textContent = '头像预览';
+                avatarPreviewText.className = 'text-success';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            // 重置为默认状态
+            avatarPreview.src = '/static/avatar/avatar1.png';
+            avatarPreviewText.textContent = '请选择头像文件';
+            avatarPreviewText.className = 'text-muted';
+        }
+    });
     
     // 密码显示/隐藏切换
     togglePassword.addEventListener('click', function() {
@@ -220,6 +411,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (password.value !== confirmPassword.value) {
             event.preventDefault();
             confirmPassword.setCustomValidity('两次输入的密码不一致');
+        }
+        
+        // 检查头像是否已选择
+        if (!avatarInput.files || avatarInput.files.length === 0) {
+            event.preventDefault();
+            avatarInput.setCustomValidity('请选择头像文件');
+        } else {
+            avatarInput.setCustomValidity('');
         }
         
         form.classList.add('was-validated');

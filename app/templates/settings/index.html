@@ -3,110 +3,260 @@
 {% block title %}设置 - 我的个人网站{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-3">
-            <!-- 设置侧边栏 -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-cog"></i> 设置</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="{{ url_for('settings.profile_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-user"></i> 个人信息
-                    </a>
-                    <a href="{{ url_for('settings.account_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-shield-alt"></i> 账户设置
-                    </a>
-                    <a href="{{ url_for('settings.theme_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-palette"></i> 主题设置
-                    </a>
-                    <a href="{{ url_for('settings.security_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-lock"></i> 安全设置
-                    </a>
-                    <a href="{{ url_for('settings.privacy_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-eye-slash"></i> 隐私设置
-                    </a>
-                </div>
+<!-- 设置页面头部 -->
+<div class="text-center py-8 mb-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            设置中心
+        </h1>
+        <p class="text-lg text-slate-300">管理您的账户信息和隐私设置</p>
+    </div>
+</div>
+
+<!-- 设置选项网格 -->
+<div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- 个人信息设置 -->
+        <a href="{{ url_for('settings.profile_settings') }}" class="glass-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300 group">
+            <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-indigo-500 transition-colors">
+                <i class="fas fa-user text-2xl text-white"></i>
             </div>
-        </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">个人信息</h3>
+            <p class="text-slate-300 text-sm">管理头像、昵称和个人资料</p>
+        </a>
         
-        <div class="col-md-9">
-            <!-- 设置内容区域 -->
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0">欢迎来到设置中心</h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-user fa-3x text-primary mb-3"></i>
-                                    <h5>个人信息</h5>
-                                    <p class="text-muted">管理您的个人资料、头像和基本信息</p>
-                                    <a href="{{ url_for('settings.profile_settings') }}" class="btn btn-primary">
-                                        管理个人信息
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-shield-alt fa-3x text-success mb-3"></i>
-                                    <h5>账户设置</h5>
-                                    <p class="text-muted">修改用户名、邮箱和密码</p>
-                                    <a href="{{ url_for('settings.account_settings') }}" class="btn btn-success">
-                                        管理账户
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-palette fa-3x text-warning mb-3"></i>
-                                    <h5>主题设置</h5>
-                                    <p class="text-muted">自定义界面主题、语言和时区</p>
-                                    <a href="{{ url_for('settings.theme_settings') }}" class="btn btn-warning">
-                                        自定义主题
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-lock fa-3x text-danger mb-3"></i>
-                                    <h5>安全设置</h5>
-                                    <p class="text-muted">管理登录通知和会话超时</p>
-                                    <a href="{{ url_for('settings.security_settings') }}" class="btn btn-danger">
-                                        安全设置
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-4">
-                            <div class="card h-100">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-eye-slash fa-3x text-info mb-3"></i>
-                                    <h5>隐私设置</h5>
-                                    <p class="text-muted">控制个人信息的可见性</p>
-                                    <a href="{{ url_for('settings.privacy_settings') }}" class="btn btn-info">
-                                        隐私设置
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- 账户设置 -->
+        <a href="{{ url_for('settings.account_settings') }}" class="glass-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300 group">
+            <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-500 transition-colors">
+                <i class="fas fa-shield-alt text-2xl text-white"></i>
             </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">账户设置</h3>
+            <p class="text-slate-300 text-sm">修改用户名、邮箱和密码</p>
+        </a>
+        
+        <!-- 安全设置 -->
+        <a href="{{ url_for('settings.security_settings') }}" class="glass-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300 group">
+            <div class="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-red-500 transition-colors">
+                <i class="fas fa-lock text-2xl text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">安全设置</h3>
+            <p class="text-slate-300 text-sm">登录通知和会话管理</p>
+        </a>
+        
+        <!-- 隐私设置 -->
+        <a href="{{ url_for('settings.privacy_settings') }}" class="glass-card rounded-xl p-6 text-center hover:transform hover:scale-105 transition-all duration-300 group">
+            <div class="w-16 h-16 bg-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-emerald-500 transition-colors">
+                <i class="fas fa-eye-slash text-2xl text-white"></i>
+            </div>
+            <h3 class="text-lg font-semibold mb-2 text-white">隐私设置</h3>
+            <p class="text-slate-300 text-sm">控制信息可见性</p>
+        </a>
+    </div>
+</div>
+
+<!-- 快速操作区域 -->
+<div class="max-w-4xl mx-auto mt-12 px-4">
+    <div class="glass-card rounded-xl p-8">
+        <h2 class="text-2xl font-bold mb-6 text-white text-center">快速操作</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <button onclick="quickChangeAvatar()" class="quick-action-card group">
+                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-500 transition-colors">
+                    <i class="fas fa-camera text-white"></i>
+                </div>
+                <h4 class="font-semibold text-white mb-2">更换头像</h4>
+                <p class="text-slate-300 text-sm">直接上传新头像</p>
+            </button>
+            <a href="{{ url_for('settings.account_settings') }}#password-section" class="quick-action-card group">
+                <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-green-500 transition-colors">
+                    <i class="fas fa-key text-white"></i>
+                </div>
+                <h4 class="font-semibold text-white mb-2">修改密码</h4>
+                <p class="text-slate-300 text-sm">更新账户密码</p>
+            </a>
+            <a href="{{ url_for('settings.security_settings') }}#notification-section" class="quick-action-card group">
+                <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-orange-500 transition-colors">
+                    <i class="fas fa-bell text-white"></i>
+                </div>
+                <h4 class="font-semibold text-white mb-2">通知设置</h4>
+                <p class="text-slate-300 text-sm">管理登录通知</p>
+            </a>
+            <a href="{{ url_for('settings.privacy_settings') }}" class="quick-action-card group">
+                <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-500 transition-colors">
+                    <i class="fas fa-eye-slash text-white"></i>
+                </div>
+                <h4 class="font-semibold text-white mb-2">隐私设置</h4>
+                <p class="text-slate-300 text-sm">控制信息可见性</p>
+            </a>
         </div>
     </div>
 </div>
+
+<style>
+.quick-action-card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.quick-action-card:hover {
+    transform: translateY(-4px);
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(71, 85, 105, 0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    text-decoration: none;
+    color: inherit;
+}
+
+.quick-action-card:hover h4 {
+    color: #60a5fa;
+}
+
+.quick-action-card:hover p {
+    color: #cbd5e1;
+}
+
+.quick-action-card button {
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: center;
+    cursor: pointer;
+}
+</style>
+
+<script>
+// 快速更换头像功能
+function quickChangeAvatar() {
+    // 创建文件输入元素
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    
+    input.onchange = function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+            
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('文件大小不能超过5MB！');
+                return;
+            }
+            
+            // 创建FormData并上传
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            // 显示上传提示
+            const toast = document.createElement('div');
+            toast.className = 'fixed top-4 right-4 bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+            toast.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-spinner fa-spin mr-2"></i>
+                    <span>正在上传头像...</span>
+                </div>
+            `;
+            document.body.appendChild(toast);
+            
+            // 发送上传请求
+            fetch('/settings/avatar', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 移除上传提示
+                toast.remove();
+                
+                if (data.success) {
+                    // 显示成功提示
+                    const successToast = document.createElement('div');
+                    successToast.className = 'fixed top-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    successToast.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-check mr-2"></i>
+                            <span>头像上传成功！</span>
+                        </div>
+                    `;
+                    document.body.appendChild(successToast);
+                    
+                    // 更新页面上的头像显示
+                    const avatarImages = document.querySelectorAll('img[src*="avatar"]');
+                    avatarImages.forEach(img => {
+                        if (img.src.includes('avatar')) {
+                            img.src = data.avatar_url + '?t=' + Date.now();
+                        }
+                    });
+                    
+                    // 3秒后移除成功提示
+                    setTimeout(() => {
+                        if (successToast.parentNode) {
+                            successToast.remove();
+                        }
+                    }, 3000);
+                } else {
+                    // 显示错误提示
+                    const errorToast = document.createElement('div');
+                    errorToast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                    errorToast.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-times mr-2"></i>
+                            <span>${data.message || '头像上传失败'}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(errorToast);
+                    
+                    // 3秒后移除错误提示
+                    setTimeout(() => {
+                        if (errorToast.parentNode) {
+                            errorToast.remove();
+                        }
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                // 移除上传提示
+                toast.remove();
+                
+                // 显示错误提示
+                const errorToast = document.createElement('div');
+                errorToast.className = 'fixed top-4 right-4 bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+                errorToast.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-times mr-2"></i>
+                        <span>上传失败，请稍后重试</span>
+                    </div>
+                `;
+                document.body.appendChild(errorToast);
+                
+                // 3秒后移除错误提示
+                setTimeout(() => {
+                    if (errorToast.parentNode) {
+                        errorToast.remove();
+                    }
+                }, 3000);
+            });
+        }
+    };
+    
+    // 触发文件选择
+    document.body.appendChild(input);
+    input.click();
+    document.body.removeChild(input);
+}
+</script>
 {% endblock %} 

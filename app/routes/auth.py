@@ -3,6 +3,8 @@ from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User
 from app.models.user import db
+import os
+import secrets
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -33,6 +35,7 @@ def register():
     """注册页面"""
     if request.method == 'POST':
         username = request.form.get('username')
+        nickname = request.form.get('nickname')
         email = request.form.get('email')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
@@ -64,15 +67,57 @@ def register():
 
             return render_template('auth/register.html')
         
+        # 处理头像上传
+        avatar_file = None
+        if 'avatar' in request.files:
+            avatar_file = request.files['avatar']
+            if avatar_file and avatar_file.filename != '':
+                # 检查文件类型
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
+                if '.' not in avatar_file.filename or \
+                   avatar_file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({'success': False, 'message': '不支持的文件类型，支持：PNG、JPG、JPEG、GIF、WebP'})
+                    return render_template('auth/register.html')
+                
+                # 检查文件大小 (最大5MB)
+                avatar_file.seek(0, os.SEEK_END)
+                file_size = avatar_file.tell()
+                avatar_file.seek(0)  # 重置文件指针
+                
+                if file_size > 5 * 1024 * 1024:  # 5MB
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({'success': False, 'message': '文件大小不能超过5MB'})
+                    return render_template('auth/register.html')
+        
         try:
             # 创建新用户
             user = User(
                 username=username,
+                nickname=nickname or username,  # 如果没有提供昵称，使用用户名
                 email=email,
                 password_hash=generate_password_hash(password)
             )
             
             db.session.add(user)
+            db.session.flush()  # 获取用户ID，但不提交事务
+            
+            # 如果有头像文件，保存头像
+            if avatar_file and avatar_file.filename != '':
+                # 生成唯一文件名
+                filename = f"avatar_{user.id}_{secrets.token_hex(8)}.{avatar_file.filename.rsplit('.', 1)[1].lower()}"
+                
+                # 确保上传目录存在
+                upload_dir = os.path.join('app', 'static', 'uploads', 'avatars')
+                os.makedirs(upload_dir, exist_ok=True)
+                
+                # 保存文件
+                file_path = os.path.join(upload_dir, filename)
+                avatar_file.save(file_path)
+                
+                # 更新用户头像URL
+                user.avatar = f'/static/uploads/avatars/{filename}'
+            
             db.session.commit()
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -143,50 +188,57 @@ def profile():
 def edit_profile():
     """编辑用户资料"""
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        current_password = request.form.get('current_password')
-        new_password = request.form.get('new_password')
-        confirm_password = request.form.get('confirm_password')
+        # 获取表单数据
+        nickname = request.form.get('nickname', '').strip()
+        bio = request.form.get('bio', '').strip()
+        email = request.form.get('email', '').strip()
+        current_password = request.form.get('current_password', '').strip()
+        new_password = request.form.get('new_password', '').strip()
+        confirm_password = request.form.get('confirm_password', '').strip()
         
         # 验证当前密码（只有在修改密码时才需要）
         if new_password and not check_password_hash(current_user.password_hash, current_password):
-
-            return render_template('auth/edit_profile.html')
-        
-        # 检查用户名是否已被其他用户使用
-        existing_user = User.query.filter_by(username=username).first()
-        if existing_user and existing_user.id != current_user.id:
-
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '当前密码错误'})
             return render_template('auth/edit_profile.html')
         
         # 检查邮箱是否已被其他用户使用
-        existing_email = User.query.filter_by(email=email).first()
-        if existing_email and existing_email.id != current_user.id:
-
-            return render_template('auth/edit_profile.html')
+        if email and email != current_user.email:
+            existing_email = User.query.filter_by(email=email).first()
+            if existing_email and existing_email.id != current_user.id:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': '邮箱已被使用'})
+                return render_template('auth/edit_profile.html')
         
         try:
-            # 更新用户信息（用户名不允许更改，保持原值）
-            if username and username.strip():
-                current_user.username = username.strip()
-            if email and email.strip():
-                current_user.email = email.strip()
+            # 更新用户信息
+            if nickname:
+                current_user.nickname = nickname
+            if bio:
+                current_user.bio = bio
+            if email:
+                current_user.email = email
             
             # 如果提供了新密码，则更新密码
             if new_password:
                 if new_password != confirm_password:
-
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return jsonify({'success': False, 'message': '两次输入的新密码不一致'})
                     return render_template('auth/edit_profile.html')
                 current_user.password_hash = generate_password_hash(new_password)
             
             db.session.commit()
-
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '个人资料更新成功！'})
+            
             return redirect(url_for('auth.profile'))
             
         except Exception as e:
             db.session.rollback()
-
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+            
             print(f"更新用户资料错误: {e}")
     
     return render_template('auth/edit_profile.html') 

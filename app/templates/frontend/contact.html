@@ -169,7 +169,7 @@
                             <div class="mb-3">
                                 <label for="office-select" class="form-label">选择办公地点</label>
                                 <select class="form-select" id="office-select" onchange="changeOffice()">
-                                    <option value="2">深圳 - 南山高新园</option>
+                                    <option value="0">深圳 - 南山高新园</option>
 <!--                                    <option value="0">上海 - 张江高科技园区</option>-->
 <!--                                    <option value="1">北京 - 望京SOHO</option>-->
                                 </select>
@@ -273,6 +273,73 @@
     box-shadow: 0 2px 4px rgba(40,167,69,0.3);
 }
 
+/* 修复手风琴样式问题 */
+.accordion-collapse {
+    transition: none !important;
+    overflow: visible !important;
+}
+
+.accordion-collapse.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.accordion-collapse:not(.show) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.accordion-body {
+    color: #6c757d !important;
+    padding: 1rem 1.25rem !important;
+    background-color: #ffffff !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+.accordion-button {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border: 1px solid rgba(0,0,0,.125) !important;
+}
+
+.accordion-button:not(.collapsed) {
+    color: #0c63e4 !important;
+    background-color: #e7f1ff !important;
+    border-color: #b6d7ff !important;
+}
+
+.accordion-button:focus {
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
+}
+
+/* 禁用所有可能干扰的动画 */
+.accordion-collapse * {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* 确保手风琴项目容器稳定 */
+.accordion-item {
+    border: 1px solid rgba(0,0,0,.125) !important;
+    margin-bottom: 0 !important;
+}
+
+.accordion-item:first-of-type {
+    border-top-left-radius: 0.375rem !important;
+    border-top-right-radius: 0.375rem !important;
+}
+
+.accordion-item:last-of-type {
+    border-bottom-left-radius: 0.375rem !important;
+    border-bottom-right-radius: 0.375rem !important;
+}
+
 </style>
 {% endblock %}
 
@@ -291,7 +358,7 @@ const OFFICE_LOCATIONS = [
     }
 ];
 
-let currentOfficeIndex = 2; // 默认选择深圳南山高新园
+let currentOfficeIndex = 0; // 默认选择深圳南山高新园
 
 let map = null;
 let userMarker = null;
@@ -367,7 +434,8 @@ function getCurrentLocation() {
                 `;
                 
                 // 显示默认办公地址
-                initMap(OFFICE_LOCATION.lat, OFFICE_LOCATION.lng);
+                const office = OFFICE_LOCATIONS[currentOfficeIndex];
+                initMap(office.lat, office.lng);
             },
             {
                 enableHighAccuracy: true,
@@ -382,7 +450,8 @@ function getCurrentLocation() {
                 <br><small>将显示默认办公地址</small>
             </div>
         `;
-        initMap(OFFICE_LOCATION.lat, OFFICE_LOCATION.lng);
+        const office = OFFICE_LOCATIONS[currentOfficeIndex];
+        initMap(office.lat, office.lng);
     }
 }
 
@@ -512,6 +581,78 @@ document.addEventListener('DOMContentLoaded', function() {
         const office = OFFICE_LOCATIONS[currentOfficeIndex];
         initMap(office.lat, office.lng);
     }, 1000);
+    
+    // 自定义手风琴功能，完全绕过Bootstrap
+    const accordionButtons = document.querySelectorAll('.accordion-button');
+    accordionButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            console.log('手风琴按钮被点击:', this);
+            
+            const targetId = this.getAttribute('data-bs-target');
+            const target = document.querySelector(targetId);
+            
+            if (target) {
+                console.log('找到目标元素:', target);
+                
+                // 检查当前状态 - 通过检查目标元素的显示状态来判断
+                const isCurrentlyVisible = target.style.display === 'block' || 
+                                         target.classList.contains('show') || 
+                                         window.getComputedStyle(target).display !== 'none';
+                
+                console.log('当前状态 - 是否可见:', isCurrentlyVisible);
+                console.log('按钮collapsed类:', this.classList.contains('collapsed'));
+                console.log('目标show类:', target.classList.contains('show'));
+                console.log('目标display样式:', target.style.display);
+                
+                if (!isCurrentlyVisible) {
+                    // 展开
+                    console.log('展开手风琴');
+                    this.classList.remove('collapsed');
+                    target.classList.add('show');
+                    target.style.display = 'block';
+                    target.style.visibility = 'visible';
+                    target.style.opacity = '1';
+                    target.style.height = 'auto';
+                    
+                    const body = target.querySelector('.accordion-body');
+                    if (body) {
+                        body.style.display = 'block';
+                        body.style.visibility = 'visible';
+                        body.style.opacity = '1';
+                        body.style.color = '#6c757d';
+                        body.style.backgroundColor = '#ffffff';
+                        body.style.padding = '1rem 1.25rem';
+                    }
+                } else {
+                    // 折叠
+                    console.log('折叠手风琴');
+                    this.classList.add('collapsed');
+                    target.classList.remove('show');
+                    target.style.display = 'none';
+                    target.style.visibility = 'hidden';
+                    target.style.opacity = '0';
+                }
+            }
+        });
+    });
+    
+    // 初始化手风琴状态
+    const accordionCollapses = document.querySelectorAll('.accordion-collapse');
+    accordionCollapses.forEach(collapse => {
+        const button = document.querySelector(`[data-bs-target="#${collapse.id}"]`);
+        if (button && button.classList.contains('collapsed')) {
+            collapse.style.display = 'none';
+            collapse.style.visibility = 'hidden';
+            collapse.style.opacity = '0';
+        } else {
+            collapse.style.display = 'block';
+            collapse.style.visibility = 'visible';
+            collapse.style.opacity = '1';
+        }
+    });
 });
 </script>
 {% endblock %} 

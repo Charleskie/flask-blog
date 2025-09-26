@@ -2,157 +2,489 @@
 
 {% block title %}个人信息设置 - 我的个人网站{% endblock %}
 
-{% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-md-3">
-            <!-- 设置侧边栏 -->
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-cog"></i> 设置</h5>
-                </div>
-                <div class="list-group list-group-flush">
-                    <a href="{{ url_for('settings.profile_settings') }}" class="list-group-item list-group-item-action active">
-                        <i class="fas fa-user"></i> 个人信息
-                    </a>
-                    <a href="{{ url_for('settings.account_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-shield-alt"></i> 账户设置
-                    </a>
-                    <a href="{{ url_for('settings.theme_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-palette"></i> 主题设置
-                    </a>
-                    <a href="{{ url_for('settings.security_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-lock"></i> 安全设置
-                    </a>
-                    <a href="{{ url_for('settings.privacy_settings') }}" class="list-group-item list-group-item-action">
-                        <i class="fas fa-eye-slash"></i> 隐私设置
-                    </a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-9">
-            <div class="card">
-                <div class="card-header">
-                    <h4 class="mb-0"><i class="fas fa-user"></i> 个人信息设置</h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <!-- 头像上传 -->
-                                <div class="text-center mb-4">
-                                    <div class="avatar-container mb-3">
-                                        <img src="{{ current_user.get_avatar_url() }}" 
-                                             alt="头像" 
-                                             class="rounded-circle" 
-                                             style="width: 150px; height: 150px; object-fit: cover;">
-                                    </div>
-                                    <div class="mb-3">
-                                        <input type="file" 
-                                               class="form-control" 
-                                               id="avatar" 
-                                               name="avatar" 
-                                               accept="image/*">
-                                    </div>
-                                    <button type="submit" 
-                                            class="btn-submit btn-sm" 
-                                            formaction="{{ url_for('settings.upload_avatar') }}">
-                                        <i class="fas fa-upload"></i> 上传头像
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-8">
-                                <!-- 基本信息 -->
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="nickname" class="form-label">昵称</label>
-                                        <input type="text" 
-                                               class="form-control" 
-                                               id="nickname" 
-                                               name="nickname" 
-                                               value="{{ current_user.nickname or '' }}" 
-                                               placeholder="请输入昵称">
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="location" class="form-label">所在地</label>
-                                        <input type="text" 
-                                               class="form-control" 
-                                               id="location" 
-                                               name="location" 
-                                               value="{{ current_user.location or '' }}" 
-                                               placeholder="请输入所在地">
-                                    </div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="company" class="form-label">公司</label>
-                                        <input type="text" 
-                                               class="form-control" 
-                                               id="company" 
-                                               name="company" 
-                                               value="{{ current_user.company or '' }}" 
-                                               placeholder="请输入公司名称">
-                                    </div>
-                                    
-                                    <div class="col-md-6 mb-3">
-                                        <label for="job_title" class="form-label">职位</label>
-                                        <input type="text" 
-                                               class="form-control" 
-                                               id="job_title" 
-                                               name="job_title" 
-                                               value="{{ current_user.job_title or '' }}" 
-                                               placeholder="请输入职位">
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="website" class="form-label">个人网站</label>
-                                    <input type="url" 
-                                           class="form-control" 
-                                           id="website" 
-                                           name="website" 
-                                           value="{{ current_user.website or '' }}" 
-                                           placeholder="https://example.com">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="phone" class="form-label">电话</label>
-                                    <input type="tel" 
-                                           class="form-control" 
-                                           id="phone" 
-                                           name="phone" 
-                                           value="{{ current_user.phone or '' }}" 
-                                           placeholder="请输入电话号码">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="bio" class="form-label">个人简介</label>
-                                    <textarea class="form-control" 
-                                              id="bio" 
-                                              name="bio" 
-                                              rows="4" 
-                                              placeholder="介绍一下自己...">{{ current_user.bio or '' }}</textarea>
-                                </div>
-                                
-                                <div class="d-flex justify-content-between">
-                                    <a href="{{ url_for('settings.settings') }}" class="btn btn-secondary">
-                                        <i class="fas fa-arrow-left"></i> 返回
-                                    </a>
-                                    <button type="submit" class="btn-submit">
-                                        <i class="fas fa-save"></i> 保存更改
-                                    </button>
-                                </div>
-                            </div>
+{% block extra_js %}
+<!-- 添加图片裁剪库 -->
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('avatar-input');
+    const currentAvatar = document.getElementById('current-avatar');
+    const avatarPreview = document.getElementById('avatar-preview');
+    const uploadBtn = document.getElementById('upload-avatar-btn');
+    const cancelBtn = document.getElementById('cancel-avatar');
+    const previewContainer = document.querySelector('.avatar-preview-container');
+    const actionsContainer = document.querySelector('.avatar-actions');
+    const avatarContainer = document.querySelector('.avatar-container');
+    let cropper = null;
+
+    // 点击头像或上传按钮触发文件选择
+    avatarContainer.addEventListener('click', function() {
+        avatarInput.click();
+    });
+
+    uploadBtn.addEventListener('click', function() {
+        avatarInput.click();
+    });
+
+    // 确保DOM元素存在
+    console.log('Avatar elements:', {
+        avatarInput: avatarInput,
+        uploadBtn: uploadBtn,
+        avatarContainer: avatarContainer
+    });
+
+    // 压缩图片函数
+    function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    let { width, height } = img;
+                    
+                    // 计算缩放比例
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width *= ratio;
+                        height *= ratio;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // 绘制压缩后的图片
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // 转换为blob
+                    canvas.toBlob(function(blob) {
+                        resolve(blob);
+                    }, file.type, quality);
+                };
+                img.onerror = reject;
+                img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // 文件选择处理
+    avatarInput.addEventListener('change', async function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                return;
+            }
+
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('文件大小不能超过5MB！');
+                return;
+            }
+
+            try {
+                // 压缩图片
+                const compressedBlob = await compressImage(file, 800, 800, 0.8);
+                const compressedFile = new File([compressedBlob], file.name, { type: file.type });
+                
+                // 显示裁剪模态框
+                showCropModal(compressedFile);
+            } catch (error) {
+                console.error('图片压缩失败:', error);
+                alert('图片处理失败，请重试！');
+            }
+        }
+    });
+
+    // 显示裁剪模态框
+    function showCropModal(file) {
+        // 创建模态框
+        const modalHtml = `
+            <div class="modal fade show" id="cropModal" style="display: block; background: rgba(0,0,0,0.5);">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">裁剪头像</h5>
+                            <button type="button" class="close" onclick="closeCropModal()">&times;</button>
                         </div>
-                    </form>
+                        <div class="modal-body text-center">
+                            <img id="crop-image" style="max-width: 100%;">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" onclick="closeCropModal()">取消</button>
+                            <button type="button" class="btn btn-primary" onclick="confirmCrop()">确认裁剪</button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        `;
+        
+        // 移除已存在的模态框
+        const existingModal = document.getElementById('cropModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+        
+        const cropImage = document.getElementById('crop-image');
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            cropImage.src = e.target.result;
+            
+            // 初始化裁剪器
+            cropper = new Cropper(cropImage, {
+                aspectRatio: 1,
+                viewMode: 1,
+                autoCropArea: 0.8,
+                movable: true,
+                zoomable: true,
+                rotatable: true,
+                scalable: true,
+                guides: true,
+                center: true,
+                highlight: true,
+                background: true,
+                cropBoxResizable: true,
+                cropBoxMovable: true,
+                minCropBoxWidth: 100,
+                minCropBoxHeight: 100,
+                ready: function() {
+                    // 裁剪器准备就绪
+                }
+            });
+        };
+        reader.readAsDataURL(file);
+        
+        // 将文件保存到全局变量
+        window.currentCropFile = file;
+    }
+
+    // 关闭裁剪模态框
+    window.closeCropModal = function() {
+        const modal = document.getElementById('cropModal');
+        if (modal) {
+            modal.remove();
+        }
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        window.currentCropFile = null;
+    };
+
+    // 确认裁剪
+    window.confirmCrop = function() {
+        if (!cropper) return;
+        
+        // 获取裁剪后的图片
+        cropper.getCroppedCanvas({
+            width: 300,
+            height: 300
+        }).toBlob(function(blob) {
+            // 创建新的文件对象
+            const croppedFile = new File([blob], window.currentCropFile.name, { 
+                type: window.currentCropFile.type 
+            });
+            
+            // 关闭模态框
+            closeCropModal();
+            
+            // 显示预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+                previewContainer.classList.remove('d-none');
+                actionsContainer.classList.remove('d-none');
+                uploadBtn.classList.add('d-none');
+                currentAvatar.style.opacity = '0.5';
+            };
+            reader.readAsDataURL(blob);
+            
+            // 更新文件输入
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(croppedFile);
+            avatarInput.files = dataTransfer.files;
+            
+        }, window.currentCropFile.type, 0.9);
+    };
+
+    // 取消上传
+    cancelBtn.addEventListener('click', function() {
+        avatarInput.value = '';
+        previewContainer.classList.add('d-none');
+        actionsContainer.classList.add('d-none');
+        uploadBtn.classList.remove('d-none');
+        currentAvatar.style.opacity = '1';
+    });
+
+    // 拖拽上传
+    avatarContainer.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        avatarContainer.style.border = '2px dashed #007bff';
+    });
+
+    avatarContainer.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        avatarContainer.style.border = 'none';
+    });
+
+    avatarContainer.addEventListener('drop', function(e) {
+        e.preventDefault();
+        avatarContainer.style.border = 'none';
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            avatarInput.files = files;
+            const event = new Event('change', { bubbles: true });
+            avatarInput.dispatchEvent(event);
+        }
+    });
+});
+</script>
+
+<style>
+.avatar-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(59, 130, 246, 0.8);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    font-size: 14px;
+}
+
+.avatar-overlay i {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-container:hover {
+    transform: scale(1.05);
+}
+
+.avatar-preview-container {
+    border: 2px solid #3b82f6;
+    border-radius: 50%;
+    padding: 5px;
+    display: inline-block;
+}
+
+.avatar-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.d-none {
+    display: none !important;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-secondary:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- 页面头部 -->
+<div class="text-center py-6 mb-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            个人信息设置
+        </h1>
+        <p class="text-slate-300">管理您的个人资料和头像</p>
     </div>
+</div>
+
+<!-- 设置内容 -->
+<div class="max-w-4xl mx-auto px-4">
+    <form method="POST" enctype="multipart/form-data">
+        <div class="glass-card rounded-xl p-8">
+            <!-- 头像设置区域 -->
+            <div class="text-center mb-8">
+                <h2 class="text-xl font-semibold mb-6 text-white">头像设置</h2>
+                <div class="avatar-container mb-4">
+                    <img src="{{ current_user.get_avatar_url() }}" 
+                         alt="头像" 
+                         id="current-avatar"
+                         class="rounded-full mx-auto" 
+                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid rgba(255, 255, 255, 0.1);">
+                    <div class="avatar-overlay">
+                        <i class="fas fa-camera"></i>
+                        <span>点击更换</span>
+                    </div>
+                </div>
+                <input type="file" 
+                       class="form-control d-none" 
+                       id="avatar-input" 
+                       name="avatar" 
+                       accept="image/*">
+                <div class="avatar-preview-container d-none mb-4">
+                    <img id="avatar-preview" class="rounded-full mx-auto" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #3b82f6;">
+                </div>
+                <div class="avatar-actions d-none mb-4">
+                    <button type="button" id="cancel-avatar" class="btn-secondary mr-3">
+                        <i class="fas fa-times"></i> 取消
+                    </button>
+                    <button type="submit" 
+                            class="btn-primary" 
+                            formaction="{{ url_for('settings.upload_avatar') }}">
+                        <i class="fas fa-upload"></i> 确认上传
+                    </button>
+                </div>
+                <button type="button" 
+                        id="upload-avatar-btn"
+                        class="btn-primary">
+                    <i class="fas fa-upload"></i> 上传头像
+                </button>
+            </div>
+            
+            <!-- 基本信息设置 -->
+            <div class="border-t border-slate-700 pt-8">
+                <h2 class="text-xl font-semibold mb-6 text-white">基本信息</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="nickname" class="block text-sm font-medium text-slate-300 mb-2">昵称</label>
+                        <input type="text" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="nickname" 
+                               name="nickname" 
+                               value="{{ current_user.nickname or '' }}" 
+                               placeholder="请输入昵称">
+                    </div>
+                    
+                    <div>
+                        <label for="location" class="block text-sm font-medium text-slate-300 mb-2">所在地</label>
+                        <input type="text" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="location" 
+                               name="location" 
+                               value="{{ current_user.location or '' }}" 
+                               placeholder="请输入所在地">
+                    </div>
+                    
+                    <div>
+                        <label for="company" class="block text-sm font-medium text-slate-300 mb-2">公司</label>
+                        <input type="text" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="company" 
+                               name="company" 
+                               value="{{ current_user.company or '' }}" 
+                               placeholder="请输入公司名称">
+                    </div>
+                    
+                    <div>
+                        <label for="job_title" class="block text-sm font-medium text-slate-300 mb-2">职位</label>
+                        <input type="text" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="job_title" 
+                               name="job_title" 
+                               value="{{ current_user.job_title or '' }}" 
+                               placeholder="请输入职位">
+                    </div>
+                    
+                    <div>
+                        <label for="website" class="block text-sm font-medium text-slate-300 mb-2">个人网站</label>
+                        <input type="url" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="website" 
+                               name="website" 
+                               value="{{ current_user.website or '' }}" 
+                               placeholder="https://example.com">
+                    </div>
+                    
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-slate-300 mb-2">电话</label>
+                        <input type="tel" 
+                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                               id="phone" 
+                               name="phone" 
+                               value="{{ current_user.phone or '' }}" 
+                               placeholder="请输入电话号码">
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label for="bio" class="block text-sm font-medium text-slate-300 mb-2">个人简介</label>
+                    <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                              id="bio" 
+                              name="bio" 
+                              rows="4" 
+                              placeholder="介绍一下自己...">{{ current_user.bio or '' }}</textarea>
+                </div>
+            </div>
+            
+            <!-- 操作按钮 -->
+            <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
+                <a href="{{ url_for('settings.settings') }}" class="btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回设置
+                </a>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-save"></i> 保存更改
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
 <style>
@@ -170,4 +502,4 @@
     border-color: #007bff;
 }
 </style>
-{% endblock %} 
+{% endblock %}
