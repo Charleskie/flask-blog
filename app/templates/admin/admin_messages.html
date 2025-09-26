@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}消息管理 - 管理后台{% endblock %}
+{% block title %}私信管理 - 管理后台{% endblock %}
 
 {% block content %}
 <!-- 页面头部 -->
 <div class="text-center py-6 mb-8">
     <div class="max-w-4xl mx-auto">
         <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            消息管理
+            私信管理
         </h1>
         <p class="text-slate-300">管理联系表单和用户消息</p>
     </div>
@@ -27,29 +27,36 @@
         </div>
     </div>
     
-    <!-- 筛选器 -->
+    <!-- 筛选器和操作栏 -->
     <div class="glass-card rounded-xl p-6 mb-6">
-        <form method="GET" class="flex items-center gap-4">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+            <!-- 筛选器部分 -->
             <div class="flex-1">
-                <label for="status" class="block text-sm font-medium text-slate-300 mb-2">状态筛选</label>
-                <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                        id="status" name="status">
-                    <option value="">全部状态</option>
-                    <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
-                    <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
-                    <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
-                    <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
-                </select>
+                <form method="GET" class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex-1">
+                        <label for="status" class="block text-sm font-medium text-slate-300 mb-2">状态筛选</label>
+                        <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                                id="status" name="status" onchange="this.form.submit()">
+                            <option value="">全部状态</option>
+                            <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
+                            <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
+                            <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
+                            <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-2 sm:items-end">
+                        <button type="button" class="btn-primary px-6 py-3 rounded-lg font-medium transition-all duration-300 hover:shadow-lg hover:scale-105" onclick="markAllAsRead()">
+                            <span class="hidden sm:inline">一键已读</span>
+                        </button>
+                    </div>
+                </form>
             </div>
-            <div class="flex gap-2">
-                <button type="submit" class="btn-secondary">
-                    <i class="fas fa-filter"></i> 筛选
-                </button>
-                <a href="{{ url_for('admin.admin_messages') }}" class="btn-secondary">
-                    <i class="fas fa-times"></i> 清除
-                </a>
+            
+            <!-- 批量操作部分 -->
+            <div class="flex flex-col sm:flex-row gap-2">
+
             </div>
-        </form>
+        </div>
     </div>
     
     <!-- 消息列表 -->
@@ -477,6 +484,81 @@ function changeStatus(messageId, status) {
     statusInput.value = status;
     statusForm.action = `/admin/messages/${messageId}/status`;
     statusForm.submit();
+}
+
+function markAllAsRead() {
+    if (confirm('确定要将所有未读消息标记为已读吗？')) {
+        // 显示加载状态
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+        button.disabled = true;
+        
+        fetch('/admin/messages/mark-all-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 显示成功提示
+                showToast('success', `已成功标记 ${data.count} 条消息为已读`);
+                
+                // 更新页面上的状态显示
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                showToast('error', data.message || '操作失败，请稍后重试');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', '网络错误，请稍后重试');
+        })
+        .finally(() => {
+            // 恢复按钮状态
+            button.innerHTML = originalText;
+            button.disabled = false;
+        });
+    }
+}
+
+function showToast(type, message) {
+    // 创建提示框
+    const toast = document.createElement('div');
+    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium transition-all duration-300 transform translate-x-full`;
+    
+    if (type === 'success') {
+        toast.classList.add('bg-green-600');
+    } else if (type === 'error') {
+        toast.classList.add('bg-red-600');
+    }
+    
+    toast.innerHTML = `
+        <div class="flex items-center gap-2">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 显示动画
+    setTimeout(() => {
+        toast.classList.remove('translate-x-full');
+    }, 100);
+    
+    // 自动隐藏
+    setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => {
+            document.body.removeChild(toast);
+        }, 300);
+    }, 3000);
 }
 
 function toggleDropdown(messageId) {

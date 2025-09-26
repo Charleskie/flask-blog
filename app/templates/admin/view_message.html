@@ -54,8 +54,8 @@
                 </div>
                 
                 <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
-                    <div class="message-content text-slate-300 leading-relaxed">
-                        {{ message.message|nl2br }}
+                    <div class="message-content text-slate-300 leading-relaxed whitespace-pre-wrap">
+                        {{ message.message }}
                     </div>
                 </div>
             </div>
@@ -136,27 +136,6 @@
                         <i class="fas fa-reply mr-2"></i> 回复消息
                     </a>
                     {% endif %}
-                    
-                    <div class="relative">
-                        <button type="button" class="btn-secondary w-full" onclick="toggleStatusDropdown()">
-                            <i class="fas fa-cog mr-2"></i> 更改状态
-                        </button>
-                        <div id="status-dropdown" class="dropdown-menu hidden">
-                            <a href="#" onclick="changeStatus('unread')" class="dropdown-item">
-                                <i class="fas fa-circle text-red-400"></i> 标记为未读
-                            </a>
-                            <a href="#" onclick="changeStatus('read')" class="dropdown-item">
-                                <i class="fas fa-circle text-blue-400"></i> 标记为已读
-                            </a>
-                            <a href="#" onclick="changeStatus('replied')" class="dropdown-item">
-                                <i class="fas fa-circle text-green-400"></i> 标记为已回复
-                            </a>
-                            <a href="#" onclick="changeStatus('archived')" class="dropdown-item">
-                                <i class="fas fa-circle text-slate-400"></i> 归档
-                            </a>
-                        </div>
-                    </div>
-                    
                     <button type="button" class="btn-danger w-full" onclick="deleteMessage('{{ message.subject }}')">
                         <i class="fas fa-trash mr-2"></i> 删除消息
                     </button>

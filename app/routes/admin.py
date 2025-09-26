@@ -817,6 +817,43 @@ def api_skill_categories():
     return jsonify([cat[0] for cat in categories if cat[0]])
 
 
+@admin_bp.route('/admin/messages/mark-all-read', methods=['POST'])
+@login_required
+@admin_required
+def mark_all_messages_read():
+    """一键标记所有未读消息为已读"""
+    try:
+        # 获取所有未读消息
+        unread_messages = Message.query.filter_by(status='unread').all()
+        count = len(unread_messages)
+        
+        if count == 0:
+            return jsonify({
+                'success': True,
+                'count': 0,
+                'message': '没有未读消息'
+            })
+        
+        # 批量更新状态
+        for message in unread_messages:
+            message.mark_as_read()
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'count': count,
+            'message': f'已成功标记 {count} 条消息为已读'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': '操作失败，请稍后重试',
+            'error': str(e)
+        }), 500
+
 @admin_bp.route('/api/messages/unread-count')
 @login_required
 @admin_required
