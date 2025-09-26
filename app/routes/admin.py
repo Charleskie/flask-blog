@@ -814,4 +814,23 @@ def api_skill_categories():
         Skill.is_active == True,
         Skill.category.isnot(None)
     ).distinct().all()
-    return jsonify([cat[0] for cat in categories if cat[0]]) 
+    return jsonify([cat[0] for cat in categories if cat[0]])
+
+
+@admin_bp.route('/api/messages/unread-count')
+@login_required
+@admin_required
+def api_unread_messages_count():
+    """API: 获取未读消息数量"""
+    try:
+        unread_count = Message.query.filter_by(status='unread').count()
+        return jsonify({
+            'success': True,
+            'count': unread_count
+        })
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'count': 0,
+            'error': str(e)
+        }), 500 

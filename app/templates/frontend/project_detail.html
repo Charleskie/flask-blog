@@ -188,7 +188,10 @@
             
             <!-- 评论区域 -->
             <div class="comments-section">
-                <h4><i class="fas fa-comments"></i> 评论 ({{ project.comment_count }})</h4>
+                <div class="comments-header">
+                    <h4 class="comments-title">评论</h4>
+                    <span class="comments-count">{{ project.comment_count }} 条评论</span>
+                </div>
                 
                 <!-- 评论表单 -->
                 {% if current_user.is_authenticated %}
@@ -223,7 +226,7 @@
 <div id="wechatShareModal" class="qr-popup" style="display: none;">
     <div class="qr-popup-content">
         <div id="qrcode"></div>
-        <p class="text-muted small mt-2 mb-0">微信扫码分享</p>
+        <p class="text-muted small mt-2 mb-0" style="color: #94a3b8 !important;">微信扫码分享</p>
     </div>
 </div>
 
@@ -241,15 +244,15 @@
     <div class="floating-rating-section">
         <label class="rating-label">评分:</label>
         <div class="rating-input">
-            <input type="radio" id="rating-{{ project.id }}-1" name="rating" value="1">
+            <input type="radio" id="rating-{{ project.id }}-1" name="rating" value="5">
             <label for="rating-{{ project.id }}-1"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ project.id }}-2" name="rating" value="2">
+            <input type="radio" id="rating-{{ project.id }}-2" name="rating" value="4">
             <label for="rating-{{ project.id }}-2"><i class="far fa-star"></i></label>
             <input type="radio" id="rating-{{ project.id }}-3" name="rating" value="3">
             <label for="rating-{{ project.id }}-3"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ project.id }}-4" name="rating" value="4">
+            <input type="radio" id="rating-{{ project.id }}-4" name="rating" value="2">
             <label for="rating-{{ project.id }}-4"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ project.id }}-5" name="rating" value="5">
+            <input type="radio" id="rating-{{ project.id }}-5" name="rating" value="1">
             <label for="rating-{{ project.id }}-5"><i class="far fa-star"></i></label>
         </div>
     </div>
@@ -269,6 +272,17 @@
     border-radius: 12px;
     padding: 16px 20px;
     margin-bottom: 24px;
+}
+
+/* 项目元信息文字颜色 */
+.project-meta-info .text-muted,
+.project-meta-info .meta-single-line,
+.project-meta-info .meta-left,
+.project-meta-info .meta-right,
+.project-meta-info span,
+.project-meta-info i,
+.project-meta-info .lead {
+    color: #94a3b8 !important;
 }
 
 @font-face {
@@ -341,13 +355,13 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
-    background: rgba(0, 0, 0, 0);
+    background: rgba(0, 0, 0, 0.05);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 16px;
     padding: 16px 12px;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
     width: 120px;
     box-sizing: border-circle;
@@ -423,6 +437,8 @@
 .floating-rating-section .rating-input {
     display: flex;
     gap: 2px;
+    flex-direction: row-reverse; /* 反转顺序以实现从左到右的选中效果 */
+    justify-content: center;
 }
 
 .floating-rating-section .rating-input input[type="radio"] {
@@ -436,13 +452,12 @@
     transition: color 0.2s ease;
 }
 
+/* 鼠标悬停效果 */
 .floating-rating-section .rating-input label:hover,
+.floating-rating-section .rating-input label:hover ~ label,
+/* 选中状态效果 */
 .floating-rating-section .rating-input input[type="radio"]:checked ~ label {
     color: #ffc107;
-}
-
-.floating-rating-section .rating-input input[type="radio"]:checked ~ label ~ label {
-    color: #ddd;
 }
 
 /* 分享按钮样式优化 */
@@ -608,7 +623,7 @@
 .project-description h6 {
     margin-top: 1.5rem;
     margin-bottom: 1rem;
-    color: #495057;
+    color: #94a3b8;
 }
 
 .project-description p {
@@ -644,14 +659,14 @@
     border-left: 4px solid #007bff;
     padding-left: 1rem;
     margin-left: 0;
-    color: #6c757d;
+    color: #94a3b8;
     font-style: italic;
 }
 
 .card-header h5,
 .card-header h6 {
     margin-bottom: 0;
-    color: #495057;
+    color: #94a3b8;
 }
 
 .badge {

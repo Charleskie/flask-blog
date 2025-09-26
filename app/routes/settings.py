@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash
 from flask_login import login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models.user import db, User
@@ -116,34 +116,6 @@ def account_settings():
     
     return render_template('settings/account.html')
 
-@settings_bp.route('/settings/theme', methods=['GET', 'POST'])
-@login_required
-def theme_settings():
-    """主题设置"""
-    if request.method == 'POST':
-        theme = request.form.get('theme', 'light')
-        language = request.form.get('language', 'zh-CN')
-        timezone = request.form.get('timezone', 'Asia/Shanghai')
-        
-        try:
-            current_user.theme = theme
-            current_user.language = language
-            current_user.timezone = timezone
-            
-            db.session.commit()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '主题设置更新成功！'})
-
-            return redirect(url_for('settings.theme_settings'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
-
-            print(f"更新主题设置错误: {e}")
-    
-    return render_template('settings/theme.html')
 
 @settings_bp.route('/settings/security', methods=['GET', 'POST'])
 @login_required
@@ -201,17 +173,17 @@ def privacy_settings():
     
     return render_template('settings/privacy.html')
 
-@settings_bp.route('/settings/avata', methods=['POST'])
+@settings_bp.route('/settings/avatar', methods=['POST'])
 @login_required
 def upload_avatar():
     """上传头像"""
-    if 'avata' not in request.files:
+    if 'avatar' not in request.files:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': '没有选择文件'})
 
         return redirect(url_for('settings.profile_settings'))
     
-    file = request.files['avata']
+    file = request.files['avatar']
     if file.filename == '':
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': '没有选择文件'})
@@ -220,11 +192,22 @@ def upload_avatar():
     
     if file:
         # 检查文件类型
-        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
         if '.' not in file.filename or \
            file.filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '不支持的文件类型'})
+                return jsonify({'success': False, 'message': '不支持的文件类型，支持：PNG、JPG、JPEG、GIF、WebP'})
+
+            return redirect(url_for('settings.profile_settings'))
+        
+        # 检查文件大小 (最大5MB)
+        file.seek(0, os.SEEK_END)
+        file_size = file.tell()
+        file.seek(0)  # 重置文件指针
+        
+        if file_size > 5 * 1024 * 1024:  # 5MB
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '文件大小不能超过5MB'})
 
             return redirect(url_for('settings.profile_settings'))
         
@@ -240,43 +223,35 @@ def upload_avatar():
             file_path = os.path.join(upload_dir, filename)
             file.save(file_path)
             
+            # 删除旧头像（如果不是默认头像）
+            if current_user.avatar and '/static/uploads/avatars/' in current_user.avatar:
+                try:
+                    old_avatar_path = os.path.join('app', current_user.avatar.lstrip('/'))
+                    if os.path.exists(old_avatar_path):
+                        os.remove(old_avatar_path)
+                except Exception as e:
+                    print(f"删除旧头像失败: {e}")
+            
             # 更新用户头像URL
             current_user.avatar = f'/static/uploads/avatars/{filename}'
             db.session.commit()
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '头像上传成功！'})
+                return jsonify({
+                    'success': True, 
+                    'message': '头像上传成功！',
+                    'avatar_url': current_user.avatar
+                })
+            
+            flash('头像上传成功！', 'success')
+            return redirect(url_for('settings.profile_settings'))
 
         except Exception as e:
+            db.session.rollback()
+            print(f"头像上传错误: {e}")
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '头像上传失败，请稍后重试'})
-
-            print(f"头像上传错误: {e}")
+            
+            flash('头像上传失败，请稍后重试', 'error')
     
     return redirect(url_for('settings.profile_settings'))
-
-@settings_bp.route('/api/theme', methods=['POST'])
-@login_required
-def update_theme():
-    """AJAX更新主题"""
-    theme = request.json.get('theme', 'light')
-    
-    try:
-        current_user.theme = theme
-        db.session.commit()
-        return jsonify({'success': True, 'message': '主题更新成功'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': '主题更新失败'})
-
-@settings_bp.route('/api/language', methods=['POST'])
-@login_required
-def update_language():
-    """AJAX更新语言"""
-    language = request.json.get('language', 'zh-CN')
-    
-    try:
-        current_user.language = language
-        db.session.commit()
-        return jsonify({'success': True, 'message': '语言更新成功'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': '语言更新失败'}) 

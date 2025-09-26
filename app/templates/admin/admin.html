@@ -3,188 +3,308 @@
 {% block title %}管理后台 - 我的个人网站{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1 class="mb-4">管理后台</h1>
-        <p class="lead">欢迎回来，{{ current_user.username }}！</p>
+<!-- 页面头部 -->
+<div class="text-center py-6 mb-8">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            管理后台
+        </h1>
+        <p class="text-lg text-slate-300">欢迎回来，{{ current_user.username }}！</p>
     </div>
 </div>
-<!-- 管理功能 -->
-<div class="row">
-    <div class="col-lg-3 col-md-6 mb-4">
-        <div class="card h-40">
-            <div class="card-header py-2">
-                <h6 class="mb-0"><i class="fas fa-blog"></i> 文章管理</h6>
-            </div>
-            <div class="card-body py-2">
-                <div class="d-flex gap-1 flex-wrap">
-                    <a href="{{ url_for('admin.new_post') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus"></i> 新建
-                    </a>
-                    <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-list"></i> 列表
-                    </a>
-                    <a href="#" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-tags"></i> 分类
-                    </a>
+
+<!-- 管理功能网格 -->
+<div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- 文章管理 -->
+        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-blog text-white text-xl"></i>
                 </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">文章管理</h3>
+                    <p class="text-slate-300 text-sm">管理博客文章和内容</p>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ url_for('admin.new_post') }}" class="btn-primary-sm">
+                    <i class="fas fa-plus"></i> 新建
+                </a>
+                <a href="{{ url_for('admin.admin_posts') }}" class="btn-secondary-sm">
+                    <i class="fas fa-list"></i> 列表
+                </a>
+                <a href="#" class="btn-secondary-sm">
+                    <i class="fas fa-tags"></i> 分类
+                </a>
+            </div>
+        </div>
+        
+        <!-- 项目管理 -->
+        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-code text-white text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">项目管理</h3>
+                    <p class="text-slate-300 text-sm">管理项目作品展示</p>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ url_for('admin.new_project') }}" class="btn-primary-sm">
+                    <i class="fas fa-plus"></i> 添加
+                </a>
+                <a href="{{ url_for('admin.admin_projects') }}" class="btn-secondary-sm">
+                    <i class="fas fa-list"></i> 列表
+                </a>
+                <a href="{{ url_for('admin.admin_messages') }}" class="btn-secondary-sm">
+                    <i class="fas fa-envelope"></i> 消息
+                </a>
+            </div>
+        </div>
+        
+        <!-- 关于页面 -->
+        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-user-circle text-white text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">关于页面</h3>
+                    <p class="text-slate-300 text-sm">管理个人介绍页面</p>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ url_for('admin.admin_about') }}" class="btn-primary-sm">
+                    <i class="fas fa-cog"></i> 管理
+                </a>
+                <a href="{{ url_for('admin.new_about_content') }}" class="btn-secondary-sm">
+                    <i class="fas fa-plus"></i> 内容
+                </a>
+                <a href="{{ url_for('admin.new_about_contact') }}" class="btn-secondary-sm">
+                    <i class="fas fa-plus"></i> 联系
+                </a>
+            </div>
+        </div>
+        
+        <!-- 版本管理 -->
+        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-code-branch text-white text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">版本管理</h3>
+                    <p class="text-slate-300 text-sm">管理项目版本信息</p>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ url_for('version.admin_versions') }}" class="btn-primary-sm">
+                    <i class="fas fa-list"></i> 列表
+                </a>
+                <a href="{{ url_for('version.new_version') }}" class="btn-secondary-sm">
+                    <i class="fas fa-plus"></i> 新建
+                </a>
+            </div>
+        </div>
+        
+        <!-- 技能管理 -->
+        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-tools text-white text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">技能管理</h3>
+                    <p class="text-slate-300 text-sm">管理技能标签</p>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ url_for('admin.admin_skills') }}" class="btn-primary-sm">
+                    <i class="fas fa-list"></i> 列表
+                </a>
+                <a href="{{ url_for('admin.new_skill') }}" class="btn-secondary-sm">
+                    <i class="fas fa-plus"></i> 新建
+                </a>
+            </div>
+        </div>
+        
+        <!-- 系统设置 -->
+        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
+                    <i class="fas fa-cog text-white text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-white">系统设置</h3>
+                    <p class="text-slate-300 text-sm">网站配置和管理</p>
+                </div>
+            </div>
+            <div class="flex gap-2 flex-wrap">
+                <a href="{{ url_for('settings.profile_settings') }}" class="btn-primary-sm">
+                    <i class="fas fa-user-edit"></i> 个人资料
+                </a>
+                <a href="{{ url_for('settings.security_settings') }}" class="btn-secondary-sm">
+                    <i class="fas fa-shield-alt"></i> 安全
+                </a>
+                <a href="#" class="btn-secondary-sm">
+                    <i class="fas fa-database"></i> 备份
+                </a>
             </div>
         </div>
     </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card h-40">
-            <div class="card-header py-2">
-                <h6 class="mb-0"><i class="fas fa-code"></i> 项目管理</h6>
-            </div>
-            <div class="card-body py-2">
-                <div class="d-flex gap-1 flex-wrap">
-                    <a href="{{ url_for('admin.new_project') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-plus"></i> 添加
-                    </a>
-                    <a href="{{ url_for('admin.admin_projects') }}" class="btn btn-sm btn-outline-secondary">
-                        <i class="fas fa-list"></i> 列表
-                    </a>
-                    <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-envelope"></i> 消息
-                    </a>
+</div>
+
+<!-- 最近活动和统计 -->
+<div class="max-w-6xl mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- 最近活动 -->
+        <div class="lg:col-span-2">
+            <div class="glass-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
+                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-history text-white text-sm"></i>
+                    </div>
+                    最近活动
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-plus text-white text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white font-medium">新建文章</h4>
+                            <p class="text-slate-300 text-sm">发布了新文章《Flask Web开发入门指南》</p>
+                            <span class="text-slate-400 text-xs">2小时前</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-edit text-white text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white font-medium">更新项目</h4>
+                            <p class="text-slate-300 text-sm">更新了项目《个人网站》的信息</p>
+                            <span class="text-slate-400 text-xs">1天前</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                            <i class="fas fa-comment text-white text-sm"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-white font-medium">新消息</h4>
+                            <p class="text-slate-300 text-sm">收到来自张三的合作咨询</p>
+                            <span class="text-slate-400 text-xs">2天前</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card h-40">
-            <div class="card-header py-2">
-                <h6 class="mb-0"><i class="fas fa-user-circle"></i> 关于页面</h6>
-            </div>
-            <div class="card-body py-2">
-                <div class="d-flex gap-1 flex-wrap">
-                    <a href="{{ url_for('admin.admin_about') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-cog"></i> 管理
-                    </a>
-                    <a href="{{ url_for('admin.new_about_content') }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-plus"></i> 内容
-                    </a>
-                    <a href="{{ url_for('admin.new_about_contact') }}" class="btn btn-sm btn-outline-info">
-                        <i class="fas fa-plus"></i> 联系
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card h-40">
-            <div class="card-header py-2">
-                <h6 class="mb-0"><i class="fas fa-code-branch"></i> 版本管理</h6>
-            </div>
-            <div class="card-body py-2">
-                <div class="d-flex gap-1 flex-wrap">
-                    <a href="{{ url_for('version.admin_versions') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-list"></i> 列表
-                    </a>
-                    <a href="{{ url_for('version.new_version') }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-plus"></i> 新建
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-3 col-md-6 mb-3">
-        <div class="card h-40">
-            <div class="card-header py-2">
-                <h6 class="mb-0"><i class="fas fa-tools"></i> 技能管理</h6>
-            </div>
-            <div class="card-body py-2">
-                <div class="d-flex gap-1 flex-wrap">
-                    <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-list"></i> 列表
-                    </a>
-                    <a href="{{ url_for('admin.new_skill') }}" class="btn btn-sm btn-outline-success">
-                        <i class="fas fa-plus"></i> 新建
-                    </a>
+        
+        <!-- 快速统计 -->
+        <div>
+            <div class="glass-card rounded-xl p-6">
+                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
+                    <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-bar text-white text-sm"></i>
+                    </div>
+                    数据统计
+                </h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-blog text-white text-sm"></i>
+                            </div>
+                            <span class="text-white">文章总数</span>
+                        </div>
+                        <span class="text-2xl font-bold text-blue-400">12</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-code text-white text-sm"></i>
+                            </div>
+                            <span class="text-white">项目总数</span>
+                        </div>
+                        <span class="text-2xl font-bold text-green-400">8</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-envelope text-white text-sm"></i>
+                            </div>
+                            <span class="text-white">未读消息</span>
+                        </div>
+                        <span class="text-2xl font-bold text-purple-400">3</span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-eye text-white text-sm"></i>
+                            </div>
+                            <span class="text-white">今日访问</span>
+                        </div>
+                        <span class="text-2xl font-bold text-orange-400">156</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- 最近活动 -->
-<div class="row">
-    <div class="col-md-8 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-history"></i> 最近活动</h5>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-plus-circle text-success"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6>新建文章</h6>
-                                <p class="text-muted mb-0">发布了新文章《Flask Web开发入门指南》</p>
-                                <small class="text-muted">2小时前</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-edit text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6>更新项目</h6>
-                                <p class="text-muted mb-0">更新了项目《个人网站》的信息</p>
-                                <small class="text-muted">1天前</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-comment text-info"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6>新消息</h6>
-                                <p class="text-muted mb-0">收到来自张三的合作咨询</p>
-                                <small class="text-muted">2天前</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4 mb-4">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-cog"></i> 快速设置</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{{ url_for('settings.profile_settings') }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-user-edit"></i> 编辑个人信息
-                    </a>
-                    <a href="{{ url_for('settings.theme_settings') }}" class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-palette"></i> 主题设置
-                    </a>
-                    <a href="{{ url_for('settings.security_settings') }}" class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-shield-alt"></i> 安全设置
-                    </a>
-                    <a href="#" class="btn btn-outline-warning btn-sm">
-                        <i class="fas fa-database"></i> 数据备份
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<style>
+.btn-primary-sm {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+}
+
+.btn-primary-sm:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-secondary-sm {
+    background: rgba(100, 116, 139, 0.8);
+    border: 1px solid rgba(100, 116, 139, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    text-decoration: none;
+}
+
+.btn-secondary-sm:hover {
+    background: rgba(100, 116, 139, 1);
+    transform: translateY(-1px);
+    text-decoration: none;
+    color: white;
+}
+</style>
 {% endblock %} 

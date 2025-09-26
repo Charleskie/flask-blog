@@ -33,8 +33,11 @@
                         </label>
                     </div>
                     
-                    <div class="d-grid">
-                        <button type="submit" class="btn-submit btn-lg">
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-sm" style="min-width: 160px;">
+                            <i class="fas fa-user-plus"></i> 注册
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-sm" style="min-width: 160px;">
                             <i class="fas fa-sign-in-alt"></i> 登录
                         </button>
                     </div>
@@ -43,8 +46,7 @@
                 <hr>
                 
                 <div class="text-center">
-                    <p class="mb-0">还没有账号？</p>
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary">注册账号</a>
+                    <p class="mb-0">还没有账号？点击右侧注册按钮</p>
                 </div>
             </div>
         </div>

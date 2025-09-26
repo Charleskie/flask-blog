@@ -218,8 +218,7 @@ class InteractionManager {
                 this.clearRatingHover(e.target.closest('.rating-section .rating-input'));
             }
         });
-        
-        console.log('事件监听器绑定完成');
+
     }
 
     async handleLike(button) {
@@ -767,7 +766,17 @@ class InteractionManager {
         let html = '';
         
         if (comments.length === 0) {
-            html = '<div class="no-comments">暂无评论，快来抢沙发吧！</div>';
+            html = `
+                <div class="no-comments">
+                    <div class="no-comments-icon">
+                        <i class="fas fa-comment-slash"></i>
+                    </div>
+                    <div class="no-comments-text">
+                        <h4>暂无评论</h4>
+                        <p>快来抢沙发，发表你的看法吧！</p>
+                    </div>
+                </div>
+            `;
         } else {
             comments.forEach((comment, index) => {
                 // 使用随机头像作为默认头像
@@ -775,51 +784,92 @@ class InteractionManager {
                 const avatar = comment.user.avatar || defaultAvatar;
                 const avatarId = `comment-avatar-${comment.id}`;
                 html += `
-                    <div class="comment-item" data-comment-id="${comment.id}">
-                        <div class="comment-header">
-                            <img src="${avatar}" alt="${comment.user.username}" class="comment-avatar" id="${avatarId}" data-original-src="${avatar}" data-retry-count="0">
-                            <div class="comment-info">
-                                <span class="comment-author">${comment.user.username}</span>
-                                <span class="comment-time">${comment.created_at}</span>
+                    <div class="comment-card" data-comment-id="${comment.id}">
+                        <div class="comment-card-header">
+                            <div class="comment-user-info">
+                                <div class="comment-avatar-container">
+                                    <img src="${avatar}" alt="${comment.user.username}" class="comment-avatar" id="${avatarId}" data-original-src="${avatar}" data-retry-count="0">
+                                    <div class="avatar-status-indicator"></div>
+                                </div>
+                                <div class="comment-user-details">
+                                    <div class="comment-author-name">${comment.user.username}</div>
+                                    <div class="comment-meta">
+                                        <span class="comment-time">
+                                            <i class="fas fa-clock"></i>
+                                            ${comment.created_at}
+                                        </span>
+                                        ${comment.replies_count > 0 ? `
+                                        <span class="comment-replies-count">
+                                            <i class="fas fa-reply"></i>
+                                            ${comment.replies_count} 条回复
+                                        </span>
+                                        ` : ''}
+                                    </div>
+                                </div>
                             </div>
                             ${this.shouldShowCommentActions(comment.user.id) ? `
-                            <div class="comment-actions" data-user-id="${comment.user.id}">
-                                <button class="btn-delete-comment" data-comment-id="${comment.id}" title="删除评论">
+                            <div class="comment-admin-actions">
+                                <button class="btn-admin-action btn-delete-comment" data-comment-id="${comment.id}" title="删除评论">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                             ` : ''}
                         </div>
-                        <div class="comment-content">${comment.content}</div>
-                        <div class="comment-replies">
-                            <div class="replies-list" data-comment-id="${comment.id}">
-                                ${this.renderReplies(comment.replies || [])}
+                        
+                        <div class="comment-card-body">
+                            <div class="comment-content-wrapper">
+                                <div class="comment-content">${comment.content}</div>
                             </div>
-                            <div class="reply-form" style="display: none;" data-comment-id="${comment.id}">
-                                <div class="reply-simple-editor-container"></div>
-                                <div class="reply-actions">
-                                    <button class="btn-submit-reply" data-comment-id="${comment.id}">
-                                        <i class="fas fa-paper-plane"></i>
-                                        回复
-                                    </button>
-                                    <button class="btn-cancel-reply" data-comment-id="${comment.id}">
-                                        <i class="fas fa-times"></i>
-                                        取消
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="comment-footer">
-                                <button class="btn-reply" data-comment-id="${comment.id}">
-                                    <i class="fas fa-reply"></i> 回复
-                                    ${comment.replies_count > 0 ? `(${comment.replies_count})` : ''}
+                        </div>
+                        
+                        <div class="comment-card-footer">
+                            <div class="comment-actions-left">
+                                <button class="btn-comment-action comment-like-btn ${comment.is_liked ? 'liked' : ''}" 
+                                        data-comment-id="${comment.id}" 
+                                        title="${comment.is_liked ? '取消点赞' : '点赞'}">
+                                    <i class="${comment.is_liked ? 'fas' : 'far'} fa-heart"></i>
+                                    <span class="action-text">${comment.like_count || 0}</span>
                                 </button>
-                                <div class="comment-actions">
-                                    <button class="comment-like-btn ${comment.is_liked ? 'liked' : ''}" 
-                                            data-comment-id="${comment.id}" 
-                                            title="${comment.is_liked ? '取消点赞' : '点赞'}">
-                                        <i class="${comment.is_liked ? 'fas' : 'far'} fa-heart"></i>
-                                        <span class="like-count">${comment.like_count || 0}</span>
-                                    </button>
+                                <button class="btn-comment-action btn-reply" data-comment-id="${comment.id}">
+                                    <i class="fas fa-reply"></i>
+                                    <span class="action-text">回复</span>
+                                </button>
+                            </div>
+                            <div class="comment-actions-right">
+                                <button class="btn-comment-action btn-share" title="分享评论">
+                                    <i class="fas fa-share"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="comment-replies-section">
+                            <div class="replies-container" data-comment-id="${comment.id}">
+                                <div class="replies-list" data-comment-id="${comment.id}">
+                                    ${this.renderReplies(comment.replies || [])}
+                                </div>
+                                <div class="reply-form" style="display: none;" data-comment-id="${comment.id}">
+                                    <div class="reply-form-header">
+                                        <div class="reply-form-avatar">
+                                            <img src="${this.currentUser?.avatar || this.generateRandomAvatar(this.currentUser?.username || 'user')}" alt="当前用户" class="reply-user-avatar">
+                                        </div>
+                                        <div class="reply-form-info">
+                                            <div class="reply-form-user">${this.currentUser?.username || '用户'}</div>
+                                            <div class="reply-form-hint">回复 ${comment.user.username}</div>
+                                        </div>
+                                    </div>
+                                    <div class="reply-editor-container">
+                                        <div class="reply-simple-editor-container"></div>
+                                    </div>
+                                    <div class="reply-form-actions">
+                                        <button class="btn-reply-action btn-cancel-reply" data-comment-id="${comment.id}">
+                                            <i class="fas fa-times"></i>
+                                            取消
+                                        </button>
+                                        <button class="btn-reply-action btn-submit-reply primary" data-comment-id="${comment.id}">
+                                            <i class="fas fa-paper-plane"></i>
+                                            发送回复
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1277,22 +1327,46 @@ class InteractionManager {
             const defaultAvatar = this.generateRandomAvatar(reply.user.username);
             const avatar = reply.user.avatar || defaultAvatar;
             return `
-                <div class="reply-item" data-reply-id="${reply.id}">
-                    <div class="reply-header">
-                        <img src="${avatar}" alt="${reply.user.username}" class="reply-avatar">
-                        <div class="reply-info">
-                            <span class="reply-author">${reply.user.username}</span>
-                            <span class="reply-time">${reply.created_at}</span>
+                <div class="reply-card" data-reply-id="${reply.id}">
+                    <div class="reply-card-header">
+                        <div class="reply-user-info">
+                            <div class="reply-avatar-container">
+                                <img src="${avatar}" alt="${reply.user.username}" class="reply-avatar">
+                                <div class="reply-avatar-indicator"></div>
+                            </div>
+                            <div class="reply-user-details">
+                                <div class="reply-author-name">${reply.user.username}</div>
+                                <div class="reply-meta">
+                                    <span class="reply-time">
+                                        <i class="fas fa-clock"></i>
+                                        ${reply.created_at}
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                         ${this.shouldShowReplyActions(reply.user.id) ? `
-                        <div class="reply-actions">
-                            <button class="btn-delete-reply" data-reply-id="${reply.id}" title="删除回复">
+                        <div class="reply-admin-actions">
+                            <button class="btn-admin-action btn-delete-reply" data-reply-id="${reply.id}" title="删除回复">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
                         ` : ''}
                     </div>
-                    <div class="reply-content">${reply.content}</div>
+                    <div class="reply-card-body">
+                        <div class="reply-content-wrapper">
+                            <div class="reply-content">${reply.content}</div>
+                        </div>
+                    </div>
+                    <div class="reply-card-footer">
+                        <div class="reply-actions">
+                            <button class="btn-reply-action reply-like-btn ${reply.is_liked ? 'liked' : ''}" 
+                                    data-reply-id="${reply.id}" 
+                                    title="${reply.is_liked ? '取消点赞' : '点赞'}">
+                                <i class="${reply.is_liked ? 'fas' : 'far'} fa-heart"></i>
+                                <span class="action-text">${reply.like_count || 0}</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             `;
         }).join('');

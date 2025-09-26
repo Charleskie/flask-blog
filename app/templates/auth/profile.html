@@ -17,17 +17,34 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-3 text-center">
-                        <img src="https://via.placeholder.com/150x150" alt="用户头像" class="img-fluid rounded-circle mb-3">
-                        <button class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-camera"></i> 更换头像
-                        </button>
+                    <div class="col-md-4 text-center">
+                        <div class="avatar-display-section">
+                            <div class="avatar-container">
+                                <img src="{{ current_user.get_avatar_url() }}" alt="用户头像" 
+                                     class="img-fluid rounded-circle mb-3 user-avatar" 
+                                     id="current-avatar"
+                                     style="width: 180px; height: 180px; object-fit: cover;">
+                                <div class="avatar-overlay">
+                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                                        <i class="fas fa-camera"></i> 更换头像
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="avatar-info">
+                                <h5 class="mb-1">{{ current_user.get_display_name() }}</h5>
+                                <small class="text-muted">@{{ current_user.username }}</small>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-9">
+                    <div class="col-md-8">
                         <table class="table table-borderless">
                             <tr>
                                 <td class="fw-bold" style="width: 120px;">用户名：</td>
                                 <td>{{ current_user.username }}</td>
+                            </tr>
+                            <tr>
+                                <td class="fw-bold">昵称：</td>
+                                <td>{{ current_user.get_display_name() }}</td>
                             </tr>
                             <tr>
                                 <td class="fw-bold">邮箱：</td>
@@ -39,7 +56,7 @@
                             </tr>
                             <tr>
                                 <td class="fw-bold">最后登录：</td>
-                                <td>{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</td>
+                                <td>{{ current_user.last_login.strftime('%Y年%m月%d日 %H:%M') if current_user.last_login else '从未登录' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -177,4 +194,410 @@
         </div>
     </div>
 </div>
+
+<!-- 头像上传模态框 -->
+<div class="modal fade" id="avatarModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-camera me-2"></i>更换头像
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="row">
+                    <!-- 左侧：当前头像 -->
+                    <div class="col-md-4 text-center">
+                        <h6 class="text-muted mb-3">当前头像</h6>
+                        <img src="{{ current_user.get_avatar_url() }}" 
+                             alt="当前头像" class="img-fluid rounded-circle current-avatar-preview" 
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                    </div>
+                    
+                    <!-- 中间：上传区域 -->
+                    <div class="col-md-4 text-center">
+                        <h6 class="text-muted mb-3">上传新头像</h6>
+                        <div class="avatar-upload-zone" id="avatar-upload-zone">
+                            <input type="file" class="d-none" id="avatar" name="avatar" accept="image/*" required>
+                            <div class="upload-zone" style="cursor: pointer;">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
+                                <p class="mb-2">点击或拖拽上传</p>
+                                <small class="text-muted">支持 PNG、JPG、JPEG、GIF、WebP</small>
+                                <br>
+                                <small class="text-muted">文件大小不超过 5MB</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧：预览区域 -->
+                    <div class="col-md-4 text-center">
+                        <h6 class="text-muted mb-3">预览效果</h6>
+                        <img id="avatar-preview" src="{{ current_user.get_avatar_url() }}" 
+                             alt="头像预览" class="img-fluid rounded-circle preview-avatar" 
+                             style="width: 120px; height: 120px; object-fit: cover;">
+                        <div class="mt-2">
+                            <small class="text-success" id="preview-status">选择文件后显示预览</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 进度条 -->
+                <div class="mt-4" id="upload-progress" style="display: none;">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted mt-1 d-block text-center">正在上传头像...</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>取消
+                </button>
+                <button type="button" class="btn btn-primary" id="upload-avatar" disabled>
+                    <i class="fas fa-upload me-1"></i>确认上传
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 卡片背景样式调整 */
+.card {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+.card-header {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+/* 表格文字颜色调整 */
+.table td {
+    color: #94a3b8 !important;
+}
+
+.table .fw-bold {
+    color: #94a3b8 !important;
+}
+
+/* 账户安全部分文字颜色 */
+.card-body h6 {
+    color: #94a3b8 !important;
+}
+
+.card-body small {
+    color: #94a3b8 !important;
+}
+
+/* 头像显示区域样式 */
+.avatar-display-section {
+    position: relative;
+}
+
+.avatar-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1rem;
+}
+
+.user-avatar {
+    border: 4px solid #e9ecef;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.user-avatar:hover {
+    border-color: #007bff;
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0,123,255,0.2);
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.avatar-container:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-info h5 {
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.avatar-info small {
+    color: #94a3b8;
+}
+
+/* 模态框样式 */
+.upload-zone {
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.upload-zone:hover {
+    border-color: #007bff;
+    background: #e3f2fd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.1);
+}
+
+.upload-zone.dragover {
+    border-color: #007bff;
+    background: #e3f2fd;
+    transform: scale(1.02);
+}
+
+.current-avatar-preview,
+.preview-avatar {
+    border: 3px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.preview-avatar {
+    border-color: #28a745;
+    box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+}
+
+/* 进度条样式 */
+.progress {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    background: linear-gradient(45deg, #007bff, #0056b3);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .user-avatar {
+        width: 120px !important;
+        height: 120px !important;
+    }
+    
+    .current-avatar-preview,
+    .preview-avatar {
+        width: 80px !important;
+        height: 80px !important;
+    }
+    
+    .upload-zone {
+        min-height: 150px;
+        padding: 1rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const avatarInput = document.getElementById('avatar');
+    const avatarPreview = document.getElementById('avatar-preview');
+    const uploadBtn = document.getElementById('upload-avatar');
+    const uploadZone = document.querySelector('.upload-zone');
+    const previewStatus = document.getElementById('preview-status');
+    const uploadProgress = document.getElementById('upload-progress');
+    const progressBar = uploadProgress.querySelector('.progress-bar');
+    
+    // 点击上传区域触发文件选择
+    uploadZone.addEventListener('click', function() {
+        avatarInput.click();
+    });
+    
+    // 拖拽上传功能
+    uploadZone.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('dragover');
+    });
+    
+    uploadZone.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+    });
+    
+    uploadZone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                // 创建FileList对象
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+                avatarInput.files = dataTransfer.files;
+                
+                // 触发change事件
+                avatarInput.dispatchEvent(new Event('change'));
+            } else {
+                showAlert('danger', '请选择图片文件');
+            }
+        }
+    });
+    
+    // 头像预览
+    avatarInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            // 验证文件类型
+            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                showAlert('danger', '不支持的文件类型，请选择 PNG、JPG、JPEG、GIF 或 WebP 格式的图片');
+                this.value = '';
+                return;
+            }
+            
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showAlert('danger', '文件大小不能超过 5MB');
+                this.value = '';
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                avatarPreview.src = e.target.result;
+                previewStatus.textContent = '预览已更新';
+                previewStatus.className = 'text-success';
+                uploadBtn.disabled = false;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            uploadBtn.disabled = true;
+            previewStatus.textContent = '选择文件后显示预览';
+            previewStatus.className = 'text-muted';
+        }
+    });
+    
+    // 上传头像
+    uploadBtn.addEventListener('click', function() {
+        const formData = new FormData();
+        const file = avatarInput.files[0];
+        
+        if (!file) {
+            showAlert('warning', '请选择头像文件');
+            return;
+        }
+        
+        formData.append('avatar', file);
+        
+        // 显示进度条
+        uploadProgress.style.display = 'block';
+        progressBar.style.width = '0%';
+        
+        uploadBtn.disabled = true;
+        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中...';
+        
+        // 模拟进度条
+        let progress = 0;
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressBar.style.width = progress + '%';
+        }, 200);
+        
+        fetch('{{ url_for("settings.upload_avatar") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            
+            setTimeout(() => {
+                if (data.success) {
+                    // 更新页面上的头像
+                    document.getElementById('current-avatar').src = data.avatar_url;
+                    document.querySelector('.current-avatar-preview').src = data.avatar_url;
+                    
+                    // 关闭模态框
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
+                    modal.hide();
+                    
+                    // 显示成功消息
+                    showAlert('success', data.message);
+                } else {
+                    showAlert('danger', data.message);
+                }
+                
+                // 重置状态
+                uploadProgress.style.display = 'none';
+                uploadBtn.disabled = false;
+                uploadBtn.innerHTML = '<i class="fas fa-upload me-1"></i>确认上传';
+                avatarInput.value = '';
+                previewStatus.textContent = '选择文件后显示预览';
+                previewStatus.className = 'text-muted';
+            }, 500);
+        })
+        .catch(error => {
+            clearInterval(progressInterval);
+            console.error('Error:', error);
+            showAlert('danger', '上传失败，请稍后重试');
+            
+            // 重置状态
+            uploadProgress.style.display = 'none';
+            uploadBtn.disabled = false;
+            uploadBtn.innerHTML = '<i class="fas fa-upload me-1"></i>确认上传';
+        });
+    });
+    
+    function showAlert(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(alertDiv, container.firstChild);
+        
+        // 3秒后自动消失
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 3000);
+    }
+});
+</script>
 {% endblock %} 
