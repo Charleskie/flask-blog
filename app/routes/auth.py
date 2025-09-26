@@ -120,10 +120,13 @@ def register():
             
             db.session.commit()
             
+            # 注册成功后自动登录用户
+            login_user(user)
+            
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '注册成功！请登录。', 'redirect': url_for('auth.login')})
+                return jsonify({'success': True, 'message': '注册成功！已自动登录。', 'redirect': url_for('main.index')})
 
-            return redirect(url_for('auth.login'))
+            return redirect(url_for('main.index'))
             
         except Exception as e:
             db.session.rollback()

@@ -266,6 +266,42 @@
 
 {% block extra_css %}
 <style>
+/* 卡片背景样式调整 */
+.card {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+.card-header {
+    background: rgba(15, 23, 42, 0.6) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+/* 表格文字颜色调整 */
+.table td {
+    color: #94a3b8 !important;
+}
+
+.table .fw-bold {
+    color: #94a3b8 !important;
+}
+
+/* 账户安全部分文字颜色 */
+.card-body h6 {
+    color: #94a3b8 !important;
+}
+
+.card-body small {
+    color: #94a3b8 !important;
+}
+
 /* 头像显示区域样式 */
 .avatar-display-section {
     position: relative;
@@ -309,8 +345,12 @@
 }
 
 .avatar-info h5 {
-    color: #495057;
+    color: #94a3b8;
     font-weight: 600;
+}
+
+.avatar-info small {
+    color: #94a3b8;
 }
 
 /* 模态框样式 */

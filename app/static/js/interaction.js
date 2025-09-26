@@ -218,8 +218,7 @@ class InteractionManager {
                 this.clearRatingHover(e.target.closest('.rating-section .rating-input'));
             }
         });
-        
-        console.log('事件监听器绑定完成');
+
     }
 
     async handleLike(button) {

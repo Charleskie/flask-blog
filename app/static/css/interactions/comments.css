@@ -466,7 +466,7 @@
 
 .comment-author-name {
     font-weight: 600;
-    color: #e2e8f0;
+    color: #94a3b8;
     font-size: 1rem;
     margin-bottom: 0.25rem;
 }
@@ -525,7 +525,7 @@
 }
 
 .comment-content {
-    color: #e2e8f0;
+    color: #94a3b8;
     line-height: 1.7;
     font-size: 1rem;
     word-wrap: break-word;
@@ -860,7 +860,7 @@
 
 .reply-author-name {
     font-weight: 600;
-    color: #e2e8f0;
+    color: #94a3b8;
     font-size: 0.9rem;
     margin-bottom: 0.125rem;
 }
@@ -897,7 +897,7 @@
 }
 
 .reply-content {
-    color: #e2e8f0;
+    color: #94a3b8;
     line-height: 1.6;
     font-size: 0.9rem;
     word-wrap: break-word;
@@ -1030,7 +1030,7 @@
 
 .reply-form-user {
     font-weight: 600;
-    color: #e2e8f0;
+    color: #94a3b8;
     font-size: 0.9rem;
     margin-bottom: 0.125rem;
 }

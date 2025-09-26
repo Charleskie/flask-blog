@@ -234,8 +234,7 @@
                 </div>
                 
                 <div class="flex items-center space-x-2">
-                    <div class="theme-switch dark mr-2"></div>
-                    
+
                     {% if current_user.is_authenticated %}
                         <!-- 消息通知图标 -->
                         {% if current_user.is_admin %}
@@ -292,10 +291,10 @@
                             </div>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="text-slate-300 hover:text-indigo-300 px-3 py-1 rounded-md border border-slate-600 hover:border-indigo-500">
+                        <a href="{{ url_for('auth.login') }}" class="btn-secondary text-slate-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-slate-600 hover:border-indigo-500 hover:bg-indigo-600 transition-all duration-300">
                             登录
                         </a>
-                        <a href="{{ url_for('auth.register') }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium">
+                        <a href="{{ url_for('auth.register') }}" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium">
                             注册
                         </a>
                     {% endif %}

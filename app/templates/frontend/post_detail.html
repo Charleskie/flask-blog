@@ -176,7 +176,7 @@
 <div id="wechatShareModal" class="qr-popup" style="display: none;">
     <div class="qr-popup-content">
         <div id="qrcode"></div>
-        <p class="text-muted small mt-2 mb-0">微信扫码分享</p>
+        <p class="text-muted small mt-2 mb-0" style="color: #94a3b8 !important;">微信扫码分享</p>
     </div>
 </div>
 
@@ -194,15 +194,15 @@
     <div class="floating-rating-section">
         <label class="rating-label">评分:</label>
         <div class="rating-input">
-            <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="1">
+            <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="5">
             <label for="rating-{{ post.id }}-1"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="2">
+            <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="4">
             <label for="rating-{{ post.id }}-2"><i class="far fa-star"></i></label>
             <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
             <label for="rating-{{ post.id }}-3"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="4">
+            <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="2">
             <label for="rating-{{ post.id }}-4"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="5">
+            <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="1">
             <label for="rating-{{ post.id }}-5"><i class="far fa-star"></i></label>
         </div>
     </div>
@@ -405,7 +405,16 @@
     border-radius: 12px;
     padding: 12px 16px;
     margin-bottom: 12px;
+}
 
+/* 元信息文字颜色 */
+.post-meta-info .text-muted,
+.post-meta-info .meta-single-line,
+.post-meta-info .meta-left,
+.post-meta-info .meta-right,
+.post-meta-info span,
+.post-meta-info i {
+    color: #94a3b8 !important;
 }
 
 .meta-single-line {
@@ -998,7 +1007,7 @@
     border-left: 4px solid #007bff;
     padding-left: 1rem;
     margin-left: 0;
-    color: #6c757d;
+    color: #94a3b8;
     font-style: italic;
     background-color: #f8f9fa;
     padding: 1rem;
@@ -1089,7 +1098,7 @@
 }
 
 #table-of-contents a {
-    color: #6c757d;
+    color: #94a3b8;
     text-decoration: none;
     display: block;
     padding: 0.25rem 0;
@@ -1286,7 +1295,7 @@ function generateTableOfContents() {
     const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
     
     if (headings.length === 0) {
-        toc.innerHTML = '<p class="text-muted small">暂无目录</p>';
+        toc.innerHTML = '<p class="text-muted small" style="color: #94a3b8 !important;">暂无目录</p>';
         return;
     }
     

@@ -82,7 +82,7 @@
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">密码 *</label>
-                        <div class="input-group">
+                        <div class="input-group password-input-group">
                             <input type="password" class="form-control" id="password" name="password" 
                                    required minlength="6" maxlength="50">
                             <button class="btn btn-outline-secondary" type="button" id="togglePassword">
@@ -99,7 +99,7 @@
                     
                     <div class="mb-3">
                         <label for="confirm_password" class="form-label">确认密码 *</label>
-                        <div class="input-group">
+                        <div class="input-group password-input-group">
                             <input type="password" class="form-control" id="confirm_password" 
                                    name="confirm_password" required minlength="6" maxlength="50">
                             <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
@@ -122,9 +122,12 @@
                         </div>
                     </div>
                     
-                    <div class="d-grid">
-                        <button type="submit" class="btn-submit btn-lg">
-                            <i class="fas fa-user-plus"></i> 注册账号
+                    <div class="d-flex justify-content-between gap-2">
+                        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="min-width: 160px;">
+                            <i class="fas fa-sign-in-alt"></i> 登录
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-sm" style="min-width: 160px;">
+                            <i class="fas fa-user-plus"></i> 注册
                         </button>
                     </div>
                 </form>
@@ -132,8 +135,7 @@
                 <hr>
                 
                 <div class="text-center">
-                    <p class="mb-0">已有账号？</p>
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">立即登录</a>
+                    <p class="mb-0">已有账号？点击左侧登录按钮</p>
                 </div>
             </div>
         </div>
@@ -247,9 +249,145 @@
 }
 
 .avatar-section h5 {
-    color: #495057;
+    color: #94a3b8;
     font-weight: 600;
     margin-bottom: 1rem;
+}
+
+/* 注册页面文字颜色统一调整为灰色 */
+.card-header h4 {
+    color: white !important;
+}
+
+.card-header h4 i {
+    color: white !important;
+}
+
+h5 {
+    color: white !important;
+}
+
+.form-label {
+    color: white !important;
+}
+
+.form-text {
+    color: #64748b !important;
+    font-size: 0.75rem !important;
+}
+
+.text-muted {
+    color: #64748b !important;
+    font-size: 0.75rem !important;
+}
+
+.invalid-feedback {
+    color: #94a3b8 !important;
+}
+
+.modal-title {
+    color: white !important;
+}
+
+.card-body {
+    color: #94a3b8 !important;
+}
+
+.card-body p {
+    color: #94a3b8 !important;
+}
+
+.card-body a {
+    color: #94a3b8 !important;
+}
+
+.form-check-label {
+    color: #94a3b8 !important;
+}
+
+.form-check-label a {
+    color: #94a3b8 !important;
+}
+
+/* 输入框文字颜色调整 */
+.form-control {
+    color: white !important;
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border-color: rgba(71, 85, 105, 0.3) !important;
+}
+
+.form-control:focus {
+    color: white !important;
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
+}
+
+.form-control::placeholder {
+    color: #94a3b8 !important;
+    opacity: 1;
+}
+
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgba(15, 23, 42, 0.8) inset !important;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+
+/* 密码输入栏样式优化 */
+.input-group {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: 100%;
+}
+
+.input-group .form-control {
+    flex: 1 1 auto;
+    min-width: 0;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .btn {
+    flex: 0 0 auto;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 0;
+    min-width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-group .btn i {
+    font-size: 14px;
+}
+
+/* 确保密码输入栏不会换行 */
+.password-input-group {
+    display: flex;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.password-input-group .form-control {
+    flex: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0;
+}
+
+.password-input-group .btn {
+    flex: 0 0 auto;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    border-left: 1px solid #ced4da;
+    min-width: 60px;
+    padding: 0.375rem 0.75rem;
 }
 
 /* 响应式设计 */
@@ -265,6 +403,16 @@
     
     .avatar-upload-area {
         max-width: 280px !important;
+    }
+    
+    /* 移动端密码输入栏优化 */
+    .password-input-group .btn {
+        min-width: 40px;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    .password-input-group .btn i {
+        font-size: 12px;
     }
 }
 </style>
@@ -480,7 +628,21 @@ document.addEventListener('DOMContentLoaded', function() {
             <small class="text-${color}">${text}</small>
         `;
         
-        password.parentNode.appendChild(indicator);
+        // 将强度指示器插入到密码输入栏的父容器中（mb-3 div），而不是input-group中
+        const passwordContainer = password.closest('.mb-3');
+        if (passwordContainer) {
+            // 在form-text之后插入强度指示器
+            const formText = passwordContainer.querySelector('.form-text');
+            if (formText) {
+                formText.insertAdjacentElement('afterend', indicator);
+            } else {
+                // 如果没有form-text，则在input-group之后插入
+                const inputGroup = passwordContainer.querySelector('.input-group');
+                if (inputGroup) {
+                    inputGroup.insertAdjacentElement('afterend', indicator);
+                }
+            }
+        }
     }
 });
 </script>
