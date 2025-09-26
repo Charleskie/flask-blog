@@ -13,12 +13,12 @@
                 <form method="POST" data-ajax-form>
                     <div class="mb-3">
                         <label for="username" class="form-label">用户名</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                        <input type="text" class="form-control" id="username" name="username" required style="background-color: rgba(15, 23, 42, 0.8) !important; border-color: rgba(71, 85, 105, 0.3) !important; color: white !important;">
                     </div>
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">密码</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" class="form-control" id="password" name="password" required style="background-color: rgba(15, 23, 42, 0.8) !important; border-color: rgba(71, 85, 105, 0.3) !important; color: white !important;">
                         <div class="text-end mt-1">
                             <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none small">
                                 忘记密码？
@@ -52,4 +52,36 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* 登录页面输入框样式优化 - 参考注册页面 */
+input.form-control,
+input[type="text"].form-control,
+input[type="password"].form-control {
+    color: white !important;
+    background-color: rgba(15, 23, 42, 0.8) !important;
+    border-color: rgba(71, 85, 105, 0.3) !important;
+}
+
+input.form-control:focus,
+input[type="text"].form-control:focus,
+input[type="password"].form-control:focus {
+    color: white !important;
+    background-color: rgba(15, 23, 42, 0.9) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
+}
+
+/* 处理自动填充 */
+.form-control:-webkit-autofill,
+.form-control:-webkit-autofill:hover,
+.form-control:-webkit-autofill:focus,
+.form-control:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px rgba(15, 23, 42, 0.8) inset !important;
+    -webkit-text-fill-color: white !important;
+    color: white !important;
+}
+</style>
 {% endblock %} 

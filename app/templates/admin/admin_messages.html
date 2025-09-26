@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}私信管理 - 管理后台{% endblock %}
+{% block title %}消息管理 - 管理后台{% endblock %}
 
 {% block content %}
 <!-- 页面头部 -->
@@ -64,16 +64,16 @@
         {% if messages.items %}
             <div class="space-y-4">
                 {% for message in messages.items %}
-                <div class="message-card bg-slate-800/50 border border-slate-600 rounded-lg p-4 hover:bg-slate-800/70 transition-all duration-300 cursor-pointer {% if message.is_unread() %}border-l-4 border-l-red-500{% endif %}" 
-                     onclick="viewMessage({{ message.id }})" 
+                <div class="message-card bg-transparent border border-slate-600/30 rounded-lg p-4 hover:bg-slate-800/20 transition-all duration-300 cursor-pointer {% if message.is_unread() %}border-l-4 border-l-red-500{% endif %}" 
+                     onclick="handleMessageClick({{ message.id }}, '{{ message.subject|e }}')" 
                      data-message-id="{{ message.id }}"
                      style="position: relative; z-index: 1;">
                     <div class="flex items-start justify-between">
                         <div class="flex-1">
                             <div class="flex items-start gap-4">
                                 <!-- 发送者头像 -->
-                                <div class="w-12 h-12 bg-slate-700 rounded-full flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-user text-slate-400"></i>
+                                <div class="w-12 h-12 bg-slate-700/50 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-user text-white"></i>
                                 </div>
                                 
                                 <div class="flex-1">
@@ -91,33 +91,33 @@
                                         {% endif %}
                                     </div>
                                     
-                                    <h4 class="text-lg font-medium text-white mb-2 hover:text-indigo-300 transition-colors">{{ message.subject }}</h4>
-                                    <p class="text-slate-300 text-sm mb-3 line-clamp-2">{{ message.message[:100] }}{% if message.message|length > 100 %}...{% endif %}</p>
+                                    <h4 class="text-lg font-medium text-white mb-2 hover:text-indigo-300 transition-colors cursor-pointer" onclick="event.stopPropagation(); handleMessageClick({{ message.id }}, '{{ message.subject|e }}')">{{ message.subject }}</h4>
+                                    <p class="text-white/80 text-sm mb-3 line-clamp-2">{{ message.message[:100] }}{% if message.message|length > 100 %}...{% endif %}</p>
                                     
                                     <div class="flex items-center gap-4 text-sm">
                                         <div class="flex items-center gap-2">
-                                            <i class="fas fa-envelope text-slate-400"></i>
+                                            <i class="fas fa-envelope text-white/60"></i>
                                             <a href="mailto:{{ message.email }}" class="text-indigo-400 hover:text-indigo-300" onclick="event.stopPropagation()">
                                                 {{ message.email }}
                                             </a>
                                         </div>
                                         
                                         <div class="flex items-center gap-2">
-                                            <i class="fas fa-clock text-slate-400"></i>
-                                            <span class="text-slate-300">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                                            <i class="fas fa-clock text-white/60"></i>
+                                            <span class="text-white/80">{{ message.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
                                         </div>
                                         
                                         {% if message.ip_address %}
                                         <div class="flex items-center gap-2">
-                                            <i class="fas fa-globe text-slate-400"></i>
-                                            <span class="text-slate-300">{{ message.ip_address }}</span>
+                                            <i class="fas fa-globe text-white/60"></i>
+                                            <span class="text-white/80">{{ message.ip_address }}</span>
                                         </div>
                                         {% endif %}
                                         
                                         {% if message.read_at %}
                                         <div class="flex items-center gap-2">
-                                            <i class="fas fa-eye text-slate-400"></i>
-                                            <span class="text-slate-300">已读: {{ message.read_at.strftime('%H:%M') }}</span>
+                                            <i class="fas fa-eye text-white/60"></i>
+                                            <span class="text-white/80">已读: {{ message.read_at.strftime('%H:%M') }}</span>
                                         </div>
                                         {% endif %}
                                     </div>
@@ -463,6 +463,93 @@ function viewMessage(messageId) {
         // 备用跳转方式
         window.open(`/admin/messages/${messageId}`, '_self');
     }
+}
+
+function handleMessageClick(messageId, subject) {
+    console.log('处理消息点击:', messageId, subject);
+    
+    // 检查消息类型，判断是否需要智能跳转
+    const messageCard = document.querySelector(`[data-message-id="${messageId}"]`);
+    if (!messageCard) {
+        // 如果找不到消息卡片，直接跳转到消息详情
+        viewMessage(messageId);
+        return;
+    }
+    
+    // 检查消息内容，判断是否为系统通知类型的消息
+    const messageContent = messageCard.querySelector('p').textContent.toLowerCase();
+    const messageSubject = subject.toLowerCase();
+    
+    // 判断消息类型并智能跳转
+    if (messageContent.includes('评论') || messageSubject.includes('评论')) {
+        // 评论消息 - 跳转到对应文章
+        const postId = extractIdFromMessage(messageContent, 'post');
+        if (postId) {
+            window.location.href = `/blog/post/${postId}`;
+            return;
+        }
+    } else if (messageContent.includes('点赞') || messageSubject.includes('点赞')) {
+        // 点赞消息 - 跳转到对应内容
+        const contentId = extractIdFromMessage(messageContent, 'like');
+        if (contentId) {
+            // 判断是文章还是项目
+            if (messageContent.includes('文章')) {
+                window.location.href = `/blog/post/${contentId}`;
+            } else if (messageContent.includes('项目')) {
+                window.location.href = `/projects/${contentId}`;
+            }
+            return;
+        }
+    } else if (messageContent.includes('收藏') || messageSubject.includes('收藏')) {
+        // 收藏消息 - 跳转到对应内容
+        const contentId = extractIdFromMessage(messageContent, 'favorite');
+        if (contentId) {
+            // 判断是文章还是项目
+            if (messageContent.includes('文章')) {
+                window.location.href = `/blog/post/${contentId}`;
+            } else if (messageContent.includes('项目')) {
+                window.location.href = `/projects/${contentId}`;
+            }
+            return;
+        }
+    } else if (messageContent.includes('评分') || messageSubject.includes('评分')) {
+        // 评分消息 - 跳转到对应内容
+        const contentId = extractIdFromMessage(messageContent, 'rating');
+        if (contentId) {
+            // 判断是文章还是项目
+            if (messageContent.includes('文章')) {
+                window.location.href = `/blog/post/${contentId}`;
+            } else if (messageContent.includes('项目')) {
+                window.location.href = `/projects/${contentId}`;
+            }
+            return;
+        }
+    }
+    
+    // 默认跳转到消息详情页
+    viewMessage(messageId);
+}
+
+function extractIdFromMessage(content, type) {
+    // 尝试从消息内容中提取ID
+    // 这里可以根据实际的消息格式来调整提取逻辑
+    const patterns = [
+        /\/blog\/post\/(\d+)/,
+        /\/projects\/(\d+)/,
+        /文章(\d+)/,
+        /项目(\d+)/,
+        /post\/(\d+)/,
+        /project\/(\d+)/
+    ];
+    
+    for (const pattern of patterns) {
+        const match = content.match(pattern);
+        if (match && match[1]) {
+            return match[1];
+        }
+    }
+    
+    return null;
 }
 
 function deleteMessage(messageId, messageSubject) {
