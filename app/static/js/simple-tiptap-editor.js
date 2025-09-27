@@ -129,7 +129,30 @@ class SimpleTiptapEditor {
                         <button class="toolbar-btn" data-action="setLink" title="插入链接">
                             <i class="fas fa-link"></i>
                         </button>
+                        <button class="toolbar-btn" data-action="insertImage" title="插入图片">
+                            <i class="fas fa-image"></i>
+                        </button>
                     </div>
+                    
+                    <div class="toolbar-separator"></div>
+                    
+        <div class="toolbar-group">
+            <button class="toolbar-btn" data-action="insertTable" title="插入表格">
+                <i class="fas fa-table"></i>
+            </button>
+            <button class="toolbar-btn" data-action="addTableRow" title="添加行">
+                <i class="fas fa-plus"></i><i class="fas fa-grip-lines-vertical"></i>
+            </button>
+            <button class="toolbar-btn" data-action="addTableColumn" title="添加列">
+                <i class="fas fa-plus"></i><i class="fas fa-grip-lines"></i>
+            </button>
+            <button class="toolbar-btn" data-action="deleteTableRow" title="删除行">
+                <i class="fas fa-minus"></i><i class="fas fa-grip-lines-vertical"></i>
+            </button>
+            <button class="toolbar-btn" data-action="deleteTableColumn" title="删除列">
+                <i class="fas fa-minus"></i><i class="fas fa-grip-lines"></i>
+            </button>
+        </div>
                     
                     <div class="toolbar-separator"></div>
                     
@@ -309,6 +332,24 @@ class SimpleTiptapEditor {
                 break;
             case 'setLink':
                 this.setLink();
+                break;
+            case 'insertImage':
+                this.insertImage();
+                break;
+            case 'insertTable':
+                this.insertTable();
+                break;
+            case 'addTableRow':
+                this.addTableRow();
+                break;
+            case 'addTableColumn':
+                this.addTableColumn();
+                break;
+            case 'deleteTableRow':
+                this.deleteTableRow();
+                break;
+            case 'deleteTableColumn':
+                this.deleteTableColumn();
                 break;
             case 'alignLeft':
                 this.execCommand('justifyLeft');
@@ -1237,6 +1278,371 @@ class SimpleTiptapEditor {
             this.content.removeEventListener('input', this.updateToolbarState);
             this.content.removeEventListener('focus', this.updateToolbarState);
         }
+    }
+    
+    // 插入图片功能
+    insertImage() {
+        this.content.focus();
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            
+            // 创建图片上传模块
+            const imageUploadModule = document.createElement('div');
+            imageUploadModule.className = 'image-upload-module';
+            imageUploadModule.innerHTML = `
+                <div class="image-upload-container">
+                    <div class="image-upload-area" id="image-upload-area">
+                        <div class="upload-placeholder">
+                            <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                            <p>点击或拖拽上传图片</p>
+                            <p class="upload-hint">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
+                        </div>
+                        <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+                    </div>
+                    <div class="image-url-input">
+                        <label>或者输入图片URL：</label>
+                        <input type="url" id="image-url-input" placeholder="https://example.com/image.jpg">
+                        <button type="button" id="insert-url-btn">插入URL</button>
+                    </div>
+                    <div class="image-upload-actions">
+                        <button type="button" id="cancel-upload-btn">取消</button>
+                    </div>
+                </div>
+            `;
+            
+            range.deleteContents();
+            range.insertNode(imageUploadModule);
+            
+            // 绑定事件
+            this.bindImageUploadEvents(imageUploadModule, range);
+            
+            // 将光标移到上传模块后面
+            range.setStartAfter(imageUploadModule);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+    
+    // 绑定图片上传事件
+    bindImageUploadEvents(uploadModule, range) {
+        const uploadArea = uploadModule.querySelector('#image-upload-area');
+        const uploadInput = uploadModule.querySelector('#image-upload-input');
+        const urlInput = uploadModule.querySelector('#image-url-input');
+        const insertUrlBtn = uploadModule.querySelector('#insert-url-btn');
+        const cancelBtn = uploadModule.querySelector('#cancel-upload-btn');
+        
+        // 点击上传区域
+        uploadArea.addEventListener('click', () => {
+            uploadInput.click();
+        });
+        
+        // 文件选择
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.uploadImageFile(file, uploadModule, range);
+            }
+        });
+        
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(59, 130, 246, 0.5)';
+            uploadArea.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            uploadArea.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            uploadArea.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                this.uploadImageFile(files[0], uploadModule, range);
+            }
+        });
+        
+        // URL输入
+        insertUrlBtn.addEventListener('click', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                this.insertImageFromUrl(url, uploadModule, range);
+            }
+        });
+        
+        // 取消上传
+        cancelBtn.addEventListener('click', () => {
+            uploadModule.remove();
+            if (this.onContentChange) {
+                this.onContentChange(this.getContent());
+            }
+        });
+    }
+    
+    // 上传图片文件
+    uploadImageFile(file, uploadModule, range) {
+        // 检查文件类型
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('请选择图片文件（JPG、PNG、GIF、WebP）');
+            return;
+        }
+        
+        // 检查文件大小（5MB）
+        if (file.size > 5 * 1024 * 1024) {
+            alert('图片大小不能超过5MB');
+            return;
+        }
+        
+        // 显示上传进度
+        const uploadArea = uploadModule.querySelector('#image-upload-area');
+        uploadArea.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x"></i><p>上传中...</p>';
+        
+        // 创建FormData
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        // 上传图片
+        fetch('/api/upload-image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                this.insertImageFromUrl(data.url, uploadModule, range);
+            } else {
+                alert('上传失败：' + data.message);
+                this.resetUploadArea(uploadModule);
+            }
+        })
+        .catch(error => {
+            console.error('上传错误:', error);
+            alert('上传失败，请稍后重试');
+            this.resetUploadArea(uploadModule);
+        });
+    }
+    
+    // 从URL插入图片
+    insertImageFromUrl(url, uploadModule, range) {
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = '插入的图片';
+        img.style.maxWidth = '100%';
+        img.style.height = 'auto';
+        img.style.borderRadius = '8px';
+        img.style.margin = '10px 0';
+        
+        // 替换上传模块
+        uploadModule.parentNode.replaceChild(img, uploadModule);
+        
+        // 将光标移到图片后面
+        const newRange = document.createRange();
+        newRange.setStartAfter(img);
+        newRange.collapse(true);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(newRange);
+        
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+    }
+    
+    // 重置上传区域
+    resetUploadArea(uploadModule) {
+        const uploadArea = uploadModule.querySelector('#image-upload-area');
+        uploadArea.innerHTML = `
+            <div class="upload-placeholder">
+                <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                <p>点击或拖拽上传图片</p>
+                <p class="upload-hint">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
+            </div>
+            <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
+        `;
+        
+        // 重新绑定事件
+        const uploadInput = uploadArea.querySelector('#image-upload-input');
+        uploadInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.uploadImageFile(file, uploadModule, range);
+            }
+        });
+    }
+    
+    // 插入表格功能
+    insertTable() {
+        this.content.focus();
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            
+            // 创建表格
+            const table = document.createElement('table');
+            table.className = 'tiptap-table';
+            table.style.borderCollapse = 'collapse';
+            table.style.width = '100%';
+            table.style.margin = '10px 0';
+            table.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+            
+            // 创建表头
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            for (let i = 0; i < 3; i++) {
+                const th = document.createElement('th');
+                th.textContent = `标题 ${i + 1}`;
+                th.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                th.style.padding = '8px 12px';
+                th.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                th.style.textAlign = 'left';
+                headerRow.appendChild(th);
+            }
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+            
+            // 创建表体
+            const tbody = document.createElement('tbody');
+            for (let i = 0; i < 2; i++) {
+                const row = document.createElement('tr');
+                for (let j = 0; j < 3; j++) {
+                    const td = document.createElement('td');
+                    td.textContent = `内容 ${i + 1}-${j + 1}`;
+                    td.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                    td.style.padding = '8px 12px';
+                    row.appendChild(td);
+                }
+                tbody.appendChild(row);
+            }
+            table.appendChild(tbody);
+            
+            range.deleteContents();
+            range.insertNode(table);
+            
+            // 将光标移到表格后面
+            range.setStartAfter(table);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+        
+        if (this.onContentChange) {
+            this.onContentChange(this.getContent());
+        }
+    }
+    
+    // 添加表格行
+    addTableRow() {
+        const table = this.getCurrentTable();
+        if (table) {
+            const tbody = table.querySelector('tbody') || table;
+            const rowCount = tbody.rows.length;
+            const colCount = tbody.rows[0] ? tbody.rows[0].cells.length : 3;
+            
+            const newRow = document.createElement('tr');
+            for (let i = 0; i < colCount; i++) {
+                const td = document.createElement('td');
+                td.textContent = `新内容 ${rowCount + 1}-${i + 1}`;
+                td.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                td.style.padding = '8px 12px';
+                newRow.appendChild(td);
+            }
+            tbody.appendChild(newRow);
+            
+            if (this.onContentChange) {
+                this.onContentChange(this.getContent());
+            }
+        }
+    }
+    
+    // 添加表格列
+    addTableColumn() {
+        const table = this.getCurrentTable();
+        if (table) {
+            const rows = table.querySelectorAll('tr');
+            const colCount = rows[0] ? rows[0].cells.length : 0;
+            
+            rows.forEach((row, index) => {
+                const cell = document.createElement(index === 0 ? 'th' : 'td');
+                cell.textContent = index === 0 ? `标题 ${colCount + 1}` : `内容 ${index}-${colCount + 1}`;
+                cell.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+                cell.style.padding = '8px 12px';
+                if (index === 0) {
+                    cell.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+                }
+                row.appendChild(cell);
+            });
+            
+            if (this.onContentChange) {
+                this.onContentChange(this.getContent());
+            }
+        }
+    }
+    
+    // 删除表格行
+    deleteTableRow() {
+        const table = this.getCurrentTable();
+        if (table) {
+            const tbody = table.querySelector('tbody') || table;
+            const rows = tbody.querySelectorAll('tr');
+            if (rows.length > 1) {
+                const lastRow = rows[rows.length - 1];
+                lastRow.remove();
+                
+                if (this.onContentChange) {
+                    this.onContentChange(this.getContent());
+                }
+            }
+        }
+    }
+    
+    // 删除表格列
+    deleteTableColumn() {
+        const table = this.getCurrentTable();
+        if (table) {
+            const rows = table.querySelectorAll('tr');
+            if (rows.length > 0 && rows[0].cells.length > 1) {
+                rows.forEach(row => {
+                    const lastCell = row.cells[row.cells.length - 1];
+                    lastCell.remove();
+                });
+                
+                if (this.onContentChange) {
+                    this.onContentChange(this.getContent());
+                }
+            }
+        }
+    }
+    
+    // 获取当前光标所在的表格
+    getCurrentTable() {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            let container = range.commonAncestorContainer;
+            
+            // 如果容器是文本节点，获取其父元素
+            if (container.nodeType === Node.TEXT_NODE) {
+                container = container.parentNode;
+            }
+            
+            // 向上查找表格元素
+            while (container && container !== this.content) {
+                if (container.tagName === 'TABLE') {
+                    return container;
+                }
+                container = container.parentNode;
+            }
+        }
+        return null;
     }
 }
 
