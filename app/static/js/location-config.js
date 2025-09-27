@@ -11,7 +11,7 @@ const LOCATION_CONFIG = {
         address: '深圳市南山区高新南一道',
         lat: 22.5405,
         lng: 113.9344,
-        phone: '+86 137-0000-0000',
+        phone: '+86 135 **** 8704',
         email: 'shenzhen@example.com',
         workingHours: '周一至周五 9:00-18:00'
     },
@@ -23,7 +23,7 @@ const LOCATION_CONFIG = {
             address: '北京市朝阳区望京SOHO',
             lat: 39.9042,
             lng: 116.4074,
-            phone: '+86 139-0000-0000',
+            phone: '+86 135 **** 8704',
             email: 'beijing@example.com',
             workingHours: '周一至周五 9:00-18:00'
         },
@@ -32,7 +32,7 @@ const LOCATION_CONFIG = {
             address: '深圳市南山区高新南一道',
             lat: 22.5405,
             lng: 113.9344,
-            phone: '+86 137-0000-0000',
+            phone: '+86 135 **** 8704',
             email: 'shenzhen@example.com',
             workingHours: '周一至周五 9:00-18:00'
         }
