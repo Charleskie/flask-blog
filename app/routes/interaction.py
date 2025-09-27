@@ -498,12 +498,19 @@ def delete_comment(comment_id):
 def upload_image():
     """上传图片"""
     try:
+        current_app.logger.info(f"图片上传请求 - 用户: {current_user.username}")
+        current_app.logger.info(f"请求文件: {list(request.files.keys())}")
+        
         if 'image' not in request.files:
+            current_app.logger.warning("没有找到image字段")
             return jsonify({'success': False, 'message': '没有选择文件'}), 400
         
         file = request.files['image']
         if file.filename == '':
+            current_app.logger.warning("文件名为空")
             return jsonify({'success': False, 'message': '没有选择文件'}), 400
+        
+        current_app.logger.info(f"文件名: {file.filename}, 内容类型: {file.content_type}")
         
         # 检查文件类型
         allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'}
@@ -555,10 +562,12 @@ def upload_image():
         
         # 保存文件
         file_path = os.path.join(upload_dir, filename)
+        current_app.logger.info(f"保存文件到: {file_path}")
         file.save(file_path)
         
         # 返回图片URL
         image_url = f"/static/uploads/images/{filename}"
+        current_app.logger.info(f"图片上传成功: {image_url}")
         
         return jsonify({
             'success': True,
@@ -568,8 +577,8 @@ def upload_image():
         })
         
     except Exception as e:
-        current_app.logger.error(f"图片上传失败: {e}")
-        return jsonify({'success': False, 'message': '上传失败'}), 500
+        current_app.logger.error(f"图片上传失败: {e}", exc_info=True)
+        return jsonify({'success': False, 'message': f'上传失败: {str(e)}'}), 500
 
 @interaction_bp.route('/comments/<int:comment_id>/replies', methods=['GET'])
 def get_comment_replies(comment_id):

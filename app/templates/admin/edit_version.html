@@ -95,3 +95,165 @@ document.getElementById('versionForm').addEventListener('submit', function(e) {
 });
 </script>
 {% endblock %}
+
+{% block extra_css %}
+<style>
+/* 输入框文字颜色样式 */
+.form-control {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.form-control:focus {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.form-label {
+    color: white !important;
+}
+
+.form-text {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.invalid-feedback {
+    color: #ff6b6b !important;
+}
+
+.valid-feedback {
+    color: #51cf66 !important;
+}
+
+/* 按钮样式调整 */
+.btn-outline-secondary {
+    color: white !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    background-color: transparent !important;
+}
+
+.btn-outline-secondary:hover {
+    color: #000 !important;
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.btn-outline-secondary:focus {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 提交按钮样式 */
+.btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn-submit:disabled {
+    background: rgba(100, 116, 139, 0.5);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-submit:disabled:hover {
+    background: rgba(100, 116, 139, 0.5);
+    transform: none;
+    box-shadow: none;
+}
+
+/* 卡片样式调整 */
+.card {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: none !important;
+}
+
+.card-header {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+/* 开关样式调整 */
+.form-check-input {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.form-check-input:checked {
+    background-color: #667eea !important;
+    border-color: #667eea !important;
+}
+
+.form-check-label {
+    color: white !important;
+}
+
+/* 富文本编辑器样式 */
+.ql-editor {
+    color: white !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.ql-toolbar {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.ql-container {
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.ql-toolbar .ql-stroke {
+    stroke: white !important;
+}
+
+.ql-toolbar .ql-fill {
+    fill: white !important;
+}
+
+.ql-toolbar button:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+</style>
+{% endblock %}

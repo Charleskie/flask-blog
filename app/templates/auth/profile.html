@@ -8,14 +8,14 @@
         <h1 class="text-center mb-5">个人资料</h1>
         
         <!-- 用户信息卡片 -->
-        <div class="card mb-4">
-            <div class="card-header d-flex justify-content-between align-items-center">
+        <div class="card mb-4" style="background: transparent !important; background-color: transparent !important;">
+            <div class="card-header d-flex justify-content-between align-items-center" style="background: rgba(15, 23, 42, 0.1) !important; background-color: rgba(15, 23, 42, 0.1) !important;">
                 <h5><i class="fas fa-user"></i> 基本信息</h5>
                 <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-primary btn-sm">
                     <i class="fas fa-edit"></i> 编辑资料
                 </a>
             </div>
-            <div class="card-body">
+            <div class="card-body" style="background: transparent !important; background-color: transparent !important;">
                 <div class="row">
                     <div class="col-md-4 text-center">
                         <div class="avatar-display-section">
@@ -37,26 +37,26 @@
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <table class="table table-borderless">
-                            <tr>
-                                <td class="fw-bold" style="width: 120px;">用户名：</td>
-                                <td>{{ current_user.username }}</td>
+                        <table class="table table-borderless" style="background: transparent !important; background-color: transparent !important;">
+                            <tr style="background: transparent !important; background-color: transparent !important;">
+                                <td class="fw-bold" style="width: 120px; background: transparent !important; background-color: transparent !important;">用户名：</td>
+                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.username }}</td>
                             </tr>
-                            <tr>
-                                <td class="fw-bold">昵称：</td>
-                                <td>{{ current_user.get_display_name() }}</td>
+                            <tr style="background: transparent !important; background-color: transparent !important;">
+                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">昵称：</td>
+                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.get_display_name() }}</td>
                             </tr>
-                            <tr>
-                                <td class="fw-bold">邮箱：</td>
-                                <td>{{ current_user.email }}</td>
+                            <tr style="background: transparent !important; background-color: transparent !important;">
+                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">邮箱：</td>
+                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.email }}</td>
                             </tr>
-                            <tr>
-                                <td class="fw-bold">注册时间：</td>
-                                <td>{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</td>
+                            <tr style="background: transparent !important; background-color: transparent !important;">
+                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">注册时间：</td>
+                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</td>
                             </tr>
-                            <tr>
-                                <td class="fw-bold">最后登录：</td>
-                                <td>{{ current_user.last_login.strftime('%Y年%m月%d日 %H:%M') if current_user.last_login else '从未登录' }}</td>
+                            <tr style="background: transparent !important; background-color: transparent !important;">
+                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">最后登录：</td>
+                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.last_login.strftime('%Y年%m月%d日 %H:%M') if current_user.last_login else '从未登录' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -269,12 +269,19 @@
 /* 卡片背景样式调整 */
 .card {
     background: transparent !important;
+    background-color: transparent !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     backdrop-filter: blur(10px);
+    box-shadow: none !important;
+}
+
+/* 覆盖CSS变量 */
+.card {
+    --bg-glass: transparent !important;
 }
 
 .card-header {
-    background: rgba(15, 23, 42, 0.6) !important;
+    background: rgba(15, 23, 42, 0.3) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: #e2e8f0 !important;
 }
@@ -284,6 +291,48 @@
     color: #94a3b8 !important;
 }
 
+/* 确保基本信息模块完全透明 */
+.card:first-child {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: none !important;
+}
+
+.card:first-child .card-header {
+    background: rgba(15, 23, 42, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.card:first-child .card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+/* 强制移除所有可能的白色背景 */
+.card:first-child,
+.card:first-child *,
+.card:first-child .card-body,
+.card:first-child .card-header,
+.card:first-child .table,
+.card:first-child .table td,
+.card:first-child .table tr {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* 确保表格单元格透明 */
+.card:first-child .table td {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.card:first-child .table tr {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
 /* 表格文字颜色调整 */
 .table td {
     color: #94a3b8 !important;
@@ -291,6 +340,52 @@
 
 .table .fw-bold {
     color: #94a3b8 !important;
+}
+
+/* 强制覆盖Bootstrap默认样式 */
+.card:first-child .table-borderless td,
+.card:first-child .table-borderless th,
+.card:first-child .table-borderless tr {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* 确保所有可能的白色背景都被移除 */
+.card:first-child .row,
+.card:first-child .col-md-4,
+.card:first-child .col-md-8,
+.card:first-child .text-center,
+.card:first-child .avatar-display-section,
+.card:first-child .avatar-container,
+.card:first-child .avatar-info {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* 最终强制透明化 - 覆盖所有可能的样式 */
+.card:first-child,
+.card:first-child *:not(.btn):not(.badge):not(.modal):not(.modal *),
+.card:first-child .card-body *,
+.card:first-child .table *,
+.card:first-child .row *,
+.card:first-child .col-* {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+}
+
+/* 特别处理表格 */
+.card:first-child .table {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.card:first-child .table tbody,
+.card:first-child .table thead,
+.card:first-child .table tfoot {
+    background: transparent !important;
+    background-color: transparent !important;
 }
 
 /* 账户安全部分文字颜色 */

@@ -54,13 +54,13 @@
                                   id="message" name="message" rows="6" placeholder="请输入您的消息内容..." required></textarea>
                     </div>
                     
-                    <div class="flex items-center gap-4">
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-paper-plane mr-2"></i> 发送消息
-                        </button>
+                    <div class="flex items-center justify-between">
                         <div class="text-sm text-slate-400">
                             <i class="fas fa-shield-alt mr-1"></i> 您的信息将被安全保护
                         </div>
+                        <button type="submit" class="btn-primary-send">
+                            <i class="fas fa-paper-plane mr-2"></i> 发送消息
+                        </button>
                     </div>
                 </form>
             </div>
@@ -371,6 +371,67 @@
     transform: translateY(-2px);
     text-decoration: none;
     color: white;
+}
+
+/* 发送消息按钮样式 */
+.btn-primary-send {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 0.875rem 2rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary-send::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn-primary-send:hover::before {
+    left: 100%;
+}
+
+.btn-primary-send:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.btn-primary-send:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+}
+
+.btn-primary-send:disabled {
+    background: rgba(100, 116, 139, 0.5);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-primary-send:disabled:hover {
+    background: rgba(100, 116, 139, 0.5);
+    transform: none;
+    box-shadow: none;
 }
 </style>
 {% endblock %}

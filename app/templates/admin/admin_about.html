@@ -20,15 +20,89 @@
             
             <!-- 内容管理 -->
             <div class="card mb-4">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5><i class="fas fa-file-alt"></i> 页面内容</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleContentFilters()">
+                            <i class="fas fa-filter"></i> 筛选
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshContent()">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
                 </div>
+                
+                <!-- 筛选器 -->
+                <div id="contentFilters" class="card-body border-bottom" style="display: none;">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="contentSearch" class="form-label">搜索内容</label>
+                            <input type="text" class="form-control" id="contentSearch" name="search" 
+                                   placeholder="搜索标题或内容..." value="{{ request.args.get('search', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="contentStatus" class="form-label">状态筛选</label>
+                            <select class="form-select" id="contentStatus" name="status">
+                                <option value="">全部状态</option>
+                                <option value="active" {{ 'selected' if request.args.get('status') == 'active' }}>显示</option>
+                                <option value="inactive" {{ 'selected' if request.args.get('status') == 'inactive' }}>隐藏</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="contentSection" class="form-label">区块筛选</label>
+                            <select class="form-select" id="contentSection" name="section">
+                                <option value="">全部区块</option>
+                                {% for content in contents %}
+                                <option value="{{ content.section }}" {{ 'selected' if request.args.get('section') == content.section }}>
+                                    {{ content.section }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> 清除
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
                 <div class="card-body">
                     {% if contents %}
+                    <!-- 批量操作 -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAllContent" onchange="toggleAllContent(this)">
+                                <label class="form-check-label" for="selectAllContent">全选</label>
+                            </div>
+                            <div id="contentBatchActions" class="d-flex gap-2" style="display: none;">
+                                <button class="btn btn-sm btn-success" onclick="batchActionContent('activate')">
+                                    <i class="fas fa-eye"></i> 批量显示
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="batchActionContent('deactivate')">
+                                    <i class="fas fa-eye-slash"></i> 批量隐藏
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="batchActionContent('delete')">
+                                    <i class="fas fa-trash"></i> 批量删除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-muted">
+                            共 {{ contents|length }} 个内容区块
+                        </div>
+                    </div>
+                    
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
+                                    <th width="50">
+                                        <input type="checkbox" class="form-check-input" id="selectAllContentHeader" onchange="toggleAllContent(this)">
+                                    </th>
                                     <th>排序</th>
                                     <th>区块标识</th>
                                     <th>标题</th>
@@ -41,6 +115,10 @@
                             <tbody>
                                 {% for content in contents %}
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input content-checkbox" 
+                                               value="{{ content.id }}" onchange="updateContentBatchActions()">
+                                    </td>
                                     <td>
                                         <span class="badge bg-secondary">{{ content.order }}</span>
                                     </td>
@@ -97,15 +175,89 @@
             
             <!-- 联系方式管理 -->
             <div class="card">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5><i class="fas fa-address-book"></i> 联系方式</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleContactFilters()">
+                            <i class="fas fa-filter"></i> 筛选
+                        </button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshContacts()">
+                            <i class="fas fa-sync-alt"></i> 刷新
+                        </button>
+                    </div>
                 </div>
+                
+                <!-- 筛选器 -->
+                <div id="contactFilters" class="card-body border-bottom" style="display: none;">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="contactSearch" class="form-label">搜索联系方式</label>
+                            <input type="text" class="form-control" id="contactSearch" name="contact_search" 
+                                   placeholder="搜索平台或文本..." value="{{ request.args.get('contact_search', '') }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="contactStatus" class="form-label">状态筛选</label>
+                            <select class="form-select" id="contactStatus" name="contact_status">
+                                <option value="">全部状态</option>
+                                <option value="active" {{ 'selected' if request.args.get('contact_status') == 'active' }}>显示</option>
+                                <option value="inactive" {{ 'selected' if request.args.get('contact_status') == 'inactive' }}>隐藏</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="contactPlatform" class="form-label">平台筛选</label>
+                            <select class="form-select" id="contactPlatform" name="contact_platform">
+                                <option value="">全部平台</option>
+                                {% for contact in contacts %}
+                                <option value="{{ contact.platform }}" {{ 'selected' if request.args.get('contact_platform') == contact.platform }}>
+                                    {{ contact.platform }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search"></i> 搜索
+                            </button>
+                            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> 清除
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
                 <div class="card-body">
                     {% if contacts %}
+                    <!-- 批量操作 -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAllContact" onchange="toggleAllContact(this)">
+                                <label class="form-check-label" for="selectAllContact">全选</label>
+                            </div>
+                            <div id="contactBatchActions" class="d-flex gap-2" style="display: none;">
+                                <button class="btn btn-sm btn-success" onclick="batchActionContact('activate')">
+                                    <i class="fas fa-eye"></i> 批量显示
+                                </button>
+                                <button class="btn btn-sm btn-warning" onclick="batchActionContact('deactivate')">
+                                    <i class="fas fa-eye-slash"></i> 批量隐藏
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="batchActionContact('delete')">
+                                    <i class="fas fa-trash"></i> 批量删除
+                                </button>
+                            </div>
+                        </div>
+                        <div class="text-muted">
+                            共 {{ contacts|length }} 个联系方式
+                        </div>
+                    </div>
+                    
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
                                 <tr>
+                                    <th width="50">
+                                        <input type="checkbox" class="form-check-input" id="selectAllContactHeader" onchange="toggleAllContact(this)">
+                                    </th>
                                     <th>排序</th>
                                     <th>平台</th>
                                     <th>图标</th>
@@ -119,6 +271,10 @@
                             <tbody>
                                 {% for contact in contacts %}
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input contact-checkbox" 
+                                               value="{{ contact.id }}" onchange="updateContactBatchActions()">
+                                    </td>
                                     <td>
                                         <span class="badge bg-secondary">{{ contact.order }}</span>
                                     </td>
@@ -205,8 +361,156 @@
 </div>
 {% endblock %}
 
+{% block extra_css %}
+<style>
+/* 卡片背景透明化 */
+.card {
+    background: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: none !important;
+}
+
+.card-header {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.card-body {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+/* 表格背景透明化 */
+.table {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+.table thead th {
+    background: rgba(15, 23, 42, 0.2) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.table tbody tr {
+    background: transparent !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+}
+
+.table td {
+    background: transparent !important;
+    border: none !important;
+    color: #94a3b8 !important;
+}
+
+/* 统计卡片背景透明化 */
+.bg-primary, .bg-success, .bg-info, .bg-warning {
+    background: rgba(15, 23, 42, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+/* 表单控件透明化 */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+    color: white !important;
+}
+
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.form-label {
+    color: white !important;
+}
+
+/* 按钮透明化 */
+.btn-outline-secondary, .btn-outline-primary {
+    background: transparent !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+}
+
+.btn-outline-secondary:hover, .btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+    color: white !important;
+}
+
+/* 徽章透明化 */
+.badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+}
+
+.badge.bg-secondary {
+    background: rgba(108, 117, 125, 0.3) !important;
+}
+
+.badge.bg-success {
+    background: rgba(25, 135, 84, 0.3) !important;
+}
+
+/* 代码块透明化 */
+code {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 链接透明化 */
+a {
+    color: #60a5fa !important;
+}
+
+a:hover {
+    color: #93c5fd !important;
+}
+
+/* 文本颜色调整 */
+.text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* 模态框透明化 */
+.modal-content {
+    background: rgba(15, 23, 42, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px);
+}
+
+.modal-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+}
+
+.modal-body {
+    color: #94a3b8 !important;
+}
+
+.modal-footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+</style>
+{% endblock %}
+
 {% block extra_js %}
 <script>
+// 删除功能
 function deleteContent(id, title) {
     document.getElementById('deleteItemName').textContent = title;
     document.getElementById('deleteForm').action = '{{ url_for("admin.delete_about_content", content_id=0) }}'.replace('0', id);
@@ -218,5 +522,115 @@ function deleteContact(id, platform) {
     document.getElementById('deleteForm').action = '{{ url_for("admin.delete_about_contact", contact_id=0) }}'.replace('0', id);
     new bootstrap.Modal(document.getElementById('deleteModal')).show();
 }
+
+// 筛选器切换
+function toggleContentFilters() {
+    const filters = document.getElementById('contentFilters');
+    filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+
+function toggleContactFilters() {
+    const filters = document.getElementById('contactFilters');
+    filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+
+// 刷新功能
+function refreshContent() {
+    location.reload();
+}
+
+function refreshContacts() {
+    location.reload();
+}
+
+// 内容批量操作
+function toggleAllContent(checkbox) {
+    const checkboxes = document.querySelectorAll('.content-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateContentBatchActions();
+}
+
+function updateContentBatchActions() {
+    const checkedBoxes = document.querySelectorAll('.content-checkbox:checked');
+    const batchActions = document.getElementById('contentBatchActions');
+    
+    if (checkedBoxes.length > 0) {
+        batchActions.style.display = 'flex';
+    } else {
+        batchActions.style.display = 'none';
+    }
+}
+
+function batchActionContent(action) {
+    const checkedBoxes = document.querySelectorAll('.content-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请先选择要操作的内容');
+        return;
+    }
+    
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+    const actionText = {
+        'activate': '显示',
+        'deactivate': '隐藏',
+        'delete': '删除'
+    };
+    
+    if (confirm(`确定要${actionText[action]}选中的 ${ids.length} 个内容吗？`)) {
+        // 这里可以添加AJAX请求来处理批量操作
+        console.log(`批量${actionText[action]}内容:`, ids);
+        alert(`批量${actionText[action]}功能待实现`);
+    }
+}
+
+// 联系方式批量操作
+function toggleAllContact(checkbox) {
+    const checkboxes = document.querySelectorAll('.contact-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+    updateContactBatchActions();
+}
+
+function updateContactBatchActions() {
+    const checkedBoxes = document.querySelectorAll('.contact-checkbox:checked');
+    const batchActions = document.getElementById('contactBatchActions');
+    
+    if (checkedBoxes.length > 0) {
+        batchActions.style.display = 'flex';
+    } else {
+        batchActions.style.display = 'none';
+    }
+}
+
+function batchActionContact(action) {
+    const checkedBoxes = document.querySelectorAll('.contact-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        alert('请先选择要操作的联系方式');
+        return;
+    }
+    
+    const ids = Array.from(checkedBoxes).map(cb => cb.value);
+    const actionText = {
+        'activate': '显示',
+        'deactivate': '隐藏',
+        'delete': '删除'
+    };
+    
+    if (confirm(`确定要${actionText[action]}选中的 ${ids.length} 个联系方式吗？`)) {
+        // 这里可以添加AJAX请求来处理批量操作
+        console.log(`批量${actionText[action]}联系方式:`, ids);
+        alert(`批量${actionText[action]}功能待实现`);
+    }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 如果有搜索参数，显示筛选器
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('search') || urlParams.get('status') || urlParams.get('section')) {
+        document.getElementById('contentFilters').style.display = 'block';
+    }
+    if (urlParams.get('contact_search') || urlParams.get('contact_status') || urlParams.get('contact_platform')) {
+        document.getElementById('contactFilters').style.display = 'block';
+    }
+});
 </script>
 {% endblock %}
