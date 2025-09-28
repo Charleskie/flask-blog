@@ -30,6 +30,10 @@ class Config:
     SESSION_COOKIE_SAMESITE = 'Lax'
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)
     
+    # HTTPS 配置
+    PREFERRED_URL_SCHEME = 'https'  # 生产环境使用 HTTPS
+    SERVER_NAME = os.environ.get('SERVER_NAME')  # 如：www.shiheng.info
+    
     # 日志配置
     LOG_LEVEL = os.environ.get('LOG_LEVEL') or 'INFO'
     LOG_RETENTION_DAYS = int(os.environ.get('LOG_RETENTION_DAYS') or 7)
@@ -67,6 +71,10 @@ class ProductionConfig(Config):
     # 生产环境安全设置
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Strict'
+    
+    # HTTPS 强制配置
+    PREFERRED_URL_SCHEME = 'https'
+    FORCE_HTTPS = True
 
 class TestingConfig(Config):
     """测试环境配置"""

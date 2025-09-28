@@ -50,6 +50,11 @@ def create_app():
     setup_app_logging(app)
     app.logger.info("应用初始化完成")
     
+    # 初始化 HTTPS 重定向（生产环境）
+    if app.config.get('FORCE_HTTPS', False):
+        from ssl_redirect import init_ssl_redirect
+        init_ssl_redirect(app)
+    
     # 错误处理
     @app.errorhandler(404)
     def not_found_error(error):
