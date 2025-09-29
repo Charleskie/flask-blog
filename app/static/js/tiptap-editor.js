@@ -39,9 +39,7 @@ class TiptapEditor {
                 const script = document.createElement('script');
                 script.src = src;
                 script.onload = resolve;
-                script.onerror = (error) => {
-                    console.warn(`Failed to load script: ${src}`, error);
-                    reject(error);
+                script.onerror = (error) => {reject(error);
                 };
                 document.head.appendChild(script);
             });
@@ -76,9 +74,7 @@ class TiptapEditor {
                         await loadScript(`${cdn}/${lib}`);
                         loaded = true;
                         break;
-                    } catch (error) {
-                        console.warn(`Failed to load ${lib} from ${cdn}`);
-                    }
+                    } catch (error) {}
                 }
                 
                 if (!loaded) {
@@ -92,10 +88,7 @@ class TiptapEditor {
         }
     }
 
-    async loadFallbackLibraries() {
-        console.log('Loading fallback Tiptap libraries...');
-        
-        // 创建一个简化的编辑器实现
+    async loadFallbackLibraries() {// 创建一个简化的编辑器实现
         window.TiptapCore = {
             Editor: class FallbackEditor {
                 constructor(options) {

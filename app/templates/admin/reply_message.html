@@ -24,11 +24,17 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- 回复表单 -->
         <div class="glass-card rounded-xl p-8">
-            <div class="flex items-center mb-6">
-                <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-edit text-white text-xl"></i>
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-edit text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-white">回复内容</h2>
                 </div>
-                <h2 class="text-2xl font-bold text-white">回复内容</h2>
+                <div class="text-sm text-slate-400">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    支持不限次回复
+                </div>
             </div>
             
             <form method="POST" id="reply-form" class="space-y-6">
@@ -250,9 +256,9 @@ document.getElementById('reply-form').addEventListener('submit', function(e) {
     .then(data => {
         if (data.success) {
             showToast('success', data.message || '回复发送成功！');
-            // 延迟跳转
+            // 延迟跳转到消息详情页面
             setTimeout(() => {
-                window.location.href = "{{ url_for('admin.admin_messages') }}";
+                window.location.href = "{{ url_for('admin.view_message', message_id=message.id) }}";
             }, 1500);
         } else {
             showToast('error', data.message || '发送失败，请稍后重试');

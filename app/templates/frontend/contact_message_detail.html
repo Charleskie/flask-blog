@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}{{ message.subject }} - 我的个人网站{% endblock %}
+
+{% block content %}
+<!-- 页面头部 -->
+<div class="text-center py-16 mb-12">
+    <div class="max-w-4xl mx-auto">
+        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
+            私信详情
+        </h1>
+        <p class="text-xl text-slate-300 mb-8">查看完整的对话记录</p>
+    </div>
+</div>
+
+<div class="max-w-4xl mx-auto px-4">
+    <!-- 操作按钮 -->
+    <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center space-x-4">
+            <a href="{{ url_for('main.contact_messages') }}" class="btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i> 返回私信列表
+            </a>
+            <a href="{{ url_for('main.contact') }}" class="btn-primary">
+                <i class="fas fa-plus mr-2"></i> 发送新消息
+            </a>
+        </div>
+        <div class="text-sm text-slate-400">
+            {{ message.created_at.strftime('%Y年%m月%d日 %H:%M') }}
+        </div>
+    </div>
+
+    <!-- 消息状态 -->
+    <div class="glass-card rounded-xl p-6 mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <h2 class="text-2xl font-bold text-white mr-4">{{ message.subject }}</h2>
+                <span class="px-3 py-1 text-sm rounded-full
+                    {% if message.status == 'unread' %}bg-red-600/20 text-red-400
+                    {% elif message.status == 'read' %}bg-blue-600/20 text-blue-400
+                    {% elif message.status == 'replied' %}bg-green-600/20 text-green-400
+                    {% elif message.status == 'in_conversation' %}bg-purple-600/20 text-purple-400
+                    {% else %}bg-slate-600/20 text-slate-400{% endif %}">
+                    {% if message.status == 'unread' %}未读
+                    {% elif message.status == 'read' %}已读
+                    {% elif message.status == 'replied' %}已回复
+                    {% elif message.status == 'in_conversation' %}对话中
+                    {% else %}已归档{% endif %}
+                </span>
+            </div>
+            {% if message.replies %}
+            <div class="text-sm text-slate-400">
+                <i class="fas fa-comments mr-1"></i>{{ message.replies|length }} 条回复
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 原始消息 -->
+    <div class="glass-card rounded-xl p-6 mb-6">
+        <div class="flex items-center mb-4">
+            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                <i class="fas fa-user text-white"></i>
+            </div>
+            <div>
+                <p class="text-white font-medium">{{ message.name }}</p>
+                <p class="text-slate-400 text-sm">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+            </div>
+        </div>
+        
+        <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-4">
+            <div class="message-content text-slate-300 leading-relaxed whitespace-pre-wrap">
+                {{ message.message }}
+            </div>
+        </div>
+    </div>
+
+    <!-- 回复记录 -->
+    {% if message.replies %}
+    <div class="space-y-4">
+        <h3 class="text-xl font-bold text-white mb-4">
+            <i class="fas fa-comments mr-2"></i> 回复记录 ({{ message.replies|length }})
+        </h3>
+        
+        {% for reply in message.replies %}
+        <div class="glass-card rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3">
+                        <i class="fas fa-reply text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-white font-medium">
+                            {% if reply.reply_type == 'admin' %}
+                                {{ reply.sender_name or '管理员' }}
+                            {% else %}
+                                {{ reply.sender_name or message.name }}
+                            {% endif %}
+                        </p>
+                        <p class="text-slate-400 text-sm">{{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    {% if reply.is_sent %}
+                        <span class="px-2 py-1 bg-green-600/20 text-green-400 rounded-full text-xs">
+                            <i class="fas fa-check mr-1"></i>已发送邮件
+                        </span>
+                    {% else %}
+                        <span class="px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded-full text-xs">
+                            <i class="fas fa-clock mr-1"></i>待发送
+                        </span>
+                    {% endif %}
+                    {% if reply.reply_type == 'admin' %}
+                        <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded-full text-xs">管理员回复</span>
+                    {% else %}
+                        <span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded-full text-xs">用户回复</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-4">
+                <div class="message-content text-slate-300 leading-relaxed whitespace-pre-wrap">
+                    {{ reply.reply_content }}
+                </div>
+            </div>
+
+            {% if reply.sent_at %}
+            <div class="mt-3 text-xs text-slate-500">
+                <i class="fas fa-paper-plane mr-1"></i>邮件发送时间：{{ reply.sent_at.strftime('%Y-%m-%d %H:%M:%S') }}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- 无回复状态 -->
+    <div class="glass-card rounded-xl p-8 text-center">
+        <div class="w-16 h-16 bg-slate-600/50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i class="fas fa-comments text-slate-400 text-2xl"></i>
+        </div>
+        <h3 class="text-lg font-semibold text-white mb-2">暂无回复</h3>
+        <p class="text-slate-400">管理员还没有回复这条消息，请耐心等待。</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.message-content {
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+
+.message-content p {
+    margin-bottom: 1rem;
+    color: #e2e8f0;
+}
+
+.message-content br {
+    display: block;
+    margin: 0.5rem 0;
+    content: "";
+}
+</style>
+{% endblock %}

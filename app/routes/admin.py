@@ -433,6 +433,9 @@ def view_message(message_id):
 @login_required
 def reply_message(message_id):
     """回复消息"""
+    from app.models import MessageReply
+    from app.utils.email_sender import send_reply_email
+    
     message = Message.query.get_or_404(message_id)
     
     if request.method == 'POST':
@@ -445,17 +448,56 @@ def reply_message(message_id):
             return render_template('admin/reply_message.html', message=message)
         
         try:
-            # 这里可以添加发送邮件的逻辑
+            # 创建回复记录
+            reply_record = MessageReply.create_reply(
+                message_id=message.id,
+                reply_content=reply_content,
+                reply_type='admin',
+                sender_name=current_user.username if current_user else '管理员',
+                sender_email=current_user.email if current_user else 'admin@shiheng.info'
+            )
+            
+            db.session.add(reply_record)
+            db.session.flush()  # 获取回复ID
+            
+            # 标记原消息为已回复
             message.mark_as_replied()
+            
+            # 发送邮件给用户
+            email_sent = send_reply_email(message, reply_content, reply_record)
+            
+            # 更新回复记录的发送状态
+            if email_sent:
+                reply_record.mark_as_sent()
+            
+            # 创建私信回复通知（如果消息发送者是注册用户）
+            from app.models import User
+            message_user = User.query.filter_by(email=message.email).first()
+            if message_user:
+                from app.models import Notification
+                notification = Notification.create_message_reply_notification(
+                    message_author_id=message_user.id,
+                    admin_name=current_user.username if current_user else '管理员',
+                    message_subject=message.subject,
+                    message_id=message.id
+                )
+                db.session.add(notification)
+            
             db.session.commit()
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '回复已发送！'})
+                success_message = '回复已发送！'
+                if email_sent:
+                    success_message += ' 邮件已发送给用户。'
+                else:
+                    success_message += ' 但邮件发送失败，请检查邮件配置。'
+                return jsonify({'success': True, 'message': success_message})
 
-            return redirect(url_for('admin.admin_messages'))
+            return redirect(url_for('admin.view_message', message_id=message.id))
             
         except Exception as e:
             db.session.rollback()
+            current_app.logger.error(f"回复消息错误: {e}", exc_info=True)
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '发送失败，请稍后重试'})
 
@@ -484,6 +526,106 @@ def delete_message(message_id):
     
     return redirect(url_for('admin.admin_messages'))
 
+@admin_bp.route('/admin/messages/<int:message_id>/replies/<int:reply_id>/delete', methods=['POST'])
+@login_required
+def delete_message_reply(message_id, reply_id):
+    """删除消息回复"""
+    from app.models import MessageReply
+    
+    message = Message.query.get_or_404(message_id)
+    reply = MessageReply.query.filter_by(id=reply_id, message_id=message_id).first_or_404()
+    
+    try:
+        # 删除回复
+        db.session.delete(reply)
+        
+        # 检查是否还有其他回复
+        remaining_replies = MessageReply.query.filter_by(message_id=message_id).count()
+        
+        # 如果没有回复了，更新消息状态
+        if remaining_replies == 0:
+            if message.status == 'in_conversation':
+                message.status = 'read'  # 回到已读状态
+            elif message.status == 'replied':
+                message.status = 'read'  # 回到已读状态
+        
+        db.session.commit()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True, 
+                'message': '回复删除成功！',
+                'remaining_replies': remaining_replies
+            })
+        
+        return redirect(url_for('admin.view_message', message_id=message_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"删除回复错误: {e}", exc_info=True)
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+        
+        print(f"删除回复错误: {e}")
+        return redirect(url_for('admin.view_message', message_id=message_id))
+
+@admin_bp.route('/admin/messages/<int:message_id>/replies/batch-delete', methods=['POST'])
+@login_required
+def batch_delete_message_replies(message_id):
+    """批量删除消息回复"""
+    from app.models import MessageReply
+    
+    message = Message.query.get_or_404(message_id)
+    
+    try:
+        data = request.get_json()
+        reply_ids = data.get('reply_ids', [])
+        
+        if not reply_ids:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请选择要删除的回复'})
+            return redirect(url_for('admin.view_message', message_id=message_id))
+        
+        # 删除选中的回复
+        deleted_count = 0
+        for reply_id in reply_ids:
+            reply = MessageReply.query.filter_by(id=reply_id, message_id=message_id).first()
+            if reply:
+                db.session.delete(reply)
+                deleted_count += 1
+        
+        # 检查是否还有其他回复
+        remaining_replies = MessageReply.query.filter_by(message_id=message_id).count()
+        
+        # 如果没有回复了，更新消息状态
+        if remaining_replies == 0:
+            if message.status == 'in_conversation':
+                message.status = 'read'  # 回到已读状态
+            elif message.status == 'replied':
+                message.status = 'read'  # 回到已读状态
+        
+        db.session.commit()
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True, 
+                'message': f'成功删除 {deleted_count} 条回复！',
+                'deleted_count': deleted_count,
+                'remaining_replies': remaining_replies
+            })
+        
+        return redirect(url_for('admin.view_message', message_id=message_id))
+        
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f"批量删除回复错误: {e}", exc_info=True)
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '批量删除失败，请稍后重试'})
+        
+        print(f"批量删除回复错误: {e}")
+        return redirect(url_for('admin.view_message', message_id=message_id))
 
 @admin_bp.route('/admin/messages/<int:message_id>/status', methods=['POST'])
 @login_required

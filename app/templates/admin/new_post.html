@@ -275,8 +275,7 @@ document.addEventListener('DOMContentLoaded', function() {
         placeholder: '开始写作...',
         content: ''
     });
-    
-    
+
     const titleInput = document.getElementById('title');
     const excerptInput = document.getElementById('excerpt');
     const previewBtn = document.getElementById('preview-btn');
@@ -297,28 +296,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const charCount = content.replace(/\s/g, '').length;
         
         // 可以在这里添加字数统计显示
-        console.log(`字符数：${wordCount}，非空字符数：${charCount}`);
     }
     
     // 统一的内容变化处理函数
     tiptapEditor.onContentChange = function(htmlContent) {
-        console.log('onContentChange 被调用，参数:', htmlContent);
-        console.log('参数类型:', typeof htmlContent);
-        console.log('是否为 undefined:', htmlContent === undefined);
-        console.log('是否为 null:', htmlContent === null);
-        
         // 确保内容不为空或undefined
         if (htmlContent === undefined || htmlContent === null) {
-            console.log('内容为 undefined/null，设置为空字符串');
             htmlContent = '';
         }
         
-        console.log('处理后的内容:', htmlContent);
-        console.log('内容长度:', htmlContent.length);
-        
         // 同步到隐藏的 textarea
         contentTextarea.value = htmlContent;
-        console.log('textarea 值已更新:', contentTextarea.value);
         
         // 更新字数统计
         updateWordCount();
@@ -342,13 +330,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const title = titleInput.value || '文章标题';
             const content = contentTextarea.value || '文章内容';
             const excerpt = excerptInput.value || '';
+            const author = '{{ current_user.username if current_user else "管理员" }}';
             
             const previewHTML = `
                 <article class="blog-post">
                     <header class="mb-4">
                         <h1 class="display-4">${title}</h1>
                         <div class="text-muted">
-                            <small>作者：{{ current_user.username }} | 发布时间：${new Date().toLocaleDateString()}</small>
+                            <small>作者：${author} | 发布时间：${new Date().toLocaleDateString()}</small>
                         </div>
                     </header>
                     
@@ -371,12 +360,6 @@ document.addEventListener('DOMContentLoaded', function() {
         form.addEventListener('submit', function(e) {
             const title = titleInput.value.trim();
             const content = contentTextarea.value.trim();
-            
-            console.log('表单提交 - 标题:', title);
-            console.log('表单提交 - 内容:', content);
-            console.log('表单提交 - 内容类型:', typeof content);
-            console.log('表单提交 - 内容长度:', content.length);
-            console.log('表单提交 - 是否为 undefined:', content === 'undefined');
             
             if (!title) {
                 e.preventDefault();

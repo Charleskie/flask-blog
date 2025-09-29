@@ -330,10 +330,7 @@ class RichTextEditor {
             // 点击按钮触发颜色选择器
             colorTrigger.addEventListener('click', (e) => {
                 e.preventDefault();
-                e.stopPropagation();
-                console.log('颜色选择器按钮被点击');
-                
-                // 确保编辑器有焦点
+                e.stopPropagation();// 确保编辑器有焦点
                 this.content.focus();
                 
                 // 触发颜色选择器
@@ -344,10 +341,7 @@ class RichTextEditor {
             colorInput.addEventListener('change', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const color = e.target.value;
-                console.log('颜色选择器变化:', color);
-                
-                if (color) {
+                const color = e.target.value;if (color) {
                     this.applyTextColor(color);
                 }
             });
@@ -356,20 +350,14 @@ class RichTextEditor {
             colorInput.addEventListener('input', (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                const color = e.target.value;
-                console.log('颜色选择器输入:', color);
-                
-                if (color) {
+                const color = e.target.value;if (color) {
                     this.applyTextColor(color);
                 }
             });
         }
     }
 
-    execCommand(command, value = null) {
-        console.log('执行命令:', command, value);
-        
-        // 确保编辑器有焦点
+    execCommand(command, value = null) {// 确保编辑器有焦点
         this.content.focus();
         
         // 对于颜色命令，使用特殊处理
@@ -382,10 +370,7 @@ class RichTextEditor {
         this.updateToolbarState();
     }
 
-    applyTextColor(color) {
-        console.log('应用文字颜色:', color);
-        
-        // 确保编辑器有焦点
+    applyTextColor(color) {// 确保编辑器有焦点
         this.content.focus();
         
         // 获取当前选择
@@ -397,10 +382,7 @@ class RichTextEditor {
         }
         
         // 应用颜色
-        const success = document.execCommand('foreColor', false, color);
-        console.log('颜色应用结果:', success);
-        
-        // 如果execCommand失败，尝试使用CSS样式
+        const success = document.execCommand('foreColor', false, color);// 如果execCommand失败，尝试使用CSS样式
         if (!success) {
             this.applyColorWithCSS(color);
         }
@@ -409,10 +391,7 @@ class RichTextEditor {
         this.content.focus();
     }
 
-    applyColorWithCSS(color) {
-        console.log('使用CSS应用颜色:', color);
-        
-        const selection = window.getSelection();
+    applyColorWithCSS(color) {const selection = window.getSelection();
         if (selection.rangeCount > 0) {
             const range = selection.getRangeAt(0);
             const span = document.createElement('span');
@@ -544,15 +523,12 @@ class RichTextEditor {
                     });
                     
                     const compressionRatio = Math.round((1 - compressedFile.size / originalSize) * 100);
-                    console.log(`图片压缩完成: ${this.formatFileSize(originalSize)} -> ${this.formatFileSize(compressedFile.size)} (${compressionRatio}% 压缩)`);
                     resolve(compressedFile);
                 }, 'image/jpeg', compressionQuality);
             };
             
             img.onerror = () => {
-                // 如果图片加载失败，返回原文件
-                console.warn('图片加载失败，使用原文件');
-                resolve(file);
+                // 如果图片加载失败，返回原文件resolve(file);
             };
             
             // 加载图片

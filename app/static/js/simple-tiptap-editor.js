@@ -141,16 +141,16 @@ class SimpleTiptapEditor {
                 <i class="fas fa-table"></i>
             </button>
             <button class="toolbar-btn" data-action="addTableRow" title="添加行">
-                <i class="fas fa-plus"></i><i class="fas fa-grip-lines-vertical"></i>
-            </button>
-            <button class="toolbar-btn" data-action="addTableColumn" title="添加列">
                 <i class="fas fa-plus"></i><i class="fas fa-grip-lines"></i>
             </button>
+            <button class="toolbar-btn" data-action="addTableColumn" title="添加列">
+                <i class="fas fa-plus"></i><i class="fas fa-grip-lines-vertical"></i>
+            </button>
             <button class="toolbar-btn" data-action="deleteTableRow" title="删除行">
-                <i class="fas fa-minus"></i><i class="fas fa-grip-lines-vertical"></i>
+                <i class="fas fa-minus"></i><i class="fas fa-grip-lines"></i>
             </button>
             <button class="toolbar-btn" data-action="deleteTableColumn" title="删除列">
-                <i class="fas fa-minus"></i><i class="fas fa-grip-lines"></i>
+                <i class="fas fa-minus"></i><i class="fas fa-grip-lines-vertical"></i>
             </button>
         </div>
                     
@@ -198,8 +198,7 @@ class SimpleTiptapEditor {
             if (button) {
                 e.preventDefault();
                 const action = button.dataset.action;
-                
-                
+
                 this.handleToolbarAction(action);
             }
         });
@@ -212,7 +211,6 @@ class SimpleTiptapEditor {
                 this.handleToolbarAction(action, value);
             }
         });
-
 
         // 编辑器内容变化事件
         this.content.addEventListener('input', () => {
@@ -264,12 +262,8 @@ class SimpleTiptapEditor {
 
         // 链接点击事件处理
         this.content.addEventListener('click', (e) => {
-            if (e.target.tagName === 'A' && e.target.classList.contains('tiptap-link')) {
-                console.log('检测到链接点击事件');
-                e.preventDefault();
-                const url = e.target.href;
-                console.log(`打开链接: ${url}`);
-                window.open(url, '_blank');
+            if (e.target.tagName === 'A' && e.target.classList.contains('tiptap-link')) {e.preventDefault();
+                const url = e.target.href;window.open(url, '_blank');
             }
         });
 
@@ -383,41 +377,14 @@ class SimpleTiptapEditor {
         // 检查是否在行内代码中
         const inlineCode = this.findParentElement(container, 'code');
         // 检查是否在代码块中
-        const codeBlock = this.findParentElement(container, 'pre');
-        
-        console.log('光标导航检查:', { 
-            key: e.key, 
-            inlineCode: !!inlineCode, 
-            codeBlock: !!codeBlock,
-            endContainer: range.endContainer.nodeType,
-            endOffset: range.endOffset,
-            container: container,
-            containerType: container.nodeType,
-            containerText: container.textContent ? container.textContent.substring(0, 20) : 'N/A',
-            parentNode: container.parentNode,
-            parentTagName: container.parentNode ? container.parentNode.tagName : 'N/A'
-        });
-        
-        // 行内代码退出逻辑
+        const codeBlock = this.findParentElement(container, 'pre');// 行内代码退出逻辑
         if (inlineCode && !codeBlock) {
             if (e.key === 'ArrowRight' || e.key === ' ') {
                 const endContainer = range.endContainer;
-                const endOffset = range.endOffset;
-                
-                console.log('行内代码检查:', {
-                    endContainer: endContainer.nodeType,
-                    endOffset: endOffset,
-                    textLength: endContainer.textContent ? endContainer.textContent.length : 0,
-                    isLastChild: endContainer === inlineCode.lastChild
-                });
-                
-                // 检查是否在行内代码的末尾
+                const endOffset = range.endOffset;// 检查是否在行内代码的末尾
                 if (endContainer.nodeType === Node.TEXT_NODE && 
                     endContainer === inlineCode.lastChild && 
-                    endOffset === endContainer.textContent.length) {
-                    
-                    console.log('触发行内代码退出');
-                    e.preventDefault();
+                    endOffset === endContainer.textContent.length) {e.preventDefault();
                     this.exitInlineCodeTiptapStyle(inlineCode);
                 }
             }
@@ -428,28 +395,14 @@ class SimpleTiptapEditor {
             // 处理三次回车退出
             if (e.key === 'Enter') {
                 if (!this.enterCount) this.enterCount = 0;
-                this.enterCount++;
-                
-                console.log('代码块回车计数:', this.enterCount);
-                
-                // 检查是否在代码块的末尾
+                this.enterCount++;// 检查是否在代码块的末尾
                 const endContainer = range.endContainer;
                 const endOffset = range.endOffset;
                 
                 if (endContainer.nodeType === Node.TEXT_NODE) {
                     const textContent = endContainer.textContent;
-                    const lastNewlineIndex = textContent.lastIndexOf('\n');
-                    
-                    console.log('代码块检查:', {
-                        lastNewlineIndex: lastNewlineIndex,
-                        endOffset: endOffset,
-                        isAtEnd: lastNewlineIndex === -1 || endOffset > lastNewlineIndex
-                    });
-                    
-                    // 如果光标在最后一行且连续按了三次回车
-                    if ((lastNewlineIndex === -1 || endOffset > lastNewlineIndex) && this.enterCount >= 3) {
-                        console.log('触发代码块退出（三次回车）');
-                        e.preventDefault();
+                    const lastNewlineIndex = textContent.lastIndexOf('\n');// 如果光标在最后一行且连续按了三次回车
+                    if ((lastNewlineIndex === -1 || endOffset > lastNewlineIndex) && this.enterCount >= 3) {e.preventDefault();
                         this.exitCodeBlockTiptapStyle(codeBlock);
                         this.enterCount = 0;
                     }
@@ -470,9 +423,7 @@ class SimpleTiptapEditor {
                     const lastNewlineIndex = textContent.lastIndexOf('\n');
                     
                     // 如果光标在最后一行
-                    if (lastNewlineIndex === -1 || endOffset > lastNewlineIndex) {
-                        console.log('触发代码块退出（向下箭头）');
-                        e.preventDefault();
+                    if (lastNewlineIndex === -1 || endOffset > lastNewlineIndex) {e.preventDefault();
                         this.exitCodeBlockTiptapStyle(codeBlock);
                     }
                 }
@@ -480,10 +431,7 @@ class SimpleTiptapEditor {
         }
     }
     
-    exitInlineCodeTiptapStyle(inlineCode) {
-        console.log('Tiptap风格退出行内代码');
-        
-        // 在行内代码后面插入一个零宽空格字符，防止浏览器合并文本节点
+    exitInlineCodeTiptapStyle(inlineCode) {// 在行内代码后面插入一个零宽空格字符，防止浏览器合并文本节点
         const textNode = document.createTextNode('\u200B'); // 零宽空格
         inlineCode.parentNode.insertBefore(textNode, inlineCode.nextSibling);
         
@@ -499,15 +447,9 @@ class SimpleTiptapEditor {
         // 触发内容变化
         if (this.onContentChange) {
             this.onContentChange(this.getContent());
-        }
-        
-        console.log('行内代码退出完成');
-    }
+        }}
     
-    exitCodeBlockTiptapStyle(codeBlock) {
-        console.log('Tiptap风格退出代码块');
-        
-        // 在代码块后面插入一个段落
+    exitCodeBlockTiptapStyle(codeBlock) {// 在代码块后面插入一个段落
         const paragraph = document.createElement('p');
         const br = document.createElement('br');
         paragraph.appendChild(br);
@@ -526,10 +468,7 @@ class SimpleTiptapEditor {
         // 触发内容变化
         if (this.onContentChange) {
             this.onContentChange(this.getContent());
-        }
-        
-        console.log('代码块退出完成');
-    }
+        }}
     
     handleCursorNavigation(e) {
         const selection = window.getSelection();
@@ -541,15 +480,7 @@ class SimpleTiptapEditor {
         // 检查是否在行内代码中
         const inlineCode = this.findParentElement(container, 'code');
         // 检查是否在代码块中
-        const codeBlock = this.findParentElement(container, 'pre');
-        
-        console.log('光标导航检查:', { 
-            inlineCode: !!inlineCode, 
-            codeBlock: !!codeBlock, 
-            key: e.key 
-        });
-        
-        if (inlineCode && !codeBlock) {
+        const codeBlock = this.findParentElement(container, 'pre');if (inlineCode && !codeBlock) {
             // 在行内代码中
             this.handleInlineCodeNavigation(e, inlineCode, range);
         } else if (codeBlock) {
@@ -576,41 +507,27 @@ class SimpleTiptapEditor {
         return null;
     }
     
-    handleInlineCodeNavigation(e, inlineCode, range) {
-        console.log('处理行内代码导航:', e.key);
-        
-        if (e.key === 'ArrowRight') {
+    handleInlineCodeNavigation(e, inlineCode, range) {if (e.key === 'ArrowRight') {
             // 检查光标是否在行内代码的末尾
-            if (this.isAtEndOfElement(range, inlineCode)) {
-                console.log('光标在行内代码末尾，按右箭头');
-                e.preventDefault();
+            if (this.isAtEndOfElement(range, inlineCode)) {e.preventDefault();
                 this.exitInlineCodeAfter(inlineCode, range);
             }
         } else if (e.key === 'ArrowLeft') {
             // 检查光标是否在行内代码的开头
-            if (this.isAtStartOfElement(range, inlineCode)) {
-                console.log('光标在行内代码开头，按左箭头');
-                e.preventDefault();
+            if (this.isAtStartOfElement(range, inlineCode)) {e.preventDefault();
                 this.exitInlineCodeBefore(inlineCode, range);
             }
         }
     }
     
-    handleCodeBlockNavigation(e, codeBlock, range) {
-        console.log('处理代码块导航:', e.key);
-        
-        if (e.key === 'ArrowDown') {
+    handleCodeBlockNavigation(e, codeBlock, range) {if (e.key === 'ArrowDown') {
             // 检查光标是否在代码块的最后一行
-            if (this.isAtLastLineOfCodeBlock(range, codeBlock)) {
-                console.log('光标在代码块最后一行，按下箭头');
-                e.preventDefault();
+            if (this.isAtLastLineOfCodeBlock(range, codeBlock)) {e.preventDefault();
                 this.exitCodeBlockAfter(codeBlock, range);
             }
         } else if (e.key === 'ArrowUp') {
             // 检查光标是否在代码块的第一行
-            if (this.isAtFirstLineOfCodeBlock(range, codeBlock)) {
-                console.log('光标在代码块第一行，按上箭头');
-                e.preventDefault();
+            if (this.isAtFirstLineOfCodeBlock(range, codeBlock)) {e.preventDefault();
                 this.exitCodeBlockBefore(codeBlock, range);
             }
         }
@@ -690,10 +607,7 @@ class SimpleTiptapEditor {
         return false;
     }
     
-    exitInlineCodeAfter(inlineCode, range) {
-        console.log('退出行内代码（向后）');
-        
-        // 在行内代码后面插入一个文本节点
+    exitInlineCodeAfter(inlineCode, range) {// 在行内代码后面插入一个文本节点
         const textNode = document.createTextNode('');
         inlineCode.parentNode.insertBefore(textNode, inlineCode.nextSibling);
         
@@ -711,10 +625,7 @@ class SimpleTiptapEditor {
         }
     }
     
-    exitInlineCodeBefore(inlineCode, range) {
-        console.log('退出行内代码（向前）');
-        
-        // 在行内代码前面插入一个文本节点
+    exitInlineCodeBefore(inlineCode, range) {// 在行内代码前面插入一个文本节点
         const textNode = document.createTextNode('');
         inlineCode.parentNode.insertBefore(textNode, inlineCode);
         
@@ -732,10 +643,7 @@ class SimpleTiptapEditor {
         }
     }
     
-    exitCodeBlockAfter(codeBlock, range) {
-        console.log('退出代码块（向后）');
-        
-        // 在代码块后面插入一个段落
+    exitCodeBlockAfter(codeBlock, range) {// 在代码块后面插入一个段落
         const paragraph = document.createElement('p');
         const br = document.createElement('br');
         paragraph.appendChild(br);
@@ -756,10 +664,7 @@ class SimpleTiptapEditor {
         }
     }
     
-    exitCodeBlockBefore(codeBlock, range) {
-        console.log('退出代码块（向前）');
-        
-        // 在代码块前面插入一个段落
+    exitCodeBlockBefore(codeBlock, range) {// 在代码块前面插入一个段落
         const paragraph = document.createElement('p');
         const br = document.createElement('br');
         paragraph.appendChild(br);
@@ -780,37 +685,18 @@ class SimpleTiptapEditor {
         }
     }
 
-    setLink() {
-        console.log('setLink 被调用');
-        
-        this.content.focus();
-        const selection = window.getSelection();
-        
-        console.log('选择范围数量:', selection.rangeCount);
-        
-        if (selection.rangeCount === 0) {
-            console.log('没有选择范围');
-            alert('请先选中要设置为链接的文字');
+    setLink() {this.content.focus();
+        const selection = window.getSelection();if (selection.rangeCount === 0) {alert('请先选中要设置为链接的文字');
             return;
         }
         
         const range = selection.getRangeAt(0);
-        const selectedText = range.toString();
-        
-        console.log('选中的文本:', selectedText);
-        
-        if (!selectedText) {
-            console.log('选中的文本为空');
-            alert('请先选中要设置为链接的文字');
+        const selectedText = range.toString();if (!selectedText) {alert('请先选中要设置为链接的文字');
             return;
         }
         
         // 保存选中的范围
-        this.savedRange = range.cloneRange();
-        console.log('已保存选中范围');
-        
-        console.log('显示链接模态框');
-        // 创建链接模态框
+        this.savedRange = range.cloneRange();// 创建链接模态框
         this.showLinkModal(selectedText, '');
     }
     
@@ -918,28 +804,17 @@ class SimpleTiptapEditor {
         document.addEventListener('keydown', handleKeyDown);
     }
     
-    insertLink(text, url) {
-        console.log('insertLink 被调用:', { text, url });
-        
-        if (!this.savedRange) {
+    insertLink(text, url) {if (!this.savedRange) {
             console.error('没有保存的选中范围');
             alert('请先选中要设置为链接的文字');
             return;
-        }
-        
-        console.log('使用保存的范围:', this.savedRange.toString());
-        
-        // 创建链接元素
+        }// 创建链接元素
         const linkElement = document.createElement('a');
         linkElement.href = url;
         linkElement.textContent = text;
         linkElement.target = '_blank';
         linkElement.rel = 'noopener noreferrer';
-        linkElement.className = 'tiptap-link';
-        
-        console.log('创建的链接元素:', linkElement);
-        
-        try {
+        linkElement.className = 'tiptap-link';try {
             // 使用保存的范围替换选中的文本
             this.savedRange.deleteContents();
             this.savedRange.insertNode(linkElement);
@@ -949,11 +824,7 @@ class SimpleTiptapEditor {
             const newRange = document.createRange();
             newRange.selectNode(linkElement);
             selection.removeAllRanges();
-            selection.addRange(newRange);
-            
-            console.log('链接插入成功');
-            
-            // 清除保存的范围
+            selection.addRange(newRange);// 清除保存的范围
             this.savedRange = null;
             
             // 触发内容变化
@@ -965,7 +836,6 @@ class SimpleTiptapEditor {
             alert('插入链接失败，请重试');
         }
     }
-
 
     createTaskList() {
         const selection = window.getSelection();
@@ -1060,13 +930,8 @@ class SimpleTiptapEditor {
             // 获取HTML内容
             let htmlContent = this.content.innerHTML;
             
-            // 调试日志
-            console.log('SimpleTiptapEditor.getContent() - 原始内容:', htmlContent);
-            
-            // 确保内容不为undefined或null
-            if (htmlContent === undefined || htmlContent === null) {
-                console.log('SimpleTiptapEditor.getContent() - 内容为 undefined/null，设置为空字符串');
-                htmlContent = '';
+            // 调试日志// 确保内容不为undefined或null
+            if (htmlContent === undefined || htmlContent === null) {htmlContent = '';
             }
             
             // 处理代码块，确保特殊字符被正确转义
@@ -1074,20 +939,11 @@ class SimpleTiptapEditor {
             tempDiv.innerHTML = htmlContent;
             
             // 处理所有代码块
-            const codeElements = tempDiv.querySelectorAll('code');
-            console.log('SimpleTiptapEditor.getContent() - 找到代码块数量:', codeElements.length);
-            
-            codeElements.forEach((codeElement, index) => {
+            const codeElements = tempDiv.querySelectorAll('code');codeElements.forEach((codeElement, index) => {
                 // 确保代码内容被正确转义
-                const textContent = codeElement.textContent || codeElement.innerText || '';
-                console.log(`SimpleTiptapEditor.getContent() - 代码块 ${index + 1} 原始内容:`, textContent);
-                codeElement.innerHTML = this.escapeHtml(textContent);
-                console.log(`SimpleTiptapEditor.getContent() - 代码块 ${index + 1} 转义后:`, codeElement.innerHTML);
-            });
+                const textContent = codeElement.textContent || codeElement.innerText || '';codeElement.innerHTML = this.escapeHtml(textContent);});
             
-            const result = tempDiv.innerHTML;
-            console.log('SimpleTiptapEditor.getContent() - 最终结果:', result);
-            return result;
+            const result = tempDiv.innerHTML;return result;
         } catch (error) {
             console.error('SimpleTiptapEditor.getContent() - 错误:', error);
             return '';
@@ -1124,14 +980,6 @@ class SimpleTiptapEditor {
     focus() {
         this.content.focus();
     }
-
-
-
-    
-
-
-
-
 
     toggleInlineCode() {
         this.content.focus();
@@ -1189,7 +1037,7 @@ class SimpleTiptapEditor {
                 codeElement.textContent = selectedText;
             } else {
                 // 如果没有选中文本，插入示例代码
-                codeElement.textContent = '// 在这里输入你的代码\nconsole.log("Hello, World!");';
+                codeElement.textContent = '// 在这里输入你的代码\n';
             }
             
             preElement.appendChild(codeElement);
@@ -1244,7 +1092,7 @@ class SimpleTiptapEditor {
     
     getExampleCode(language) {
         const examples = {
-            'javascript': '// JavaScript 示例\nconsole.log("Hello, World!");\n\nfunction greet(name) {\n    return `Hello, ${name}!`;\n}',
+            'javascript': '// JavaScript 示例\n\n\nfunction greet(name) {\n    return `Hello, ${name}!`;\n}',
             'python': '# Python 示例\nprint("Hello, World!")\n\ndef greet(name):\n    return f"Hello, {name}!"',
             'java': '// Java 示例\npublic class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
             'cpp': '// C++ 示例\n#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}',
@@ -1255,22 +1103,19 @@ class SimpleTiptapEditor {
             'bash': '# Bash 示例\necho "Hello, World!"\n\n# 列出文件\nls -la\n\n# 创建目录\nmkdir new_folder',
             'json': '{\n  "name": "Hello World",\n  "version": "1.0.0",\n  "description": "A simple example",\n  "main": "index.js",\n  "scripts": {\n    "start": "node index.js"\n  }\n}',
             'xml': '<?xml version="1.0" encoding="UTF-8"?>\n<root>\n    <message>Hello, World!</message>\n    <items>\n        <item id="1">First item</item>\n        <item id="2">Second item</item>\n    </items>\n</root>',
-            'markdown': '# Markdown 示例\n\n## 标题\n\n这是一段**粗体**文字和*斜体*文字。\n\n- 列表项 1\n- 列表项 2\n\n```javascript\nconsole.log("代码块");\n```',
+            'markdown': '# Markdown 示例\n\n## 标题\n\n这是一段**粗体**文字和*斜体*文字。\n\n- 列表项 1\n- 列表项 2\n\n```javascript\n\n```',
             'php': '<?php\n// PHP 示例\necho "Hello, World!";\n\nfunction greet($name) {\n    return "Hello, " . $name . "!";\n}\n\n$message = greet("World");\necho $message;\n?>',
             'ruby': '# Ruby 示例\nputs "Hello, World!"\n\ndef greet(name)\n  "Hello, #{name}!"\nend\n\nputs greet("World")',
             'go': 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}\n\nfunc greet(name string) string {\n    return fmt.Sprintf("Hello, %s!", name)\n}',
             'rust': '// Rust 示例\nfn main() {\n    println!("Hello, World!");\n}\n\nfn greet(name: &str) -> String {\n    format!("Hello, {}!", name)\n}',
             'swift': '// Swift 示例\nimport Foundation\n\nprint("Hello, World!")\n\nfunc greet(name: String) -> String {\n    return "Hello, \\(name)!"\n}\n\nlet message = greet(name: "World")\nprint(message)',
             'kotlin': '// Kotlin 示例\nfun main() {\n    println("Hello, World!")\n}\n\nfun greet(name: String): String {\n    return "Hello, $name!"\n}',
-            'typescript': '// TypeScript 示例\nconsole.log("Hello, World!");\n\ninterface Person {\n    name: string;\n    age: number;\n}\n\nfunction greet(person: Person): string {\n    return `Hello, ${person.name}!`;\n}',
+            'typescript': '// TypeScript 示例\n\n\ninterface Person {\n    name: string;\n    age: number;\n}\n\nfunction greet(person: Person): string {\n    return `Hello, ${person.name}!`;\n}',
             'text': '纯文本示例\n\n这里可以输入任何文本内容，\n支持多行文本。\n\n可以用于：\n- 笔记\n- 说明\n- 文档'
         };
         
         return examples[language] || examples['text'];
     }
-    
-
-
 
     destroy() {
         // 清理事件监听器

@@ -195,6 +195,11 @@
             <div class="flex gap-6 pb-4" style="width: max-content;">
                 {% for version in versions %}
                 <div class="version-card flex-shrink-0">
+                    <!-- 悬浮提示 -->
+                    <div class="version-tooltip">
+                        <div class="font-semibold mb-2">{{ version.title }}</div>
+                        <div>{{ version.description }}</div>
+                    </div>
                     <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300 min-w-[300px]">
                         <!-- 版本头部 -->
                         <div class="flex items-center justify-between mb-4">
@@ -229,8 +234,10 @@
                         
                         <!-- 版本内容 -->
                         <div class="version-content">
-                            <h3 class="text-lg font-semibold text-white mb-2">{{ version.title }}</h3>
-                            <p class="text-slate-300 text-sm leading-relaxed">{{ version.description }}</p>
+                            <h3 class="text-lg font-semibold text-white mb-2 version-title" title="{{ version.title }}">{{ version.title }}</h3>
+                            <div class="version-description" title="{{ version.description }}">
+                                {{ version.description|nl2br|safe }}
+                            </div>
                         </div>
                         
                         <!-- 版本标签 -->
@@ -400,6 +407,76 @@
 
 .version-next {
     right: -20px;
+}
+
+/* 版本内容样式 */
+.version-content {
+    height: 120px; /* 固定高度 */
+    display: flex;
+    flex-direction: column;
+}
+
+.version-title {
+    height: 24px; /* 标题固定高度 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 24px;
+}
+
+.version-description {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 4; /* 最多显示4行 */
+    -webkit-box-orient: vertical;
+    line-height: 1.4;
+    color: #cbd5e1;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+/* 悬浮提示样式 */
+.version-card {
+    position: relative;
+}
+
+.version-card .version-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(15, 23, 42, 0.95);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    max-width: 300px;
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(71, 85, 105, 0.3);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.version-card .version-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(15, 23, 42, 0.95);
+}
+
+.version-card:hover .version-tooltip {
+    opacity: 1;
+    visibility: visible;
 }
 
 /* 响应式设计 */

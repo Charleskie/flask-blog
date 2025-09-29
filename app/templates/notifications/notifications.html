@@ -53,13 +53,15 @@
                                 <i class="fas fa-star text-warning"></i>
                             {% elif notification.type == 'rating' %}
                                 <i class="fas fa-star text-info"></i>
+                            {% elif notification.type == 'message_reply' %}
+                                <i class="fas fa-envelope text-primary"></i>
                             {% else %}
                                 <i class="fas fa-bell text-secondary"></i>
                             {% endif %}
                         </div>
                         <div class="notification-content">
                             <div class="notification-header">
-                                <h5 class="notification-title">{{ notification.title }}</h5>
+                                <h5 class="notification-title" onclick="viewNotification({{ notification.id }})" style="cursor: pointer;">{{ notification.title }}</h5>
                                 <span class="notification-time">{{ notification.created_at.strftime('%m-%d %H:%M') }}</span>
                             </div>
                             <div class="notification-body">
@@ -180,7 +182,8 @@
     align-items: flex-start;
     gap: 16px;
     padding: 16px;
-    background: var(--bg-secondary);
+    background: transparent !important;
+    background-color: transparent !important;
     border: 1px solid var(--bg-tertiary);
     border-radius: 8px;
     transition: all 0.3s ease;
@@ -237,6 +240,11 @@
     font-size: 1rem;
     font-weight: 600;
     color: var(--text-primary);
+    transition: color 0.3s ease;
+}
+
+.notification-title:hover {
+    color: var(--primary-color);
 }
 
 .notification-time {
@@ -289,6 +297,16 @@
 </style>
 
 <script>
+// 查看通知详情
+function viewNotification(notificationId) {
+    try {
+        window.location.href = `/notifications/${notificationId}`;
+    } catch (error) {
+        // 备用跳转方式
+        window.open(`/notifications/${notificationId}`, '_self');
+    }
+}
+
 function markAsRead(notificationId) {
     fetch(`/api/notifications/${notificationId}/read`, {
         method: 'POST',
@@ -312,7 +330,7 @@ function markAsRead(notificationId) {
         }
     })
     .catch(error => {
-        console.error('标记已读失败:', error);
+        // 静默处理错误
     });
 }
 
@@ -336,7 +354,7 @@ function deleteNotification(notificationId) {
             }
         })
         .catch(error => {
-            console.error('删除消息失败:', error);
+            // 静默处理错误
         });
     }
 }
@@ -365,7 +383,7 @@ function markAllRead() {
             }
         })
         .catch(error => {
-            console.error('标记全部已读失败:', error);
+            // 静默处理错误
         });
     }
 }
@@ -390,7 +408,6 @@ function updateUnreadCount() {
         }
     })
     .catch(error => {
-        console.warn('获取消息数量失败:', error.message);
         // 如果服务器未运行，隐藏通知徽章
         const badge = document.querySelector('.notification-badge');
         if (badge) {

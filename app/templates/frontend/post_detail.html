@@ -119,9 +119,7 @@
                         {% endif %}
                     </div>
                 </header>
-                
 
-                
                 <!-- 文章摘要 -->
                 {% if post.excerpt %}
                 <div class="alert alert-info" role="alert">
@@ -1180,8 +1178,6 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-
-
 /* 管理员操作按钮样式 */
 .admin-actions {
     display: flex;
@@ -1493,9 +1489,7 @@ function setupTocDragging(tocElement) {
             tocElement.style.left = position.left + 'px';
             tocElement.style.top = position.top + 'px';
             tocElement.style.transform = 'none';
-        } catch (e) {
-            console.warn('无法恢复目录位置:', e);
-        }
+        } catch (e) {}
     }
 }
 
@@ -1596,7 +1590,6 @@ function updateFloatingRatingUI(ratingSection, userRating) {
     // 设置用户评分
     if (userRating && userRating > 0) {
         const targetInput = ratingSection.querySelector(`input[name="rating"][value="${userRating}"]`);
-        console.log(targetInput)
         if (targetInput) {
             targetInput.checked = true;
         }

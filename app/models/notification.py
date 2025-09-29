@@ -126,3 +126,18 @@ class Notification(db.Model):
             sender_name=rater_name
         )
         return notification
+    
+    @classmethod
+    def create_message_reply_notification(cls, message_author_id, admin_name, message_subject, message_id):
+        """创建私信回复通知"""
+        notification = cls(
+            user_id=message_author_id,
+            type='message_reply',
+            title=f'{admin_name} 回复了你的私信',
+            content=f'"{message_subject}"',
+            related_id=message_id,
+            related_type='message',
+            related_url=f'/contact',  # 跳转到联系页面
+            sender_name=admin_name
+        )
+        return notification

@@ -41,6 +41,7 @@
                             <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
                             <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
                             <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
+                            <option value="in_conversation" {% if status_filter == 'in_conversation' %}selected{% endif %}>对话中</option>
                             <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
                         </select>
                     </div>
@@ -86,6 +87,8 @@
                                             <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">已读</span>
                                         {% elif message.status == 'replied' %}
                                             <span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs">已回复</span>
+                                        {% elif message.status == 'in_conversation' %}
+                                            <span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs">对话中</span>
                                         {% else %}
                                             <span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs">已归档</span>
                                         {% endif %}
@@ -152,6 +155,9 @@
                                         </a>
                                         <a href="#" onclick="changeStatus({{ message.id }}, 'replied')" class="dropdown-item">
                                             <i class="fas fa-circle text-green-400"></i> 标记为已回复
+                                        </a>
+                                        <a href="#" onclick="changeStatus({{ message.id }}, 'in_conversation')" class="dropdown-item">
+                                            <i class="fas fa-circle text-purple-400"></i> 标记为对话中
                                         </a>
                                         <a href="#" onclick="changeStatus({{ message.id }}, 'archived')" class="dropdown-item">
                                             <i class="fas fa-circle text-slate-400"></i> 归档
@@ -450,24 +456,19 @@
 </style>
 {% endblock %}
 
-
 {% block extra_js %}
 <script>
 // 查看消息详情
 function viewMessage(messageId) {
-    console.log('点击查看消息详情:', messageId);
     try {
         window.location.href = `/admin/messages/${messageId}`;
     } catch (error) {
-        console.error('跳转失败:', error);
         // 备用跳转方式
         window.open(`/admin/messages/${messageId}`, '_self');
     }
 }
 
 function handleMessageClick(messageId, subject) {
-    console.log('处理消息点击:', messageId, subject);
-    
     // 检查消息类型，判断是否需要智能跳转
     const messageCard = document.querySelector(`[data-message-id="${messageId}"]`);
     if (!messageCard) {
@@ -603,7 +604,6 @@ function markAllAsRead() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             showToast('error', '网络错误，请稍后重试');
         })
         .finally(() => {
@@ -681,18 +681,13 @@ document.getElementById('status').addEventListener('change', function() {
     this.form.submit();
 });
 
-// 页面加载完成后的调试信息
+// 页面加载完成后的初始化
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('消息列表页面加载完成');
-    
-    // 检查消息卡片
-    const messageCards = document.querySelectorAll('.message-card');
-    console.log(`找到 ${messageCards.length} 个消息卡片`);
-    
     // 为每个消息卡片添加点击事件监听器（备用方案）
-    messageCards.forEach((card, index) => {
+    const messageCards = document.querySelectorAll('.message-card');
+    
+    messageCards.forEach((card) => {
         const messageId = card.getAttribute('data-message-id');
-        console.log(`消息卡片 ${index + 1}: ID = ${messageId}`);
         
         // 添加备用点击事件
         card.addEventListener('click', function(e) {
@@ -701,7 +696,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            console.log('备用点击事件触发:', messageId);
             viewMessage(messageId);
         });
     });

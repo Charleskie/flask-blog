@@ -10,6 +10,13 @@
             联系我
         </h1>
         <p class="text-xl text-slate-300 mb-8">如果你有合作意向或建议和意见？欢迎随时联系我。</p>
+        {% if current_user.is_authenticated %}
+        <div class="flex justify-center">
+            <a href="{{ url_for('main.contact_messages') }}" class="btn-secondary">
+                <i class="fas fa-envelope-open mr-2"></i> 查看我的私信记录
+            </a>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -26,18 +33,42 @@
                 </div>
                 
                 <form id="contact-form" class="space-y-6">
+                    {% if current_user.is_authenticated %}
+                    <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-info-circle text-blue-400 mr-2"></i>
+                            <span class="text-blue-400 text-sm">已自动填充您的用户信息，如需修改请直接编辑</span>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="bg-slate-600/20 border border-slate-600/30 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="fas fa-user-plus text-slate-400 mr-2"></i>
+                                <span class="text-slate-400 text-sm">登录后可自动填充您的信息</span>
+                            </div>
+                            <a href="{{ url_for('auth.login') }}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors">
+                                立即登录
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="name" class="block text-sm font-medium text-slate-300 mb-2">姓名 *</label>
                             <input type="text" 
                                    class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                                   id="name" name="name" placeholder="请输入您的姓名" required>
+                                   id="name" name="name" 
+                                   value="{% if current_user.is_authenticated %}{{ current_user.username }}{% endif %}"
+                                   placeholder="请输入您的姓名" required>
                         </div>
                         <div>
                             <label for="email" class="block text-sm font-medium text-slate-300 mb-2">邮箱 *</label>
                             <input type="email" 
                                    class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                                   id="email" name="email" placeholder="请输入您的邮箱" required>
+                                   id="email" name="email" 
+                                   value="{% if current_user.is_authenticated %}{{ current_user.email }}{% endif %}"
+                                   placeholder="请输入您的邮箱" required>
                         </div>
                     </div>
                     
@@ -509,7 +540,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
             showToast('error', '发送失败，请稍后重试');
         })
         .finally(() => {

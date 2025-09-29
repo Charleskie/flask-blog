@@ -19,17 +19,16 @@
         <a href="{{ url_for('admin.admin_messages') }}" class="btn-secondary">
             <i class="fas fa-arrow-left mr-2"></i> 返回消息列表
         </a>
-        {% if not message.is_replied() %}
         <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn-primary">
             <i class="fas fa-reply mr-2"></i> 回复消息
         </a>
-        {% endif %}
     </div>
     
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- 消息内容 -->
+        <!-- 对话记录 -->
         <div class="lg:col-span-2">
-            <div class="glass-card rounded-xl p-8">
+            <!-- 原始消息 -->
+            <div class="glass-card rounded-xl p-8 mb-6">
                 <div class="flex items-center justify-between mb-6">
                     <div class="flex items-center">
                         <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
@@ -37,7 +36,14 @@
                         </div>
                         <div>
                             <h2 class="text-2xl font-bold text-white">{{ message.subject }}</h2>
-                            <p class="text-slate-400">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <div class="flex items-center gap-4 text-slate-400">
+                                <p>{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                {% if message.replies %}
+                                <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded-full text-xs">
+                                    <i class="fas fa-comments mr-1"></i>{{ message.replies|length }} 条回复
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
                     <div>
@@ -47,6 +53,8 @@
                             <span class="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full text-sm">已读</span>
                         {% elif message.status == 'replied' %}
                             <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm">已回复</span>
+                        {% elif message.status == 'in_conversation' %}
+                            <span class="px-3 py-1 bg-purple-600/20 text-purple-400 rounded-full text-sm">对话中</span>
                         {% else %}
                             <span class="px-3 py-1 bg-slate-600/20 text-slate-400 rounded-full text-sm">已归档</span>
                         {% endif %}
@@ -54,10 +62,135 @@
                 </div>
                 
                 <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
+                    <div class="flex items-center mb-4">
+                        <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mr-3">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-white font-medium">{{ message.name }}</p>
+                            <p class="text-slate-400 text-sm">{{ message.email }}</p>
+                        </div>
+                    </div>
                     <div class="message-content text-slate-300 leading-relaxed whitespace-pre-wrap">
                         {{ message.message }}
                     </div>
                 </div>
+            </div>
+            
+            <!-- 回复记录 -->
+            {% if message.replies %}
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-bold text-white">
+                            <i class="fas fa-comments mr-2"></i> 对话记录 ({{ message.replies|length }})
+                        </h3>
+                        <div class="flex items-center gap-2">
+                            <button type="button" class="btn-secondary text-sm" onclick="toggleReplySelection()">
+                                <i class="fas fa-check-square mr-1"></i> 批量选择
+                            </button>
+                            <button type="button" class="btn-danger text-sm hidden" id="batchDeleteBtn" onclick="batchDeleteReplies()">
+                                <i class="fas fa-trash mr-1"></i> 批量删除
+                            </button>
+                        </div>
+                    </div>
+                    {% for reply in message.replies %}
+                    <div class="glass-card rounded-xl p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="flex items-center">
+                                <input type="checkbox" class="reply-checkbox hidden mr-3" value="{{ reply.id }}" 
+                                       onchange="updateBatchDeleteButton()">
+                                <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                                    <i class="fas fa-reply text-white text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-medium">
+                                        {% if reply.reply_type == 'admin' %}
+                                            {{ reply.sender_name or '管理员' }}
+                                        {% else %}
+                                            {{ reply.sender_name or message.name }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-slate-400 text-sm">{{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                {% if reply.is_sent %}
+                                    <span class="px-2 py-1 bg-green-600/20 text-green-400 rounded-full text-xs">
+                                        <i class="fas fa-check mr-1"></i>已发送
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded-full text-xs">
+                                        <i class="fas fa-clock mr-1"></i>待发送
+                                    </span>
+                                {% endif %}
+                                {% if reply.reply_type == 'admin' %}
+                                    <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded-full text-xs">管理员回复</span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded-full text-xs">用户回复</span>
+                                {% endif %}
+                                <button type="button" class="text-red-400 hover:text-red-300 transition-colors" 
+                                        onclick="deleteReply({{ reply.id }}, '{{ reply.reply_content[:30]|e }}...')" 
+                                        title="删除回复">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-4">
+                            <div class="message-content text-slate-300 leading-relaxed whitespace-pre-wrap">
+                                {{ reply.reply_content }}
+                            </div>
+                        </div>
+                        
+                        {% if reply.sent_at %}
+                        <div class="mt-3 text-xs text-slate-500">
+                            <i class="fas fa-paper-plane mr-1"></i>邮件发送时间：{{ reply.sent_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="glass-card rounded-xl p-8 text-center">
+                    <div class="w-16 h-16 bg-slate-600/50 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-comments text-slate-400 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white mb-2">暂无回复</h3>
+                    <p class="text-slate-400">还没有回复记录，点击右侧按钮开始回复。</p>
+                </div>
+            {% endif %}
+            
+            <!-- 快速回复区域 -->
+            <div class="glass-card rounded-xl p-6 mt-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-reply text-white"></i>
+                        </div>
+                        <h3 class="text-lg font-semibold text-white">快速回复</h3>
+                    </div>
+                    <div class="text-xs text-slate-400">
+                        <i class="fas fa-infinity mr-1"></i>
+                        不限次数
+                    </div>
+                </div>
+                
+                <form id="quick-reply-form" class="space-y-4">
+                    <div>
+                        <label for="quick_reply_content" class="block text-sm font-medium text-slate-300 mb-2">回复内容</label>
+                        <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" 
+                                  id="quick_reply_content" name="reply_content" rows="4" required placeholder="请输入您的回复内容..."></textarea>
+                    </div>
+                    
+                    <div class="flex gap-3">
+                        <button type="submit" class="btn-primary flex-1">
+                            <i class="fas fa-paper-plane mr-2"></i> 发送回复
+                        </button>
+                        <button type="button" class="btn-secondary" onclick="clearQuickReply()">
+                            <i class="fas fa-times mr-2"></i> 清空
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
         
@@ -92,6 +225,41 @@
                 </div>
             </div>
             
+            <!-- 对话统计 -->
+            <div class="glass-card rounded-xl p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-bar text-white"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-white">对话统计</h3>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-300">总回复数</span>
+                        <span class="text-white font-semibold">{{ message.replies|length }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-300">管理员回复</span>
+                        <span class="text-blue-400 font-semibold">
+                            {{ message.replies|selectattr('reply_type', 'equalto', 'admin')|list|length }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-300">用户回复</span>
+                        <span class="text-purple-400 font-semibold">
+                            {{ message.replies|selectattr('reply_type', 'equalto', 'user')|list|length }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-slate-300">已发送邮件</span>
+                        <span class="text-green-400 font-semibold">
+                            {{ message.replies|selectattr('is_sent', 'equalto', true)|list|length }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
             <!-- 时间信息 -->
             <div class="glass-card rounded-xl p-6">
                 <div class="flex items-center mb-4">
@@ -114,8 +282,14 @@
                     {% endif %}
                     {% if message.replied_at %}
                     <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">回复时间</label>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">首次回复时间</label>
                         <p class="text-green-400">{{ message.replied_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    </div>
+                    {% endif %}
+                    {% if message.replies %}
+                    <div>
+                        <label class="block text-sm font-medium text-slate-300 mb-1">最后回复时间</label>
+                        <p class="text-purple-400">{{ message.replies[0].created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
                     </div>
                     {% endif %}
                 </div>
@@ -131,11 +305,9 @@
                 </div>
                 
                 <div class="space-y-3">
-                    {% if not message.is_replied() %}
                     <a href="{{ url_for('admin.reply_message', message_id=message.id) }}" class="btn-primary w-full text-center">
                         <i class="fas fa-reply mr-2"></i> 回复消息
                     </a>
-                    {% endif %}
                     <button type="button" class="btn-danger w-full" onclick="deleteMessage('{{ message.subject }}')">
                         <i class="fas fa-trash mr-2"></i> 删除消息
                     </button>
@@ -145,12 +317,12 @@
     </div>
 </div>
 
-<!-- 删除确认模态框 -->
+<!-- 删除消息确认模态框 -->
 <div class="modal fade" id="deleteModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content bg-slate-800 border border-slate-600">
             <div class="modal-header border-b border-slate-600">
-                <h5 class="modal-title text-white">确认删除</h5>
+                <h5 class="modal-title text-white">确认删除消息</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -162,6 +334,30 @@
                 <form method="POST" action="{{ url_for('admin.delete_message', message_id=message.id) }}" style="display: inline;">
                     <button type="submit" class="btn-danger">确认删除</button>
                 </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 删除回复确认模态框 -->
+<div class="modal fade" id="deleteReplyModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-slate-800 border border-slate-600">
+            <div class="modal-header border-b border-slate-600">
+                <h5 class="modal-title text-white">确认删除回复</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-slate-300">您确定要删除这条回复吗？</p>
+                <div class="bg-slate-700/50 border border-slate-600 rounded-lg p-3 mt-3">
+                    <p class="text-slate-400 text-sm mb-1">回复内容预览：</p>
+                    <p class="text-slate-300 text-sm" id="replyPreview"></p>
+                </div>
+                <p class="text-red-400 text-sm mt-3"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
+            </div>
+            <div class="modal-footer border-t border-slate-600">
+                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn-danger" id="confirmDeleteReply">确认删除</button>
             </div>
         </div>
     </div>
@@ -227,6 +423,19 @@
 .btn-danger:hover {
     transform: translateY(-2px);
     box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+}
+
+/* 回复复选框样式 */
+.reply-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #ef4444;
+    cursor: pointer;
+}
+
+.reply-checkbox:checked {
+    background-color: #ef4444;
+    border-color: #ef4444;
 }
 
 .dropdown-menu {
@@ -313,6 +522,209 @@ document.addEventListener('click', function(event) {
         document.getElementById('status-dropdown').classList.add('hidden');
     }
 });
+
+// 快速回复功能
+document.getElementById('quick-reply-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const replyContent = document.getElementById('quick_reply_content').value.trim();
+    
+    if (!replyContent) {
+        showToast('error', '请输入回复内容');
+        document.getElementById('quick_reply_content').focus();
+        return;
+    }
+    
+    // 显示发送提示
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
+    submitBtn.disabled = true;
+    
+    // 发送AJAX请求
+    const formData = new FormData();
+    formData.append('reply_content', replyContent);
+    
+    fetch("{{ url_for('admin.reply_message', message_id=message.id) }}", {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('success', data.message || '回复发送成功！');
+            // 清空输入框
+            document.getElementById('quick_reply_content').value = '';
+            // 刷新页面以显示新回复
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showToast('error', data.message || '发送失败，请稍后重试');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', '发送失败，请稍后重试');
+    })
+    .finally(() => {
+        // 恢复按钮状态
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+});
+
+// 清空快速回复
+function clearQuickReply() {
+    document.getElementById('quick_reply_content').value = '';
+    document.getElementById('quick_reply_content').focus();
+}
+
+// 删除回复
+function deleteReply(replyId, replyPreview) {
+    // 设置回复预览内容
+    document.getElementById('replyPreview').textContent = replyPreview;
+    
+    // 设置确认删除按钮的点击事件
+    document.getElementById('confirmDeleteReply').onclick = function() {
+        // 发送删除请求
+        fetch(`/admin/messages/{{ message.id }}/replies/${replyId}/delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', data.message || '回复删除成功！');
+                // 刷新页面以更新回复列表
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showToast('error', data.message || '删除失败，请稍后重试');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', '删除失败，请稍后重试');
+        });
+        
+        // 关闭模态框
+        const modal = bootstrap.Modal.getInstance(document.getElementById('deleteReplyModal'));
+        modal.hide();
+    };
+    
+    // 显示删除确认模态框
+    const deleteReplyModal = new bootstrap.Modal(document.getElementById('deleteReplyModal'));
+    deleteReplyModal.show();
+}
+
+// 批量选择功能
+function toggleReplySelection() {
+    const checkboxes = document.querySelectorAll('.reply-checkbox');
+    const isVisible = !checkboxes[0].classList.contains('hidden');
+    
+    checkboxes.forEach(checkbox => {
+        if (isVisible) {
+            checkbox.classList.add('hidden');
+        } else {
+            checkbox.classList.remove('hidden');
+        }
+    });
+    
+    // 更新按钮文本
+    const toggleBtn = event.target.closest('button');
+    if (isVisible) {
+        toggleBtn.innerHTML = '<i class="fas fa-check-square mr-1"></i> 批量选择';
+    } else {
+        toggleBtn.innerHTML = '<i class="fas fa-times mr-1"></i> 取消选择';
+    }
+    
+    // 隐藏批量删除按钮
+    document.getElementById('batchDeleteBtn').classList.add('hidden');
+}
+
+// 更新批量删除按钮状态
+function updateBatchDeleteButton() {
+    const checkedBoxes = document.querySelectorAll('.reply-checkbox:checked');
+    const batchDeleteBtn = document.getElementById('batchDeleteBtn');
+    
+    if (checkedBoxes.length > 0) {
+        batchDeleteBtn.classList.remove('hidden');
+        batchDeleteBtn.innerHTML = `<i class="fas fa-trash mr-1"></i> 批量删除 (${checkedBoxes.length})`;
+    } else {
+        batchDeleteBtn.classList.add('hidden');
+    }
+}
+
+// 批量删除回复
+function batchDeleteReplies() {
+    const checkedBoxes = document.querySelectorAll('.reply-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        showToast('error', '请先选择要删除的回复');
+        return;
+    }
+    
+    const replyIds = Array.from(checkedBoxes).map(cb => cb.value);
+    
+    if (confirm(`确定要删除选中的 ${replyIds.length} 条回复吗？此操作不可撤销！`)) {
+        // 发送批量删除请求
+        fetch(`/admin/messages/{{ message.id }}/replies/batch-delete`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ reply_ids: replyIds })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', data.message || '批量删除成功！');
+                // 刷新页面以更新回复列表
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showToast('error', data.message || '批量删除失败，请稍后重试');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', '批量删除失败，请稍后重试');
+        });
+    }
+}
+
+// 显示提示消息
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
+    
+    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+    toast.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${icon} mr-2"></i>
+            <span>${message}</span>
+        </div>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 3秒后移除
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.remove();
+        }
+    }, 3000);
+}
 
 // 页面加载时自动标记为已读
 document.addEventListener('DOMContentLoaded', function() {

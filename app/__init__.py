@@ -5,13 +5,29 @@ from app.utils.filters import nl2br_filter, markdown_filter, html_filter
 from app.utils.logger import setup_app_logging, log_manager
 import os
 
+def load_env_file():
+    """加载 .env 文件"""
+    env_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), '.env')
+    if os.path.exists(env_file):
+        with open(env_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    os.environ[key.strip()] = value.strip().strip('"').strip("'")
+
 def create_app():
     """应用工厂函数"""
+    # 加载环境变量
+    load_env_file()
+    
     app = Flask(__name__)
     
-    # 配置
-    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///personal_website.db')
+    # 从 config.py 加载配置
+    from config import Config
+    app.config.from_object(Config)
+    
+    # 基础配置
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
     # 初始化扩展

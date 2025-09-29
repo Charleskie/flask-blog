@@ -20,6 +20,9 @@ class UserInteraction(db.Model):
         db.UniqueConstraint('user_id', 'content_id', 'type', name='unique_user_content_interaction'),
     )
     
+    # 关系
+    user = db.relationship('User', backref=db.backref('interactions', lazy=True))
+    
     def __repr__(self):
         return f'<UserInteraction {self.id}>'
 

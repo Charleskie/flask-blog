@@ -63,7 +63,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/interactions/comments.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    
     {% block extra_css %}{% endblock %}
     
     <style>
@@ -374,7 +373,6 @@
         </div>
     </footer>
 
-
     <!-- jQuery (Editor.md依赖) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- Bootstrap JS -->
@@ -543,9 +541,7 @@
                 }
             }
         })
-        .catch(error => {
-            console.warn('获取未读消息数量失败:', error.message);
-            // 如果服务器未运行，隐藏消息徽章
+        .catch(error => {// 如果服务器未运行，隐藏消息徽章
             const badge = document.getElementById('message-badge');
             if (badge) {
                 badge.classList.add('hidden');
@@ -574,9 +570,7 @@
                 }
             }
         })
-        .catch(error => {
-            console.warn('获取通知数量失败:', error.message);
-            // 如果服务器未运行，隐藏通知徽章
+        .catch(error => {// 如果服务器未运行，隐藏通知徽章
             const badge = document.getElementById('notification-badge');
             if (badge) {
                 badge.classList.add('hidden');

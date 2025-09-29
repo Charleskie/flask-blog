@@ -8,7 +8,7 @@ class Message(db.Model):
     email = db.Column(db.String(120), nullable=False)
     subject = db.Column(db.String(200), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    status = db.Column(db.String(20), default='unread')  # unread, read, replied, archived
+    status = db.Column(db.String(20), default='unread')  # unread, read, replied, in_conversation, archived
     ip_address = db.Column(db.String(45), nullable=True)  # 存储IP地址
     user_agent = db.Column(db.Text, nullable=True)  # 存储用户代理
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -25,7 +25,10 @@ class Message(db.Model):
     
     def mark_as_replied(self):
         """标记为已回复"""
-        self.status = 'replied'
+        if self.status == 'unread' or self.status == 'read':
+            self.status = 'replied'
+        else:
+            self.status = 'in_conversation'  # 进入对话状态
         self.replied_at = datetime.utcnow()
     
     def is_unread(self):

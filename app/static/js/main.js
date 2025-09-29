@@ -698,9 +698,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if ('performance' in window) {
         window.addEventListener('load', function() {
             setTimeout(() => {
-                const perfData = performance.getEntriesByType('navigation')[0];
-                console.log('页面加载时间:', perfData.loadEventEnd - perfData.loadEventStart, 'ms');
-            }, 0);
+                const perfData = performance.getEntriesByType('navigation')[0];}, 0);
         });
     }
 });

@@ -30,24 +30,19 @@ class InteractionManager {
                 const currentPath = window.location.pathname;
                 const isAuthPage = currentPath.includes('/login') || currentPath.includes('/register');
                 
-                console.log('当前路径:', currentPath);
-                console.log('是否为认证页面:', isAuthPage);
+                // 检查是否为认证页面
                 
                 // 只有在非登录/注册页面才显示登录提示
                 if (!isAuthPage) {
-                    console.log('显示登录提示弹窗');
                     this.showLoginPrompt();
-                } else {
-                    console.log('跳过登录提示（认证页面）');
                 }
             }
         } catch (error) {
-            console.log('获取用户信息失败:', error);
+            // 静默处理错误
         }
     }
 
     showLoginPrompt() {
-        console.log('开始创建登录提示弹窗');
         // 使用和showMessage一致的样式创建登录提示
         let messageContainer = document.getElementById('message-container');
         if (!messageContainer) {
@@ -164,33 +159,24 @@ class InteractionManager {
     }
 
     bindEvents() {
-        console.log('绑定事件监听器...');
         // 点赞按钮事件
         document.addEventListener('click', (e) => {
-            console.log('点击事件触发:', e.target);
             
             if (e.target.closest('.like-btn')) {
-                console.log('点赞按钮被点击');
                 e.preventDefault();
                 this.handleLike(e.target.closest('.like-btn'));
             }
             
-            if (e.target.closest('.favorite-btn')) {
-                console.log('收藏按钮被点击');
-                e.preventDefault();
+            if (e.target.closest('.favorite-btn')) {e.preventDefault();
                 this.handleFavorite(e.target.closest('.favorite-btn'));
             }
             
-            if (e.target.closest('.comment-like-btn')) {
-                console.log('评论点赞按钮被点击');
-                e.preventDefault();
+            if (e.target.closest('.comment-like-btn')) {e.preventDefault();
                 this.handleCommentLike(e.target.closest('.comment-like-btn'));
             }
             
              // 评论提交按钮事件
-            if (e.target.closest('.comment-submit')) {
-                console.log('评论提交按钮被点击');
-                e.preventDefault();
+            if (e.target.closest('.comment-submit')) {e.preventDefault();
                 const form = e.target.closest('.comment-form');
                 if (form) {
                     this.handleComment(form);
@@ -200,9 +186,7 @@ class InteractionManager {
 
         // 评分选择事件 - 自动保存评分
         document.addEventListener('change', (e) => {
-            if (e.target.name === 'rating' && (e.target.closest('.rating-section') || e.target.closest('.floating-rating-section'))) {
-                console.log('评分被选择:', e.target.value);
-                this.handleRatingChange(e.target);
+            if (e.target.name === 'rating' && (e.target.closest('.rating-section') || e.target.closest('.floating-rating-section'))) {this.handleRatingChange(e.target);
             }
         });
 
@@ -232,7 +216,6 @@ class InteractionManager {
 
         try {
             button.disabled = true;
-            console.log('发送点赞请求:', { id: parseInt(contentId), type: contentType });
             
             const response = await fetch('/api/like', {
                 method: 'POST',
@@ -243,19 +226,12 @@ class InteractionManager {
                     id: parseInt(contentId),
                     type: contentType
                 })
-            });
-
-            console.log('点赞响应状态:', response.status);
-            
-            if (response.status === 401) {
+            });if (response.status === 401) {
                 this.showMessage('请先登录', 'error');
                 return;
             }
             
-            const result = await response.json();
-            console.log('点赞响应结果:', result);
-            
-            if (result.success) {
+            const result = await response.json();if (result.success) {
                 this.updateLikeUI(button, result.is_liked, result.like_count);
                 this.updateFloatingLikeUI(contentId, contentType, result.is_liked, result.like_count);
                 this.showMessage(result.is_liked ? '点赞成功' : '取消点赞', result.is_liked ? 'success' : 'info');
@@ -281,7 +257,6 @@ class InteractionManager {
 
         try {
             button.disabled = true;
-            console.log('发送收藏请求:', { id: parseInt(contentId), type: contentType });
             
             const response = await fetch('/api/favorite', {
                 method: 'POST',
@@ -292,19 +267,12 @@ class InteractionManager {
                     id: parseInt(contentId),
                     type: contentType
                 })
-            });
-
-            console.log('收藏响应状态:', response.status);
-            
-            if (response.status === 401) {
+            });if (response.status === 401) {
                 this.showMessage('请先登录', 'error');
                 return;
             }
             
-            const result = await response.json();
-            console.log('收藏响应结果:', result);
-            
-            if (result.success) {
+            const result = await response.json();if (result.success) {
                 this.updateFavoriteUI(button, result.is_favorited, result.favorite_count);
                 this.updateFloatingFavoriteUI(contentId, contentType, result.is_favorited, result.favorite_count);
                 this.showMessage(result.is_favorited ? '收藏成功' : '取消收藏', result.is_favorited ? 'success' : 'info');
@@ -334,7 +302,6 @@ class InteractionManager {
 
         try {
             button.disabled = true;
-            console.log('发送评论点赞请求:', { commentId: parseInt(commentId) });
             
             const response = await fetch('/api/comment-like', {
                 method: 'POST',
@@ -344,19 +311,12 @@ class InteractionManager {
                 body: JSON.stringify({
                     comment_id: parseInt(commentId)
                 })
-            });
-
-            console.log('评论点赞响应状态:', response.status);
-            
-            if (response.status === 401) {
+            });if (response.status === 401) {
                 this.showMessage('请先登录', 'error');
                 return;
             }
 
-            const result = await response.json();
-            console.log('评论点赞响应结果:', result);
-
-            if (result.success) {
+            const result = await response.json();if (result.success) {
                 // 更新按钮状态
                 const icon = button.querySelector('i');
                 const countSpan = button.querySelector('.like-count');
@@ -405,21 +365,12 @@ class InteractionManager {
         
         const contentId = likeBtn.dataset.id;
         const contentType = likeBtn.dataset.type;
-        const rating = parseInt(radio.value);
-
-        console.log('评分选择:', { contentId, contentType, rating });
-        
-        // 立即保存评分
+        const rating = parseInt(radio.value);// 立即保存评分
         this.saveRating(contentId, contentType, rating);
     }
 
     async saveRating(contentId, contentType, rating) {
         try {
-            console.log('保存评分:', {
-                id: parseInt(contentId),
-                type: contentType,
-                rating: rating
-            });
 
             const response = await fetch('/api/rating', {
                 method: 'POST',
@@ -441,9 +392,7 @@ class InteractionManager {
             const result = await response.json();
             
             if (result.success) {
-                this.updateRating(contentId, contentType, result.average_rating);
-                console.log('评分保存成功');
-            } else {
+                this.updateRating(contentId, contentType, result.average_rating);} else {
                 console.error('评分保存失败:', result.message);
             }
         } catch (error) {
@@ -503,11 +452,7 @@ class InteractionManager {
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
 
-            console.log('提交评论数据:', {
-                id: parseInt(contentId),
-                type: contentType,
-                content: content
-            });
+            // 提交评论数据
 
             const response = await fetch('/api/comment', {
                 method: 'POST',
@@ -519,19 +464,12 @@ class InteractionManager {
                     type: contentType,
                     content: content
                 })
-            });
-
-            console.log('评论响应状态:', response.status);
-            
-            if (response.status === 401) {
+            });if (response.status === 401) {
                 this.showMessage('请先登录', 'error');
                 return;
             }
             
-            const result = await response.json();
-            console.log('评论响应结果:', result);
-            
-            if (result.success) {
+            const result = await response.json();if (result.success) {
                 this.showMessage('评论添加成功', 'success');
                 
                 // 清空富文本编辑器
@@ -735,14 +673,8 @@ class InteractionManager {
     }
 
     async loadCommentsForContent(contentId, contentType, page = 1) {
-        try {
-            console.log('加载评论:', { contentId, contentType, page });
-            const response = await fetch(`/api/comments/${contentId}?type=${contentType}&page=${page}`);
-            const result = await response.json();
-            
-            console.log('评论加载结果:', result);
-            
-            if (result.success) {
+        try {const response = await fetch(`/api/comments/${contentId}?type=${contentType}&page=${page}`);
+            const result = await response.json();if (result.success) {
                 // 找到对应的评论容器
                 const commentsContainer = document.querySelector(`.comments-list[data-content-id="${contentId}"][data-content-type="${contentType}"]`);
                 if (commentsContainer) {
@@ -755,7 +687,6 @@ class InteractionManager {
             console.error('加载评论失败:', error);
         }
     }
-
 
     renderComments(comments, pagination, commentsContainer = null) {
         if (!commentsContainer) {
@@ -1452,9 +1383,7 @@ class InteractionManager {
                         editorContainer.simpleCommentEditor = editor;
                         editorContainer.dataset.initialized = 'true';
                         editorContainer.dataset.editorInstance = 'reply-editor';
-                        editor.focus();
-                        console.log('回复简化版评论编辑器初始化成功');
-                    } catch (error) {
+                        editor.focus();} catch (error) {
                         console.error('回复简化版评论编辑器初始化失败:', error);
                     }
                 } else if (editorContainer.simpleCommentEditor) {
@@ -1498,9 +1427,7 @@ class InteractionManager {
             if (editorContainer.simpleCommentEditor) {
                 // 使用简化版评论编辑器实例获取内容
                 content = editorContainer.simpleCommentEditor.getContent().trim();
-            } else {
-                console.warn('简化版评论编辑器未正确初始化');
-            }
+            } else {}
         }
         
         // 检查纯文本内容
@@ -1552,9 +1479,7 @@ class InteractionManager {
                         const contentId = contentElement.dataset.id;
                         const contentType = typeElement.dataset.type;
                         this.loadCommentsForContent(contentId, contentType);
-                    } else {
-                        console.warn('无法找到内容ID或类型元素，跳过重新加载评论');
-                    }
+                    } else {}
                 }
             } else {
                 this.showMessage(result.message || '回复失败', 'error');
@@ -1604,12 +1529,8 @@ class InteractionManager {
 }
 
 // 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('InteractionManager 正在初始化...');
-    try {
-        new InteractionManager();
-        console.log('InteractionManager 初始化成功');
-    } catch (error) {
+document.addEventListener('DOMContentLoaded', () => {try {
+        new InteractionManager();} catch (error) {
         console.error('InteractionManager 初始化失败:', error);
     }
 });

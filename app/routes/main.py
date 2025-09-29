@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask_login import login_required, current_user
 from app.models import Post, Project, Message, AboutContent, AboutContact, Version, Skill
 from app.models.user import db
 import re
@@ -210,6 +211,23 @@ def contact():
             print(f"保存消息错误: {e}")
     
     return render_template('frontend/contact.html')
+
+@main_bp.route('/contact/messages')
+@login_required
+def contact_messages():
+    """用户查看私信记录"""
+    # 获取当前用户的所有私信
+    messages = Message.query.filter_by(email=current_user.email).order_by(Message.created_at.desc()).all()
+    
+    return render_template('frontend/contact_messages.html', messages=messages)
+
+@main_bp.route('/contact/messages/<int:message_id>')
+@login_required
+def contact_message_detail(message_id):
+    """用户查看私信详情"""
+    message = Message.query.filter_by(id=message_id, email=current_user.email).first_or_404()
+    
+    return render_template('frontend/contact_message_detail.html', message=message)
 
 @main_bp.route('/search')
 def search():

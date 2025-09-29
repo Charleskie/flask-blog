@@ -5,7 +5,10 @@ def nl2br_filter(text):
     """将换行符转换为HTML的<br>标签"""
     if text is None:
         return ''
-    return text.replace('\n', '<br>')
+    # 处理Windows风格的换行符 \r\n 和 Unix风格的换行符 \n
+    text = text.replace('\r\n', '<br>')
+    text = text.replace('\n', '<br>')
+    return text
 
 def markdown_filter(text):
     """将Markdown文本转换为HTML（保留用于向后兼容）"""

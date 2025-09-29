@@ -526,9 +526,7 @@ class SimpleCommentEditor {
 
     makeImageResizable(img) {
         // 检查图片是否在DOM中
-        if (!img.parentNode) {
-            console.warn('图片尚未插入到DOM中，无法添加调整大小功能');
-            return;
+        if (!img.parentNode) {return;
         }
         
         // 创建包装容器
@@ -617,7 +615,6 @@ class SimpleCommentEditor {
             });
         });
     }
-
 
     destroy() {
         // 清理事件监听器
