@@ -200,7 +200,7 @@
                         <div class="font-semibold mb-2">{{ version.title }}</div>
                         <div>{{ version.description }}</div>
                     </div>
-                    <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300 min-w-[300px]">
+                    <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300 w-[300px] h-[200px] flex flex-col">
                         <!-- 版本头部 -->
                         <div class="flex items-center justify-between mb-4">
                             <div class="flex items-center gap-3">
@@ -233,15 +233,15 @@
                         </div>
                         
                         <!-- 版本内容 -->
-                        <div class="version-content">
+                        <div class="version-content flex-1 flex flex-col">
                             <h3 class="text-lg font-semibold text-white mb-2 version-title" title="{{ version.title }}">{{ version.title }}</h3>
-                            <div class="version-description" title="{{ version.description }}">
+                            <div class="version-description flex-1" title="{{ version.description }}">
                                 {{ version.description|nl2br|safe }}
                             </div>
                         </div>
                         
                         <!-- 版本标签 -->
-                        <div class="flex items-center gap-2 mt-4">
+                        <div class="version-tags flex items-center gap-2 mt-auto pt-4">
                             {% if '初始' in version.title or 'v1.0' in version.version_number %}
                                 <span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs">里程碑</span>
                             {% elif '交互' in version.title or '评论' in version.title %}
@@ -411,9 +411,9 @@
 
 /* 版本内容样式 */
 .version-content {
-    height: 120px; /* 固定高度 */
     display: flex;
     flex-direction: column;
+    min-height: 0; /* 允许flex子项收缩 */
 }
 
 .version-title {
@@ -422,12 +422,12 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     line-height: 24px;
+    margin-bottom: 8px;
 }
 
 .version-description {
     flex: 1;
     overflow: hidden;
-    text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 4; /* 最多显示4行 */
     -webkit-box-orient: vertical;
@@ -435,6 +435,8 @@
     color: #cbd5e1;
     font-size: 14px;
     word-break: break-word;
+    text-overflow: ellipsis;
+    min-height: 0; /* 允许收缩 */
 }
 
 /* 悬浮提示样式 */
@@ -449,19 +451,23 @@
     transform: translateX(-50%);
     background: rgba(15, 23, 42, 0.95);
     color: white;
-    padding: 12px 16px;
-    border-radius: 8px;
+    padding: 16px 20px;
+    border-radius: 12px;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.6;
     white-space: pre-wrap;
-    max-width: 300px;
+    max-width: 350px;
+    min-width: 250px;
+    max-height: 300px;
+    overflow-y: auto;
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
     border: 1px solid rgba(71, 85, 105, 0.3);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    margin-bottom: 8px;
 }
 
 .version-card .version-tooltip::after {
@@ -470,13 +476,32 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    border: 6px solid transparent;
+    border: 8px solid transparent;
     border-top-color: rgba(15, 23, 42, 0.95);
 }
 
 .version-card:hover .version-tooltip {
     opacity: 1;
     visibility: visible;
+}
+
+/* 版本标签区域样式 */
+.version-tags {
+    height: 32px; /* 固定标签区域高度 */
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* 确保版本卡片内容不会溢出 */
+.version-card .glass-card {
+    overflow: hidden;
+}
+
+/* 版本描述文本样式优化 */
+.version-description br {
+    display: none; /* 隐藏换行符，使用CSS控制行数 */
 }
 
 /* 响应式设计 */
