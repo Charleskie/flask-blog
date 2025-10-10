@@ -17,46 +17,7 @@
                 <div class="card-body">
                     <form method="POST" id="content-form">
                         <div class="row">
-                            <div class="col-md-6">
-                                <!-- 基本信息 -->
-                                <div class="mb-3">
-                                    <label for="section" class="form-label">区块标识 *</label>
-                                    <input type="text" class="form-control" id="section" name="section" 
-                                           value="{{ content.section }}" required>
-                                    <div class="form-text">用于标识内容区块，建议使用英文和下划线</div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">标题 *</label>
-                                    <input type="text" class="form-control" id="title" name="title" 
-                                           value="{{ content.title }}" required>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="order" class="form-label">显示顺序</label>
-                                    <input type="number" class="form-control" id="order" name="order" 
-                                           value="{{ content.order }}" min="0">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
-                                               {% if content.is_active %}checked{% endif %}>
-                                        <label class="form-check-label" for="is_active">
-                                            显示此内容
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-info-circle"></i> 
-                                        创建时间: {{ content.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
-                                        更新时间: {{ content.updated_at.strftime('%Y-%m-%d %H:%M') }}
-                                    </small>
-                                </div>
-                            </div>
-                            
+
                             <div class="col-md-6">
                                 <!-- 内容预览 -->
                                 <div class="mb-3">
@@ -73,10 +34,10 @@
                         <!-- 内容编辑 -->
                         <div class="mb-3">
                             <label for="content" class="form-label">内容 *</label>
-                            <textarea class="form-control" id="content" name="content" rows="10" 
-                                      required>{{ content.content }}</textarea>
+                            <div id="tiptap-container"></div>
+                            <textarea id="content" name="content" style="display:none;" required>{{ content.content }}</textarea>
                             <div class="form-text">
-                                <i class="fas fa-info-circle"></i> 支持HTML标签，如 &lt;strong&gt;、&lt;em&gt;、&lt;br&gt; 等
+                                <i class="fas fa-info-circle"></i> 使用富文本编辑器，支持格式化文本、链接、图片等
                             </div>
                         </div>
                         
@@ -97,6 +58,11 @@
 {% endblock %}
 
 {% block extra_css %}
+<!-- 简化版 Tiptap 编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
+<!-- Tiptap 编辑器样式 -->
+<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
+
 <style>
 /* 输入框文字颜色样式 */
 .form-control {
@@ -259,28 +225,47 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- 简化版 Tiptap 编辑器 JavaScript -->
+<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // 初始化简化版 Tiptap 编辑器
+    const tiptapContainer = document.getElementById('tiptap-container');
     const contentTextarea = document.getElementById('content');
     const previewDiv = document.getElementById('content-preview');
     
-    function updatePreview() {
-        const content = contentTextarea.value;
-        if (content.trim()) {
-            previewDiv.innerHTML = content;
-        } else {
-            previewDiv.innerHTML = '<p class="text-muted">输入内容后将在此处显示预览</p>';
-        }
-    }
+    const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
+        placeholder: '开始编辑内容...',
+        content: contentTextarea.value || ''
+    });
     
-    contentTextarea.addEventListener('input', updatePreview);
+    // 统一的内容变化处理函数
+    tiptapEditor.onContentChange = function(htmlContent) {
+        // 确保内容不为空或undefined
+        if (htmlContent === undefined || htmlContent === null) {
+            htmlContent = '';
+        }
+        
+        // 同步到隐藏的 textarea
+        contentTextarea.value = htmlContent;
+        
+        // 更新预览
+        if (previewDiv) {
+            if (htmlContent.trim()) {
+                previewDiv.innerHTML = htmlContent;
+            } else {
+                previewDiv.innerHTML = '<p class="text-muted">输入内容后将在此处显示预览</p>';
+            }
+        }
+    };
     
     // 表单验证
     const form = document.getElementById('content-form');
     form.addEventListener('submit', function(e) {
         const section = document.getElementById('section').value.trim();
         const title = document.getElementById('title').value.trim();
-        const content = document.getElementById('content').value.trim();
+        const content = contentTextarea.value.trim();
         
         if (!section || !title || !content) {
             e.preventDefault();

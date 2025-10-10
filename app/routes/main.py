@@ -20,11 +20,13 @@ def index():
 @main_bp.route('/about')
 def about():
     """关于页面"""
-    # 获取关于页面内容
-    contents = AboutContent.query.filter_by(is_active=True).order_by(AboutContent.order.asc()).all()
-    contacts = AboutContact.query.filter_by(is_active=True).order_by(AboutContact.order.asc()).all()
+    # 获取关于页面主内容
+    about_content = AboutContent.query.filter_by(section='main_content', is_active=True).first()
     
-    return render_template('frontend/about.html', contents=contents, contacts=contacts)
+    page_title = about_content.title if about_content else '关于我'
+    page_content = about_content.content if about_content else ''
+    
+    return render_template('frontend/about.html', page_title=page_title, page_content=page_content)
 
 @main_bp.route('/projects')
 def projects():
