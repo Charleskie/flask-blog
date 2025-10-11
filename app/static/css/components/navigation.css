@@ -1,7 +1,7 @@
 /* 导航栏样式 */
 
 .navbar {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(25, 33, 68, 0.8);
     backdrop-filter: blur(20px);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding: 1rem 0;

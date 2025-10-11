@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}新建关于页面内容 - 管理后台{% endblock %}
+{% block title %}关于页面编辑 - 管理后台{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-plus"></i> 新建关于页面内容</h1>
+                <h1><i class="fas fa-user-circle"></i> 关于页面编辑</h1>
                 <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
                     <i class="fas fa-arrow-left"></i> 返回管理
                 </a>
@@ -15,15 +15,37 @@
             
             <div class="card">
                 <div class="card-body">
-                    <form method="POST" id="content-form">
+                    <form method="POST" id="about-form">
                         <div class="row">
+                            <div class="col-md-8">
+                                <!-- 页面标题 -->
+                                <div class="mb-4">
+                                    <label for="page_title" class="form-label">页面标题 *</label>
+                                    <input type="text" class="form-control" id="page_title" name="page_title" 
+                                           value="{{ page_title or '关于我' }}" required>
+                                    <div class="form-text">关于页面的主标题</div>
+                                </div>
+                                
+                                <!-- 页面内容 -->
+                                <div class="mb-4">
+                                    <label for="page_content" class="form-label">页面内容 *</label>
+                                    <div id="tiptap-container"></div>
+                                    <textarea id="page_content" name="page_content" style="display:none;" required>{{ page_content or '' }}</textarea>
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle"></i> 使用富文本编辑器，支持格式化文本、链接、图片等
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
 
-                            <div class="col-md-6">
                                 <!-- 内容预览 -->
-                                <div class="mb-3">
-                                    <label class="form-label">内容预览</label>
-                                    <div class="border rounded p-3" style="min-height: 200px; background-color: #f8f9fa;">
-                                        <div id="content-preview">
+                                <div class="card mt-4">
+                                    <div class="card-header">
+                                        <h6><i class="fas fa-eye"></i> 内容预览</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="content-preview" style="min-height: 200px; max-height: 400px; overflow-y: auto;">
                                             <p class="text-muted">输入内容后将在此处显示预览</p>
                                         </div>
                                     </div>
@@ -31,22 +53,12 @@
                             </div>
                         </div>
                         
-                        <!-- 内容编辑 -->
-                        <div class="mb-3">
-                            <label for="content" class="form-label">内容 *</label>
-                            <div id="tiptap-container"></div>
-                            <textarea id="content" name="content" style="display:none;" required></textarea>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle"></i> 使用富文本编辑器，支持格式化文本、链接、图片等
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
                             <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
                                 <i class="fas fa-times"></i> 取消
                             </a>
                             <button type="submit" class="btn-submit">
-                                <i class="fas fa-save"></i> 保存内容
+                                <i class="fas fa-save"></i> 保存页面
                             </button>
                         </div>
                     </form>
@@ -82,6 +94,19 @@
     color: rgba(255, 255, 255, 0.6) !important;
 }
 
+.form-select {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+.form-select:focus {
+    color: white !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+}
+
 .form-label {
     color: white !important;
 }
@@ -90,32 +115,8 @@
     color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.invalid-feedback {
-    color: #ff6b6b !important;
-}
-
-.valid-feedback {
-    color: #51cf66 !important;
-}
-
-/* 按钮样式调整 */
-.btn-outline-secondary {
+.form-check-label {
     color: white !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    background-color: transparent !important;
-}
-
-.btn-outline-secondary:hover {
-    color: #000 !important;
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.btn-outline-secondary:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
 }
 
 /* 提交按钮样式 */
@@ -170,56 +171,79 @@
 }
 
 .card-header {
-    background: rgba(15, 23, 42, 0.3) !important;
+    background: rgba(255, 255, 255, 0.05) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
 }
 
 .card-body {
-    background: transparent !important;
-    color: #94a3b8 !important;
+    background: rgba(255, 255, 255, 0.05) !important;
 }
 
-/* 开关样式调整 */
-.form-check-input {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+/* 预览区域样式 */
+#content-preview {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 16px;
+    color: #e2e8f0;
+    line-height: 1.6;
 }
 
-.form-check-input:checked {
-    background-color: #667eea !important;
-    border-color: #667eea !important;
+#content-preview h1, #content-preview h2, #content-preview h3, 
+#content-preview h4, #content-preview h5, #content-preview h6 {
+    color: white;
+    margin-bottom: 12px;
 }
 
-.form-check-label {
-    color: white !important;
+#content-preview p {
+    margin-bottom: 12px;
 }
 
-/* 富文本编辑器样式 */
-.ql-editor {
-    color: white !important;
-    background: rgba(255, 255, 255, 0.1) !important;
+#content-preview a {
+    color: #60a5fa;
+    text-decoration: none;
 }
 
-.ql-toolbar {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+#content-preview a:hover {
+    text-decoration: underline;
 }
 
-.ql-container {
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+#content-preview ul, #content-preview ol {
+    margin-bottom: 12px;
+    padding-left: 20px;
 }
 
-.ql-toolbar .ql-stroke {
-    stroke: white !important;
+#content-preview li {
+    margin-bottom: 4px;
 }
 
-.ql-toolbar .ql-fill {
-    fill: white !important;
+#content-preview blockquote {
+    border-left: 4px solid #60a5fa;
+    padding-left: 16px;
+    margin: 16px 0;
+    color: #cbd5e1;
+    font-style: italic;
 }
 
-.ql-toolbar button:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
+#content-preview code {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 0.9em;
+}
+
+#content-preview pre {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    margin: 16px 0;
+}
+
+#content-preview pre code {
+    background: none;
+    padding: 0;
 }
 </style>
 {% endblock %}
@@ -232,12 +256,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     // 初始化简化版 Tiptap 编辑器
     const tiptapContainer = document.getElementById('tiptap-container');
-    const contentTextarea = document.getElementById('content');
+    const contentTextarea = document.getElementById('page_content');
     const previewDiv = document.getElementById('content-preview');
     
     const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
-        placeholder: '开始编辑内容...',
-        content: ''
+        placeholder: '开始编辑关于页面内容...',
+        content: contentTextarea.value || ''
     });
     
     // 统一的内容变化处理函数
@@ -261,22 +285,14 @@ document.addEventListener('DOMContentLoaded', function() {
     };
     
     // 表单验证
-    const form = document.getElementById('content-form');
+    const form = document.getElementById('about-form');
     form.addEventListener('submit', function(e) {
-        const section = document.getElementById('section').value.trim();
-        const title = document.getElementById('title').value.trim();
-        const content = contentTextarea.value.trim();
+        const pageTitle = document.getElementById('page_title').value.trim();
+        const pageContent = contentTextarea.value.trim();
         
-        if (!section || !title || !content) {
+        if (!pageTitle || !pageContent) {
             e.preventDefault();
-            alert('请填写所有必填字段');
-            return;
-        }
-        
-        // 检查区块标识格式
-        if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(section)) {
-            e.preventDefault();
-            alert('区块标识只能包含字母、数字和下划线，且必须以字母开头');
+            alert('请填写页面标题和内容');
             return;
         }
     });

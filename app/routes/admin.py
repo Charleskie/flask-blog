@@ -667,9 +667,10 @@ def change_message_status(message_id):
 @admin_required
 def admin_about():
     """关于页面管理"""
-    contents = AboutContent.query.order_by(AboutContent.order.asc()).all()
-    contacts = AboutContact.query.order_by(AboutContact.order.asc()).all()
-    return render_template('admin/admin_about.html', contents=contents, contacts=contacts)
+    # 获取当前关于页面内容
+    about_content = AboutContent.query.filter_by(section='main_content').first()
+    
+    return render_template('admin/admin_about.html', about_content=about_content)
 
 @admin_bp.route('/admin/about/content/new', methods=['GET', 'POST'])
 @login_required
@@ -1065,4 +1066,101 @@ def api_unread_messages_count():
             'success': False,
             'count': 0,
             'error': str(e)
-        }), 500 
+        }), 500
+
+
+# 简化的关于页面编辑
+@admin_bp.route('/admin/about/simple', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def simple_about_edit():
+    """简化的关于页面编辑"""
+    if request.method == 'POST':
+        page_title = request.form.get('page_title')
+        page_content = request.form.get('page_content')
+        meta_description = request.form.get('meta_description', '')
+        meta_keywords = request.form.get('meta_keywords', '')
+        is_active = 'is_active' in request.form
+        
+        if not page_title or not page_content:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请填写页面标题和内容'})
+
+            return render_template('admin/simple_about_edit.html', 
+                                 page_title=page_title, 
+                                 page_content=page_content,
+                                 meta_description=meta_description,
+                                 meta_keywords=meta_keywords,
+                                 is_active=is_active)
+        
+        try:
+            # 查找或创建关于页面内容
+            about_content = AboutContent.query.filter_by(section='main_content').first()
+            if not about_content:
+                about_content = AboutContent(
+                    section='main_content',
+                    title=page_title,
+                    content=page_content,
+                    order=0,
+                    is_active=is_active
+                )
+                db.session.add(about_content)
+            else:
+                about_content.title = page_title
+                about_content.content = page_content
+                about_content.is_active = is_active
+                about_content.updated_at = datetime.utcnow()
+            
+            # 保存SEO信息到其他内容块
+            seo_content = AboutContent.query.filter_by(section='seo_info').first()
+            if not seo_content:
+                seo_content = AboutContent(
+                    section='seo_info',
+                    title='SEO信息',
+                    content=f"description:{meta_description}\nkeywords:{meta_keywords}",
+                    order=999,
+                    is_active=False  # SEO信息不显示在页面上
+                )
+                db.session.add(seo_content)
+            else:
+                seo_content.content = f"description:{meta_description}\nkeywords:{meta_keywords}"
+                seo_content.updated_at = datetime.utcnow()
+            
+            db.session.commit()
+            
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': True, 'message': '关于页面保存成功！'})
+
+            return redirect(url_for('admin.admin_about'))
+            
+        except Exception as e:
+            db.session.rollback()
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '保存失败，请稍后重试'})
+
+            print(f"保存关于页面错误: {e}")
+    
+    # GET请求，加载现有内容
+    about_content = AboutContent.query.filter_by(section='main_content').first()
+    seo_content = AboutContent.query.filter_by(section='seo_info').first()
+    
+    page_title = about_content.title if about_content else '关于我'
+    page_content = about_content.content if about_content else ''
+    is_active = about_content.is_active if about_content else True
+    
+    meta_description = ''
+    meta_keywords = ''
+    if seo_content and seo_content.content:
+        content_parts = seo_content.content.split('\n')
+        for part in content_parts:
+            if part.startswith('description:'):
+                meta_description = part.replace('description:', '')
+            elif part.startswith('keywords:'):
+                meta_keywords = part.replace('keywords:', '')
+    
+    return render_template('admin/simple_about_edit.html',
+                         page_title=page_title,
+                         page_content=page_content,
+                         meta_description=meta_description,
+                         meta_keywords=meta_keywords,
+                         is_active=is_active) 

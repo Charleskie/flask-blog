@@ -19,9 +19,9 @@
     --text-light: #ffffff;
     
     /* 背景颜色 */
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8f9fa;
-    --bg-tertiary: #e9ecef;
+    --bg-primary: #192144;
+    --bg-secondary: rgba(25, 33, 68, 0.8);
+    --bg-tertiary: rgba(25, 33, 68, 0.6);
     
     /* 边框颜色 */
     --border-color: #dee2e6;

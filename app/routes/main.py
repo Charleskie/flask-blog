@@ -1,8 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, make_response
 from flask_login import login_required, current_user
 from app.models import Post, Project, Message, AboutContent, AboutContact, Version, Skill
 from app.models.user import db
+from app.utils.pdf_generator import generate_about_pdf
 import re
+import urllib.parse
+from datetime import datetime
 
 main_bp = Blueprint('main', __name__)
 
@@ -20,11 +23,56 @@ def index():
 @main_bp.route('/about')
 def about():
     """关于页面"""
-    # 获取关于页面内容
-    contents = AboutContent.query.filter_by(is_active=True).order_by(AboutContent.order.asc()).all()
-    contacts = AboutContact.query.filter_by(is_active=True).order_by(AboutContact.order.asc()).all()
+    # 获取关于页面主内容
+    about_content = AboutContent.query.filter_by(section='main_content', is_active=True).first()
     
-    return render_template('frontend/about.html', contents=contents, contacts=contacts)
+    page_title = about_content.title if about_content else '关于我'
+    page_content = about_content.content if about_content else ''
+    
+    return render_template('frontend/about.html', page_title=page_title, page_content=page_content)
+
+@main_bp.route('/about/pdf')
+def about_pdf():
+    """关于页面PDF下载"""
+    try:
+        # 获取关于页面主内容
+        about_content = AboutContent.query.filter_by(section='main_content', is_active=True).first()
+        
+        page_title = about_content.title if about_content else '关于我'
+        page_content = about_content.content if about_content else ''
+        
+        # 如果没有内容，返回错误
+        if not page_content:
+            return jsonify({'error': '暂无内容可生成PDF'}), 404
+        
+        # 生成PDF
+        pdf_bytes = generate_about_pdf(
+            page_title=page_title,
+            page_content=page_content,
+            base_url=request.url_root
+        )
+        
+        # 生成文件名
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        # 使用英文文件名避免编码问题
+        filename = f"about_{timestamp}.pdf"
+        # 如果有中文标题，也生成一个中文文件名用于显示
+        display_filename = f"{page_title}_{timestamp}.pdf" if page_title else filename
+        
+        # 创建响应
+        response = make_response(pdf_bytes)
+        response.headers['Content-Type'] = 'application/pdf'
+        
+        # 使用RFC 5987标准处理中文文件名
+        encoded_filename = urllib.parse.quote(display_filename.encode('utf-8'))
+        response.headers['Content-Disposition'] = f'attachment; filename="{filename}"; filename*=UTF-8\'\'{encoded_filename}'
+        response.headers['Content-Length'] = len(pdf_bytes)
+        
+        return response
+        
+    except Exception as e:
+        print(f"生成PDF错误: {e}")
+        return jsonify({'error': 'PDF生成失败，请稍后重试'}), 500
 
 @main_bp.route('/projects')
 def projects():

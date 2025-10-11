@@ -1,7 +1,7 @@
 /* 卡片样式 */
 
 .card {
-    background: var(--bg-glass);
+    background: rgba(25, 33, 68, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-xl);
@@ -52,7 +52,7 @@
 
 /* 项目卡片样式 */
 .project-card {
-    background: var(--bg-glass);
+    background: rgba(25, 33, 68, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-xl);
@@ -139,7 +139,7 @@
 
 /* 博客文章卡片 */
 .blog-card {
-    background: var(--bg-glass);
+    background: rgba(25, 33, 68, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-xl);
@@ -204,7 +204,7 @@
 
 /* 技能卡片 */
 .skill-card {
-    background: var(--bg-glass);
+    background: rgba(25, 33, 68, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-xl);
@@ -242,7 +242,7 @@
 
 /* 统计卡片 */
 .stats-card {
-    background: var(--bg-glass);
+    background: rgba(25, 33, 68, 0.6);
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-xl);
