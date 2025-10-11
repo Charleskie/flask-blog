@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shiheng - 极客空间</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'geek-dark': '#0d1117',
+                        'geek-darker': '#0a0e14',
+                        'geek-blue': '#00f0ff',
+                        'geek-purple': '#bf00ff',
+                        'geek-green': '#00ff66',
+                        'geek-yellow': '#f0ff00',
+                        'geek-red': '#ff3b30',
+                    },
+                    fontFamily: {
+                        'code': ['Fira Code', 'monospace'],
+                        'sans': ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        glow: {
+                            '0%': { 'text-shadow': '0 0 5px #00f0ff, 0 0 10px #00f0ff' },
+                            '100%': { 'text-shadow': '0 0 10px #00f0ff, 0 0 20px #00f0ff, 0 0 30px #00f0ff' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow-blue {
+                text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
+            }
+            .text-shadow-purple {
+                text-shadow: 0 0 10px rgba(191, 0, 255, 0.7);
+            }
+            .border-glow-blue {
+                box-shadow: 0 0 5px #00f0ff, 0 0 10px rgba(0, 240, 255, 0.3);
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            }
+            .clip-path-slant {
+                clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-geek-dark text-gray-300 font-sans min-h-screen bg-grid">
+    <!-- 导航栏 -->
+    <nav class="fixed w-full bg-geek-darker/80 backdrop-blur-md z-50 border-b border-geek-blue/20">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="text-geek-blue font-code font-bold text-xl animate-pulse">shiheng.info</span>
+                <span class="text-xs bg-geek-purple/20 text-geek-purple px-2 py-0.5 rounded border border-geek-purple/30">beta</span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="#about" class="hover:text-geek-blue transition-colors duration-300 font-code">about(); </a>
+                <a href="#projects" class="hover:text-geek-blue transition-colors duration-300 font-code">projects(); </a>
+                <a href="#skills" class="hover:text-geek-blue transition-colors duration-300 font-code">skills(); </a>
+                <a href="#contact" class="hover:text-geek-blue transition-colors duration-300 font-code">contact(); </a>
+            </div>
+            
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-gray-400 hover:text-geek-blue">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-geek-darker border-t border-geek-blue/20">
+            <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
+                <a href="#about" class="py-2 hover:text-geek-blue transition-colors duration-300 font-code">about(); </a>
+                <a href="#projects" class="py-2 hover:text-geek-blue transition-colors duration-300 font-code">projects(); </a>
+                <a href="#skills" class="py-2 hover:text-geek-blue transition-colors duration-300 font-code">skills(); </a>
+                <a href="#contact" class="py-2 hover:text-geek-blue transition-colors duration-300 font-code">contact(); </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <header class="relative pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden opacity-20">
+            <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-geek-purple/30 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-geek-blue/20 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="inline-block mb-4 px-3 py-1 bg-geek-blue/10 border border-geek-blue/30 rounded-full text-geek-blue font-code text-sm">
+                    <span class="animate-pulse inline-block w-2 h-2 bg-geek-blue rounded-full mr-2"></span>
+                    系统状态: 在线
+                </div>
+                
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight font-code">
+                    你好, 我是 <span class="text-geek-blue animate-glow">Shiheng</span>
+                </h1>
+                
+                <p class="text-xl md:text-2xl text-gray-400 mb-8 leading-relaxed">
+                    全栈开发者 & 技术爱好者<br>
+                    <span class="font-code text-geek-green">function</span> <span class="font-code text-geek-yellow">build_dreams</span><span class="font-code">() {</span>
+                    <span class="block font-code text-gray-400 pl-4 mt-1">return <span class="text-geek-purple">"创新解决方案"</span>;</span>
+                    <span class="font-code">}</span>
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#contact" class="px-6 py-3 bg-geek-blue text-geek-dark font-code font-bold rounded hover:bg-geek-blue/80 transition-all duration-300 border border-geek-blue/50 border-glow-blue">
+                        联系我 <i class="fa fa-paper-plane ml-2"></i>
+                    </a>
+                    <a href="#projects" class="px-6 py-3 bg-transparent text-geek-blue font-code font-bold rounded hover:bg-geek-blue/10 transition-all duration-300 border border-geek-blue/50">
+                        查看项目 <i class="fa fa-code ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 关于我 -->
+    <section id="about" class="py-20 relative">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row gap-12 items-center">
+                <div class="md:w-1/3">
+                    <div class="relative">
+                        <div class="absolute -inset-2 bg-gradient-to-r from-geek-blue to-geek-purple rounded-lg blur-md opacity-30"></div>
+                        <div class="relative overflow-hidden rounded-lg border border-geek-blue/30">
+                            <img src="https://picsum.photos/id/1/400/500" alt="Shiheng的照片" class="w-full h-auto object-cover">
+                            <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-geek-dark to-transparent p-4">
+                                <div class="font-code text-sm text-geek-blue">
+                                    <span>const</span> <span class="text-geek-yellow">developer</span> = <span class="text-geek-green">true</span>;
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-2/3">
+                    <div class="mb-6">
+                        <h2 class="text-3xl font-bold font-code mb-2 text-white">
+                            <span class="text-geek-purple">//</span> 关于我
+                        </h2>
+                        <div class="h-1 w-20 bg-gradient-to-r from-geek-blue to-geek-purple rounded-full"></div>
+                    </div>
+                    
+                    <div class="space-y-4 text-gray-300">
+                        <p>
+                            我是一名充满激情的全栈开发者，热衷于构建高效、美观且用户友好的数字产品。拥有多年的编程经验，擅长将复杂问题转化为简洁优雅的解决方案。
+                        </p>
+                        <p>
+                            我的技术旅程始于对计算机科学的好奇心，如今已发展成为对软件开发全方位的热爱。我不断学习新技术，紧跟行业趋势，确保自己的技能始终保持前沿。
+                        </p>
+                        <p>
+                            除了编码，我还喜欢分享知识，参与开源项目，并在技术社区中交流学习。我相信技术的力量可以改变世界，而开发者的使命就是推动这种改变。
+                        </p>
+                    </div>
+                    
+                    <div class="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="p-4 bg-geek-darker rounded-lg border border-gray-800 hover:border-geek-blue/50 transition-colors">
+                            <div class="text-geek-blue text-3xl mb-2"><i class="fa fa-code"></i></div>
+                            <h3 class="font-code font-bold mb-1">全栈开发</h3>
+                            <p class="text-sm text-gray-400">前后端一体化解决方案</p>
+                        </div>
+                        <div class="p-4 bg-geek-darker rounded-lg border border-gray-800 hover:border-geek-purple/50 transition-colors">
+                            <div class="text-geek-purple text-3xl mb-2"><i class="fa fa-lightbulb-o"></i></div>
+                            <h3 class="font-code font-bold mb-1">问题解决</h3>
+                            <p class="text-sm text-gray-400">高效处理技术难题</p>
+                        </div>
+                        <div class="p-4 bg-geek-darker rounded-lg border border-gray-800 hover:border-geek-green/50 transition-colors">
+                            <div class="text-geek-green text-3xl mb-2"><i class="fa fa-cogs"></i></div>
+                            <h3 class="font-code font-bold mb-1">系统架构</h3>
+                            <p class="text-sm text-gray-400">构建可扩展系统</p>
+                        </div>
+                        <div class="p-4 bg-geek-darker rounded-lg border border-gray-800 hover:border-geek-yellow/50 transition-colors">
+                            <div class="text-geek-yellow text-3xl mb-2"><i class="fa fa-share-alt"></i></div>
+                            <h3 class="font-code font-bold mb-1">开源贡献</h3>
+                            <p class="text-sm text-gray-400">积极参与社区建设</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技能 -->
+    <section id="skills" class="py-20 bg-geek-darker clip-path-slant">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl font-bold font-code mb-2 text-white">
+                    <span class="text-geek-green">//</span> 技术栈
+                </h2>
+                <div class="h-1 w-20 bg-gradient-to-r from-geek-green to-geek-blue mx-auto rounded-full mb-6"></div>
+                <p class="text-gray-400">
+                    多年的开发经验让我掌握了多种技术，能够灵活应对不同项目需求，提供最佳解决方案。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <div>
+                    <h3 class="font-code text-xl text-geek-blue mb-6">
+                        <i class="fa fa-code-fork mr-2"></i> 编程语言
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-code text-gray-300">JavaScript / TypeScript</span>
+                                <span class="font-code text-geek-blue">90%</span>
+                            </div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-geek-blue to-geek-purple" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-code text-gray-300">Python</span>
+                                <span class="font-code text-geek-blue">85%</span>
+                            </div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-geek-blue to-geek-purple" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-code text-gray-300">Java</span>
+                                <span class="font-code text-geek-blue">80%</span>
+                            </div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-geek-blue to-geek-purple" style="width: 80%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <span class="font-code text-gray-300">C#</span>
+                                <span class="font-code text-geek-blue">75%</span>
+                            </div>
+                            <div class="h-2 bg-gray-800 rounded-full overflow-hidden">
+                                <div class="h-full bg-gradient-to-r from-geek-blue to-geek-purple" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="font-code text-xl text-geek-green mb-6">
+                        <i class="fa fa-cubes mr-2"></i> 框架与工具
+                    </h3>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-geek-dark rounded-lg border border-gray-800 flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mr-3">
+                                <i class="fa fa-react"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-code font-bold">React</h4>
+                                <p class="text-xs text-gray-400">前端框架</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-geek-dark rounded-lg border border-gray-800 flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 mr-3">
+                                <i class="fa fa-nodejs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-code font-bold">Node.js</h4>
+                                <p class="text-xs text-gray-400">后端运行时</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-geek-dark rounded-lg border border-gray-800 flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mr-3">
+                                <i class="fa fa-database"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-code font-bold">MongoDB</h4>
+                                <p class="text-xs text-gray-400">数据库</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-geek-dark rounded-lg border border-gray-800 flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 mr-3">
+                                <i class="fa fa-git"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-code font-bold">Git</h4>
+                                <p class="text-xs text-gray-400">版本控制</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-geek-dark rounded-lg border border-gray-800 flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 mr-3">
+                                <i class="fa fa-docker"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-code font-bold">Docker</h4>
+                                <p class="text-xs text-gray-400">容器化</p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4 bg-geek-dark rounded-lg border border-gray-800 flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mr-3">
+                                <i class="fa fa-cloud"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-code font-bold">AWS</h4>
+                                <p class="text-xs text-gray-400">云服务</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-16">
+                <h3 class="font-code text-xl text-geek-yellow mb-6 text-center">
+                    <i class="fa fa-bar-chart mr-2"></i> 技能分布
+                </h3>
+                
+                <div class="max-w-2xl mx-auto h-64">
+                    <canvas id="skillsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 项目 -->
+    <section id="projects" class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <h2 class="text-3xl font-bold font-code mb-2 text-white">
+                    <span class="text-geek-yellow">//</span> 项目展示
+                </h2>
+                <div class="h-1 w-20 bg-gradient-to-r from-geek-yellow to-geek-purple mx-auto rounded-full mb-6"></div>
+                <p class="text-gray-400">
+                    探索我的一些精选项目，每个项目都代表了我的技术能力和创新思维。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 项目1 -->
+                <div class="bg-geek-darker rounded-lg overflow-hidden border border-gray-800 hover:border-geek-blue/50 transition-all duration-300 group">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="https://picsum.photos/id/180/600/400" alt="智能数据分析平台" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-geek-dark to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="px-2 py-1 bg-geek-blue/10 text-geek-blue text-xs font-code rounded">全栈</span>
+                            <div class="flex space-x-2">
+                                <a href="#" class="text-gray-500 hover:text-geek-blue transition-colors">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                                <a href="#" class="text-gray-500 hover:text-geek-blue transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold font-code mb-2 group-hover:text-geek-blue transition-colors">智能数据分析平台</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            一个基于机器学习的数据分析平台，能够自动识别数据模式并生成可视化报告。
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">React</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">Python</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">TensorFlow</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">MongoDB</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 项目2 -->
+                <div class="bg-geek-darker rounded-lg overflow-hidden border border-gray-800 hover:border-geek-purple/50 transition-all duration-300 group">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="https://picsum.photos/id/48/600/400" alt="分布式文件系统" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-geek-dark to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="px-2 py-1 bg-geek-purple/10 text-geek-purple text-xs font-code rounded">后端</span>
+                            <div class="flex space-x-2">
+                                <a href="#" class="text-gray-500 hover:text-geek-purple transition-colors">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                                <a href="#" class="text-gray-500 hover:text-geek-purple transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold font-code mb-2 group-hover:text-geek-purple transition-colors">分布式文件系统</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            一个高性能分布式文件存储系统，支持断点续传和数据冗余备份，确保数据安全。
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">Go</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">gRPC</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">Consul</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">S3 API</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 项目3 -->
+                <div class="bg-geek-darker rounded-lg overflow-hidden border border-gray-800 hover:border-geek-green/50 transition-all duration-300 group">
+                    <div class="relative overflow-hidden h-48">
+                        <img src="https://picsum.photos/id/0/600/400" alt="物联网控制中心" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-geek-dark to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="px-2 py-1 bg-geek-green/10 text-geek-green text-xs font-code rounded">IoT</span>
+                            <div class="flex space-x-2">
+                                <a href="#" class="text-gray-500 hover:text-geek-green transition-colors">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                                <a href="#" class="text-gray-500 hover:text-geek-green transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold font-code mb-2 group-hover:text-geek-green transition-colors">物联网控制中心</h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            一个统一的物联网设备管理平台，支持实时监控、数据分析和远程控制多种智能设备。
+                        </p>
+                        
+                        <div class="flex flex-wrap gap-2">
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">TypeScript</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">MQTT</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">Rust</span>
+                            <span class="text-xs font-code bg-gray-800 px-2 py-1 rounded">InfluxDB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="#" class="inline-flex items-center px-6 py-3 border border-geek-yellow/50 text-geek-yellow font-code rounded hover:bg-geek-yellow/10 transition-all duration-300">
+                    查看更多项目 <i class="fa fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 联系 -->
+    <section id="contact" class="py-20 bg-geek-darker">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="text-center max-w-2xl mx-auto mb-16">
+                    <h2 class="text-3xl font-bold font-code mb-2 text-white">
+                        <span class="text-geek-red">//</span> 联系我
+                    </h2>
+                    <div class="h-1 w-20 bg-gradient-to-r from-geek-red to-geek-blue mx-auto rounded-full mb-6"></div>
+                    <p class="text-gray-400">
+                        有项目想法或合作意向？请随时联系我，我会尽快回复您。
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div>
+                        <form class="space-y-6">
+                            <div>
+                                <label for="name" class="block text-sm font-code mb-2 text-gray-300">姓名</label>
+                                <input type="text" id="name" class="w-full bg-geek-dark border border-gray-700 rounded px-4 py-3 text-gray-200 focus:outline-none focus:border-geek-blue transition-colors font-code" placeholder="your_name">
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="block text-sm font-code mb-2 text-gray-300">邮箱</label>
+                                <input type="email" id="email" class="w-full bg-geek-dark border border-gray-700 rounded px-4 py-3 text-gray-200 focus:outline-none focus:border-geek-blue transition-colors font-code" placeholder="your_email@example.com">
+                            </div>
+                            
+                            <div>
+                                <label for="message" class="block text-sm font-code mb-2 text-gray-300">消息</label>
+                                <textarea id="message" rows="5" class="w-full bg-geek-dark border border-gray-700 rounded px-4 py-3 text-gray-200 focus:outline-none focus:border-geek-blue transition-colors font-code resize-none" placeholder="请输入您的消息..."></textarea>
+                            </div>
+                            
+                            <button type="submit" class="w-full py-3 bg-geek-blue text-geek-dark font-code font-bold rounded hover:bg-geek-blue/80 transition-all duration-300 border border-geek-blue/50">
+                                发送消息 <i class="fa fa-paper-plane ml-2"></i>
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div>
+                        <div class="h-full flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-code text-xl text-geek-green mb-6">
+                                    <i class="fa fa-info-circle mr-2"></i> 联系方式
+                                </h3>
+                                
+                                <div class="space-y-4">
+                                    <div class="flex items-start">
+                                        <div class="w-10 h-10 rounded-full bg-geek-blue/10 flex items-center justify-center text-geek-blue mr-4 mt-1 flex-shrink-0">
+                                            <i class="fa fa-envelope"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-code font-bold mb-1">邮箱</h4>
+                                            <p class="text-gray-400">contact@shiheng.info</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start">
+                                        <div class="w-10 h-10 rounded-full bg-geek-purple/10 flex items-center justify-center text-geek-purple mr-4 mt-1 flex-shrink-0">
+                                            <i class="fa fa-map-marker"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-code font-bold mb-1">地址</h4>
+                                            <p class="text-gray-400">北京市海淀区中关村科技园</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start">
+                                        <div class="w-10 h-10 rounded-full bg-geek-green/10 flex items-center justify-center text-geek-green mr-4 mt-1 flex-shrink-0">
+                                            <i class="fa fa-clock-o"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-code font-bold mb-1">工作时间</h4>
+                                            <p class="text-gray-400">周一至周五: 9:00 - 18:00</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-10">
+                                    <h3 class="font-code text-xl text-geek-yellow mb-4">
+                                        <i class="fa fa-link mr-2"></i> 社交媒体
+                                    </h3>
+                                    
+                                    <div class="flex space-x-4">
+                                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-geek-blue/20 hover:text-geek-blue transition-all duration-300">
+                                            <i class="fa fa-github text-xl"></i>
+                                        </a>
+                                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-blue-500/20 hover:text-blue-400 transition-all duration-300">
+                                            <i class="fa fa-twitter text-xl"></i>
+                                        </a>
+                                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-green-500/20 hover:text-green-400 transition-all duration-300">
+                                            <i class="fa fa-linkedin text-xl"></i>
+                                        </a>
+                                        <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-purple-500/20 hover:text-purple-400 transition-all duration-300">
+                                            <i class="fa fa-codepen text-xl"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-10 p-4 bg-geek-dark rounded-lg border border-geek-red/20">
+                                <div class="flex items-start">
+                                    <div class="text-geek-red text-2xl mr-4 mt-1">
+                                        <i class="fa fa-lightbulb-o"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-code font-bold mb-1 text-white">有紧急项目？</h4>
+                                        <p class="text-gray-400 text-sm">
+                                            对于紧急项目咨询，可以直接致电：<span class="text-geek-red font-code">+86 138 xxxx xxxx</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="py-10 border-t border-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-geek-blue font-code font-bold text-xl">shiheng.info</span>
+                        <span class="text-xs bg-geek-purple/20 text-geek-purple px-2 py-0.5 rounded border border-geek-purple/30">beta</span>
+                    </div>
+                    <p class="text-gray-500 text-sm mt-2">
+                        用代码构建未来
+                    </p>
+                </div>
+                
+                <div class="text-gray-500 text-sm font-code">
+                    &copy; <span id="current-year">2023</span> shiheng.info. 保留所有权利.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 移动端菜单切换
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭移动菜单
+                    document.getElementById('mobile-menu').classList.add('hidden');
+                }
+            });
+        });
+        
+        // 设置当前年份
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // 技能图表
+        const ctx = document.getElementById('skillsChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['前端开发', '后端开发', '数据库', 'DevOps', '移动开发', 'UI/UX设计'],
+                datasets: [{
+                    label: '技能熟练度',
+                    data: [90, 85, 80, 75, 65, 70],
+                    backgroundColor: 'rgba(0, 240, 255, 0.2)',
+                    borderColor: 'rgba(0, 240, 255, 1)',
+                    pointBackgroundColor: 'rgba(0, 240, 255, 1)',
+                    pointBorderColor: '#0d1117',
+                    pointHoverBackgroundColor: '#0d1117',
+                    pointHoverBorderColor: 'rgba(0, 240, 255, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        pointLabels: {
+                            color: 'rgba(255, 255, 255, 0.7)',
+                            font: {
+                                family: 'Fira Code'
+                            }
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: 'rgba(255, 255, 255, 0.5)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+        
+        // 滚动时导航栏效果
+        window.addEventListener('scroll', function() {
+            const nav = document.querySelector('nav');
+            if (window.scrollY > 50) {
+                nav.classList.add('py-2');
+                nav.classList.remove('py-3');
+                nav.classList.add('shadow-lg');
+                nav.classList.add('shadow-geek-blue/5');
+            } else {
+                nav.classList.add('py-3');
+                nav.classList.remove('py-2');
+                nav.classList.remove('shadow-lg');
+                nav.classList.remove('shadow-geek-blue/5');
+            }
+        });
+    </script>
+</body>
+</html>

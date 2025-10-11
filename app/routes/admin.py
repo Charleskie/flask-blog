@@ -1080,7 +1080,7 @@ def simple_about_edit():
         page_content = request.form.get('page_content')
         meta_description = request.form.get('meta_description', '')
         meta_keywords = request.form.get('meta_keywords', '')
-        is_active = 'is_active' in request.form
+        is_active = True
         
         if not page_title or not page_content:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':

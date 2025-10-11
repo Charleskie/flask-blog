@@ -34,9 +34,6 @@
                 <a href="{{ url_for('admin.admin_posts') }}" class="btn-secondary-sm">
                     <i class="fas fa-list"></i> 列表
                 </a>
-                <a href="#" class="btn-secondary-sm">
-                    <i class="fas fa-tags"></i> 分类
-                </a>
             </div>
         </div>
         
@@ -58,9 +55,6 @@
                 <a href="{{ url_for('admin.admin_projects') }}" class="btn-secondary-sm">
                     <i class="fas fa-list"></i> 列表
                 </a>
-                <a href="{{ url_for('admin.admin_messages') }}" class="btn-secondary-sm">
-                    <i class="fas fa-envelope"></i> 消息
-                </a>
             </div>
         </div>
         
@@ -78,12 +72,6 @@
             <div class="flex gap-2 flex-wrap">
                 <a href="{{ url_for('admin.admin_about') }}" class="btn-primary-sm">
                     <i class="fas fa-cog"></i> 管理
-                </a>
-                <a href="{{ url_for('admin.new_about_content') }}" class="btn-secondary-sm">
-                    <i class="fas fa-plus"></i> 内容
-                </a>
-                <a href="{{ url_for('admin.new_about_contact') }}" class="btn-secondary-sm">
-                    <i class="fas fa-plus"></i> 联系
                 </a>
             </div>
         </div>
@@ -148,113 +136,6 @@
                 <a href="{{ url_for('settings.security_settings') }}" class="btn-secondary-sm">
                     <i class="fas fa-shield-alt"></i> 安全
                 </a>
-                <a href="#" class="btn-secondary-sm">
-                    <i class="fas fa-database"></i> 备份
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 最近活动和统计 -->
-<div class="max-w-6xl mx-auto px-4">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- 最近活动 -->
-        <div class="lg:col-span-2">
-            <div class="glass-card rounded-xl p-6">
-                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-history text-white text-sm"></i>
-                    </div>
-                    最近活动
-                </h2>
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                            <i class="fas fa-plus text-white text-sm"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-white font-medium">新建文章</h4>
-                            <p class="text-slate-300 text-sm">发布了新文章《Flask Web开发入门指南》</p>
-                            <span class="text-slate-400 text-xs">2小时前</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                            <i class="fas fa-edit text-white text-sm"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-white font-medium">更新项目</h4>
-                            <p class="text-slate-300 text-sm">更新了项目《个人网站》的信息</p>
-                            <span class="text-slate-400 text-xs">1天前</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-start">
-                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center mr-4 flex-shrink-0">
-                            <i class="fas fa-comment text-white text-sm"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h4 class="text-white font-medium">新消息</h4>
-                            <p class="text-slate-300 text-sm">收到来自张三的合作咨询</p>
-                            <span class="text-slate-400 text-xs">2天前</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 快速统计 -->
-        <div>
-            <div class="glass-card rounded-xl p-6">
-                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
-                    <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-chart-bar text-white text-sm"></i>
-                    </div>
-                    数据统计
-                </h2>
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-blog text-white text-sm"></i>
-                            </div>
-                            <span class="text-white">文章总数</span>
-                        </div>
-                        <span class="text-2xl font-bold text-blue-400">12</span>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-code text-white text-sm"></i>
-                            </div>
-                            <span class="text-white">项目总数</span>
-                        </div>
-                        <span class="text-2xl font-bold text-green-400">8</span>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-envelope text-white text-sm"></i>
-                            </div>
-                            <span class="text-white">未读消息</span>
-                        </div>
-                        <span class="text-2xl font-bold text-purple-400">3</span>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <div class="w-8 h-8 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
-                                <i class="fas fa-eye text-white text-sm"></i>
-                            </div>
-                            <span class="text-white">今日访问</span>
-                        </div>
-                        <span class="text-2xl font-bold text-orange-400">156</span>
-                    </div>
-                </div>
             </div>
         </div>
     </div>

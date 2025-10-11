@@ -9,7 +9,7 @@
 
             <!-- 有内容时显示，使用与编辑器一致的样式 -->
             <div class="about-content-display">
-                {{ page_content|safe }}
+                {{ page_content |safe }}
             </div>
         {% if current_user.is_authenticated and current_user.is_admin %}
             <!-- PDF下载按钮 -->
