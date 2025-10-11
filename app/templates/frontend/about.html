@@ -6,10 +6,20 @@
 <div class="row">
     <div class="col-lg-10 mx-auto">
         {% if page_content %}
+
             <!-- 有内容时显示，使用与编辑器一致的样式 -->
             <div class="about-content-display">
                 {{ page_content|safe }}
             </div>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+            <!-- PDF下载按钮 -->
+            <div class="pdf-download-section">
+                <a href="{{ url_for('main.about_pdf') }}" class="pdf-download-btn" target="_blank">
+                    <i class="fas fa-file-pdf"></i>
+                    <span>下载PDF版本</span>
+                </a>
+            </div>
+        {% endif %}
         {% else %}
             <!-- 无内容时显示补充中 -->
             <div class="about-empty-state">
@@ -26,6 +36,47 @@
 
 {% block extra_css %}
 <style>
+/* PDF下载按钮样式 */
+.pdf-download-section {
+    text-align: right;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+}
+
+.pdf-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    border: none;
+    cursor: pointer;
+}
+
+.pdf-download-btn:hover {
+    background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+.pdf-download-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.pdf-download-btn i {
+    font-size: 16px;
+}
+
 /* 关于页面内容展示样式 - 与编辑器保持一致 */
 .about-content-display {
     padding: 40px;
@@ -300,6 +351,15 @@
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+    .pdf-download-section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .pdf-download-btn {
+        padding: 10px 20px;
+        font-size: 13px;
+    }
+    
     .about-content-display {
         padding: 24px;
         margin: 0 16px;

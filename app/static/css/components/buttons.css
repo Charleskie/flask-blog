@@ -53,13 +53,13 @@
 
 /* 次要按钮 */
 .btn-secondary {
-    background: var(--bg-secondary);
+    background: rgba(25, 33, 68, 0.8);
     color: var(--text-primary);
-    border-color: var(--bg-tertiary);
+    border-color: rgba(25, 33, 68, 0.6);
 }
 
 .btn-secondary:hover {
-    background: var(--bg-tertiary);
+    background: rgba(25, 33, 68, 0.6);
     color: var(--text-primary);
     text-decoration: none;
 }
@@ -133,7 +133,7 @@
 }
 
 .btn-ghost:hover {
-    background: var(--bg-secondary);
+    background: rgba(25, 33, 68, 0.8);
     color: var(--text-primary);
     text-decoration: none;
 }
@@ -359,8 +359,8 @@
 }
 
 .login-prompt-content {
-    background: var(--bg-primary);
-    border: 1px solid var(--border-color);
+    background: #192144;
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-lg);
     max-width: 400px;

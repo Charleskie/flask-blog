@@ -86,6 +86,7 @@ cp -r app $TEMP_DIR/
 cp -r static $TEMP_DIR/ 2>/dev/null || echo "⚠️ static目录不存在，跳过"
 cp run.py $TEMP_DIR/
 cp config.py $TEMP_DIR/
+cp .env $TEMP_DIR/
 cp requirements.txt $TEMP_DIR/
 cp requirements_compatible.txt $TEMP_DIR/
 cp requirements_python36.txt $TEMP_DIR/

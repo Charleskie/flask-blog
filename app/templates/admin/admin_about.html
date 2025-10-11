@@ -24,38 +24,9 @@
                     {% if about_content %}
                     <div class="row">
                         <div class="col-md-8">
-                            <h6 class="text-muted mb-2">页面标题</h6>
-                            <h4 class="mb-3">{{ about_content.title }}</h4>
-                            
                             <h6 class="text-muted mb-2">内容预览</h6>
-                            <div class="bg-light p-3 rounded mb-3" style="max-height: 200px; overflow-y: auto;">
+                            <div class="col-md-8" style="max-height: 200px; overflow-y: auto;">
                                 {{ about_content.content[:200]|safe }}{% if about_content.content|length > 200 %}...{% endif %}
-                            </div>
-                            
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <h6 class="text-muted mb-2">状态</h6>
-                                    {% if about_content.is_active %}
-                                        <span class="badge bg-success">显示中</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">已隐藏</span>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6">
-                                    <h6 class="text-muted mb-2">最后更新</h6>
-                                    <small class="text-muted">{{ about_content.updated_at.strftime('%Y-%m-%d %H:%M:%S') if about_content.updated_at else '未知' }}</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <h6 class="text-muted mb-3">快速操作</h6>
-                            <div class="d-grid gap-2">
-                                <a href="{{ url_for('admin.simple_about_edit') }}" class="btn btn-primary">
-                                    <i class="fas fa-edit"></i> 编辑内容
-                                </a>
-                                <a href="{{ url_for('main.about') }}" class="btn btn-outline-primary" target="_blank">
-                                    <i class="fas fa-external-link-alt"></i> 预览页面
-                                </a>
                             </div>
                         </div>
                     </div>
