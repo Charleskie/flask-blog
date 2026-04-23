@@ -27,6 +27,42 @@ def to_china_time(utc_time):
     
     return china_time.strftime('%Y-%m-%d %H:%M')
 
+
+def resolve_avatar_url(user, fallback_index=None):
+    """统一处理用户头像地址，兼容历史数据格式。"""
+    if getattr(user, 'avatar', None):
+        avatar = user.avatar
+        if avatar.startswith(('http://', 'https://', '/')):
+            return avatar
+        return f'/static/uploads/avatars/{avatar}'
+
+    if fallback_index is not None:
+        return f'/static/avatar/avatar{fallback_index}.png'
+
+    return '/static/images/default-avatar.png'
+
+
+def serialize_reply(reply):
+    """将评论回复序列化为前端可直接渲染的结构。"""
+    reply_to_user = reply.reply_to_user
+    reply_index = random.randint(1, 4)
+
+    return {
+        'id': reply.id,
+        'content': reply.content,
+        'created_at': to_china_time(reply.created_at),
+        'parent_reply_id': reply.parent_reply_id,
+        'reply_to': {
+            'id': reply_to_user.id,
+            'username': reply_to_user.username
+        } if reply_to_user else None,
+        'user': {
+            'id': reply.user.id,
+            'username': reply.user.username,
+            'avatar': resolve_avatar_url(reply.user, reply_index)
+        }
+    }
+
 @interaction_bp.route('/test', methods=['GET'])
 def test_api():
     """测试API是否正常工作"""
@@ -42,15 +78,72 @@ def get_user_info():
                 'id': current_user.id,
                 'username': current_user.username,
                 'is_admin': current_user.is_admin
-            }
+            },
+            'is_guest': False
         })
     else:
-        return jsonify({'success': False, 'message': '未登录'}), 401
+        return jsonify({
+            'success': True,
+            'user': None,
+            'is_guest': True,
+            'message': '访客模式'
+        })
+
+@interaction_bp.route('/like-status', methods=['GET'])
+def get_like_status():
+    """获取点赞状态（支持访客模式）"""
+    content_type = request.args.get('type')  # 'post' or 'project'
+    content_id = request.args.get('id')
+    
+    if not content_type or not content_id:
+        return jsonify({'success': False, 'message': '参数错误'}), 400
+    
+    try:
+        # 获取内容对象
+        if content_type == 'post':
+            content = Post.query.get_or_404(content_id)
+            type_code = 1  # 1-博客
+        elif content_type == 'project':
+            content = Project.query.get_or_404(content_id)
+            type_code = 2  # 2-项目
+        else:
+            return jsonify({'success': False, 'message': '类型错误'}), 400
+        
+        # 获取点赞数
+        like_count = content.like_count
+        
+        # 如果用户已登录，获取用户是否已点赞
+        is_liked = False
+        if current_user.is_authenticated:
+            interaction = UserInteraction.query.filter_by(
+                user_id=current_user.id,
+                content_id=content_id,
+                type=type_code
+            ).first()
+            if interaction:
+                is_liked = interaction.like == 1
+        
+        return jsonify({
+            'success': True,
+            'like_count': like_count,
+            'is_liked': is_liked,
+            'is_authenticated': current_user.is_authenticated
+        })
+        
+    except Exception as e:
+        current_app.logger.error(f"获取点赞状态失败: {e}")
+        return jsonify({'success': False, 'message': '获取状态失败'}), 500
 
 @interaction_bp.route('/like', methods=['POST'])
-@login_required
 def toggle_like():
     """切换点赞状态"""
+    if not current_user.is_authenticated:
+        return jsonify({
+            'success': False, 
+            'message': '请先登录后再进行点赞操作',
+            'require_login': True
+        }), 401
+    
     try:
         data = request.get_json()
         content_type = data.get('type')  # 'post' or 'project'
@@ -272,19 +365,7 @@ def get_comments(content_id):
             
             # 获取评论的回复
             replies = CommentReply.query.filter_by(comment_id=comment.id, is_approved=True).order_by(CommentReply.created_at.asc()).all()
-            replies_data = []
-            for reply in replies:
-                reply_i = random.randint(1, 4)
-                replies_data.append({
-                    'id': reply.id,
-                    'content': reply.content,
-                    'created_at': to_china_time(reply.created_at),
-                    'user': {
-                        'id': reply.user.id,
-                        'username': reply.user.username,
-                        'avatar': reply.user.avatar or f'/static/avatar/avatar{reply_i}.png'
-                    }
-                })
+            replies_data = [serialize_reply(reply) for reply in replies]
             
             # 检查当前用户是否已点赞此评论
             is_liked = False
@@ -306,7 +387,7 @@ def get_comments(content_id):
                 'user': {
                     'id': comment.user.id,
                     'username': comment.user.username,
-                    'avatar': comment.user.avatar or f'/static/avatar/avatar{i}.png'
+                    'avatar': resolve_avatar_url(comment.user, i)
                 }
             })
         
@@ -584,30 +665,12 @@ def upload_image():
 def get_comment_replies(comment_id):
     """获取评论的回复列表"""
     try:
-        comment = Comment.query.get_or_404(comment_id)
+        Comment.query.get_or_404(comment_id)
         replies = CommentReply.query.filter_by(comment_id=comment_id, is_approved=True).order_by(CommentReply.created_at.asc()).all()
-        
-        replies_data = []
-        for reply in replies:
-            # 获取用户头像
-            avatar_url = '/static/images/default-avatar.png'
-            if reply.user.avatar:
-                avatar_url = f'/static/uploads/avatars/{reply.user.avatar}'
-            
-            replies_data.append({
-                'id': reply.id,
-                'content': reply.content,
-                'created_at': to_china_time(reply.created_at),
-                'user': {
-                    'id': reply.user.id,
-                    'username': reply.user.username,
-                    'avatar': avatar_url
-                }
-            })
         
         return jsonify({
             'success': True,
-            'replies': replies_data
+            'replies': [serialize_reply(reply) for reply in replies]
         })
         
     except Exception as e:
@@ -621,15 +684,40 @@ def add_comment_reply(comment_id):
     try:
         comment = Comment.query.get_or_404(comment_id)
         data = request.get_json()
-        content = data.get('content', '').strip()
+        reply_content = data.get('content', '').strip()
+        parent_reply_id = data.get('parent_reply_id')
         
-        if not content:
+        if not reply_content:
             return jsonify({'success': False, 'message': '请输入回复内容'})
+
+        parent_reply = None
+        reply_to_user_id = comment.user_id
+        target_label = '评论'
+
+        if parent_reply_id not in (None, ''):
+            try:
+                parent_reply_id = int(parent_reply_id)
+            except (TypeError, ValueError):
+                return jsonify({'success': False, 'message': '回复目标无效'}), 400
+
+            parent_reply = CommentReply.query.filter_by(
+                id=parent_reply_id,
+                comment_id=comment_id,
+                is_approved=True
+            ).first()
+
+            if not parent_reply:
+                return jsonify({'success': False, 'message': '要回复的内容不存在'}), 404
+
+            reply_to_user_id = parent_reply.user_id
+            target_label = '回复'
         
         reply = CommentReply(
             comment_id=comment_id,
             user_id=current_user.id,
-            content=content
+            parent_reply_id=parent_reply.id if parent_reply else None,
+            reply_to_user_id=reply_to_user_id,
+            content=reply_content
         )
         
         db.session.add(reply)
@@ -639,33 +727,25 @@ def add_comment_reply(comment_id):
         content_type = 'post' if comment.post_id else 'project'
         content_id = comment.post_id or comment.project_id
         if content_type == 'post':
-            content = Post.query.get(content_id)
+            content_item = Post.query.get(content_id)
         else:
-            content = Project.query.get(content_id)
+            content_item = Project.query.get(content_id)
         
-        if content:
-            create_notification_for_reply(reply, comment, content_type, content.title, comment.user_id)
+        if content_item:
+            create_notification_for_reply(
+                reply,
+                comment,
+                content_item.title,
+                reply_to_user_id,
+                target_label
+            )
         
         db.session.commit()
-        
-        # 获取用户头像
-        avatar_url = '/static/images/default-avatar.png'
-        if current_user.avatar:
-            avatar_url = f'/static/uploads/avatars/{current_user.avatar}'
         
         return jsonify({
             'success': True,
             'message': '回复成功',
-            'reply': {
-                'id': reply.id,
-                'content': reply.content,
-                'created_at': to_china_time(reply.created_at),
-                'user': {
-                    'id': current_user.id,
-                    'username': current_user.username,
-                    'avatar': avatar_url
-                }
-            }
+            'reply': serialize_reply(reply)
         })
         
     except Exception as e:
@@ -787,14 +867,18 @@ def create_notification_for_comment(comment, content_type, content_title, conten
         current_app.logger.error(f"创建评论通知失败: {e}")
 
 
-def create_notification_for_reply(reply, comment, content_type, content_title, comment_author_id):
+def create_notification_for_reply(reply, comment, content_title, target_user_id, target_label='评论'):
     """为回复创建通知"""
     try:
-        # 如果不是回复自己的评论，创建通知
-        if comment_author_id != reply.user_id:
+        if target_user_id != reply.user_id:
             notification = Notification.create_reply_notification(
-                comment_author_id, reply.user.username, reply.content,
-                comment.id, comment.post_id or comment.project_id, content_title
+                target_user_id,
+                reply.user.username,
+                reply.content,
+                comment.id,
+                comment.post_id or comment.project_id,
+                content_title,
+                target_label=target_label
             )
             db.session.add(notification)
     except Exception as e:

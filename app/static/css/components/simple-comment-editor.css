@@ -1,43 +1,36 @@
 /**
- * 简化版评论编辑器样式
- * 只支持表情包和图片功能
+ * Simple comment editor styles - Primer aligned
  */
 
 .simple-comment-editor {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+    background: var(--bgColor-default);
     overflow: hidden;
-    transition: all 0.2s ease;
+    transition: border-color 0.15s ease;
 }
 
 .simple-comment-editor:focus-within {
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 4px 16px rgba(0, 0, 0, 0.15);
+    border-color: var(--focus-outlineColor);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
-/* 工具栏样式 */
-.comment-toolbar {
+.simple-comment-editor .comment-toolbar {
     display: flex;
     align-items: center;
     padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: var(--bgColor-muted);
+    border-bottom: 1px solid var(--borderColor-default);
     gap: 4px;
 }
 
-.toolbar-group {
+.simple-comment-editor .toolbar-group {
     display: flex;
     align-items: center;
     gap: 4px;
 }
 
-.toolbar-btn {
+.simple-comment-editor .toolbar-btn {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -45,76 +38,72 @@
     height: 28px;
     border: none;
     background: transparent;
-    border-radius: 6px;
-    color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--borderRadius-small);
+    color: var(--fgColor-muted);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.1s ease, color 0.1s ease;
     font-size: 14px;
 }
 
-.toolbar-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 1);
+.simple-comment-editor .toolbar-btn:hover {
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
 }
 
-.toolbar-btn.active {
-    background: rgba(59, 130, 246, 0.3);
-    color: rgba(59, 130, 246, 1);
+.simple-comment-editor .toolbar-btn.active {
+    background: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
-/* 编辑器内容区域 */
-.comment-content {
+.simple-comment-editor .comment-content {
     min-height: 80px;
     max-height: 200px;
     padding: 12px;
     outline: none;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.5;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fgColor-default);
     background: transparent;
     position: relative;
     overflow-y: auto;
 }
 
-.comment-content.is-empty::before {
+.simple-comment-editor .comment-content.is-empty::before {
     content: attr(data-placeholder);
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fgColor-subtle);
     pointer-events: none;
     position: absolute;
     top: 12px;
     left: 12px;
 }
 
-/* 编辑器内容样式 */
-.comment-content p {
+.simple-comment-editor .comment-content p {
     margin: 0 0 8px 0;
     line-height: 1.5;
 }
 
-.comment-content p:last-child {
+.simple-comment-editor .comment-content p:last-child {
     margin-bottom: 0;
 }
 
-.comment-content img {
+.simple-comment-editor .comment-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
     margin: 4px 0;
     display: block;
 }
 
-/* 表情选择器样式 */
+/* Emoji picker */
 .emoji-picker {
     position: absolute;
     top: 100%;
     left: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    box-shadow: var(--shadow-floating-small);
     padding: 8px;
     z-index: 1000;
     display: none;
@@ -139,44 +128,36 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: var(--borderRadius-small);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.1s ease;
     font-size: 16px;
 }
 
 .emoji-item:hover {
-    background: rgba(59, 130, 246, 0.2);
-    transform: scale(1.2);
+    background: var(--bgColor-accent-muted);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .comment-toolbar {
+@media (max-width: 767px) {
+    .simple-comment-editor .comment-toolbar {
         padding: 6px 8px;
     }
-    
-    .toolbar-btn {
+    .simple-comment-editor .toolbar-btn {
         width: 24px;
         height: 24px;
         font-size: 12px;
     }
-    
-    .comment-content {
+    .simple-comment-editor .comment-content {
         padding: 8px;
-        font-size: 14px;
         min-height: 60px;
     }
-    
     .emoji-picker {
         max-width: 160px;
     }
-    
     .emoji-grid {
         grid-template-columns: repeat(6, 1fr);
         max-height: 100px;
     }
-    
     .emoji-item {
         width: 20px;
         height: 20px;
@@ -184,44 +165,7 @@
     }
 }
 
-/* 滚动条样式 */
-.comment-content::-webkit-scrollbar {
-    width: 4px;
-}
-
-.comment-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-}
-
-.comment-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-}
-
-.comment-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-.emoji-grid::-webkit-scrollbar {
-    width: 4px;
-}
-
-.emoji-grid::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
-    border-radius: 2px;
-}
-
-.emoji-grid::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 2px;
-}
-
-.emoji-grid::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.5);
-}
-
-/* 图片模态框样式 */
+/* Image modal */
 .image-modal {
     position: fixed;
     top: 0;
@@ -237,9 +181,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
+    background: rgba(31, 35, 40, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -247,88 +189,76 @@
 }
 
 .image-modal-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    box-shadow: var(--shadow-floating-large);
     max-width: 500px;
     width: 100%;
     max-height: 90vh;
     overflow: hidden;
-    animation: modalSlideIn 0.3s ease-out;
-}
-
-@keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
 }
 
 .image-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 16px;
+    border-bottom: 1px solid var(--borderColor-default);
 }
 
 .image-modal-header h3 {
     margin: 0;
-    color: #ffffff;
-    font-size: 18px;
+    color: var(--fgColor-default);
+    font-size: 16px;
     font-weight: 600;
 }
 
 .image-modal-close {
     background: none;
     border: none;
-    font-size: 24px;
-    color: #ffffff;
+    font-size: 20px;
+    color: var(--fgColor-muted);
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--borderRadius-small);
+    transition: background-color 0.15s ease;
 }
 
 .image-modal-close:hover {
-    background: rgba(0, 0, 0, 0.1);
-    color: #ffffff;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
 }
 
 .image-modal-body {
-    padding: 24px;
+    padding: 16px;
 }
 
 .image-tabs {
     display: flex;
-    margin-bottom: 20px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--borderColor-default);
 }
 
 .image-tab {
     background: none;
     border: none;
-    padding: 12px 20px;
+    padding: 8px 16px;
     cursor: pointer;
-    color: #ffffff;
+    color: var(--fgColor-muted);
     font-weight: 500;
+    font-size: 14px;
     border-bottom: 2px solid transparent;
-    transition: all 0.2s ease;
+    transition: color 0.15s ease;
 }
 
 .image-tab.active {
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
+    color: var(--fgColor-accent);
+    border-bottom-color: var(--fgColor-accent);
 }
 
 .image-tab:hover {
-    color: #3b82f6;
+    color: var(--fgColor-default);
 }
 
 .image-tab-content {
@@ -339,203 +269,86 @@
     display: block;
 }
 
-.form-group {
-    margin-bottom: 16px;
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    color: #ffffff;
-    font-weight: 500;
-}   font-size: 14px;
-}
-
-.form-control {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    box-sizing: border-box;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
 .upload-area {
-    border: 2px dashed #d1d5db;
-    border-radius: 8px;
-    padding: 40px 20px;
+    border: 2px dashed var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+    padding: 32px 16px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
-    background: #f9fafb;
+    transition: border-color 0.15s ease;
+    background: var(--bgColor-muted);
 }
 
-.upload-area:hover {
-    border-color: #3b82f6;
-    background: #f0f9ff;
-}
-
+.upload-area:hover,
 .upload-area.drag-over {
-    border-color: #3b82f6;
-    background: #f0f9ff;
+    border-color: var(--fgColor-accent);
 }
 
 .upload-icon {
-    font-size: 48px;
-    color: #9ca3af;
-    margin-bottom: 16px;
+    font-size: 40px;
+    color: var(--fgColor-subtle);
+    margin-bottom: 12px;
 }
 
 .upload-area p {
-    margin: 8px 0;
-    color: #6b7280;
+    margin: 4px 0;
+    color: var(--fgColor-muted);
 }
 
 .upload-hint {
     font-size: 12px;
-    color: #9ca3af;
+    color: var(--fgColor-subtle);
 }
 
 .upload-preview {
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 16px;
-    background: #f9fafb;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
+    padding: 12px;
+    background: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--borderColor-default);
 }
 
 .upload-preview img {
     width: 60px;
     height: 60px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
 }
 
 .preview-info p {
     margin: 4px 0;
     font-size: 14px;
-    color: #374151;
+    color: var(--fgColor-default);
 }
 
-.preview-info p:first-child {
-    font-weight: 500;
-}
-
+.preview-info p:first-child { font-weight: 500; }
 .preview-info p:last-child {
-    color: #6b7280;
+    color: var(--fgColor-subtle);
     font-size: 12px;
 }
 
 .image-modal-footer {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
-    padding: 20px 24px;
-    border-top: 1px solid rgba(0, 0, 0, 0.1);
-    background: #f9fafb;
+    gap: 8px;
+    padding: 16px;
+    border-top: 1px solid var(--borderColor-default);
+    background: var(--bgColor-muted);
 }
 
-.btn {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
-}
-
-.btn-secondary:hover:not(:disabled) {
-    background: #e5e7eb;
-}
-
-.btn-primary {
-    background: #3b82f6;
-    color: white;
-}
-
-.btn-primary:hover:not(:disabled) {
-    background: #2563eb;
-}
-
-/* 响应式设计 */
-@media (max-width: 640px) {
-    .image-modal-overlay {
-        padding: 10px;
-    }
-    
-    .image-modal-content {
-        max-height: 95vh;
-    }
-    
-    .image-modal-header,
-    .image-modal-body,
-    .image-modal-footer {
-        padding: 16px;
-    }
-    
-    .image-tabs {
-        margin-bottom: 16px;
-    }
-    
-    .image-tab {
-        padding: 10px 16px;
-        font-size: 14px;
-    }
-    
-    .upload-area {
-        padding: 30px 16px;
-    }
-    
-    .upload-icon {
-        font-size: 36px;
-    }
-    
-    .upload-preview {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .upload-preview img {
-        width: 80px;
-        height: 80px;
-    }
-}
-
-/* 评论内容中的图片样式 */
+/* Comment content images */
 .comment-content img {
     max-width: 200px;
     max-height: 200px;
     height: auto;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
     margin: 8px 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.2s ease;
+    border: 1px solid var(--borderColor-default);
     object-fit: cover;
 }
 
-/* 评论图片调整大小控制点 */
 .comment-content .comment-image-resize-wrapper.resizable {
     position: relative;
     display: inline-block;
@@ -545,14 +358,14 @@
 
 .comment-content .comment-image-resize-wrapper.resizable .resize-handle {
     position: absolute;
-    background: #3b82f6;
-    border: 2px solid white;
+    background: var(--fgColor-accent);
+    border: 2px solid var(--bgColor-default);
     border-radius: 50%;
     width: 10px;
     height: 10px;
     cursor: nw-resize;
     opacity: 0;
-    transition: opacity 0.2s ease;
+    transition: opacity 0.15s ease;
     z-index: 10;
 }
 
@@ -560,27 +373,7 @@
     opacity: 1;
 }
 
-.comment-content .comment-image-resize-wrapper.resizable .resize-handle.se {
-    bottom: -5px;
-    right: -5px;
-    cursor: se-resize;
-}
-
-.comment-content .comment-image-resize-wrapper.resizable .resize-handle.sw {
-    bottom: -5px;
-    left: -5px;
-    cursor: sw-resize;
-}
-
-.comment-content .comment-image-resize-wrapper.resizable .resize-handle.ne {
-    top: -5px;
-    right: -5px;
-    cursor: ne-resize;
-}
-
-.comment-content .comment-image-resize-wrapper.resizable .resize-handle.nw {
-    top: -5px;
-    left: -5px;
-    cursor: nw-resize;
-}
-
+.comment-content .comment-image-resize-wrapper.resizable .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+.comment-content .comment-image-resize-wrapper.resizable .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+.comment-content .comment-image-resize-wrapper.resizable .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+.comment-content .comment-image-resize-wrapper.resizable .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }

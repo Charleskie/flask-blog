@@ -3,196 +3,36 @@
 {% block title %}关于页面管理 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-user-circle"></i> 关于页面管理</h1>
-                <div>
-                    <a href="{{ url_for('admin.simple_about_edit') }}" class="btn btn-primary">
-                        <i class="fas fa-edit"></i> 编辑关于页面
-                    </a>
-                </div>
-            </div>
-            
-            <!-- 当前页面状态 -->
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> 当前页面状态</h5>
-                </div>
-                <div class="card-body">
-                    {% if about_content %}
-                    <div class="row">
-                        <div class="col-md-8">
-                            <h6 class="text-muted mb-2">内容预览</h6>
-                            <div class="col-md-8" style="max-height: 200px; overflow-y: auto;">
-                                {{ about_content.content[:200]|safe }}{% if about_content.content|length > 200 %}...{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-5">
-                        <div class="mb-4">
-                            <i class="fas fa-file-alt fa-3x text-muted"></i>
-                        </div>
-                        <h4 class="text-muted mb-3">暂无关于页面内容</h4>
-                        <p class="text-muted mb-4">您还没有创建关于页面的内容，点击下方按钮开始创建。</p>
-                        <a href="{{ url_for('admin.simple_about_edit') }}" class="btn btn-primary">
-                            <i class="fas fa-plus"></i> 创建关于页面
-                        </a>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
+<div class="container-xl mx-auto px-3 py-4">
+    <div class="d-flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 class="f3 text-bold color-fg-default m-0"><i class="fas fa-user-circle mr-2"></i>关于页面管理</h1>
+        <a href="{{ url_for('admin.simple_about_edit') }}" class="btn btn-primary btn-sm">
+            <i class="fas fa-edit"></i> 编辑关于页面
+        </a>
+    </div>
 
+    <div class="Box">
+        <div class="Box-header border-bottom f5 text-semibold">
+            <i class="fas fa-info-circle mr-2"></i>当前页面状态
+        </div>
+        <div class="Box-body p-4">
+            {% if about_content %}
+            <p class="form-label m-0 mb-2">内容预览</p>
+            <div class="border rounded-2 color-bg-muted p-3 overflow-y-auto f6 color-fg-default" style="max-height: 200px;">
+                {{ about_content.content[:200]|safe }}{% if about_content.content|length > 200 %}…{% endif %}
+            </div>
+            {% else %}
+            <div class="text-center py-6">
+                <i class="fas fa-file-alt f00 color-fg-muted mb-3"></i>
+                <h2 class="f4 text-semibold color-fg-default m-0 mb-2">暂无关于页面内容</h2>
+                <p class="f5 color-fg-muted m-0 mb-4">您还没有创建关于页面的内容，点击下方按钮开始创建。</p>
+                <a href="{{ url_for('admin.simple_about_edit') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> 创建关于页面
+                </a>
+            </div>
+            {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-/* 输入框文字颜色样式 */
-.form-control {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-control:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.form-select {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-select:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-.form-label {
-    color: white !important;
-}
-
-.form-text {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.form-check-label {
-    color: white !important;
-}
-
-/* 卡片样式调整 */
-.card {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: none !important;
-}
-
-.card-header {
-    background: rgba(255, 255, 255, 0.05) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-.card-body {
-    background: rgba(255, 255, 255, 0.05) !important;
-}
-
-/* 按钮样式 */
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    text-decoration: none;
-    color: white;
-}
-
-.btn-outline-primary {
-    border: 2px solid #667eea;
-    color: #667eea;
-    background: transparent;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.btn-outline-primary:hover {
-    background: #667eea;
-    color: white;
-    transform: translateY(-2px);
-    text-decoration: none;
-}
-
-/* 徽章样式 */
-.badge {
-    font-size: 0.875rem;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-}
-
-/* 统计卡片样式 */
-.border {
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    background: rgba(255, 255, 255, 0.05) !important;
-    backdrop-filter: blur(10px);
-    transition: all 0.3s ease;
-}
-
-.border:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-    transform: translateY(-2px);
-}
-
-/* 内容预览区域 */
-.bg-light {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-</style>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // 页面加载完成后的初始化
-    console.log('关于页面管理加载完成');
-});
-</script>
-{% endblock %}

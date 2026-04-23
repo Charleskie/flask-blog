@@ -2,622 +2,1066 @@
 
 {% block title %}首页 - Kim's Blog{% endblock %}
 
+{% block extra_css %}
+<style>
+    .home-editorial {
+        --home-bg: var(--bgColor-muted);
+        --home-bg-soft: var(--bgColor-default);
+        --home-card: rgba(255, 255, 255, 0.96);
+        --home-card-strong: var(--bgColor-default);
+        --home-line: var(--borderColor-default);
+        --home-line-strong: var(--borderColor-muted);
+        --home-ink: var(--fgColor-default);
+        --home-muted: var(--fgColor-muted);
+        --home-accent: var(--fgColor-accent);
+        --home-accent-soft: var(--bgColor-accent-muted);
+        --home-green: var(--fgColor-success);
+        --home-green-soft: var(--bgColor-success-muted);
+        --home-shadow: var(--shadow-resting-small);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding-bottom: 12px;
+        color: var(--home-ink);
+    }
+
+    .home-hero,
+    .home-writing-panel,
+    .home-rail-card,
+    .home-skill-panel,
+    .home-closing-panel {
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--home-line);
+        background: var(--home-card);
+        box-shadow: var(--home-shadow);
+    }
+
+    .home-hero,
+    .home-writing-panel,
+    .home-skill-panel,
+    .home-closing-panel {
+        border-radius: 24px;
+    }
+
+    .home-rail-card {
+        border-radius: 20px;
+    }
+
+    .home-hero {
+        padding: 24px;
+        background:
+            radial-gradient(circle at top left, rgba(9, 105, 218, 0.08), transparent 30%),
+            radial-gradient(circle at bottom right, rgba(31, 136, 61, 0.06), transparent 32%),
+            linear-gradient(135deg, #ffffff 0%, #fafcff 58%, #f6f8fa 100%);
+    }
+
+    .home-hero::before {
+        content: "";
+        position: absolute;
+        inset: 14px;
+        border: 1px solid rgba(209, 217, 224, 0.42);
+        border-radius: 18px;
+        pointer-events: none;
+    }
+
+    .home-hero-grid {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+        gap: 24px;
+        align-items: stretch;
+    }
+
+    .home-hero-copy,
+    .home-hero-side {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .home-eyebrow,
+    .home-section-label,
+    .home-mini-label {
+        display: inline-flex;
+        align-items: center;
+        align-self: flex-start;
+        gap: 8px;
+        padding: 6px 11px;
+        border-radius: 999px;
+        background: var(--bgColor-muted);
+        color: var(--home-muted);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: none;
+    }
+
+    .home-hero-title,
+    .home-panel-head h2,
+    .home-closing-copy h2,
+    .home-feature-card h2,
+    .home-now-card h3,
+    .home-rail-head h3,
+    .home-skill-group h3 {
+        margin: 0;
+        color: var(--home-ink);
+        font-family: inherit;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .home-hero-title {
+        max-width: 13ch;
+        font-size: clamp(2.15rem, 4vw, 3.5rem);
+        line-height: 1.02;
+    }
+
+    .home-hero-lead,
+    .home-now-card p,
+    .home-feature-excerpt,
+    .home-panel-head p,
+    .home-writing-empty,
+    .home-rail-empty,
+    .home-rail-list p,
+    .home-link-copy p,
+    .home-closing-copy p {
+        margin: 0;
+        color: var(--home-muted);
+        font-size: 14px;
+        line-height: 1.72;
+    }
+
+    .home-hero-actions,
+    .home-hero-stats,
+    .home-topic-row,
+    .home-closing-actions,
+    .home-skill-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .home-action,
+    .home-link-arrow,
+    .home-writing-item,
+    .home-popular-item,
+    .home-link-item,
+    .home-feature-card {
+        transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    .home-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 40px;
+        padding: 0 16px;
+        border-radius: 999px;
+        border: 1px solid var(--home-line);
+        background: var(--bgColor-default);
+        color: var(--home-ink);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .home-action:hover {
+        transform: translateY(-1px);
+        border-color: var(--borderColor-emphasis);
+        color: var(--home-ink);
+        text-decoration: none;
+    }
+
+    .home-action-primary {
+        background: var(--button-primary-bgColor-rest);
+        border-color: var(--button-primary-bgColor-rest);
+        color: var(--button-primary-fgColor);
+    }
+
+    .home-action-primary:hover {
+        background: var(--button-primary-bgColor-hover);
+        border-color: var(--button-primary-bgColor-hover);
+        color: var(--button-primary-fgColor);
+    }
+
+    .home-hero-stats {
+        padding-top: 6px;
+    }
+
+    .home-stat-pill,
+    .home-topic-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 11px;
+        border-radius: 999px;
+        border: 1px solid var(--home-line);
+        background: var(--bgColor-default);
+        color: var(--home-muted);
+        font-size: 12px;
+        line-height: 1.4;
+    }
+
+    .home-stat-pill strong,
+    .home-topic-pill strong {
+        color: var(--home-ink);
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .home-hero-side {
+        justify-content: space-between;
+    }
+
+    .home-now-card,
+    .home-feature-card {
+        border: 1px solid var(--home-line);
+        background: rgba(255, 255, 255, 0.96);
+    }
+
+    .home-now-card {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 18px 20px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, rgba(221, 244, 255, 0.85), rgba(255, 255, 255, 0.96) 56%);
+    }
+
+    .home-now-meta,
+    .home-feature-top,
+    .home-rail-head,
+    .home-writing-head,
+    .home-writing-top,
+    .home-writing-foot,
+    .home-version-meta,
+    .home-closing-note {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .home-now-badge,
+    .home-feature-category,
+    .home-writing-category {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.2;
+    }
+
+    .home-now-badge {
+        background: var(--home-green-soft);
+        color: var(--home-green);
+    }
+
+    .home-feature-category {
+        background: var(--home-accent-soft);
+        color: var(--home-accent);
+    }
+
+    .home-now-card h3 {
+        font-size: 1.2rem;
+        line-height: 1.2;
+    }
+
+    .home-now-meta span,
+    .home-feature-date,
+    .home-version-date,
+    .home-link-domain,
+    .home-writing-top span,
+    .home-writing-foot span {
+        color: var(--home-muted);
+        font-size: 12px;
+    }
+
+    .home-feature-card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-height: 100%;
+        padding: 20px;
+        border-radius: 20px;
+        color: var(--home-ink);
+    }
+
+    .home-feature-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--borderColor-emphasis);
+        text-decoration: none;
+        color: var(--home-ink);
+    }
+
+    .home-feature-card h2 {
+        font-size: clamp(1.4rem, 2vw, 1.9rem);
+        line-height: 1.16;
+    }
+
+    .home-feature-meta,
+    .home-writing-foot {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        color: var(--home-muted);
+        font-size: 13px;
+    }
+
+    .home-feature-meta span,
+    .home-writing-foot span,
+    .home-link-domain {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .home-link-arrow {
+        margin-top: auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--home-accent);
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .home-main-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.12fr) minmax(300px, 0.88fr);
+        gap: 20px;
+        align-items: start;
+    }
+
+    .home-writing-panel,
+    .home-skill-panel,
+    .home-closing-panel {
+        padding: 20px;
+    }
+
+    .home-panel-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 10px;
+    }
+
+    .home-panel-head-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .home-panel-head h2 {
+        font-size: clamp(1.5rem, 2.5vw, 2rem);
+        line-height: 1.15;
+    }
+
+    .home-panel-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--home-accent);
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .home-writing-list {
+        display: flex;
+        flex-direction: column;
+        margin-top: 14px;
+        border-top: 1px solid var(--home-line-strong);
+    }
+
+    .home-writing-item {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px 0;
+        border-bottom: 1px solid var(--home-line-strong);
+        color: var(--home-ink);
+    }
+
+    .home-writing-item:hover {
+        transform: translateX(4px);
+        text-decoration: none;
+        color: var(--home-ink);
+    }
+
+    .home-writing-main {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 14px;
+        align-items: start;
+    }
+
+    .home-writing-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .home-writing-copy h3 {
+        margin: 0;
+        color: var(--home-ink);
+        font-size: 1.14rem;
+        line-height: 1.38;
+        font-family: inherit;
+        letter-spacing: -0.01em;
+    }
+
+    .home-writing-copy p {
+        margin: 0;
+        color: var(--home-muted);
+        font-size: 13px;
+        line-height: 1.72;
+    }
+
+    .home-writing-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        border: 1px solid var(--home-line);
+        background: var(--bgColor-muted);
+        color: var(--home-accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .home-writing-empty,
+    .home-rail-empty {
+        padding: 18px 0 4px;
+    }
+
+    .home-rail {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .home-rail-card {
+        padding: 18px;
+        background: rgba(255, 255, 255, 0.96);
+    }
+
+    .home-rail-head {
+        margin-bottom: 8px;
+    }
+
+    .home-rail-head h3 {
+        font-size: 1.12rem;
+        line-height: 1.3;
+    }
+
+    .home-popular-list,
+    .home-version-list,
+    .home-link-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .home-popular-item,
+    .home-version-item,
+    .home-link-item {
+        padding: 13px 0;
+        border-bottom: 1px solid var(--home-line-strong);
+    }
+
+    .home-popular-item:last-child,
+    .home-version-item:last-child,
+    .home-link-item:last-child {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .home-popular-item {
+        display: grid;
+        grid-template-columns: 38px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        color: var(--home-ink);
+    }
+
+    .home-popular-item:hover,
+    .home-link-item:hover {
+        transform: translateY(-1px);
+        text-decoration: none;
+        color: var(--home-ink);
+    }
+
+    .home-popular-rank {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        background: var(--bgColor-muted);
+        border: 1px solid var(--home-line);
+        color: var(--home-accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .home-popular-body,
+    .home-link-copy,
+    .home-version-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .home-popular-body strong,
+    .home-link-copy strong,
+    .home-version-copy strong,
+    .home-skill-group h3 {
+        color: var(--home-ink);
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .home-popular-body span,
+    .home-version-copy p,
+    .home-link-copy p,
+    .home-link-domain {
+        color: var(--home-muted);
+        font-size: 12px;
+        line-height: 1.65;
+    }
+
+    .home-version-item {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .home-version-meta {
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .home-version-number {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 9px;
+        border-radius: 999px;
+        background: var(--bgColor-muted);
+        color: var(--home-muted);
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .home-link-item {
+        display: grid;
+        grid-template-columns: 44px minmax(0, 1fr);
+        gap: 12px;
+        align-items: start;
+        color: var(--home-ink);
+    }
+
+    .home-link-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--home-line);
+        background: var(--bgColor-muted);
+        color: var(--home-accent);
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+    .home-link-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .home-skill-panel {
+        background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
+    }
+
+    .home-skill-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        margin-top: 14px;
+    }
+
+    .home-skill-group {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+        border: 1px solid var(--home-line);
+        border-radius: 18px;
+        background: var(--home-card);
+    }
+
+    .home-skill-group-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .home-skill-group-head span {
+        color: var(--home-muted);
+        font-size: 11px;
+    }
+
+    .home-skill-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--home-line);
+        background: var(--home-card-strong);
+        color: var(--home-ink);
+        font-size: 12px;
+        line-height: 1.3;
+    }
+
+    .home-skill-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--home-accent);
+        opacity: 0.72;
+    }
+
+    .home-closing-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 20px;
+        align-items: center;
+        padding: 24px 26px;
+        background:
+            radial-gradient(circle at top right, rgba(9, 105, 218, 0.06), transparent 28%),
+            linear-gradient(135deg, #ffffff 0%, #f8fbff 100%);
+    }
+
+    .home-closing-copy {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .home-closing-copy h2 {
+        max-width: 18ch;
+        font-size: clamp(1.55rem, 2.6vw, 2.05rem);
+        line-height: 1.18;
+    }
+
+    .home-closing-note {
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        color: var(--home-muted);
+        font-size: 13px;
+    }
+
+    .home-closing-note span {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .home-closing-note span::before {
+        content: "";
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--borderColor-emphasis);
+    }
+
+    @media (max-width: 1200px) {
+        .home-hero-grid,
+        .home-main-grid,
+        .home-closing-panel {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .home-skill-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 767px) {
+        .home-editorial {
+            gap: 18px;
+        }
+
+        .home-hero,
+        .home-writing-panel,
+        .home-rail-card,
+        .home-skill-panel,
+        .home-closing-panel {
+            border-radius: 18px;
+        }
+
+        .home-hero,
+        .home-writing-panel,
+        .home-skill-panel,
+        .home-closing-panel {
+            padding: 18px;
+        }
+
+        .home-hero-title {
+            max-width: none;
+            font-size: 2.2rem;
+        }
+
+        .home-panel-head,
+        .home-writing-main,
+        .home-closing-panel {
+            grid-template-columns: minmax(0, 1fr);
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .home-panel-link {
+            white-space: normal;
+        }
+
+        .home-skill-grid {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .home-hero-actions,
+        .home-hero-stats,
+        .home-topic-row,
+        .home-closing-actions,
+        .home-skill-tags {
+            gap: 8px;
+        }
+
+        .home-action,
+        .home-feature-card,
+        .home-rail-card {
+            width: 100%;
+        }
+
+        .home-action {
+            justify-content: space-between;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<!-- 英雄区域 -->
-<div class="text-center py-16 mb-12">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            Welcome
-        </h1>
-        <p class="text-xl text-slate-300 mb-8">Hi! 欢迎光临我的小站，这是我分享技术与思考的社区</p>
-        
-        <!-- 首页搜索区域 -->
-        <div class="max-w-md mx-auto">
-            <form method="GET" action="{{ url_for('main.search') }}" class="relative">
-                <input type="text" name="q" placeholder="搜索文章、项目、技术内容..." 
-                       value="{{ request.args.get('q', '') }}"
-                       class="w-full bg-slate-800/50 border border-slate-700 rounded-full py-3 px-6 pl-12 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                <i class="fas fa-search absolute left-4 top-4 text-slate-400"></i>
-            </form>
-        </div>
-    </div>
-</div>
+{% set featured_post = recent_posts[0] if recent_posts else None %}
+{% if featured_post %}
+    {% set journal_posts = recent_posts[1:6] %}
+{% else %}
+    {% set journal_posts = recent_posts[:5] %}
+{% endif %}
+{% if latest_version and versions|length > 1 %}
+    {% set version_feed = versions[1:4] %}
+{% elif latest_version %}
+    {% set version_feed = [] %}
+{% else %}
+    {% set version_feed = versions[:3] %}
+{% endif %}
 
-<!-- 特色内容 -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-    <div class="glass-card rounded-xl p-8 text-center hover:transform hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-code text-2xl text-white"></i>
-        </div>
-        <h3 class="text-xl font-bold mb-3 text-white">项目展示</h3>
-        <p class="text-slate-300 mb-6">查看我开发的各种项目，包括Web应用、移动应用和其他技术作品。</p>
-        <a href="{{ url_for('main.projects') }}" class="btn-primary text-white px-6 py-2 rounded-full text-sm font-medium inline-flex items-center">
-            浏览项目 <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-    </div>
-    
-    <div class="glass-card rounded-xl p-8 text-center hover:transform hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-blog text-2xl text-white"></i>
-        </div>
-        <h3 class="text-xl font-bold mb-3 text-white">技术博客</h3>
-        <p class="text-slate-300 mb-6">分享我的技术心得、学习笔记和行业见解。</p>
-        <a href="{{ url_for('main.blog') }}" class="btn-primary text-white px-6 py-2 rounded-full text-sm font-medium inline-flex items-center">
-            阅读博客 <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-    </div>
-    
-    <div class="glass-card rounded-xl p-8 text-center hover:transform hover:scale-105 transition-all duration-300">
-        <div class="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i class="fas fa-user text-2xl text-white"></i>
-        </div>
-        <h3 class="text-xl font-bold mb-3 text-white">关于我</h3>
-        <p class="text-slate-300 mb-6">了解我的技术背景、工作经历和个人兴趣。</p>
-        <a href="{{ url_for('main.about') }}" class="btn-primary text-white px-6 py-2 rounded-full text-sm font-medium inline-flex items-center">
-            了解更多 <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-    </div>
-</div>
+<div class="home-editorial">
+    <section class="home-hero">
+        <div class="home-hero-grid">
+            <div class="home-hero-copy">
+                <span class="home-eyebrow">Kim's Blog</span>
+                <h1 class="home-hero-title">把文章、技术和站点本身，做成一个持续更新的个人作品。</h1>
+                <p class="home-hero-lead">
+                    {{ about_excerpt or '这里不是传统的模块首页，而是一个更像个人工作台的入口页。先看最近写了什么，再看我正在做什么，最后再决定要不要继续往里走。' }}
+                </p>
 
-<!-- 最新文章 -->
-{% if recent_posts %}
-<div class="mb-12">
-    <div class="flex items-center justify-between mb-8">
-        <h2 class="text-3xl font-bold text-indigo-300">最新文章</h2>
-        <a href="{{ url_for('main.blog') }}" class="text-indigo-300 hover:text-indigo-200 flex items-center">
-            查看全部 <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for post in recent_posts[:3] %}
-        <article class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center justify-between mb-3">
-                <span class="text-sm text-indigo-300">{{ post.category or '未分类' }}</span>
-                <span class="text-sm text-slate-400">{{ post.created_at.strftime('%m-%d') }}</span>
-            </div>
-            
-            <h3 class="text-lg font-bold mb-3 text-white hover:text-indigo-300 transition-colors">
-                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}">{{ post.title }}</a>
-            </h3>
-            
-            <p class="text-slate-300 text-sm mb-4 line-clamp-3">{{ (post.excerpt or post.content[:100] + '...' if post.content|length > 100 else post.content)|striptags }}</p>
-            
-            <div class="flex items-center justify-between text-sm text-slate-400">
-                <div class="flex items-center space-x-3">
-                    <span><i class="fas fa-eye mr-1"></i>{{ post.view_count }}</span>
-                    <span><i class="far fa-heart mr-1"></i>{{ post.like_count }}</span>
+                <div class="home-topic-row">
+                    {% if top_categories %}
+                        {% for category, count in top_categories[:4] %}
+                        <span class="home-topic-pill"><strong>{{ category }}</strong> {{ count }} 篇</span>
+                        {% endfor %}
+                    {% else %}
+                        <span class="home-topic-pill"><strong>写作</strong> 最近文章与长期记录</span>
+                        <span class="home-topic-pill"><strong>技术</strong> 正在使用的工具与方法</span>
+                        <span class="home-topic-pill"><strong>站点</strong> 博客本身的迭代与调整</span>
+                    {% endif %}
                 </div>
-                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="text-indigo-300 hover:text-indigo-200">
-                    阅读更多 <i class="fas fa-arrow-right ml-1"></i>
+
+                <div class="home-hero-actions">
+                    <a href="{{ url_for('main.blog') }}" class="home-action home-action-primary no-underline">
+                        开始看文章
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                    <a href="{{ url_for('main.about') }}" class="home-action no-underline">
+                        了解这个站
+                    </a>
+                    <a href="{{ url_for('main.links') }}" class="home-action no-underline">
+                        逛逛友链
+                    </a>
+                </div>
+
+                <div class="home-hero-stats">
+                    <span class="home-stat-pill"><strong>{{ stats.post_count }}</strong> 篇公开文章</span>
+                    <span class="home-stat-pill"><strong>{{ stats.skill_count }}</strong> 项常用技术</span>
+                    <span class="home-stat-pill"><strong>{{ stats.link_count }}</strong> 个常看站点</span>
+                    <span class="home-stat-pill"><strong>{{ stats.version_count }}</strong> 条更新记录</span>
+                </div>
+            </div>
+
+            <div class="home-hero-side">
+                <div class="home-now-card">
+                    <div class="home-now-meta">
+                        <span class="home-mini-label">Now</span>
+                        {% if latest_version %}
+                        <span class="home-now-badge">{{ latest_version.version_number }}</span>
+                        {% endif %}
+                    </div>
+                    <h3>
+                        {% if latest_version %}
+                            {{ latest_version.title }}
+                        {% else %}
+                            这个首页在持续整理中
+                        {% endif %}
+                    </h3>
+                    <p>
+                        {% if latest_version %}
+                            {{ latest_version.description|truncate(110, True, '...') }}
+                        {% else %}
+                            最近我更想把博客做成一个真正能代表自己长期输出的地方，而不是把信息拆成很多松散模块。
+                        {% endif %}
+                    </p>
+                </div>
+
+                {% if featured_post %}
+                <a href="{{ url_for('main.post_detail', slug=featured_post.safe_slug) }}" class="home-feature-card no-underline">
+                    <div class="home-feature-top">
+                        <span class="home-feature-category">{{ featured_post.category or '未分类' }}</span>
+                        <span class="home-feature-date">{{ featured_post.created_at.strftime('%Y.%m.%d') }}</span>
+                    </div>
+                    <h2>{{ featured_post.title }}</h2>
+                    <p class="home-feature-excerpt">
+                        {{ (featured_post.excerpt or featured_post.content)|striptags|truncate(160, True, '...') }}
+                    </p>
+                    <div class="home-feature-meta">
+                        <span><i class="fas fa-eye" aria-hidden="true"></i>{{ featured_post.view_count }}</span>
+                        <span><i class="far fa-heart" aria-hidden="true"></i>{{ featured_post.like_count }}</span>
+                        <span><i class="far fa-comment" aria-hidden="true"></i>{{ featured_post.comment_count }}</span>
+                    </div>
+                    <span class="home-link-arrow">
+                        从这篇开始
+                        <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+                    </span>
+                </a>
+                {% else %}
+                <div class="home-feature-card">
+                    <div class="home-feature-top">
+                        <span class="home-feature-category">准备中</span>
+                    </div>
+                    <h2>首页已经换了新结构，下一篇公开文章还在路上。</h2>
+                    <p class="home-feature-excerpt">等内容继续发布后，这里会优先展示最新的一篇文章，作为整个站点的阅读入口。</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <div class="home-main-grid">
+        <section class="home-writing-panel">
+            <div class="home-panel-head">
+                <div class="home-panel-head-copy">
+                    <span class="home-section-label">Writing Desk</span>
+                    <h2>最近写作</h2>
+                    <p>首页的主内容只保留一件事：把最近发布的文章放在最前面，降低第一次进入时的选择成本。</p>
+                </div>
+                <a href="{{ url_for('main.blog') }}" class="home-panel-link no-underline">
+                    查看全部文章
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
                 </a>
             </div>
-        </article>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
 
-<!-- 最新项目 -->
-{% if recent_projects %}
-<div class="mb-12">
-    <div class="flex items-center justify-between mb-8">
-        <h2 class="text-3xl font-bold text-indigo-300">最新项目</h2>
-        <a href="{{ url_for('main.projects') }}" class="text-indigo-300 hover:text-indigo-200 flex items-center">
-            查看全部 <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-    </div>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for project in recent_projects[:3] %}
-        <div class="glass-card rounded-xl overflow-hidden hover:transform hover:scale-105 transition-all duration-300">
-            <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="block">
-                {% if project.image_url %}
-                <div class="h-40 overflow-hidden">
-                    <img src="{{ project.image_url }}" alt="{{ project.title }}" class="w-full h-full object-cover">
-                </div>
-                {% else %}
-                <div class="h-40 bg-slate-700 flex items-center justify-center">
-                    <i class="fas fa-code fa-2x text-slate-400"></i>
-                </div>
-                {% endif %}
-                
-                <div class="p-6">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-sm text-indigo-300">{{ project.category or '未分类' }}</span>
-                        <span class="text-sm text-slate-400">{{ project.created_at.strftime('%m-%d') }}</span>
+            {% if journal_posts %}
+            <div class="home-writing-list">
+                {% for post in journal_posts %}
+                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="home-writing-item no-underline">
+                    <div class="home-writing-top">
+                        <span class="home-writing-category">{{ post.category or '未分类' }}</span>
+                        <span>{{ post.created_at.strftime('%Y-%m-%d') }}</span>
                     </div>
-                    
-                    <h3 class="text-lg font-bold mb-2 text-white hover:text-indigo-300 transition-colors">{{ project.title }}</h3>
-                    
-                    <p class="text-slate-300 text-sm mb-4 line-clamp-2">{{ (project.short_description or project.description[:80] + '...' if project.description|length > 80 else project.description)|striptags }}</p>
-                    
-                    <div class="flex items-center justify-between text-sm text-slate-400">
-                        <div class="flex items-center space-x-3">
-                            <span><i class="fas fa-eye mr-1"></i>{{ project.view_count }}</span>
-                            <span><i class="far fa-heart mr-1"></i>{{ project.like_count }}</span>
-                        </div>
-                        <span class="text-indigo-300">查看详情</span>
-                    </div>
-                </div>
-            </a>
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-<!-- 技能展示 -->
-{% if skills %}
-<div class="mb-12">
-    <h2 class="text-3xl font-bold text-indigo-300 mb-8 text-center">技术栈</h2>
-    
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {% for skill in skills[:12] %}
-        <div class="glass-card rounded-xl p-4 text-center hover:transform hover:scale-105 transition-all duration-300">
-            <div class="w-12 h-12 mx-auto mb-2 flex items-center justify-center">
-                {% if skill.icon %}
-                    {% if skill.icon.startswith('http') %}
-                        <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="w-8 h-8 object-contain">
-                    {% else %}
-                        <i class="{{ skill.icon }} text-2xl text-indigo-300"></i>
-                    {% endif %}
-                {% else %}
-                    <i class="fas fa-code text-2xl text-indigo-300"></i>
-                {% endif %}
-            </div>
-            <h4 class="text-sm font-medium text-white">{{ skill.name }}</h4>
-            {% if skill.proficiency %}
-            <div class="mt-2">
-                <div class="w-full bg-slate-700 rounded-full h-1">
-                    <div class="bg-indigo-500 h-1 rounded-full" style="width: {{ skill.proficiency }}%"></div>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
-
-<!-- 版本更新 -->
-
-<!-- 版本更新记录 -->
-{% if versions %}
-<div class="mb-12">
-    <div class="flex items-center justify-between mb-8">
-        <h2 class="text-3xl font-bold text-indigo-300">版本更新记录</h2>
-    </div>
-    
-    <div class="relative">
-        <!-- 滚动容器 -->
-        <div class="version-scroll-container overflow-x-auto scrollbar-hide" id="versionScrollContainer">
-            <div class="flex gap-6 pb-4" style="width: max-content;">
-                {% for version in versions %}
-                <div class="version-card flex-shrink-0">
-                    <!-- 悬浮提示 -->
-                    <div class="version-tooltip">
-                        <div class="font-semibold mb-2">{{ version.title }}</div>
-                        <div>{{ version.description }}</div>
-                    </div>
-                    <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300 w-[300px] h-[200px] flex flex-col">
-                        <!-- 版本头部 -->
-                        <div class="flex items-center justify-between mb-4">
-                            <div class="flex items-center gap-3">
-                                <div class="version-icon {% if '初始' in version.title or 'v1.0' in version.version_number %}icon-rocket{% elif '交互' in version.title or '评论' in version.title %}icon-comments{% elif '回复' in version.title %}icon-reply{% elif '版本' in version.title or '管理' in version.title %}icon-cog{% elif 'UI' in version.title or '界面' in version.title %}icon-palette{% elif '功能' in version.title %}icon-star{% else %}icon-default{% endif %}">
-                                    {% if '初始' in version.title or 'v1.0' in version.version_number %}
-                                        <i class="fas fa-rocket"></i>
-                                    {% elif '交互' in version.title or '评论' in version.title %}
-                                        <i class="fas fa-comments"></i>
-                                    {% elif '回复' in version.title %}
-                                        <i class="fas fa-reply"></i>
-                                    {% elif '版本' in version.title or '管理' in version.title %}
-                                        <i class="fas fa-cog"></i>
-                                    {% elif 'UI' in version.title or '界面' in version.title %}
-                                        <i class="fas fa-palette"></i>
-                                    {% elif '功能' in version.title %}
-                                        <i class="fas fa-star"></i>
-                                    {% else %}
-                                        <i class="fas fa-code-branch"></i>
-                                    {% endif %}
-                                </div>
-                                <div>
-                                    <div class="version-number {% if '初始' in version.title or 'v1.0' in version.version_number %}badge-rocket{% elif '交互' in version.title or '评论' in version.title %}badge-comments{% elif '回复' in version.title %}badge-reply{% elif '版本' in version.title or '管理' in version.title %}badge-cog{% elif 'UI' in version.title or '界面' in version.title %}badge-palette{% elif '功能' in version.title %}badge-star{% else %}badge-default{% endif %}">
-                                        {{ version.version_number }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="version-date text-slate-400 text-sm">
-                                {{ version.release_date.strftime('%Y.%m') if version.release_date else '未知' }}
+                    <div class="home-writing-main">
+                        <div class="home-writing-copy">
+                            <h3>{{ post.title }}</h3>
+                            <p>{{ (post.excerpt or post.content)|striptags|truncate(105, True, '...') }}</p>
+                            <div class="home-writing-foot">
+                                <span><i class="fas fa-eye" aria-hidden="true"></i>{{ post.view_count }}</span>
+                                <span><i class="far fa-heart" aria-hidden="true"></i>{{ post.like_count }}</span>
+                                <span><i class="far fa-comment" aria-hidden="true"></i>{{ post.comment_count }}</span>
                             </div>
                         </div>
-                        
-                        <!-- 版本内容 -->
-                        <div class="version-content flex-1 flex flex-col">
-                            <h3 class="text-lg font-semibold text-white mb-2 version-title" title="{{ version.title }}">{{ version.title }}</h3>
-                            <div class="version-description flex-1" title="{{ version.description }}">
-                                {{ version.description|nl2br|safe }}
-                            </div>
-                        </div>
-                        
-                        <!-- 版本标签 -->
-                        <div class="version-tags flex items-center gap-2 mt-auto pt-4">
-                            {% if '初始' in version.title or 'v1.0' in version.version_number %}
-                                <span class="px-2 py-1 bg-orange-600/20 text-orange-400 rounded text-xs">里程碑</span>
-                            {% elif '交互' in version.title or '评论' in version.title %}
-                                <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">交互功能</span>
-                            {% elif '回复' in version.title %}
-                                <span class="px-2 py-1 bg-green-600/20 text-green-400 rounded text-xs">回复系统</span>
-                            {% elif '版本' in version.title or '管理' in version.title %}
-                                <span class="px-2 py-1 bg-purple-600/20 text-purple-400 rounded text-xs">系统管理</span>
-                            {% elif 'UI' in version.title or '界面' in version.title %}
-                                <span class="px-2 py-1 bg-pink-600/20 text-pink-400 rounded text-xs">界面优化</span>
-                            {% elif '功能' in version.title %}
-                                <span class="px-2 py-1 bg-yellow-600/20 text-yellow-400 rounded text-xs">新功能</span>
-                            {% else %}
-                                <span class="px-2 py-1 bg-slate-600/20 text-slate-400 rounded text-xs">更新</span>
-                            {% endif %}
-                        </div>
+                        <span class="home-writing-mark">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </span>
                     </div>
-                </div>
+                </a>
                 {% endfor %}
             </div>
-        </div>
-        
-        <!-- 滚动控制按钮 -->
-        <div class="version-controls">
-            <button class="version-btn version-prev" onclick="scrollVersion(-1)" id="versionPrevBtn">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <button class="version-btn version-next" onclick="scrollVersion(1)" id="versionNextBtn">
-                <i class="fas fa-chevron-right"></i>
-            </button>
-        </div>
+            {% elif featured_post %}
+            <div class="home-writing-empty">目前首页已经有一篇主文章入口，更多最近文章会继续补上。</div>
+            {% else %}
+            <div class="home-writing-empty">还没有公开文章，等第一批内容发布后，这里会成为首页最核心的阅读区域。</div>
+            {% endif %}
+        </section>
+
+        <aside class="home-rail">
+            <section class="home-rail-card">
+                <div class="home-rail-head">
+                    <span class="home-section-label">Most Read</span>
+                    <h3>常被打开的文章</h3>
+                </div>
+                {% if popular_posts %}
+                {% set popular_ns = namespace(has_items=false) %}
+                <div class="home-popular-list">
+                    {% for post in popular_posts %}
+                        {% if not featured_post or post.id != featured_post.id %}
+                        {% set popular_ns.has_items = true %}
+                        <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="home-popular-item no-underline">
+                            <span class="home-popular-rank">{{ '%02d' % loop.index }}</span>
+                            <div class="home-popular-body">
+                                <strong>{{ post.title }}</strong>
+                                <span>{{ post.view_count }} 次浏览 · {{ post.comment_count }} 条评论</span>
+                            </div>
+                        </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if not popular_ns.has_items %}
+                <div class="home-rail-empty">目前公开文章还不够多，热门列表会随着内容增多自动变得更有参考性。</div>
+                {% endif %}
+                {% else %}
+                <div class="home-rail-empty">等阅读数据再多一点，这里会显示更有代表性的常看文章。</div>
+                {% endif %}
+            </section>
+
+            <section class="home-rail-card">
+                <div class="home-rail-head">
+                    <span class="home-section-label">Side Notes</span>
+                    <h3>站点侧记</h3>
+                </div>
+
+                {% if version_feed %}
+                <div class="home-version-list">
+                    {% for version in version_feed %}
+                    <div class="home-version-item">
+                        <div class="home-version-meta">
+                            <span class="home-version-number">{{ version.version_number }}</span>
+                            <span class="home-version-date">{{ version.release_date.strftime('%m-%d') if version.release_date else '近期' }}</span>
+                        </div>
+                        <div class="home-version-copy">
+                            <strong>{{ version.title }}</strong>
+                            <p>{{ version.description|truncate(82, True, '...') }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% elif latest_version %}
+                <div class="home-rail-empty">最近只有一条公开更新记录，新的站点迭代还在整理中。</div>
+                {% endif %}
+
+                {% if featured_links %}
+                <div class="home-link-list">
+                    {% for link in featured_links[:3] %}
+                    <a href="{{ link.url }}" class="home-link-item no-underline" target="_blank" rel="noopener noreferrer">
+                        <div class="home-link-avatar">
+                            {% if link.avatar_url %}
+                            <img src="{{ link.avatar_url }}" alt="{{ link.name }}">
+                            {% else %}
+                            <span>{{ link.name[:1] }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="home-link-copy">
+                            <strong>{{ link.name }}</strong>
+                            <p>{{ link.description or '值得偶尔点进去看一眼的网站。' }}</p>
+                            <span class="home-link-domain">{{ link.url|replace('https://', '')|replace('http://', '')|replace('www.', '') }}</span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% elif not version_feed and not latest_version %}
+                <div class="home-rail-empty">更新记录和友链都还在慢慢补充。</div>
+                {% endif %}
+            </section>
+        </aside>
     </div>
+
+    <section class="home-skill-panel">
+        <div class="home-panel-head">
+            <div class="home-panel-head-copy">
+                <span class="home-section-label">Tool Shelf</span>
+                <h2>我在用的技术地图</h2>
+                <p>技能区不再单独做成一个大模块页，而是像工具架一样，告诉你这个站点和这些文章大致建立在什么技术之上。</p>
+            </div>
+            <a href="{{ url_for('main.about') }}" class="home-panel-link no-underline">
+                继续了解我
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+
+        {% if skill_groups %}
+        <div class="home-skill-grid">
+            {% for category, items in skill_groups %}
+            <div class="home-skill-group">
+                <div class="home-skill-group-head">
+                    <h3>{{ category }}</h3>
+                    <span>{{ items|length }} 项</span>
+                </div>
+                <div class="home-skill-tags">
+                    {% for skill in items[:6] %}
+                    <span class="home-skill-tag">
+                        <span class="home-skill-dot" aria-hidden="true"></span>
+                        {{ skill.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="home-writing-empty">技能数据还没有整理完整，之后会逐步补齐。</div>
+        {% endif %}
+    </section>
+
+    <section class="home-closing-panel">
+        <div class="home-closing-copy">
+            <span class="home-section-label">Start Here</span>
+            <h2>如果你第一次来到这里，最好的路径是先看文章，再决定要不要继续逛下去。</h2>
+            <p>这个首页想承担的不是“展示所有功能”，而是帮访客快速知道这里有什么、最近在发生什么，以及下一步应该点去哪里。</p>
+            <div class="home-closing-note">
+                <span>先从博客进入</span>
+                <span>再看关于与友链</span>
+                <span>最后去联系页留言</span>
+            </div>
+        </div>
+        <div class="home-closing-actions">
+            <a href="{{ url_for('main.blog') }}" class="home-action home-action-primary no-underline">
+                去看博客
+                <i class="fas fa-arrow-right" aria-hidden="true"></i>
+            </a>
+            <a href="{{ url_for('main.about') }}" class="home-action no-underline">关于我</a>
+            <a href="{{ url_for('main.contact') }}" class="home-action no-underline">联系我</a>
+        </div>
+    </section>
 </div>
-{% endif %}
-
-<style>
-/* 版本更新记录样式 */
-.version-scroll-container {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-}
-
-.version-scroll-container::-webkit-scrollbar {
-    display: none;
-}
-
-.version-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: white;
-}
-
-.version-icon.icon-rocket {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-}
-
-.version-icon.icon-comments {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-}
-
-.version-icon.icon-reply {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.version-icon.icon-cog {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-}
-
-.version-icon.icon-palette {
-    background: linear-gradient(135deg, #ec4899, #db2777);
-}
-
-.version-icon.icon-star {
-    background: linear-gradient(135deg, #eab308, #ca8a04);
-}
-
-.version-icon.icon-default {
-    background: linear-gradient(135deg, #64748b, #475569);
-}
-
-.version-number {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    color: white;
-}
-
-.version-number.badge-rocket {
-    background: linear-gradient(135deg, #f97316, #ea580c);
-}
-
-.version-number.badge-comments {
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-}
-
-.version-number.badge-reply {
-    background: linear-gradient(135deg, #10b981, #059669);
-}
-
-.version-number.badge-cog {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-}
-
-.version-number.badge-palette {
-    background: linear-gradient(135deg, #ec4899, #db2777);
-}
-
-.version-number.badge-star {
-    background: linear-gradient(135deg, #eab308, #ca8a04);
-}
-
-.version-number.badge-default {
-    background: linear-gradient(135deg, #64748b, #475569);
-}
-
-.version-controls {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    pointer-events: none;
-}
-
-.version-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: rgba(30, 41, 59, 0.8);
-    border: 1px solid rgba(71, 85, 105, 0.3);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    pointer-events: auto;
-    backdrop-filter: blur(10px);
-}
-
-.version-btn:hover {
-    background: rgba(30, 41, 59, 1);
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-.version-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.version-prev {
-    left: -20px;
-}
-
-.version-next {
-    right: -20px;
-}
-
-/* 版本内容样式 */
-.version-content {
-    display: flex;
-    flex-direction: column;
-    min-height: 0; /* 允许flex子项收缩 */
-}
-
-.version-title {
-    height: 24px; /* 标题固定高度 */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 24px;
-    margin-bottom: 8px;
-}
-
-.version-description {
-    flex: 1;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 4; /* 最多显示4行 */
-    -webkit-box-orient: vertical;
-    line-height: 1.4;
-    color: #cbd5e1;
-    font-size: 14px;
-    word-break: break-word;
-    text-overflow: ellipsis;
-    min-height: 0; /* 允许收缩 */
-}
-
-/* 悬浮提示样式 */
-.version-card {
-    position: relative;
-}
-
-.version-card .version-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(15, 23, 42, 0.95);
-    color: white;
-    padding: 16px 20px;
-    border-radius: 12px;
-    font-size: 14px;
-    line-height: 1.6;
-    white-space: pre-wrap;
-    max-width: 350px;
-    min-width: 250px;
-    max-height: 300px;
-    overflow-y: auto;
-    z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(71, 85, 105, 0.3);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    margin-bottom: 8px;
-}
-
-.version-card .version-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border: 8px solid transparent;
-    border-top-color: rgba(15, 23, 42, 0.95);
-}
-
-.version-card:hover .version-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* 版本标签区域样式 */
-.version-tags {
-    height: 32px; /* 固定标签区域高度 */
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-/* 确保版本卡片内容不会溢出 */
-.version-card .glass-card {
-    overflow: hidden;
-}
-
-/* 版本描述文本样式优化 */
-.version-description br {
-    display: none; /* 隐藏换行符，使用CSS控制行数 */
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .version-controls {
-        display: none;
-    }
-    
-    .version-card .glass-card {
-        min-width: 280px;
-    }
-}
-</style>
-
-<script>
-// 版本滚动功能
-function scrollVersion(direction) {
-    const container = document.getElementById('versionScrollContainer');
-    if (!container) return;
-
-    const scrollAmount = 320; // 每次滚动的距离（卡片宽度 + 间距）
-    const currentScroll = container.scrollLeft;
-    const newScroll = currentScroll + (direction * scrollAmount);
-
-    container.scrollTo({
-        left: newScroll,
-        behavior: 'smooth'
-    });
-}
-
-// 更新滚动按钮状态
-function updateScrollButtons() {
-    const container = document.getElementById('versionScrollContainer');
-    const prevBtn = document.getElementById('versionPrevBtn');
-    const nextBtn = document.getElementById('versionNextBtn');
-    
-    if (!container || !prevBtn || !nextBtn) return;
-
-    const isAtStart = container.scrollLeft <= 0;
-    const isAtEnd = container.scrollLeft >= (container.scrollWidth - container.clientWidth);
-
-    prevBtn.disabled = isAtStart;
-    nextBtn.disabled = isAtEnd;
-}
-
-// 触摸滑动支持
-document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('versionScrollContainer');
-    if (!container) return;
-
-    // 初始化按钮状态
-    updateScrollButtons();
-
-    // 监听滚动事件
-    container.addEventListener('scroll', updateScrollButtons);
-
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    container.addEventListener('mousedown', (e) => {
-        isDown = true;
-        container.classList.add('active');
-        startX = e.pageX - container.offsetLeft;
-        scrollLeft = container.scrollLeft;
-    });
-
-    container.addEventListener('mouseleave', () => {
-        isDown = false;
-        container.classList.remove('active');
-    });
-
-    container.addEventListener('mouseup', () => {
-        isDown = false;
-        container.classList.remove('active');
-    });
-
-    container.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - container.offsetLeft;
-        const walk = (x - startX) * 2;
-        container.scrollLeft = scrollLeft - walk;
-    });
-
-    // 触摸事件支持
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    container.addEventListener('touchstart', (e) => {
-        touchStartX = e.touches[0].clientX;
-        touchStartY = e.touches[0].clientY;
-    });
-
-    container.addEventListener('touchmove', (e) => {
-        if (!touchStartX || !touchStartY) return;
-
-        const touchCurrentX = e.touches[0].clientX;
-        const touchCurrentY = e.touches[0].clientY;
-
-        const diffX = touchStartX - touchCurrentX;
-        const diffY = touchStartY - touchCurrentY;
-
-        // 如果是水平滑动
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            e.preventDefault();
-            container.scrollLeft += diffX;
-            touchStartX = touchCurrentX;
-        }
-    });
-
-    container.addEventListener('touchend', () => {
-        touchStartX = 0;
-        touchStartY = 0;
-    });
-});
-</script>
-
 {% endblock %}

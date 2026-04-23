@@ -4,236 +4,236 @@
 
 {% block content %}
 <!-- 左侧悬浮目录 -->
-<div id="floating-toc" class="floating-toc collapsed">
+<div id="floating-toc" class="floating-toc collapsed post-detail-toc z-toc-fixed">
     <div class="toc-header">
-        <button id="toc-toggle" class="toc-toggle-btn">
-            <i class="fas fa-chevron-right"></i>
+        <button type="button" id="toc-toggle" class="toc-toggle-btn" aria-expanded="false" aria-label="展开或收起目录">
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
         </button>
         <span class="toc-title">目录</span>
     </div>
     <div class="toc-content" id="toc-content">
-        <nav id="floating-table-of-contents">
+        <nav id="floating-table-of-contents" aria-label="文章目录">
             <!-- 目录将通过JavaScript动态生成 -->
         </nav>
     </div>
 </div>
 
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-lg-12">
-            <!-- 文章头部 -->
-            <article class="blog-post">
-                <header class="mb-4">
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <h1 class="fs-3 fw-bold custom-title mb-0">
-                            {{ post.title }}
-                        </h1>
-                        {% if current_user.is_authenticated and current_user.is_admin %}
-                        <div class="admin-actions">
-                            <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" 
-                               class="btn btn-primary btn-sm me-2" title="编辑文章">
-                                <i class="fas fa-edit"></i> 编辑
-                            </a>
-                            <button class="btn btn-danger btn-sm"
-                                    onclick="deletePost({{ post.id }})" title="删除文章">
-                                <i class="fas fa-trash"></i> 删除
+<div class="container-xl post-detail-shell mt-4 mb-6">
+    <article class="blog-post post-detail-article Box p-4 mb-4">
+        <header class="post-detail-header">
+            <div class="post-detail-topbar">
+                <div class="post-title-copy">
+                    {% if post.category %}
+                    <span class="post-kicker">{{ post.category }}</span>
+                    {% endif %}
+                    <h1 class="f1 text-bold color-fg-default mb-0 wb-break-word flex-1 post-detail-title">
+                        {{ post.title }}
+                    </h1>
+                </div>
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <div class="admin-actions d-flex gap-2 flex-shrink-0">
+                    <a href="{{ url_for('admin.edit_post', post_id=post.id) }}"
+                       class="btn btn-primary btn-sm no-underline" title="编辑文章">
+                        <i class="fas fa-edit" aria-hidden="true"></i> 编辑
+                    </a>
+                    <button type="button" class="btn btn-danger btn-sm"
+                            onclick="deletePost({{ post.id }})" title="删除文章">
+                        <i class="fas fa-trash" aria-hidden="true"></i> 删除
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="post-overview-card">
+                <div class="post-meta-row">
+                    <div class="post-meta-group">
+                        <span class="post-meta-pill">
+                            <i class="fas fa-user" aria-hidden="true"></i>
+                            <span>{{ post.author.username }}</span>
+                        </span>
+                        <span class="post-meta-pill">
+                            <i class="fas fa-calendar" aria-hidden="true"></i>
+                            <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
+                        </span>
+                        <span class="post-meta-pill">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            <span>更新于 {{ post.updated_at.strftime('%m月%d日') }}</span>
+                        </span>
+                    </div>
+
+                    <div class="post-share-row">
+                        <span class="share-label f5 color-fg-muted text-semibold no-wrap">分享</span>
+                        <div class="share-buttons d-flex items-center gap-2">
+                            <button type="button" class="share-btn share-btn-wechat" onclick="shareToWeChat(event)" title="微信分享">
+                                <i class="fab fa-weixin" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="share-btn share-btn-weibo" onclick="shareToWeibo()" title="微博分享">
+                                <i class="fab fa-weibo" aria-hidden="true"></i>
+                            </button>
+                            <button type="button" class="share-btn share-btn-link" onclick="copyLink()" title="复制链接">
+                                <i class="fas fa-link" aria-hidden="true"></i>
                             </button>
                         </div>
-                        {% endif %}
                     </div>
-                    
-                    <!-- 文章元信息 -->
-                    <div class="post-meta-info">
-                        <div class="meta-single-line d-flex flex-wrap align-items-center justify-content-between text-muted mb-3">
-                            <!-- 左侧：基本信息 -->
-                            <div class="meta-left d-flex flex-wrap align-items-center">
-                                <div class="me-4">
-                                    <i class="fas fa-user"></i>
-                                    <span>{{ post.author.username }}</span>
-                                </div>
-                                <div class="me-4">
-                                    <i class="fas fa-calendar"></i>
-                                    <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
-                                </div>
-                                {% if post.category %}
-                                <div class="me-4">
-                                    <i class="fas fa-folder"></i>
-                                    <span>{{ post.category }}</span>
-                                </div>
-                                {% endif %}
-                                <div class="me-4">
-                                    <i class="fas fa-clock"></i>
-                                    <span>更新于 {{ post.updated_at.strftime('%m月%d日') }}</span>
-                                </div>
-                                
-                                <!-- 互动统计 -->
-                                <div class="me-4">
-                                    <i class="fas fa-eye"></i>
-                                    <span>{{ post.view_count }} 次浏览</span>
-                                </div>
-                                <div class="me-4">
-                                    <i class="far fa-heart"></i>
-                                    <span class="like-count">{{ post.like_count }} 点赞</span>
-                                </div>
-                                <div class="me-4">
-                                    <i class="far fa-star"></i>
-                                    <span class="favorite-count">{{ post.favorite_count }} 收藏</span>
-                                </div>
-                                <div class="me-4">
-                                    <i class="far fa-comment"></i>
-                                            <span class="comment-count">{{ post.comment_count }} 评论</span>
-                                </div>
-                                {% if post.average_rating > 0 %}
-                                <div class="me-4">
-                                    <i class="fas fa-star"></i>
-                                    <span class="rating-text">{{ post.average_rating }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- 右侧：分享按钮 -->
-                            <div class="meta-right d-flex align-items-center">
-                                <!-- 分享按钮 -->
-                                <div class="share-buttons">
-                                    <span class="share-label me-2">分享:</span>
-                                    <button class="btn btn-outline-success btn-sm share-btn" onclick="shareToWeChat(event)" title="微信分享">
-                                        <i class="fab fa-weixin"></i>
-                                    </button>
-                                    <button class="btn btn-outline-danger btn-sm share-btn" onclick="shareToWeibo()" title="微博分享">
-                                        <i class="fab fa-weibo"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm share-btn" onclick="copyLink()" title="复制链接">
-                                        <i class="fas fa-link"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 标签 -->
-                        {% if post.tags %}
-                        <div class="mb-3">
-                            {% for tag in post.get_tags_list() %}
-                            <span class="badge bg-light text-dark me-1">{{ tag }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
-                </header>
+                </div>
 
-                <!-- 文章摘要 -->
+                <div class="post-stats-row">
+                    <span class="post-meta-pill">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        <span>{{ post.view_count }} 次浏览</span>
+                    </span>
+                    <span class="post-meta-pill">
+                        <i class="far fa-heart" aria-hidden="true"></i>
+                        <span class="like-count">{{ post.like_count }} 点赞</span>
+                    </span>
+                    <span class="post-meta-pill">
+                        <i class="far fa-star" aria-hidden="true"></i>
+                        <span class="favorite-count">{{ post.favorite_count }} 收藏</span>
+                    </span>
+                    <span class="post-meta-pill">
+                        <i class="far fa-comment" aria-hidden="true"></i>
+                        <span class="comment-count">{{ post.comment_count }} 评论</span>
+                    </span>
+                    {% if post.average_rating > 0 %}
+                    <span class="post-meta-pill">
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        <span class="rating-text">{{ post.average_rating }}</span>
+                    </span>
+                    {% endif %}
+                </div>
+
                 {% if post.excerpt %}
-                <div class="alert alert-info" role="alert">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <strong>摘要：</strong>{{ post.excerpt }}
+                <div class="post-excerpt-card" role="note" aria-label="文章摘要">
+                    <span class="post-excerpt-label">摘要</span>
+                    <p class="post-excerpt-text">{{ post.excerpt }}</p>
                 </div>
                 {% endif %}
-                
-                <!-- 文章内容 -->
-                <div class="blog-content rich-text-content text-slate-300">
-                    {{ post.content|safe }}
-                </div>
-            </article>
-            
-            <!-- 评论区域 -->
-            <div class="comments-section">
-                <div class="comments-header">
-                    <h4 class="comments-title">评论</h4>
-                    <span class="comments-count">{{ post.comment_count }} 条评论</span>
-                </div>
-                
-                <!-- 评论表单 -->
-                {% if current_user.is_authenticated %}
-                <form class="comment-form" data-id="{{ post.id }}" data-type="post">
-                    <div class="form-group">
-                        <label for="comment-content">发表评论</label>
-                        <div id="comment-editor-{{ post.id }}" class="comment-editor"></div>
-                        <textarea class="form-control comment-content" id="comment-content" 
-                                  name="content" style="display: none;"></textarea>
-                    </div>
-                    <button type="submit" class="comment-submit">
-                        <i class="fas fa-paper-plane"></i> 提交评论
-                    </button>
-                </form>
-                {% else %}
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle"></i>
-                    请 <a href="{{ url_for('auth.login') }}">登录</a> 后发表评论
+
+                {% if post.tags %}
+                <div class="post-tags-row">
+                    {% for tag in post.get_tags_list() %}
+                    <span class="Label Label--secondary">{{ tag }}</span>
+                    {% endfor %}
                 </div>
                 {% endif %}
-                
-                <!-- 评论列表 -->
-                <div class="comments-list" data-content-id="{{ post.id }}" data-content-type="post">
-                    <!-- 评论将通过JavaScript动态加载 -->
-                </div>
             </div>
+        </header>
+
+        <!-- 文章内容 -->
+        <div class="blog-content rich-text-content post-detail-body">
+            {{ post.content|safe }}
+        </div>
+    </article>
+
+    <!-- 评论区域 -->
+    <div class="comments-section post-comments-card">
+        <div class="comments-header">
+            <h4 class="comments-title">评论</h4>
+            <span class="comments-count">{{ post.comment_count }} 条评论</span>
+        </div>
+
+        <!-- 评论表单 -->
+        {% if current_user.is_authenticated %}
+        <form class="comment-form" data-id="{{ post.id }}" data-type="post">
+            <div class="form-group">
+                <label for="comment-content">发表评论</label>
+                <div id="comment-editor-{{ post.id }}" class="comment-editor"></div>
+                <textarea class="form-control comment-content d-none" id="comment-content"
+                          name="content"></textarea>
+            </div>
+            <button type="submit" class="comment-submit">
+                <i class="fas fa-paper-plane" aria-hidden="true"></i> 提交评论
+            </button>
+        </form>
+        {% else %}
+        <div class="flash">
+            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>
+            请 <a href="{{ url_for('auth.login') }}" class="color-fg-accent no-underline">登录</a> 后发表评论
+        </div>
+        {% endif %}
+
+        <!-- 评论列表 -->
+        <div class="comments-list" data-content-id="{{ post.id }}" data-content-type="post">
+            <!-- 评论将通过JavaScript动态加载 -->
         </div>
     </div>
 </div>
 
 <!-- 微信分享二维码小弹窗 -->
-<div id="wechatShareModal" class="qr-popup" style="display: none;">
-    <div class="qr-popup-content">
+<div id="wechatShareModal" class="qr-popup position-fixed z-toc-fixed" style="display: none;">
+    <div class="qr-popup-content Box p-2 d-flex flex-column items-center">
         <div id="qrcode"></div>
-        <p class="text-muted small mt-2 mb-0" style="color: #94a3b8 !important;">微信扫码分享</p>
+        <p class="f6 color-fg-muted mt-2 mb-0">微信扫码分享</p>
     </div>
 </div>
 
 <!-- 悬浮互动按钮 -->
-{% if current_user.is_authenticated %}
-<div class="floating-interaction-buttons">
-    <div class="floating-buttons-row">
-        <button class="floating-btn like-btn" data-id="{{ post.id }}" data-type="post" title="点赞">
-            <i class="far fa-heart"></i>
-        </button>
-        <button class="floating-btn favorite-btn" data-id="{{ post.id }}" data-type="post" title="收藏">
-            <i class="far fa-star"></i>
-        </button>
-    </div>
-    <div class="floating-rating-section">
-        <label class="rating-label">评分:</label>
-        <div class="rating-input">
-            <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="5">
-            <label for="rating-{{ post.id }}-1"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="4">
-            <label for="rating-{{ post.id }}-2"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
-            <label for="rating-{{ post.id }}-3"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="2">
-            <label for="rating-{{ post.id }}-4"><i class="far fa-star"></i></label>
-            <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="1">
-            <label for="rating-{{ post.id }}-5"><i class="far fa-star"></i></label>
+<div class="floating-interaction-buttons post-detail-float-actions z-toc-fixed">
+    <div class="floating-panel Box p-3 d-flex flex-column gap-3">
+        <div class="floating-actions-group">
+            <button type="button" class="floating-btn like-btn" data-id="{{ post.id }}" data-type="post" title="点赞">
+                <span class="floating-btn-icon" aria-hidden="true">
+                    <i class="far fa-heart" aria-hidden="true"></i>
+                </span>
+                <span class="floating-btn-text">点赞</span>
+                <span class="floating-btn-count count">{{ post.like_count or 0 }}</span>
+            </button>
+            <button type="button" class="floating-btn favorite-btn" data-id="{{ post.id }}" data-type="post" title="收藏">
+                <span class="floating-btn-icon" aria-hidden="true">
+                    <i class="far fa-star" aria-hidden="true"></i>
+                </span>
+                <span class="floating-btn-text">收藏</span>
+                <span class="floating-btn-count count">{{ post.favorite_count or 0 }}</span>
+            </button>
+        </div>
+        <div class="floating-rating-section d-flex flex-column items-center gap-2">
+            <label class="rating-label f6 color-fg-muted m-0">我的评分</label>
+            <div class="rating-input d-flex flex-row-reverse justify-center gap-1">
+                <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="5">
+                <label for="rating-{{ post.id }}-1"><i class="far fa-star" aria-hidden="true"></i></label>
+                <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="4">
+                <label for="rating-{{ post.id }}-2"><i class="far fa-star" aria-hidden="true"></i></label>
+                <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
+                <label for="rating-{{ post.id }}-3"><i class="far fa-star" aria-hidden="true"></i></label>
+                <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="2">
+                <label for="rating-{{ post.id }}-4"><i class="far fa-star" aria-hidden="true"></i></label>
+                <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="1">
+                <label for="rating-{{ post.id }}-5"><i class="far fa-star" aria-hidden="true"></i></label>
+            </div>
         </div>
     </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block extra_css %}
-<!-- 简化版评论编辑器样式 -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
 
 <style>
-/* 左侧悬浮目录样式 */
+/* Page stacking (above main nav) */
+.z-toc-fixed {
+    z-index: 1000;
+}
+
+.min-width-0 {
+    min-width: 0;
+}
+
+/* Floating TOC — bordered panel, solid background */
 .floating-toc {
     position: fixed;
     left: 20px;
     top: 30%;
     transform: translateY(-50%);
-    z-index: 1000;
-    background: rgba(15, 23, 42, 0.9);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
+    background-color: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+    box-shadow: var(--shadow-resting-small);
     max-width: 280px;
     min-width: 200px;
     cursor: move;
     user-select: none;
 }
 
-/* 默认收起状态 */
 .floating-toc.collapsed {
     width: 50px;
     min-width: 50px;
@@ -248,36 +248,15 @@
     display: none;
 }
 
-/* 拖动状态样式 */
 .floating-toc.dragging {
-    transition: none;
-    transform: rotate(2deg);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
-}
-
-/* 拖动提示 */
-.floating-toc::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 20px;
-    background: linear-gradient(45deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
-    border-radius: 12px 12px 0 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.floating-toc:hover::before {
-    opacity: 1;
+    box-shadow: var(--shadow-resting-medium);
 }
 
 .toc-header {
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--borderColor-default);
     cursor: move;
     user-select: none;
     position: relative;
@@ -285,53 +264,182 @@
 }
 
 .toc-toggle-btn {
-    background: none;
-    border: none;
+    background: transparent;
+    border: 1px solid transparent;
     font-size: 16px;
-    color: #e2e8f0;
+    color: var(--fgColor-default);
     cursor: pointer;
     padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    border-radius: var(--borderRadius-small);
     margin-right: 8px;
     z-index: 11;
     position: relative;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 
 .toc-toggle-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    color: #f1f5f9;
-    transform: scale(1.1);
+    background-color: var(--bgColor-muted);
+    color: var(--fgColor-accent);
+    border-color: var(--borderColor-default);
 }
 
 .toc-title {
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--fgColor-default);
     font-size: 14px;
     flex: 1;
 }
 
-@font-face {
-  font-family: 'FZKai';
-  src: url('/fonts/FZKai.woff2') format('woff2'),
-       url('/fonts/FZKai.woff') format('woff'),
-       url('/fonts/FZKai.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
+.post-detail-title {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
 }
 
-.custom-title {
-  font-family: 'FZKai', 'KaiTi', 'STKaiti', serif;
-  font-size: 28px; /* 可以换成Bootstrap fs-3 */
-  font-weight: bold;
-  color: white !important;
+.post-detail-shell {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.post-detail-article {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 20px;
+    box-shadow: var(--shadow-resting-small);
+    padding: 18px !important;
+}
+
+.post-detail-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 0;
+}
+
+.post-detail-topbar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.post-title-copy {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.post-kicker {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: var(--borderRadius-full);
+    background: var(--bgColor-accent-muted);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-overview-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    background: var(--bgColor-muted);
+}
+
+.post-meta-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.post-meta-group,
+.post-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.post-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: var(--borderRadius-full);
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.post-share-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.post-excerpt-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+}
+
+.post-excerpt-label {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 3px 8px;
+    border-radius: var(--borderRadius-full);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-excerpt-text {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.post-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.post-detail-body {
+    border-top: 1px solid var(--borderColor-default);
+    margin-top: 20px;
+    padding-top: 22px;
+}
+
+.post-comments-card {
+    margin-top: 14px;
+    border-radius: 18px;
 }
 
 .toc-content {
     padding: 12px 16px;
     max-height: 400px;
     overflow-y: auto;
-    background: rgba(15, 23, 42, 0.8);
+    background-color: var(--bgColor-default);
 }
 
 .toc-content::-webkit-scrollbar {
@@ -339,17 +447,17 @@
 }
 
 .toc-content::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
+    background: var(--bgColor-muted);
+    border-radius: var(--borderRadius-small);
 }
 
 .toc-content::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
+    background: var(--borderColor-default);
+    border-radius: var(--borderRadius-small);
 }
 
 .toc-content::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
+    background: var(--borderColor-emphasis);
 }
 
 #floating-table-of-contents ul {
@@ -365,26 +473,25 @@
 #floating-table-of-contents a {
     display: block;
     padding: 6px 8px;
-    color: #94a3b8;
+    color: var(--fgColor-muted);
     text-decoration: none;
     font-size: 13px;
     line-height: 1.4;
-    border-radius: 6px;
-    transition: all 0.2s ease;
+    border-radius: var(--borderRadius-medium);
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
     border-left: 3px solid transparent;
 }
 
 #floating-table-of-contents a:hover {
-    background: rgba(99, 102, 241, 0.1);
-    color: #e2e8f0;
-    border-left-color: #6366f1;
-    transform: translateX(2px);
+    background-color: var(--bgColor-muted);
+    color: var(--fgColor-accent);
+    border-left-color: var(--borderColor-accent-emphasis);
 }
 
 #floating-table-of-contents a.active {
-    background: rgba(99, 102, 241, 0.2);
-    color: #a5b4fc;
-    border-left-color: #6366f1;
+    background-color: var(--bgColor-accent-muted);
+    color: var(--fgColor-accent);
+    border-left-color: var(--borderColor-accent-emphasis);
     font-weight: 500;
 }
 
@@ -397,39 +504,26 @@
     padding: 4px 8px;
 }
 
-/* 文章元信息样式 */
-.post-meta-info {
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-}
-
-/* 元信息文字颜色 */
-.post-meta-info .text-muted,
 .post-meta-info .meta-single-line,
 .post-meta-info .meta-left,
-.post-meta-info .meta-right,
-.post-meta-info span,
-.post-meta-info i {
-    color: #94a3b8 !important;
+.post-meta-info .meta-right {
+    color: var(--fgColor-muted);
 }
 
 .meta-single-line {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: 8px;
-    flex-wrap: nowrap !important;
+    flex-wrap: wrap;
 }
 
 .meta-left {
     flex: 1;
     min-width: 0;
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    align-items: center !important;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
     overflow-x: auto;
     white-space: nowrap;
 }
@@ -450,27 +544,62 @@
 
 .share-label {
     font-size: 13px;
-    color: #666;
+    color: var(--fgColor-muted);
     font-weight: 500;
     white-space: nowrap;
 }
 
-.rating-section {
-    display: flex;
+/* Share: rounded-2 bordered icon buttons (not circles) */
+.share-btn {
+    width: auto;
+    min-width: 36px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    display: inline-flex;
     align-items: center;
+    justify-content: center;
+    border: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, var(--bgColor-default), var(--bgColor-muted));
+    color: var(--fgColor-muted);
+    box-shadow: var(--shadow-resting-xsmall);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.share-btn:focus-visible {
+    outline: 2px solid var(--focus-outlineColor);
+    outline-offset: 2px;
+}
+
+.share-btn:hover {
+    background-color: var(--bgColor-muted);
+    border-color: var(--borderColor-accent-emphasis);
+    color: var(--fgColor-accent);
+    box-shadow: var(--shadow-resting-small);
+    transform: translateY(-1px);
+}
+
+.share-btn-wechat:hover {
+    color: var(--fgColor-success);
+    border-color: var(--borderColor-success-emphasis);
+}
+
+.share-btn-weibo:hover {
+    color: var(--fgColor-danger);
+    border-color: var(--borderColor-danger-emphasis);
+}
+
+.share-btn i {
+    font-size: 14px;
 }
 
 .rating-label {
     font-size: 12px;
-    color: #666;
+    color: var(--fgColor-muted);
     margin-right: 6px;
     margin-bottom: 0;
     white-space: nowrap;
-}
-
-.rating-input {
-    display: flex;
-    gap: 1px;
 }
 
 .rating-input input[type="radio"] {
@@ -479,24 +608,23 @@
 
 .rating-input label {
     cursor: pointer;
-    color: #ddd;
+    color: var(--borderColor-emphasis);
     font-size: 12px;
-    transition: color 0.2s ease;
+    transition: color 0.15s ease;
 }
 
 .rating-input label:hover,
 .rating-input input[type="radio"]:checked ~ label {
-    color: #ffc107;
+    color: var(--fgColor-attention);
 }
 
 .rating-input input[type="radio"]:checked ~ label ~ label {
-    color: #ddd;
+    color: var(--borderColor-emphasis);
 }
 
-/* 评分星星样式 */
 .rating-star {
     position: relative;
-    color: #ddd;
+    color: var(--borderColor-emphasis);
     font-size: 16px;
     margin-right: 4px;
 }
@@ -508,268 +636,203 @@
     left: 0;
     width: var(--rating-width, 0%);
     height: 100%;
-    color: #ffc107;
+    color: var(--fgColor-attention);
     overflow: hidden;
     z-index: 1;
 }
 
 .rating-star::after {
     content: '\f005';
-    font-family: 'Font Awesome 5 Free';
+    font-family: 'Font Awesome 6 Free';
     font-weight: 900;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    color: #ffc107;
+    color: var(--fgColor-attention);
     z-index: 2;
     clip-path: inset(0 var(--rating-clip, 100%) 0 0);
 }
 
 .rating-text {
     font-size: 12px;
-    color: #666;
+    color: var(--fgColor-muted);
     margin-left: 2px;
 }
 
-/* 悬浮互动按钮样式 */
+/* Floating interaction — outer wrapper positions panel */
 .floating-interaction-buttons {
     position: fixed;
     right: 20px;
     top: 30%;
     transform: translateY(-50%);
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    background: rgba(0, 0, 0, 0.05);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 16px 12px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all 0.3s ease;
-    width: 120px;
+    width: 132px;
     box-sizing: border-box;
 }
 
-.floating-buttons-row {
+.floating-panel {
+    background-color: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    box-shadow: var(--shadow-resting-small);
+    padding: 10px !important;
+    gap: 10px !important;
+}
+
+.floating-actions-group {
     display: flex;
+    flex-direction: column;
     gap: 8px;
-    justify-content: center;
 }
 
 .floating-btn {
-    display: flex;
-    flex-direction: column;
+    width: 100%;
+    min-height: 38px;
+    padding: 7px 10px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--bgColor-default), var(--bgColor-muted));
+    color: var(--fgColor-muted);
+    display: grid;
+    grid-template-columns: 14px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: var(--shadow-resting-xsmall);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.floating-btn:focus-visible {
+    outline: 2px solid var(--focus-outlineColor);
+    outline-offset: 2px;
+}
+
+.floating-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.floating-btn-icon {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 50px;
-    height: 50px;
-    border: none;
-    border-radius: 12px;
-    background: rgba(0, 0, 0, 0);
-    color: #666;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
+    font-size: 13px;
+}
+
+.floating-btn-text {
+    color: var(--fgColor-default);
+    text-align: left;
+}
+
+.floating-btn-count {
+    min-width: 22px;
+    padding: 2px 6px;
+    border-radius: var(--borderRadius-full);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
 }
 
 .floating-btn:hover {
-    background: rgba(0, 0, 0, 0);
-    color: #333;
-    transform: translateY(-2px);
-}
-
-.floating-btn i {
-    font-size: 18px;
-}
-
-.floating-btn .count {
-    font-size: 11px;
-    font-weight: 600;
-    color: #666;
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-default);
+    box-shadow: var(--shadow-resting-small);
+    transform: translateY(-1px);
 }
 
 .floating-btn.liked {
-    color: #e74c3c;
+    background: var(--bgColor-danger-muted);
+    border-color: var(--borderColor-danger-emphasis);
+    color: var(--fgColor-danger);
+    box-shadow: none;
 }
 
-.floating-btn.liked i {
-    color: #e74c3c;
+.floating-btn.liked i,
+.floating-btn.liked .floating-btn-text,
+.floating-btn.liked .floating-btn-count {
+    color: var(--fgColor-danger);
+}
+
+.floating-btn.liked .floating-btn-count {
+    background: var(--bgColor-default);
 }
 
 .floating-btn.favorited {
-    color: #f39c12;
+    background: var(--bgColor-attention-muted);
+    color: var(--fgColor-attention);
+    border-color: var(--borderColor-default);
+    box-shadow: none;
 }
 
-.floating-btn.favorited i {
-    color: #f39c12;
+.floating-btn.favorited i,
+.floating-btn.favorited .floating-btn-text,
+.floating-btn.favorited .floating-btn-count {
+    color: var(--fgColor-attention);
 }
+
+.floating-btn.favorited .floating-btn-count {
+    background: var(--bgColor-default);
+}
+
 .floating-rating-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    padding: 12px;
-    background: rgba(0, 0, 0, 0);
+    padding: 8px 10px 9px;
+    border: 1px solid var(--borderColor-default);
     border-radius: 12px;
+    background: var(--bgColor-muted);
+    gap: 6px !important;
 }
 
 .floating-rating-section .rating-label {
     font-size: 11px;
-    color: #666;
+    color: var(--fgColor-muted);
     margin: 0;
     text-align: center;
 }
 
 .floating-rating-section .rating-input {
-    display: flex;
-    gap: 2px;
-    flex-direction: row-reverse; /* 反转顺序以实现从左到右的选中效果 */
-    justify-content: center;
-}
-
-.floating-rating-section .rating-input input[type="radio"] {
-    display: none;
+    gap: 0 !important;
 }
 
 .floating-rating-section .rating-input label {
-    cursor: pointer;
-    color: #ddd;
-    font-size: 14px;
-    transition: color 0.2s ease;
-}
-
-/* 鼠标悬停效果 */
-.floating-rating-section .rating-input label:hover,
-.floating-rating-section .rating-input label:hover ~ label,
-/* 选中状态效果 */
-.floating-rating-section .rating-input input[type="radio"]:checked ~ label {
-    color: #ffc107;
-}
-/* 分享按钮样式优化 */
-.share-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    display: flex;
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s ease;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.1);
+    font-size: 13px;
+    color: var(--fgColor-subtle);
 }
 
-.share-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.floating-rating-section .rating-input label:hover,
+.floating-rating-section .rating-input label:hover ~ label,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label {
+    color: var(--fgColor-attention);
 }
 
-.share-btn i {
-    font-size: 12px;
-}
-
-/* 响应式设计 */
-@media (max-width: 1200px) {
-    .floating-toc {
-        left: 10px;
-        max-width: 250px;
-        min-width: 180px;
-    }
-}
-
-@media (max-width: 768px) {
-    .floating-toc {
-        display: none;
-    }
-    
-    /* 确保正文在移动端不受影响 */
-    .container {
-        margin-left: 0 !important;
-        padding-left: 15px !important;
-        padding-right: 15px !important;
-    }
-}
-    
-    .floating-interaction-buttons {
-        right: 10px;
-        padding: 12px 8px;
-        gap: 8px;
-        width: 100px;
-    }
-    
-    .floating-buttons-row {
-        gap: 6px;
-    }
-    
-    .floating-btn {
-        width: 40px;
-        height: 40px;
-    }
-    
-    .floating-btn i {
-        font-size: 16px;
-    }
-    
-    .floating-rating-section {
-        padding: 8px;
-    }
-    
-    .floating-rating-section .rating-input label {
-        font-size: 12px;
-    }
-    
-    .meta-single-line {
-        flex-direction: row;
-        align-items: center !important;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-    
-    .meta-left {
-        width: auto;
-        flex-wrap: wrap;
-    }
-    
-    .meta-right {
-        width: auto;
-        justify-content: flex-end;
-    }
-    
-    .share-buttons {
-        flex-shrink: 0;
-    }
-}
 .blog-post {
-    line-height: 1.8;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 32px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    margin-bottom: 2rem;
+    line-height: 1.75;
+    color: var(--fgColor-default);
+    background-color: var(--bgColor-default);
 }
 
 .blog-content {
     font-size: 16px;
-    line-height: 1.8;
+    line-height: 1.75;
+    color: var(--fgColor-default);
 }
 
-/* 富文本内容样式优化 */
 .rich-text-content {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     font-size: 16px;
     line-height: 1.6;
-<!--    color: #24292e;-->
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    color: var(--fgColor-default);
 }
 
 .rich-text-content h1,
@@ -782,42 +845,25 @@
     margin-bottom: 16px;
     font-weight: 600;
     line-height: 1.25;
-    color: white !important;
+    color: var(--fgColor-default);
 }
 
 .rich-text-content h1 {
     font-size: 2em;
-    border-bottom: 1px solid #eaecef;
-    color: white !important;
+    border-bottom: 1px solid var(--borderColor-default);
     padding-bottom: 0.3em;
 }
 
 .rich-text-content h2 {
     font-size: 1.5em;
-    border-bottom: 1px solid #eaecef;
+    border-bottom: 1px solid var(--borderColor-default);
     padding-bottom: 0.3em;
-    color: white !important;
 }
 
-.rich-text-content h3 {
-    font-size: 1.25em;
-    color: white !important;
-}
-
-.rich-text-content h4 {
-    font-size: 1em;
-    color: white !important;
-}
-
-.rich-text-content h5 {
-    font-size: 0.875em;
-    color: white !important;
-}
-
-.rich-text-content h6 {
-    font-size: 0.85em;
-    color: white !important;
-}
+.rich-text-content h3 { font-size: 1.25em; }
+.rich-text-content h4 { font-size: 1em; }
+.rich-text-content h5 { font-size: 0.875em; }
+.rich-text-content h6 { font-size: 0.85em; }
 
 .rich-text-content p {
     margin-top: 0;
@@ -826,8 +872,8 @@
 
 .rich-text-content blockquote {
     padding: 0 1em;
-    color: #6a737d;
-    border-left: 0.25em solid #dfe2e5;
+    color: var(--fgColor-muted);
+    border-left: 0.25em solid var(--borderColor-default);
     margin: 0 0 16px 0;
 }
 
@@ -846,9 +892,10 @@
     padding: 0.2em 0.4em;
     margin: 0;
     font-size: 85%;
-    background-color: rgba(27, 31, 35, 0.05);
-    border-radius: 3px;
-    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background-color: var(--bgColor-muted);
+    border-radius: var(--borderRadius-small);
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    color: var(--fgColor-default);
 }
 
 .rich-text-content pre {
@@ -856,14 +903,15 @@
     overflow: auto;
     font-size: 85%;
     line-height: 1.45;
-    background-color: #f6f8fa;
-    border-radius: 6px;
+    background-color: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
     margin-bottom: 16px;
+    border: 1px solid var(--borderColor-default);
 }
 
 .rich-text-content pre code {
     display: inline;
-    max-width: auto;
+    max-width: none;
     padding: 0;
     margin: 0;
     overflow: visible;
@@ -884,27 +932,28 @@
 .rich-text-content table th,
 .rich-text-content table td {
     padding: 6px 13px;
-    border: 1px solid #dfe2e5;
+    border: 1px solid var(--borderColor-default);
 }
 
 .rich-text-content table th {
     font-weight: 600;
-    background-color: #f6f8fa;
+    background-color: var(--bgColor-muted);
+    color: var(--fgColor-default);
 }
 
 .rich-text-content table tr {
-    background-color: #fff;
-    border-top: 1px solid #c6cbd1;
+    background-color: var(--bgColor-default);
+    border-top: 1px solid var(--borderColor-default);
 }
 
 .rich-text-content table tr:nth-child(2n) {
-    background-color: #f6f8fa;
+    background-color: var(--bgColor-muted);
 }
 
 .rich-text-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
     margin: 16px 0;
 }
 
@@ -912,12 +961,12 @@
     height: 0.25em;
     padding: 0;
     margin: 24px 0;
-    background-color: #e1e4e8;
+    background-color: var(--borderColor-default);
     border: 0;
 }
 
 .rich-text-content a {
-    color: #0366d6;
+    color: var(--fgColor-accent);
     text-decoration: none;
 }
 
@@ -925,7 +974,6 @@
     text-decoration: underline;
 }
 
-/* 任务列表样式 */
 .rich-text-content ul[data-type="taskList"] {
     list-style: none;
     padding-left: 0;
@@ -952,19 +1000,18 @@
     opacity: 0.7;
 }
 
-/* 高亮样式 */
 .rich-text-content mark {
-    background: #fef3c7;
-    color: #92400e;
+    background-color: var(--bgColor-attention-muted);
+    color: var(--fgColor-attention);
     padding: 0.125rem 0.25rem;
-    border-radius: 3px;
+    border-radius: var(--borderRadius-small);
 }
 
-/* 代码高亮样式 */
 .markdown-body .highlight {
-    background-color: #f6f8fa;
-    border-radius: 6px;
+    background-color: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
     margin-bottom: 16px;
+    border: 1px solid var(--borderColor-default);
 }
 
 .markdown-body .highlight pre {
@@ -982,7 +1029,7 @@
 .blog-content h6 {
     margin-top: 2rem;
     margin-bottom: 1rem;
-    color: white !important;
+    color: var(--fgColor-default);
     font-weight: 600;
 }
 
@@ -1008,31 +1055,30 @@
 }
 
 .blog-content blockquote {
-    border-left: 4px solid #007bff;
-    padding-left: 1rem;
-    margin-left: 0;
-    color: #94a3b8;
-    font-style: italic;
-    background-color: #f8f9fa;
+    border-left: 4px solid var(--borderColor-accent-emphasis);
     padding: 1rem;
-    border-radius: 0.25rem;
+    margin-left: 0;
+    color: var(--fgColor-muted);
+    font-style: italic;
+    background-color: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
 }
 
 .blog-content code {
-    background-color: #f8f9fa;
+    background-color: var(--bgColor-muted);
     padding: 0.2rem 0.4rem;
-    border-radius: 0.25rem;
+    border-radius: var(--borderRadius-small);
     font-size: 0.875em;
-    color: #e83e8c;
+    color: var(--fgColor-default);
 }
 
 .blog-content pre {
-    background-color: #f8f9fa;
+    background-color: var(--bgColor-muted);
     padding: 1rem;
-    border-radius: 0.5rem;
+    border-radius: var(--borderRadius-medium);
     overflow-x: auto;
     margin-bottom: 1.5rem;
-    border: 1px solid #e9ecef;
+    border: 1px solid var(--borderColor-default);
 }
 
 .blog-content pre code {
@@ -1044,7 +1090,7 @@
 .blog-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 0.5rem;
+    border-radius: var(--borderRadius-medium);
     margin: 1rem 0;
 }
 
@@ -1057,112 +1103,25 @@
 .blog-content table th,
 .blog-content table td {
     padding: 0.75rem;
-    border: 1px solid #dee2e6;
+    border: 1px solid var(--borderColor-default);
 }
 
 .blog-content table th {
-    background-color: #f8f9fa;
+    background-color: var(--bgColor-muted);
     font-weight: 600;
+    color: var(--fgColor-default);
 }
 
-/* 毛玻璃效果卡片 */
-.card {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 12px !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-}
-
-.card-header {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2) !important;
-    border-radius: 12px 12px 0 0 !important;
-}
-
-.card-body {
-    background: transparent !important;
-}
-
-/* 评论区域样式已移至 comments.css */
-
-/* 目录样式 */
-#table-of-contents {
-    font-size: 0.9rem;
-}
-
-#table-of-contents ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-#table-of-contents li {
-    margin-bottom: 0.5rem;
-}
-
-#table-of-contents a {
-    color: #94a3b8;
-    text-decoration: none;
-    display: block;
-    padding: 0.25rem 0;
-    border-radius: 0.25rem;
-    transition: all 0.3s ease;
-}
-
-#table-of-contents a:hover {
-    color: #007bff;
-    background-color: #f8f9fa;
-    padding-left: 0.5rem;
-}
-
-#table-of-contents .toc-h2 {
-    padding-left: 1rem;
-}
-
-#table-of-contents .toc-h3 {
-    padding-left: 2rem;
-}
-
-/* 分享按钮样式 */
-.share-buttons .share-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    border: none;
-    background: transparent;
-}
-
-.share-buttons .share-btn:hover {
-    transform: translateY(-2px) scale(1.1);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.share-buttons .share-btn i {
-    font-size: 16px;
-}
-
-/* 二维码弹窗样式 */
 .qr-popup {
-    position: fixed;
-    z-index: 9999;
     pointer-events: none;
 }
 
 .qr-popup-content {
     width: 140px;
-    background: white;
-    border-radius: 12px;
-    padding: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    background-color: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+    box-shadow: var(--shadow-resting-small);
 }
 
 #qrcode {
@@ -1174,107 +1133,137 @@
 #qrcode img {
     width: 120px;
     height: 120px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* 管理员操作按钮样式 */
-.admin-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-    justify-content: flex-end; /* 靠右对齐 */
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--borderColor-default);
 }
 
 .admin-actions .btn {
-    border-radius: 8px;
     font-size: 13px;
-    padding: 6px 12px;
-    transition: all 0.2s ease;
-    display: flex;
-    justify-content: flex-end; /* 靠右对齐 */
 }
 
-.admin-actions .btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    display: flex;
-    justify-content: flex-end; /* 靠右对齐 */
+@media (max-width: 1200px) {
+    .floating-toc {
+        left: 10px;
+        max-width: 250px;
+        min-width: 180px;
+    }
 }
 
-.admin-actions .btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #0056b3;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
-    display: flex;
-    justify-content: flex-end; /* 靠右对齐 */
-}
-
-.admin-actions .btn-danger:hover {
-    background-color: #c82333;
-    border-color: #c82333;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-    display: flex;
-    justify-content: flex-end; /* 靠右对齐 */
-}
-
-/* 响应式调整 */
 @media (max-width: 768px) {
+    .floating-toc {
+        display: none;
+    }
+
+    .floating-interaction-buttons {
+        right: 10px;
+        width: 116px;
+    }
+
+    .floating-panel {
+        padding: 8px !important;
+    }
+
+    .floating-btn {
+        min-height: 34px;
+        padding: 5px 8px;
+        gap: 6px;
+        font-size: 11px;
+    }
+
+    .floating-btn-count {
+        min-width: 18px;
+        padding: 2px 5px;
+        font-size: 10px;
+    }
+
+    .floating-rating-section .rating-input label {
+        font-size: 12px;
+    }
+
+    .post-detail-article {
+        border-radius: 16px;
+        padding: 14px !important;
+    }
+
+    .post-detail-topbar,
+    .post-meta-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .post-overview-card {
+        padding: 12px;
+        gap: 10px;
+    }
+
+    .post-share-row {
+        justify-content: space-between;
+    }
+
+    .post-meta-group,
+    .post-stats-row {
+        gap: 6px;
+    }
+
+    .post-meta-pill {
+        padding: 5px 9px;
+        font-size: 11px;
+    }
+
+    .post-excerpt-card {
+        padding: 10px 12px;
+    }
+
+    .post-detail-body {
+        margin-top: 16px;
+        padding-top: 18px;
+    }
+
     .admin-actions {
         flex-direction: column;
         gap: 4px;
+        width: 100%;
     }
-    
+
     .admin-actions .btn {
         font-size: 12px;
-        padding: 4px 8px;
+        justify-content: center;
     }
-    .blog-post h1 {
-        font-size: 1.75rem;
+
+    .post-detail-title {
+        font-size: 1.5rem;
     }
-    
-    .share-buttons .share-btn {
-        width: 36px;
-        height: 36px;
+
+    .share-btn {
+        min-width: 32px;
+        height: 28px;
+        padding: 0 8px;
     }
-    
-    .share-buttons .share-btn i {
-        font-size: 14px;
+
+    .share-btn i {
+        font-size: 12px;
     }
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
-<!-- 简化版 Tiptap 编辑器 JavaScript -->
 <script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
-<!-- 简化版评论编辑器 JavaScript -->
 <script src="{{ url_for('static', filename='js/simple-comment-editor.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 生成悬浮目录
     generateTableOfContents();
-    
-    // 设置悬浮目录功能
     setupFloatingToc();
-    
-    // 设置评分星星颜色
     setupRatingStars();
-    
-    // 初始化悬浮按钮状态
     setupFloatingButtons();
-    
-    // 初始化简化版评论编辑器
+
     const commentEditorContainer = document.getElementById('comment-editor-{{ post.id }}');
     if (commentEditorContainer) {
         const editor = new SimpleCommentEditor(commentEditorContainer, {
             placeholder: '发表你的评论...',
             content: ''
         });
-        
-        // 在提交表单前同步编辑器内容到隐藏的textarea
+
         const commentForm = document.querySelector('.comment-form');
         if (commentForm) {
             commentForm.addEventListener('submit', function(e) {
@@ -1285,73 +1274,62 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     }
-    
 });
 
 function generateTableOfContents() {
     const content = document.querySelector('.blog-content');
     const toc = document.getElementById('floating-table-of-contents');
-    
+
     if (!content || !toc) return;
-    
+
     const headings = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
-    
+
     if (headings.length === 0) {
-        toc.innerHTML = '<p class="text-muted small" style="color: #94a3b8 !important;">暂无目录</p>';
+        toc.innerHTML = '<p class="f6 color-fg-muted m-0">暂无目录</p>';
         return;
     }
-    
+
     const tocList = document.createElement('ul');
-    
+
     headings.forEach((heading, index) => {
-        // 为标题添加ID
         const headingId = `heading-${index}`;
         heading.id = headingId;
-        
-        // 创建目录项
+
         const li = document.createElement('li');
         const a = document.createElement('a');
         a.href = `#${headingId}`;
         a.textContent = heading.textContent;
         a.className = `toc-${heading.tagName.toLowerCase()}`;
-        
-        // 添加点击事件，平滑滚动
+
         a.addEventListener('click', function(e) {
             e.preventDefault();
             const target = document.getElementById(headingId);
             if (target) {
-                target.scrollIntoView({ 
+                target.scrollIntoView({
                     behavior: 'smooth',
                     block: 'start'
                 });
             }
         });
-        
+
         li.appendChild(a);
         tocList.appendChild(li);
     });
-    
+
     toc.appendChild(tocList);
-    
-    // 设置滚动监听，高亮当前章节
     setupTocHighlight();
 }
 
-// 设置目录高亮
 function setupTocHighlight() {
     const headings = document.querySelectorAll('.blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4, .blog-content h5, .blog-content h6');
     const tocLinks = document.querySelectorAll('#floating-table-of-contents a');
-    
+
     if (headings.length === 0 || tocLinks.length === 0) return;
-    
-    // 创建Intersection Observer
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                // 移除所有active类
                 tocLinks.forEach(link => link.classList.remove('active'));
-                
-                // 找到对应的目录链接并添加active类
                 const targetId = entry.target.id;
                 const correspondingLink = document.querySelector(`#floating-table-of-contents a[href="#${targetId}"]`);
                 if (correspondingLink) {
@@ -1363,125 +1341,106 @@ function setupTocHighlight() {
         rootMargin: '-20% 0px -70% 0px',
         threshold: 0
     });
-    
-    // 观察所有标题
+
     headings.forEach(heading => {
         observer.observe(heading);
     });
 }
 
-// 悬浮目录切换功能
 function setupFloatingToc() {
     const tocToggle = document.getElementById('toc-toggle');
     const floatingToc = document.getElementById('floating-toc');
-    
+
     if (!tocToggle || !floatingToc) return;
-    
-    // 点击切换展开/收起
+
     tocToggle.addEventListener('click', function(e) {
         e.stopPropagation();
-        floatingToc.classList.toggle('collapsed');
-        
-        // 更新图标
+        const collapsed = floatingToc.classList.toggle('collapsed');
+        tocToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+
         const icon = tocToggle.querySelector('i');
         if (floatingToc.classList.contains('collapsed')) {
             icon.className = 'fas fa-chevron-right';
         } else {
             icon.className = 'fas fa-list';
         }
-        
-        // 保存状态到本地存储
+
         localStorage.setItem('toc-collapsed', floatingToc.classList.contains('collapsed'));
     });
-    
-    // 从本地存储恢复状态
+
     const savedState = localStorage.getItem('toc-collapsed');
     if (savedState === 'true') {
         floatingToc.classList.add('collapsed');
+        tocToggle.setAttribute('aria-expanded', 'false');
         const icon = tocToggle.querySelector('i');
         icon.className = 'fas fa-chevron-right';
     }
-    
-    // 设置拖动功能
+
     setupTocDragging(floatingToc);
 }
 
-// 设置目录拖动功能
 function setupTocDragging(tocElement) {
     let isDragging = false;
     let startX, startY, startLeft, startTop;
-    
-    // 鼠标按下事件
+
     tocElement.addEventListener('mousedown', function(e) {
-        // 只有点击头部区域才能拖动
         if (!e.target.closest('.toc-header') || e.target.closest('.toc-toggle-btn')) {
             return;
         }
-        
+
         isDragging = true;
         tocElement.classList.add('dragging');
-        
-        // 获取初始位置
+
         startX = e.clientX;
         startY = e.clientY;
-        
+
         const rect = tocElement.getBoundingClientRect();
         startLeft = rect.left;
         startTop = rect.top;
-        
-        // 阻止默认行为
+
         e.preventDefault();
-        
-        // 添加全局事件监听
+
         document.addEventListener('mousemove', handleMouseMove);
         document.addEventListener('mouseup', handleMouseUp);
     });
-    
-    // 鼠标移动事件
+
     function handleMouseMove(e) {
         if (!isDragging) return;
-        
+
         const deltaX = e.clientX - startX;
         const deltaY = e.clientY - startY;
-        
+
         let newLeft = startLeft + deltaX;
         let newTop = startTop + deltaY;
-        
-        // 边界检查
+
         const windowWidth = window.innerWidth;
         const windowHeight = window.innerHeight;
         const tocWidth = tocElement.offsetWidth;
         const tocHeight = tocElement.offsetHeight;
-        
-        // 限制在视窗内
+
         newLeft = Math.max(0, Math.min(newLeft, windowWidth - tocWidth));
         newTop = Math.max(0, Math.min(newTop, windowHeight - tocHeight));
-        
-        // 应用新位置
+
         tocElement.style.left = newLeft + 'px';
         tocElement.style.top = newTop + 'px';
         tocElement.style.transform = 'none';
-        
-        // 保存位置到本地存储
+
         localStorage.setItem('toc-position', JSON.stringify({
             left: newLeft,
             top: newTop
         }));
     }
-    
-    // 鼠标释放事件
+
     function handleMouseUp() {
         if (isDragging) {
             isDragging = false;
             tocElement.classList.remove('dragging');
-            
-            // 移除全局事件监听
+
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         }
     }
-    
-    // 从本地存储恢复位置
+
     const savedPosition = localStorage.getItem('toc-position');
     if (savedPosition) {
         try {
@@ -1493,10 +1452,9 @@ function setupTocDragging(tocElement) {
     }
 }
 
-// 设置评分星星颜色
 function setupRatingStars() {
     const ratingStars = document.querySelectorAll('.rating-star');
-    
+
     ratingStars.forEach(star => {
         const rating = parseFloat(star.getAttribute('data-rating'));
         if (rating && rating > 0) {
@@ -1506,33 +1464,27 @@ function setupRatingStars() {
     });
 }
 
-// 设置悬浮按钮状态
 async function setupFloatingButtons() {
     const floatingButtons = document.querySelector('.floating-interaction-buttons');
     if (!floatingButtons) return;
-    
+
     const likeBtn = floatingButtons.querySelector('.like-btn');
     const favoriteBtn = floatingButtons.querySelector('.favorite-btn');
     const ratingSection = floatingButtons.querySelector('.floating-rating-section');
-    
+
     if (!likeBtn || !favoriteBtn) return;
-    
+
     const contentId = likeBtn.dataset.id;
     const contentType = likeBtn.dataset.type;
-    
+
     try {
-        // 获取用户状态
         const response = await fetch(`/api/user-status/${contentId}?type=${contentType}`);
         const result = await response.json();
-        
+
         if (result.success) {
-            // 更新点赞状态
             updateFloatingLikeUI(likeBtn, result.is_liked, result.like_count || 0);
-            
-            // 更新收藏状态
             updateFloatingFavoriteUI(favoriteBtn, result.is_favorited, result.favorite_count || 0);
-            
-            // 更新评分状态
+
             if (ratingSection) {
                 updateFloatingRatingUI(ratingSection, result.user_rating);
             }
@@ -1542,11 +1494,10 @@ async function setupFloatingButtons() {
     }
 }
 
-// 更新悬浮点赞按钮UI
 function updateFloatingLikeUI(button, isLiked, count) {
     const icon = button.querySelector('i');
     const countSpan = button.querySelector('.count');
-    
+
     if (isLiked) {
         icon.className = 'fas fa-heart';
         button.classList.add('liked');
@@ -1554,17 +1505,16 @@ function updateFloatingLikeUI(button, isLiked, count) {
         icon.className = 'far fa-heart';
         button.classList.remove('liked');
     }
-    
+
     if (countSpan) {
         countSpan.textContent = count;
     }
 }
 
-// 更新悬浮收藏按钮UI
 function updateFloatingFavoriteUI(button, isFavorited, count) {
     const icon = button.querySelector('i');
     const countSpan = button.querySelector('.count');
-    
+
     if (isFavorited) {
         icon.className = 'fas fa-star';
         button.classList.add('favorited');
@@ -1572,22 +1522,19 @@ function updateFloatingFavoriteUI(button, isFavorited, count) {
         icon.className = 'far fa-star';
         button.classList.remove('favorited');
     }
-    
+
     if (countSpan) {
         countSpan.textContent = count;
     }
 }
 
-// 更新悬浮评分UI
 function updateFloatingRatingUI(ratingSection, userRating) {
     const ratingInputs = ratingSection.querySelectorAll('input[name="rating"]');
-    
-    // 清除所有选中状态
+
     ratingInputs.forEach(input => {
         input.checked = false;
     });
-    
-    // 设置用户评分
+
     if (userRating && userRating > 0) {
         const targetInput = ratingSection.querySelector(`input[name="rating"][value="${userRating}"]`);
         if (targetInput) {
@@ -1597,30 +1544,24 @@ function updateFloatingRatingUI(ratingSection, userRating) {
 }
 
 function shareToWeChat(event) {
-    // 显示微信分享弹窗
     const popup = document.getElementById('wechatShareModal');
-    
-    // 获取鼠标位置
+
     const mouseX = event.clientX;
     const mouseY = event.clientY;
-    
-    // 设置弹窗位置（在鼠标位置上方）
+
     popup.style.left = mouseX + 'px';
-    popup.style.top = (mouseY - 160) + 'px'; // 在鼠标上方显示
+    popup.style.top = (mouseY - 160) + 'px';
     popup.style.display = 'block';
-    
-    // 生成二维码
+
     generateQRCode();
-    
-    // 点击其他地方关闭弹窗
+
     document.addEventListener('click', function closePopup(e) {
         if (!popup.contains(e.target) && !e.target.closest('.share-btn')) {
             popup.style.display = 'none';
             document.removeEventListener('click', closePopup);
         }
     });
-    
-    // 阻止事件冒泡，避免立即触发关闭
+
     event.stopPropagation();
 }
 
@@ -1634,10 +1575,8 @@ function shareToWeibo() {
 function copyLink() {
     const url = window.location.href;
     navigator.clipboard.writeText(url).then(() => {
-        // 使用更友好的提示
         showToast('链接已复制到剪贴板', 'success');
     }).catch(() => {
-        // 降级方案
         const textArea = document.createElement('textarea');
         textArea.value = url;
         document.body.appendChild(textArea);
@@ -1651,38 +1590,39 @@ function copyLink() {
 function generateQRCode() {
     const qrContainer = document.getElementById('qrcode');
     if (!qrContainer) return;
-    
-    // 清空之前的内容
+
     qrContainer.innerHTML = '';
-    
+
     const url = window.location.href;
-    
-    // 使用在线二维码生成服务，调整为120x120尺寸
     const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(url)}`;
-    
-    // 创建二维码图片
+
     const qrImg = document.createElement('img');
     qrImg.src = qrUrl;
     qrImg.alt = '微信分享二维码';
-    qrImg.style.borderRadius = '8px';
-    qrImg.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-    
+    qrImg.className = 'rounded-2 border';
+
     qrContainer.appendChild(qrImg);
 }
 
-function showToast(message, type = 'info') {
-    // 创建简单的提示框
+function showToast(message, type) {
     const toast = document.createElement('div');
-    toast.className = `alert alert-${type === 'success' ? 'success' : 'info'} position-fixed`;
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 200px;';
+    let flashClass = 'flash';
+    if (type === 'success') {
+        flashClass = 'flash flash-success';
+    } else if (type === 'error') {
+        flashClass = 'flash flash-danger';
+    }
+    toast.className = flashClass + ' position-fixed p-3 rounded-2';
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 1001; min-width: 200px; max-width: 90vw;';
     toast.innerHTML = `
-        <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'} me-2"></i>
-        ${message}
+        <span class="d-flex items-center gap-2">
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" aria-hidden="true"></i>
+            <span>${message}</span>
+        </span>
     `;
-    
+
     document.body.appendChild(toast);
-    
-    // 3秒后自动移除
+
     setTimeout(() => {
         if (toast.parentNode) {
             toast.parentNode.removeChild(toast);
@@ -1690,7 +1630,6 @@ function showToast(message, type = 'info') {
     }, 3000);
 }
 
-// 删除文章函数
 function deletePost(postId) {
     if (confirm('确定要删除这篇文章吗？此操作不可撤销！')) {
         fetch(`/admin/posts/${postId}/delete`, {
@@ -1704,7 +1643,6 @@ function deletePost(postId) {
         .then(data => {
             if (data.success) {
                 showToast(data.message, 'success');
-                // 延迟跳转到博客列表页
                 setTimeout(() => {
                     window.location.href = '/blog';
                 }, 1500);
@@ -1719,4 +1657,4 @@ function deletePost(postId) {
     }
 }
 </script>
-{% endblock %} 
+{% endblock %}

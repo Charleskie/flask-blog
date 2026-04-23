@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, session
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User
@@ -9,6 +9,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+import requests
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -454,3 +455,240 @@ def send_reset_email(user, token):
         current_app.logger.error(f"构建邮件失败: {e}")
         print(f"构建邮件失败: {e}")
         return False 
+
+
+# ==================== 社交登录路由 ====================
+
+@auth_bp.route('/login/google')
+def login_google():
+    """Google 登录"""
+    if not current_app.google_oauth:
+        return jsonify({'success': False, 'message': 'Google 登录未配置'})
+    
+    redirect_uri = url_for('auth.google_callback', _external=True)
+    # 添加 state 参数来防止 CSRF 攻击
+    return current_app.google_oauth.authorize_redirect(redirect_uri, state=secrets.token_urlsafe(32))
+
+@auth_bp.route('/login/github')
+def login_github():
+    """GitHub 登录"""
+    if not current_app.github_oauth:
+        return jsonify({'success': False, 'message': 'GitHub 登录未配置'})
+    
+    redirect_uri = url_for('auth.github_callback', _external=True)
+    # 添加 state 参数来防止 CSRF 攻击
+    return current_app.github_oauth.authorize_redirect(redirect_uri, state=secrets.token_urlsafe(32))
+
+@auth_bp.route('/login/wechat')
+def login_wechat():
+    """微信登录"""
+    if not current_app.wechat_oauth:
+        return jsonify({'success': False, 'message': '微信登录未配置'})
+    
+    redirect_uri = url_for('auth.wechat_callback', _external=True)
+    return current_app.wechat_oauth.authorize_redirect(redirect_uri)
+
+@auth_bp.route('/callback/google')
+def google_callback():
+    """Google 登录回调"""
+    if not current_app.google_oauth:
+        return redirect(url_for('auth.login'))
+    
+    try:
+        token = current_app.google_oauth.authorize_access_token()
+        user_info = token.get('userinfo')
+        
+        if not user_info:
+            return redirect(url_for('auth.login'))
+        
+        google_id = user_info.get('sub')
+        email = user_info.get('email')
+        name = user_info.get('name')
+        picture = user_info.get('picture')
+        
+        if not google_id or not email:
+            return redirect(url_for('auth.login'))
+        
+        # 查找或创建用户
+        user = User.query.filter_by(google_id=google_id).first()
+        if not user:
+            # 检查邮箱是否已存在
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                # 绑定到现有用户
+                existing_user.google_id = google_id
+                existing_user.avatar_url = picture
+                existing_user.social_provider = 'google'
+                db.session.commit()
+                user = existing_user
+            else:
+                # 创建新用户
+                username = email.split('@')[0]  # 使用邮箱前缀作为用户名
+                # 确保用户名唯一
+                counter = 1
+                original_username = username
+                while User.query.filter_by(username=username).first():
+                    username = f"{original_username}_{counter}"
+                    counter += 1
+                
+                user = User(
+                    username=username,
+                    email=email,
+                    nickname=name,
+                    google_id=google_id,
+                    avatar_url=picture,
+                    social_provider='google',
+                    password_hash='',  # 社交登录用户不需要密码
+                    is_admin=False
+                )
+                db.session.add(user)
+                db.session.commit()
+        
+        # 登录用户
+        login_user(user)
+        return redirect(url_for('main.index'))
+        
+    except Exception as e:
+        current_app.logger.error(f"Google 登录失败: {e}")
+        return redirect(url_for('auth.login'))
+
+@auth_bp.route('/callback/github')
+def github_callback():
+    """GitHub 登录回调"""
+    if not current_app.github_oauth:
+        return redirect(url_for('auth.login'))
+    
+    try:
+        token = current_app.github_oauth.authorize_access_token()
+        resp = current_app.github_oauth.get('user', token=token)
+        user_info = resp.json()
+        
+        github_id = str(user_info.get('id'))
+        email = user_info.get('email')
+        name = user_info.get('name') or user_info.get('login')
+        avatar_url = user_info.get('avatar_url')
+        
+        if not github_id:
+            return redirect(url_for('auth.login'))
+        
+        # 如果没有邮箱，尝试获取邮箱
+        if not email:
+            try:
+                emails_resp = current_app.github_oauth.get('user/emails', token=token)
+                emails = emails_resp.json()
+                for email_data in emails:
+                    if email_data.get('primary'):
+                        email = email_data.get('email')
+                        break
+                if not email and emails:
+                    email = emails[0].get('email')
+            except:
+                pass
+        
+        # 查找或创建用户
+        user = User.query.filter_by(github_id=github_id).first()
+        if not user:
+            # 检查邮箱是否已存在
+            existing_user = None
+            if email:
+                existing_user = User.query.filter_by(email=email).first()
+            
+            if existing_user:
+                # 绑定到现有用户
+                existing_user.github_id = github_id
+                existing_user.avatar_url = avatar_url
+                existing_user.social_provider = 'github'
+                db.session.commit()
+                user = existing_user
+            else:
+                # 创建新用户
+                username = name or email.split('@')[0] if email else f"user_{github_id}"
+                # 确保用户名唯一
+                counter = 1
+                original_username = username
+                while User.query.filter_by(username=username).first():
+                    username = f"{original_username}_{counter}"
+                    counter += 1
+                
+                user = User(
+                    username=username,
+                    email=email or f"{username}@github.local",  # 如果没有邮箱，使用占位符
+                    nickname=name,
+                    github_id=github_id,
+                    avatar_url=avatar_url,
+                    social_provider='github',
+                    password_hash='',  # 社交登录用户不需要密码
+                    is_admin=False
+                )
+                db.session.add(user)
+                db.session.commit()
+        
+        # 登录用户
+        login_user(user)
+        return redirect(url_for('main.index'))
+        
+    except Exception as e:
+        current_app.logger.error(f"GitHub 登录失败: {e}")
+        return redirect(url_for('auth.login'))
+
+@auth_bp.route('/callback/wechat')
+def wechat_callback():
+    """微信登录回调"""
+    if not current_app.wechat_oauth:
+        return redirect(url_for('auth.login'))
+    
+    try:
+        token = current_app.wechat_oauth.authorize_access_token()
+        
+        # 微信返回的是 access_token，需要再次请求用户信息
+        access_token = token.get('access_token')
+        openid = token.get('openid')
+        
+        if not access_token or not openid:
+            return redirect(url_for('auth.login'))
+        
+        # 获取用户信息
+        user_info_url = f'https://api.weixin.qq.com/sns/userinfo?access_token={access_token}&openid={openid}'
+        import requests
+        user_info_resp = requests.get(user_info_url)
+        user_info = user_info_resp.json()
+        
+        if user_info.get('errcode'):
+            current_app.logger.error(f"微信获取用户信息失败: {user_info}")
+            return redirect(url_for('auth.login'))
+        
+        nickname = user_info.get('nickname', '')
+        headimgurl = user_info.get('headimgurl', '')
+        
+        # 查找或创建用户
+        user = User.query.filter_by(wechat_id=openid).first()
+        if not user:
+            # 创建新用户
+            username = f"wechat_{openid[:8]}"  # 使用微信ID前8位作为用户名
+            # 确保用户名唯一
+            counter = 1
+            original_username = username
+            while User.query.filter_by(username=username).first():
+                username = f"{original_username}_{counter}"
+                counter += 1
+            
+            user = User(
+                username=username,
+                email=f"{username}@wechat.local",  # 微信用户使用占位符邮箱
+                nickname=nickname,
+                wechat_id=openid,
+                avatar_url=headimgurl,
+                social_provider='wechat',
+                password_hash='',  # 社交登录用户不需要密码
+                is_admin=False
+            )
+            db.session.add(user)
+            db.session.commit()
+        
+        # 登录用户
+        login_user(user)
+        return redirect(url_for('main.index'))
+        
+    except Exception as e:
+        current_app.logger.error(f"微信登录失败: {e}")
+        return redirect(url_for('auth.login'))

@@ -68,12 +68,12 @@ class Notification(db.Model):
         return notification
     
     @classmethod
-    def create_reply_notification(cls, comment_author_id, replier_name, reply_content, comment_id, post_id, post_title):
+    def create_reply_notification(cls, target_user_id, replier_name, reply_content, comment_id, post_id, post_title, target_label='评论'):
         """创建回复通知"""
         notification = cls(
-            user_id=comment_author_id,
+            user_id=target_user_id,
             type='reply',
-            title=f'{replier_name} 回复了你的评论',
+            title=f'{replier_name} 回复了你的{target_label}',
             content=f'"{reply_content[:100]}{"..." if len(reply_content) > 100 else ""}"',
             related_id=comment_id,
             related_type='comment',

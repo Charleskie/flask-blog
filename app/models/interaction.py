@@ -97,13 +97,45 @@ class CommentReply(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    parent_reply_id = db.Column(db.Integer, db.ForeignKey('comment_replies.id'), nullable=True)
+    reply_to_user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     content = db.Column(db.Text, nullable=False)
     is_approved = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # 关联关系
-    user = db.relationship('User', backref=db.backref('comment_replies', lazy='dynamic'))
+    user = db.relationship('User', foreign_keys=[user_id], backref=db.backref('comment_replies', lazy='dynamic'))
+    reply_to_user = db.relationship('User', foreign_keys=[reply_to_user_id])
+    parent_reply = db.relationship(
+        'CommentReply',
+        remote_side=[id],
+        foreign_keys=[parent_reply_id],
+        backref=db.backref('child_replies', lazy='dynamic')
+    )
     
     def __repr__(self):
         return f'<CommentReply {self.id}>'
+
+
+def ensure_comment_reply_schema():
+    """兼容现有数据库，为回复表补齐支持二级回复所需字段。"""
+    inspector = db.inspect(db.engine)
+    if 'comment_replies' not in inspector.get_table_names():
+        return
+
+    existing_columns = {column['name'] for column in inspector.get_columns('comment_replies')}
+    alter_statements = []
+
+    if 'parent_reply_id' not in existing_columns:
+        alter_statements.append('ALTER TABLE comment_replies ADD COLUMN parent_reply_id INTEGER')
+
+    if 'reply_to_user_id' not in existing_columns:
+        alter_statements.append('ALTER TABLE comment_replies ADD COLUMN reply_to_user_id INTEGER')
+
+    if not alter_statements:
+        return
+
+    with db.engine.begin() as conn:
+        for statement in alter_statements:
+            conn.execute(db.text(statement))

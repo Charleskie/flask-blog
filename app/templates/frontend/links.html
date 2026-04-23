@@ -1,0 +1,579 @@
+{% extends "base.html" %}
+
+{% block title %}友链 - {{ super() }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.links-page {
+    --links-surface: #ffffff;
+    --links-surface-muted: #f6f8fa;
+    --links-border: #d8dee4;
+    --links-border-strong: #b6c2cf;
+    --links-accent: #0969da;
+    --links-accent-soft: #ddf4ff;
+    --links-radius: 18px;
+    --links-radius-sm: 14px;
+}
+
+.links-page .links-list-wrap,
+.links-page .link-card,
+.links-page .links-empty,
+.links-page .links-apply-bar,
+.links-page .links-modal-dialog {
+    border: 1px solid var(--links-border);
+    border-radius: var(--links-radius);
+    background: var(--links-surface);
+}
+
+.links-page .links-list-wrap,
+.links-page .links-empty,
+.links-page .links-apply-bar,
+.links-page .links-modal-body {
+    padding: 24px;
+}
+
+.links-page .links-section {
+    margin-top: 0;
+}
+
+.links-page .links-list-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.links-page .links-list-title {
+    margin: 0 0 6px;
+    font-size: 1.35rem;
+    color: var(--fgColor-default);
+}
+
+.links-page .links-list-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    line-height: 1.75;
+}
+
+.links-page .links-list-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--links-surface-muted);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.links-page .links-list-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.links-page .links-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.links-page .link-card {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.links-page .link-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--links-border-strong);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.links-page .link-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.links-page .link-avatar,
+.links-page .link-avatar-fallback {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: var(--links-radius-sm);
+}
+
+.links-page .link-avatar {
+    object-fit: cover;
+    border: 1px solid rgba(31, 35, 40, 0.08);
+}
+
+.links-page .link-avatar-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--links-surface-muted);
+    color: var(--fgColor-default);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.links-page .link-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.links-page .link-title {
+    margin: 0;
+    font-size: 1.06rem;
+    line-height: 1.35;
+}
+
+.links-page .link-title a {
+    color: var(--fgColor-default);
+    text-decoration: none;
+}
+
+.links-page .link-title a:hover {
+    color: var(--links-accent);
+    text-decoration: none;
+}
+
+.links-page .link-domain {
+    margin: 6px 0 0;
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+}
+
+.links-page .link-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--links-accent-soft);
+    color: var(--links-accent);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.links-page .link-desc {
+    margin: 0;
+    color: var(--fgColor-muted);
+    line-height: 1.75;
+}
+
+.links-page .link-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--links-border);
+}
+
+.links-page .link-url {
+    min-width: 0;
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+}
+
+.links-page .link-url span {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.links-page .link-action {
+    color: var(--links-accent);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.links-page .link-action:hover {
+    text-decoration: none;
+}
+
+.links-page .links-empty {
+    text-align: center;
+}
+
+.links-page .links-empty h3 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+    color: var(--fgColor-default);
+}
+
+.links-page .links-empty p {
+    margin: 0;
+    color: var(--fgColor-muted);
+    line-height: 1.75;
+}
+
+.links-page .links-apply-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 20px;
+    background: var(--links-surface-muted);
+}
+
+.links-page .links-apply-text {
+    margin: 0;
+    color: var(--fgColor-muted);
+    line-height: 1.75;
+}
+
+.links-page .links-apply-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.links-page .links-modal {
+    background: rgba(15, 23, 42, 0.38);
+    backdrop-filter: blur(6px);
+}
+
+.links-page .links-modal-dialog {
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-floating-large);
+}
+
+.links-page .links-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.links-page .links-modal-title {
+    margin: 0 0 8px;
+    font-size: 1.5rem;
+    color: var(--fgColor-default);
+}
+
+.links-page .links-modal-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    line-height: 1.75;
+    font-size: 14px;
+}
+
+.links-page .links-modal-close {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border: 1px solid var(--links-border);
+    border-radius: 12px;
+    background: var(--links-surface);
+    color: var(--fgColor-subtle);
+    cursor: pointer;
+}
+
+.links-page .links-modal-close:hover {
+    color: var(--fgColor-default);
+}
+
+.links-page .links-form {
+    display: grid;
+    gap: 16px;
+}
+
+.links-page .links-form .form-label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--fgColor-default);
+    font-weight: 600;
+}
+
+.links-page .links-form .form-control {
+    border-radius: 14px;
+    border-color: var(--links-border);
+    background: var(--links-surface);
+}
+
+.links-page .links-form .form-control:focus {
+    border-color: var(--links-accent);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.links-page .links-form-hint {
+    margin: 8px 0 0;
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.links-page .links-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 8px;
+}
+
+@media (min-width: 768px) {
+    .links-page .links-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1012px) {
+    .links-page .links-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .links-page .links-list-actions,
+    .links-page .links-apply-actions,
+    .links-page .links-form-actions {
+        flex-direction: column;
+    }
+
+    .links-page .links-list-actions .btn,
+    .links-page .links-apply-actions .btn,
+    .links-page .links-form-actions .btn {
+        width: 100%;
+    }
+
+    .links-page .link-footer {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+</style>
+{% endblock %}
+
+{% macro render_link_card(link) %}
+{% set clean_url = link.url | replace('https://', '') | replace('http://', '') | replace('www.', '') %}
+<article class="link-card">
+    <div class="link-card-top">
+        {% if link.avatar_url %}
+        <img src="{{ link.avatar_url }}" alt="{{ link.name }}" class="link-avatar">
+        {% else %}
+        <div class="link-avatar-fallback">{{ link.name[0].upper() }}</div>
+        {% endif %}
+
+        <div class="link-body">
+            <h3 class="link-title">
+                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.name }}</a>
+            </h3>
+            <p class="link-domain">{{ clean_url }}</p>
+            {% if link.featured %}
+            <span class="link-badge">
+                <i class="fas fa-star" aria-hidden="true"></i>
+                推荐友链
+            </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <p class="link-desc">
+        {{ link.description or '这是一个内容清晰、值得收藏的网站。' }}
+    </p>
+
+    <div class="link-footer">
+        <div class="link-url">
+            <span title="{{ link.url }}">{{ clean_url }}</span>
+        </div>
+        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-action">
+            访问网站
+        </a>
+    </div>
+</article>
+{% endmacro %}
+
+{% block content %}
+{% set total_links = links|length if links else 0 %}
+
+<div class="links-page py-4">
+    <section class="links-section">
+        <div class="links-list-wrap">
+            <div class="links-list-head">
+                <div>
+                    <h2 class="links-list-title">所有友链</h2>
+                    <p class="links-list-copy">按统一列表展示，推荐友链会用标签标出。</p>
+                </div>
+                <div class="d-flex flex-column items-stretch gap-3">
+                    <div class="links-list-meta">
+                        <i class="fas fa-link" aria-hidden="true"></i>
+                        {{ total_links }} 个
+                    </div>
+                    <div class="links-list-actions">
+                        <button type="button" id="applyLinkBtn" class="btn btn-primary" data-open-link-modal>
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            申请友链
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {% if links %}
+            <div class="links-grid">
+                {% for link in links %}
+                    {{ render_link_card(link) }}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="links-empty">
+                <h3>这里还没有收录友链</h3>
+                <p>如果你想交换友链，现在就可以提交申请。</p>
+            </div>
+            {% endif %}
+
+            <div class="links-apply-bar">
+                <p class="links-apply-text">
+                    如果你也有自己的博客或作品站，欢迎申请友链。页面会尽量保持简洁，只收录长期维护、访问稳定的网站。
+                </p>
+                <div class="links-apply-actions">
+                    <button type="button" class="btn btn-primary" data-open-link-modal>
+                        提交申请
+                    </button>
+                    <a href="mailto:wdws851421092@gmail.com" class="btn btn-secondary no-underline">
+                        发邮件
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<div id="applyLinkModal" class="links-page links-modal position-fixed inset-0 d-none items-center justify-center p-3 z-50" role="dialog" aria-modal="true" aria-labelledby="applyLinkModalTitle">
+    <div class="links-modal-dialog">
+        <div class="links-modal-body">
+            <div class="links-modal-header">
+                <div>
+                    <h3 id="applyLinkModalTitle" class="links-modal-title">申请友链</h3>
+                    <p class="links-modal-copy">填写网站名称、链接和简介即可，信息完整一些会更方便我审核。</p>
+                </div>
+                <button type="button" id="closeApplyModal" class="links-modal-close" aria-label="关闭申请弹窗">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <form id="applyLinkForm" class="links-form">
+                <div>
+                    <label for="linkName" class="form-label">网站名称 *</label>
+                    <input type="text" id="linkName" name="name" required class="form-control" placeholder="请输入网站名称">
+                </div>
+                <div>
+                    <label for="linkUrl" class="form-label">网站链接 *</label>
+                    <input type="url" id="linkUrl" name="url" required class="form-control" placeholder="https://example.com">
+                </div>
+                <div>
+                    <label for="linkDescription" class="form-label">网站描述</label>
+                    <textarea id="linkDescription" name="description" rows="4" class="form-control" placeholder="简单介绍一下你的网站内容"></textarea>
+                </div>
+                <div>
+                    <label for="linkEmail" class="form-label">联系邮箱</label>
+                    <input type="email" id="linkEmail" name="email" class="form-control" placeholder="your@email.com">
+                    <p class="links-form-hint">建议填写邮箱，方便我联系你。</p>
+                </div>
+                <div class="links-form-actions">
+                    <button type="button" id="cancelApply" class="btn btn-secondary">取消</button>
+                    <button type="submit" class="btn btn-primary">提交申请</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('applyLinkModal');
+    const closeBtn = document.getElementById('closeApplyModal');
+    const cancelBtn = document.getElementById('cancelApply');
+    const form = document.getElementById('applyLinkForm');
+    const nameInput = document.getElementById('linkName');
+    const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+    const openTriggers = document.querySelectorAll('[data-open-link-modal]');
+
+    function openModal() {
+        modal.classList.remove('d-none');
+        modal.classList.add('d-flex');
+        document.body.style.overflow = 'hidden';
+        if (nameInput) {
+            window.setTimeout(function() {
+                nameInput.focus();
+            }, 80);
+        }
+    }
+
+    function closeModal() {
+        modal.classList.add('d-none');
+        modal.classList.remove('d-flex');
+        document.body.style.overflow = '';
+    }
+
+    openTriggers.forEach(function(trigger) {
+        trigger.addEventListener('click', openModal);
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('d-flex')) {
+            closeModal();
+        }
+    });
+
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.dataset.originalText = submitBtn.textContent;
+            submitBtn.textContent = '提交中...';
+        }
+
+        const formData = new FormData(form);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+            const response = await fetch('/api/apply-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('申请提交成功！我会尽快查看并审核你的站点。');
+                form.reset();
+                closeModal();
+            } else {
+                alert('申请提交失败：' + (result.message || '未知错误'));
+            }
+        } catch (err) {
+            console.error('申请友链失败:', err);
+            alert('网络错误，请稍后重试');
+        } finally {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = submitBtn.dataset.originalText || '提交申请';
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

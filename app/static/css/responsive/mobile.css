@@ -223,12 +223,12 @@
     }
     
     .modal-content {
-        border-radius: var(--radius-lg);
+        border-radius: var(--borderRadius-large);
     }
     
     /* 表格移动端样式 */
     .table-responsive {
-        border-radius: var(--radius-md);
+        border-radius: var(--borderRadius-medium);
     }
     
     .table {

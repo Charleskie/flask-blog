@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, make_response
 from flask_login import login_required, current_user
-from app.models import Post, Project, Message, AboutContent, AboutContact, Version, Skill
+from app.models import Post, Project, Message, AboutContent, AboutContact, Version, Skill, Link, VisitorStats
 from app.models.user import db
 from app.utils.pdf_generator import generate_about_pdf
 import re
@@ -12,13 +12,63 @@ main_bp = Blueprint('main', __name__)
 @main_bp.route('/')
 def index():
     """首页"""
-    # 获取最新的版本更新记录
     versions = Version.query.filter_by(is_active=True).order_by(Version.release_date.desc()).limit(5).all()
-    
-    # 获取技能数据
+    latest_version = versions[0] if versions else None
+
     skills = Skill.get_active_skills()
-    
-    return render_template('frontend/index.html', versions=versions, skills=skills)
+    skill_groups = {}
+    for skill in skills:
+        category = skill.category or '其他'
+        skill_groups.setdefault(category, []).append(skill)
+    skill_groups = list(skill_groups.items())[:4]
+
+    recent_posts = Post.query.filter_by(status='published').order_by(Post.created_at.desc()).limit(6).all()
+    popular_posts = Post.query.filter_by(status='published').order_by(
+        Post.view_count.desc(), Post.created_at.desc()
+    ).limit(4).all()
+
+    featured_links = Link.get_featured_links()[:4]
+    if not featured_links:
+        featured_links = Link.get_active_links()[:4]
+
+    about_content = AboutContent.query.filter_by(section='main_content', is_active=True).first()
+    about_excerpt = ''
+    if about_content and about_content.content:
+        about_excerpt = re.sub(r'<[^>]+>', ' ', about_content.content)
+        about_excerpt = re.sub(r'\s+', ' ', about_excerpt).strip()
+        about_excerpt = about_excerpt[:140] + ('...' if len(about_excerpt) > 140 else '')
+
+    top_categories = db.session.query(
+        Post.category,
+        db.func.count(Post.id).label('count')
+    ).filter(
+        Post.status == 'published',
+        Post.category.isnot(None)
+    ).group_by(Post.category).order_by(
+        db.func.count(Post.id).desc(),
+        Post.category.asc()
+    ).limit(5).all()
+
+    stats = {
+        'post_count': Post.query.filter_by(status='published').count(),
+        'skill_count': len(skills),
+        'link_count': Link.query.filter_by(status='active').count(),
+        'version_count': Version.query.filter_by(is_active=True).count()
+    }
+
+    return render_template(
+        'frontend/index.html',
+        versions=versions,
+        latest_version=latest_version,
+        skills=skills,
+        skill_groups=skill_groups,
+        recent_posts=recent_posts,
+        popular_posts=popular_posts,
+        featured_links=featured_links,
+        about_excerpt=about_excerpt,
+        top_categories=top_categories,
+        stats=stats
+    )
 
 @main_bp.route('/about')
 def about():
@@ -74,57 +124,139 @@ def about_pdf():
         print(f"生成PDF错误: {e}")
         return jsonify({'error': 'PDF生成失败，请稍后重试'}), 500
 
-@main_bp.route('/projects')
-def projects():
-    """项目展示页面"""
-    # 获取筛选参数
-    category = request.args.get('category', '')
-    search = request.args.get('search', '')
-    
-    # 构建查询
-    query = Project.query.filter_by(status='active')
-    
-    if category:
-        query = query.filter_by(category=category)
-    
-    if search:
-        query = query.filter(
-            db.or_(
-                Project.title.contains(search),
-                Project.description.contains(search),
-                Project.short_description.contains(search)
-            )
+@main_bp.route('/api/apply-link', methods=['POST'])
+def apply_link():
+    """申请友链API"""
+    try:
+        data = request.get_json()
+        
+        # 验证必填字段
+        if not data.get('name') or not data.get('url'):
+            return jsonify({'success': False, 'message': '网站名称和链接为必填项'}), 400
+        
+        # 验证URL格式
+        import re
+        url_pattern = r'^https?://.+'
+        if not re.match(url_pattern, data.get('url', '')):
+            return jsonify({'success': False, 'message': '请输入有效的网站链接'}), 400
+        
+        # 检查是否已存在相同的友链申请
+        existing_link = Link.query.filter_by(
+            name=data.get('name'),
+            url=data.get('url')
+        ).first()
+        
+        if existing_link:
+            return jsonify({'success': False, 'message': '该友链已存在，请勿重复申请'}), 400
+        
+        # 创建友链申请
+        link = Link(
+            name=data.get('name'),
+            url=data.get('url'),
+            description=data.get('description', ''),
+            email=data.get('email', ''),
+            status='pending'  # 待审核状态
         )
-    
-    projects = query.order_by(Project.created_at.desc()).all()
-    
-    # 获取所有分类
-    categories = db.session.query(Project.category).filter(
-        Project.category.isnot(None), 
-        Project.status == 'active'
-    ).distinct().all()
-    categories = [cat[0] for cat in categories]
-    
-    return render_template('frontend/projects.html', projects=projects, categories=categories, 
-                         current_category=category, search=search)
+        
+        db.session.add(link)
+        db.session.flush()  # 获取ID
+        
+        # 创建消息通知给管理员
+        from app.models import Message, Notification
+        message = Message(
+            name=data.get('name', '友链申请'),
+            email=data.get('email', ''),
+            subject=f'友链申请：{data.get("name")}',
+            message=f'网站名称：{data.get("name")}\n网站链接：{data.get("url")}\n网站描述：{data.get("description", "无")}\n联系邮箱：{data.get("email", "无")}',
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent')
+        )
+        
+        db.session.add(message)
+        db.session.flush()
+        
+        # 创建通知
+        notification = Message.create_message_notification(message)
+        if notification:
+            db.session.add(notification)
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': '申请提交成功，我们会尽快审核'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"申请友链失败: {e}")
+        return jsonify({'success': False, 'message': '申请提交失败，请稍后重试'}), 500
 
-@main_bp.route('/projects/<int:project_id>')
-def project_detail(project_id):
-    """项目详情页面"""
-    project = Project.query.get_or_404(project_id)
+@main_bp.route('/api/visitor-stats', methods=['GET'])
+def get_visitor_stats():
+    """获取访问量统计API"""
+    try:
+        # 获取总统计数据
+        total_stats = VisitorStats.get_total_stats()
+        
+        # 获取今日统计数据
+        today_stats = VisitorStats.get_today_stats()
+        
+        # 获取最近7天统计数据
+        recent_stats = VisitorStats.get_recent_stats(7)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'total_views': total_stats['total_views'],
+                'total_visitors': total_stats['total_visitors'],
+                'today_views': today_stats.page_views,
+                'today_visitors': today_stats.unique_visitors,
+                'recent_stats': [
+                    {
+                        'date': stat.date.isoformat(),
+                        'page_views': stat.page_views,
+                        'unique_visitors': stat.unique_visitors
+                    } for stat in recent_stats
+                ]
+            }
+        })
+    except Exception as e:
+        print(f"获取访问量统计失败: {e}")
+        return jsonify({'success': False, 'message': '获取统计数据失败'}), 500
+
+@main_bp.route('/api/track-visit', methods=['POST'])
+def track_visit():
+    """记录访问API"""
+    try:
+        data = request.get_json() or {}
+        is_unique = data.get('unique', False)
+        
+        # 增加页面浏览量
+        stats = VisitorStats.increment_page_view()
+        
+        # 如果是独立访客，增加独立访客数
+        if is_unique:
+            stats = VisitorStats.increment_unique_visitor()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'today_views': stats.page_views,
+                'today_visitors': stats.unique_visitors
+            }
+        })
+    except Exception as e:
+        print(f"记录访问失败: {e}")
+        return jsonify({'success': False, 'message': '记录访问失败'}), 500
+
+@main_bp.route('/links')
+def links():
+    """友链页面"""
+    # 获取所有活跃的友链
+    links = Link.get_active_links()
     
-    # 增加浏览次数
-    project.view_count += 1
-    db.session.commit()
+    # 获取推荐的友链
+    featured_links = Link.get_featured_links()
     
-    # 获取相关项目
-    related_projects = Project.query.filter(
-        Project.category == project.category,
-        Project.id != project.id,
-        Project.status == 'active'
-    ).order_by(Project.created_at.desc()).limit(3).all()
-    
-    return render_template('frontend/project_detail.html', project=project, related_projects=related_projects)
+    return render_template('frontend/links.html', links=links, featured_links=featured_links)
 
 @main_bp.route('/blog')
 def blog():

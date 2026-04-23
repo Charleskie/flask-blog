@@ -1,87 +1,226 @@
 {% extends "base.html" %}
 
-{% block title %}登录 - 我的个人网站{% endblock %}
+{% block title %}登录 - Shiheng{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4><i class="fas fa-sign-in-alt"></i> 用户登录</h4>
+<div class="min-h-screen d-flex items-center justify-center py-12 px-3 color-bg-default">
+    <div class="container-sm width-full d-flex flex-column gap-8">
+        <div class="text-center">
+            <div class="d-flex items-center justify-center mx-auto mb-6">
+                <div class="w-12 h-12 rounded-2 color-bg-accent-muted d-flex items-center justify-center border">
+                    <i class="fa fa-code color-fg-accent f2"></i>
+                </div>
             </div>
-            <div class="card-body">
-                <form method="POST" data-ajax-form>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">用户名</label>
-                        <input type="text" class="form-control" id="username" name="username" required style="background-color: rgba(15, 23, 42, 0.8) !important; border-color: rgba(71, 85, 105, 0.3) !important; color: white !important;">
+
+            <h2 class="f00 text-bold color-fg-default mb-2">
+                登录
+            </h2>
+
+            <p class="f4 color-fg-muted">
+                欢迎回到你的极客空间
+            </p>
+        </div>
+
+        <div class="Box shadow-sm p-6">
+            <form method="POST" class="d-flex flex-column gap-6" data-ajax-form>
+                <div>
+                    <label for="username" class="form-label">
+                        用户名
+                    </label>
+                    <input type="text" id="username" name="username" required
+                           class="form-control width-full"
+                           placeholder="用户名">
+                </div>
+
+                <div>
+                    <label for="password" class="form-label">
+                        密码
+                    </label>
+                    <div class="position-relative">
+                        <input type="password" id="password" name="password" required
+                               class="form-control width-full pr-8"
+                               placeholder="密码">
+                        <button type="button" onclick="togglePassword()"
+                                class="position-absolute btn btn-invisible btn-sm color-fg-muted transition-colors"
+                                style="top: 50%; transform: translateY(-50%); right: 4px;"
+                                aria-label="显示或隐藏密码">
+                            <i class="fa fa-eye" id="password-toggle-icon"></i>
+                        </button>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">密码</label>
-                        <input type="password" class="form-control" id="password" name="password" required style="background-color: rgba(15, 23, 42, 0.8) !important; border-color: rgba(71, 85, 105, 0.3) !important; color: white !important;">
-                        <div class="text-end mt-1">
-                            <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none small">
-                                忘记密码？
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">
+                </div>
+
+                <div class="d-flex items-center justify-between flex-wrap gap-2">
+                    <div class="d-flex items-center gap-2">
+                        <input type="checkbox" id="remember" name="remember"
+                               class="cursor-pointer">
+                        <label for="remember" class="f5 color-fg-muted">
                             记住我
                         </label>
                     </div>
-                    
-                    <div class="d-flex justify-content-between gap-2">
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-sm" style="min-width: 160px;">
-                            <i class="fas fa-user-plus"></i> 注册
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-sm" style="min-width: 160px;">
-                            <i class="fas fa-sign-in-alt"></i> 登录
-                        </button>
-                    </div>
-                </form>
-                
-                <hr>
-                
-                <div class="text-center">
-                    <p class="mb-0">还没有账号？点击右侧注册按钮</p>
+                    <a href="{{ url_for('auth.forgot_password') }}"
+                       class="f5 color-fg-accent no-underline transition-colors">
+                        忘记密码？
+                    </a>
                 </div>
-            </div>
+
+                <button type="submit"
+                        class="btn btn-primary width-full">
+                    登录
+                </button>
+
+                <div class="d-flex flex-column gap-3">
+                    <div class="position-relative py-2">
+                        <div class="position-absolute d-flex items-center width-full" style="top: 50%;">
+                            <div class="width-full border-top"></div>
+                        </div>
+                        <div class="position-relative d-flex justify-center">
+                            <span class="px-2 color-bg-default f5 color-fg-subtle">或使用</span>
+                        </div>
+                    </div>
+
+                    {% if config.GOOGLE_CLIENT_ID and config.GOOGLE_CLIENT_ID != 'your-google-client-id' %}
+                    <a href="{{ url_for('auth.login_google') }}"
+                       class="btn btn-secondary width-full d-flex items-center justify-center gap-3 no-underline">
+                        <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    </a>
+                    {% else %}
+                    <button type="button"
+                            class="btn btn-secondary width-full d-flex items-center justify-center gap-3 opacity-50 cursor-default"
+                            disabled
+                            title="Google OAuth">
+                        <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google
+                    </button>
+                    {% endif %}
+
+                    <a href="{{ url_for('auth.login_github') }}"
+                       class="btn btn-secondary width-full d-flex items-center justify-center gap-3 no-underline">
+                        <svg class="w-5 h-5 flex-shrink-0 color-fg-default" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub
+                    </a>
+
+                    {% if config.WECHAT_APP_ID and config.WECHAT_APP_ID != 'your-wechat-app-id' %}
+                    <a href="{{ url_for('auth.login_wechat') }}"
+                       class="btn btn-secondary width-full d-flex items-center justify-center gap-3 no-underline">
+                        <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#07C160" aria-hidden="true">
+                            <path d="M8.5 12.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5zm7 0c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5z"/>
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                        </svg>
+                        微信
+                    </a>
+                    {% else %}
+                    <button type="button" disabled
+                            class="btn btn-secondary width-full d-flex items-center justify-center gap-3 opacity-50 cursor-default"
+                            title="微信 OAuth 未配置">
+                        <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#07C160" aria-hidden="true">
+                            <path d="M8.5 12.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5zm7 0c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5z"/>
+                            <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                        </svg>
+                        微信 (未配置)
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        <div class="text-center">
+            <p class="f4 color-fg-muted">
+                还没有账号？
+                <a href="{{ url_for('auth.register') }}"
+                   class="color-fg-accent no-underline text-semibold transition-colors">
+                    立即注册
+                </a>
+            </p>
         </div>
     </div>
 </div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('password-toggle-icon');
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.className = 'fa fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.className = 'fa fa-eye';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form[data-ajax-form]');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.textContent;
+
+            submitButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i>登录中...';
+            submitButton.disabled = true;
+
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('登录成功！', 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '/';
+                    }, 1000);
+                } else {
+                    showToast(data.message || '登录失败', 'error');
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('登录错误:', error);
+                showToast('登录失败，请稍后重试', 'error');
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
+            });
+        });
+    }
+});
+
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    const variant = type === 'success' ? 'color-bg-success-muted color-fg-success border' : 'color-bg-danger-muted color-fg-danger border';
+    toast.className = 'position-fixed z-50 rounded-2 p-3 f5 text-semibold shadow-md ' + variant;
+    toast.style.top = '16px';
+    toast.style.right = '16px';
+    toast.style.maxWidth = 'min(360px, calc(100vw - 32px))';
+    toast.textContent = message;
+
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 3000);
+}
+</script>
 {% endblock %}
-
-{% block extra_css %}
-<style>
-/* 登录页面输入框样式优化 - 参考注册页面 */
-input.form-control,
-input[type="text"].form-control,
-input[type="password"].form-control {
-    color: white !important;
-    background-color: rgba(15, 23, 42, 0.8) !important;
-    border-color: rgba(71, 85, 105, 0.3) !important;
-}
-
-input.form-control:focus,
-input[type="text"].form-control:focus,
-input[type="password"].form-control:focus {
-    color: white !important;
-    background-color: rgba(15, 23, 42, 0.9) !important;
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
-}
-
-/* 处理自动填充 */
-.form-control:-webkit-autofill,
-.form-control:-webkit-autofill:hover,
-.form-control:-webkit-autofill:focus,
-.form-control:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px rgba(15, 23, 42, 0.8) inset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
-}
-</style>
-{% endblock %} 

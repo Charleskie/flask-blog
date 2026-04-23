@@ -3,483 +3,707 @@
 {% block title %}编辑文章 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-                          <div class="d-flex justify-content-between align-items-center mb-4">
-                  <h1><i class="fas fa-edit"></i> 编辑文章</h1>
-                  <a href="{{ url_for('main.post_detail', slug=post.slug) }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> 返回文章详情页
-                </a>
+<div class="container-xl py-4 post-edit-page">
+    <div class="post-edit-header mb-4">
+        <div class="post-edit-header-copy">
+            <div class="d-flex flex-wrap items-center gap-2 mb-2">
+                <span class="Label {{ 'Label--success' if post.status == 'published' else 'Label--attention' }}">
+                    {{ '已发布' if post.status == 'published' else '草稿中' }}
+                </span>
+                {% if post.category %}
+                <span class="Label Label--secondary">{{ post.category }}</span>
+                {% endif %}
             </div>
+            <h1 class="post-edit-title">编辑文章</h1>
+            <p class="post-edit-subtitle">{{ post.title }}</p>
+            <div class="post-edit-meta">
+                <span class="post-edit-meta-item"><i class="fas fa-calendar-alt"></i> 创建于 {{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span class="post-edit-meta-item"><i class="fas fa-pen"></i> 更新于 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span class="post-edit-meta-item"><i class="fas fa-eye"></i> {{ post.view_count }} 浏览</span>
+                <span class="post-edit-meta-item"><i class="fas fa-comments"></i> {{ post.comment_count }} 评论</span>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap gap-2 post-edit-header-actions">
+            {% if post.status == 'published' %}
+            <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn btn-sm no-underline post-edit-btn post-edit-btn-secondary post-edit-btn-compact" target="_blank">
+                <i class="fas fa-eye"></i> 查看文章
+            </a>
+            {% endif %}
+            <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-sm no-underline post-edit-btn post-edit-btn-secondary post-edit-btn-compact">
+                <i class="fas fa-arrow-left"></i> 返回列表
+            </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5><i class="fas fa-edit"></i> 文章信息</h5>
-                </div>
-                <div class="card-body">
-                    <form method="POST" enctype="multipart/form-data">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">文章标题 *</label>
-                                    <input type="text" class="form-control" id="title" name="title" 
-                                           value="{{ post.title }}" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-1">
-                                    <label for="category" class="form-label">文章分类</label>
-                                    <select class="form-select" id="category" name="category">
-                                        <option value="">选择分类</option>
-                                        <option value="技术分享" {{ 'selected' if post.category == '技术分享' }}>技术分享</option>
-                                        <option value="学习笔记" {{ 'selected' if post.category == '学习笔记' }}>学习笔记</option>
-                                        <option value="项目经验" {{ 'selected' if post.category == '项目经验' }}>项目经验</option>
-                                        <option value="行业见解" {{ 'selected' if post.category == '行业见解' }}>行业见解</option>
-                                        <option value="教程指南" {{ 'selected' if post.category == '教程指南' }}>教程指南</option>
-                                        <option value="其他" {{ 'selected' if post.category == '其他' }}>其他</option>
-                                    </select>
-                                </div>
-                            </div>
+    <form method="POST" enctype="multipart/form-data" id="post-form">
+        <div class="post-edit-layout">
+            <div class="post-edit-main">
+                <div class="Box mb-3">
+                    <div class="Box-header">
+                        <h2 class="f4 text-semibold m-0 color-fg-default"><i class="fas fa-pen-to-square color-fg-muted"></i> 基本信息</h2>
+                    </div>
+                    <div class="Box-body post-edit-stack">
+                        <div>
+                            <label for="title" class="form-label">文章标题 *</label>
+                            <input type="text" class="form-control width-full" id="title" name="title" value="{{ post.title }}" required>
                         </div>
-
-                        <div class="mb-3">
+                        <div>
                             <label for="excerpt" class="form-label">文章摘要</label>
-                            <textarea class="form-control" id="excerpt" name="excerpt" 
-                                      rows="3" placeholder="文章摘要，用于列表页显示">{{ post.excerpt or '' }}</textarea>
+                            <textarea class="form-control width-full" id="excerpt" name="excerpt" rows="3" placeholder="文章摘要，用于列表页显示">{{ post.excerpt or '' }}</textarea>
+                            <p class="f6 color-fg-muted m-0 mt-1">摘要会直接显示在博客列表里，尽量简短一点。</p>
                         </div>
-
-                        <!-- 特色图片 -->
-                        <div class="mb-3">
-                            <label for="featured_image" class="form-label">特色图片</label>
-                            <div class="image-upload-container">
-                                <div class="image-upload-area" id="image-upload-area">
-                                    <div class="upload-placeholder">
-                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                                        <p class="text-muted">点击或拖拽上传图片</p>
-                                        <p class="text-muted small">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
+                        <div class="post-edit-inline-settings">
+                            <div class="post-edit-inline-field">
+                                <label for="status" class="form-label">发布状态</label>
+                                <select class="form-select width-full" id="status" name="status">
+                                    <option value="draft" {{ 'selected' if post.status == 'draft' }}>草稿</option>
+                                    <option value="published" {{ 'selected' if post.status == 'published' }}>已发布</option>
+                                </select>
+                            </div>
+                            <div class="post-edit-inline-field">
+                                <label for="category" class="form-label">文章分类</label>
+                                <input
+                                    type="text"
+                                    class="form-control width-full"
+                                    id="category"
+                                    name="category"
+                                    list="post-category-options"
+                                    maxlength="50"
+                                    value="{{ request.form.get('category', post.category or '') }}"
+                                    placeholder="输入新分类，或选择已有分类">
+                                <datalist id="post-category-options">
+                                    {% for category in categories %}
+                                    <option value="{{ category }}"></option>
+                                    {% endfor %}
+                                </datalist>
+                                <p class="f6 color-fg-muted m-0 mt-1">可直接输入新分类，也可以从已有分类中选择。</p>
+                            </div>
+                            <div class="post-edit-inline-field post-edit-inline-field-wide">
+                                <label for="tags" class="form-label">标签</label>
+                                <input type="text" class="form-control width-full" id="tags" name="tags" value="{{ post.tags or '' }}" placeholder="Python, Flask, Web开发">
+                                <p class="f6 color-fg-muted m-0 mt-1">多个标签请用逗号分隔。</p>
+                            </div>
+                        </div>
+                        <div class="post-edit-section">
+                            <div class="post-edit-section-head post-edit-media-head">
+                                <div>
+                                    <h3 class="post-edit-section-title">展示图片</h3>
+                                    <span class="post-edit-section-hint">可选，用于列表与分享展示</span>
+                                </div>
+                                <button type="button" class="btn btn-sm no-underline post-edit-btn post-edit-btn-secondary post-edit-btn-compact" id="image-toggle-btn">
+                                    <i class="fas fa-plus" id="image-toggle-icon"></i>
+                                    <span id="image-toggle-label">添加图片</span>
+                                </button>
+                            </div>
+                            <div class="post-edit-cover d-none" id="image-panel">
+                                <div class="image-upload-container border rounded-2 p-4 color-bg-subtle">
+                                    <div class="image-upload-area cursor-pointer" id="image-upload-area">
+                                        <div class="upload-placeholder text-center">
+                                            <i class="fas fa-cloud-upload-alt f2 color-fg-muted mb-3"></i>
+                                            <p class="f5 color-fg-muted m-0 mb-1">点击或拖拽上传图片</p>
+                                            <p class="f6 color-fg-subtle m-0">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
+                                        </div>
+                                        <input type="file" id="image-upload-input" accept="image/*" class="d-none" tabindex="-1" aria-hidden="true">
                                     </div>
-                                    <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
-                                </div>
-                                <div class="image-preview" id="image-preview" style="display: none;">
-                                    <img id="preview-image" src="" alt="预览图片" class="img-fluid rounded">
-                                    <div class="image-actions">
-                                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="changeImage()">
-                                            <i class="fas fa-edit"></i> 更换
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeImage()">
-                                            <i class="fas fa-trash"></i> 删除
-                                        </button>
+                                    <div class="image-preview d-none" id="image-preview">
+                                        <img id="preview-image" src="" alt="预览图片" class="width-full rounded-2 border" style="max-height: 300px; object-fit: cover;">
+                                        <div class="image-actions d-flex gap-2 justify-center mt-3">
+                                            <button type="button" class="btn btn-outline btn-sm" onclick="changeImage()"><i class="fas fa-edit"></i> 更换</button>
+                                            <button type="button" class="btn btn-danger btn-sm" onclick="removeImage()"><i class="fas fa-trash"></i> 删除</button>
+                                        </div>
                                     </div>
-                                </div>
-                                <input type="hidden" id="featured_image" name="featured_image" value="{{ post.featured_image or '' }}">
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="content" class="form-label">文章内容 *</label>
-                            <div id="tiptap-container"></div>
-                            <textarea id="content" name="content" style="display:none;">{{ post.content }}</textarea>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="tags" class="form-label">标签</label>
-                                    <input type="text" class="form-control" id="tags" name="tags" 
-                                           value="{{ post.tags or '' }}" 
-                                           placeholder="Python, Flask, Web开发 (用逗号分隔)">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="status" class="form-label">发布状态</label>
-                                    <select class="form-select" id="status" name="status">
-                                        <option value="draft" {{ 'selected' if post.status == 'draft' }}>草稿</option>
-                                        <option value="published" {{ 'selected' if post.status == 'published' }}>已发布</option>
-                                    </select>
+                                    <input type="hidden" id="featured_image" name="featured_image" value="{{ post.featured_image or '' }}">
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="d-flex justify-content-between align-items-center btn-actions">
-                            <div>
-                                <button type="button" class="btn btn-outline-danger delete-post-btn" 
-                                        data-post-id="{{ post.id }}">
+                <div class="Box">
+                    <div class="Box-header">
+                        <h2 class="f4 text-semibold m-0 color-fg-default"><i class="fas fa-align-left color-fg-muted"></i> 正文内容</h2>
+                    </div>
+                    <div class="Box-body post-edit-stack">
+                        <label for="content" class="form-label m-0">文章内容 *</label>
+                        <div id="tiptap-container"></div>
+                        <textarea id="content" name="content" class="d-none" aria-hidden="true">{{ post.content }}</textarea>
+                        <div class="post-edit-toolbar">
+                            <div class="post-edit-toolbar-meta">
+                                {% if post.status == 'published' %}
+                                <span class="post-edit-toolbar-pill">当前为已发布文章</span>
+                                {% else %}
+                                <span class="post-edit-toolbar-pill">当前为草稿</span>
+                                {% endif %}
+                            </div>
+                            <div class="post-edit-toolbar-actions">
+                                <button type="submit" class="btn btn-sm post-edit-btn post-edit-btn-primary post-edit-btn-compact"><i class="fas fa-save"></i> 保存更改</button>
+                                {% if post.status == 'published' %}
+                                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn btn-sm no-underline text-center post-edit-btn post-edit-btn-secondary post-edit-btn-compact" target="_blank"><i class="fas fa-eye"></i> 查看文章</a>
+                                {% endif %}
+                                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-sm no-underline text-center post-edit-btn post-edit-btn-secondary post-edit-btn-compact"><i class="fas fa-list"></i> 返回列表</a>
+                                <button type="button" class="btn btn-sm delete-post-btn cursor-pointer post-edit-btn post-edit-btn-danger post-edit-btn-compact">
                                     <i class="fas fa-trash"></i> 删除文章
                                 </button>
                             </div>
-                            <div class="d-flex gap-2">
-                                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-outline-secondary">
-                                    <i class="fas fa-times"></i> 取消
-                                </a>
-                                <button type="submit" class="btn-submit">
-                                    <i class="fas fa-save"></i> 保存更改
-                                </button>
-                            </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </form>
 </div>
 
-<!-- 删除确认模态框 -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">确认删除</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p>确定要删除文章 "{{ post.title }}" 吗？此操作无法撤销。</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" style="display: inline;">
-                    <button type="submit" class="btn btn-danger">确认删除</button>
-                </form>
-            </div>
+<div id="deleteModal" class="position-fixed inset-0 d-none items-center justify-center" style="background: rgba(31, 35, 40, 0.5); z-index: 1000; padding: 16px;">
+    <div class="Box shadow-xl width-full overflow-hidden" style="max-width: 500px;">
+        <div class="Box-header d-flex items-center justify-between border-bottom">
+            <h3 class="f3 text-bold m-0 color-fg-default">确认删除</h3>
+            <button type="button" onclick="closeModal('deleteModal')" class="btn btn-invisible btn-sm cursor-pointer" aria-label="关闭">&times;</button>
+        </div>
+        <div class="Box-body">
+            <p class="f5 color-fg-default m-0">确定要删除文章「{{ post.title }}」吗？此操作无法撤销。</p>
+        </div>
+        <div class="Box-footer d-flex justify-end gap-2 border-top">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('deleteModal')">取消</button>
+            <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" class="d-inline-block m-0">
+                <button type="submit" class="btn btn-danger btn-sm">确认删除</button>
+            </form>
         </div>
     </div>
 </div>
-
 {% endblock %}
 
 {% block extra_css %}
-<!-- Tiptap 编辑器样式 -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
-<!-- 图片模态框样式 -->
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
 
 <style>
-/* 按钮布局样式 */
-.btn-actions {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+.post-edit-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
 }
 
-.btn-actions .btn {
-    min-width: 120px;
-    font-weight: 500;
+.post-edit-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
 }
 
-.btn-submit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.post-edit-page {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.btn-submit:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    color: white;
+.post-edit-main {
+    min-width: 0;
 }
 
-.btn-outline-danger {
-    border-color: rgba(220, 53, 69, 0.5);
-    color: rgba(220, 53, 69, 0.8);
+.post-edit-main .Box,
+.post-edit-main .Box-body,
+.post-edit-main .post-edit-stack > div,
+.post-edit-main .post-edit-inline-field {
+    min-width: 0;
+}
+
+.post-edit-main .Box {
+    overflow: hidden;
+}
+
+.post-edit-main .form-control,
+.post-edit-main .form-select,
+.post-edit-main input,
+.post-edit-main textarea,
+.post-edit-main select {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.post-edit-main .form-control,
+.post-edit-main .form-select {
+    border: 1px solid var(--borderColor-default) !important;
+    border-radius: 12px;
+    background: var(--bgColor-default) !important;
+    box-shadow: inset 0 1px 1px rgba(31, 35, 40, 0.02), 0 1px 2px rgba(31, 35, 40, 0.04);
+}
+
+.post-edit-main .form-control:focus,
+.post-edit-main .form-select:focus {
+    border-color: var(--focus-outlineColor) !important;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.post-edit-main textarea {
+    resize: vertical;
+}
+
+.post-edit-inline-settings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.post-edit-inline-field {
+    min-width: 0;
+}
+
+.post-edit-inline-field-wide {
+    grid-column: 1 / -1;
+}
+
+.post-edit-header .btn {
+    white-space: nowrap;
+}
+
+.post-edit-header-copy {
+    min-width: 0;
+}
+
+.post-edit-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 28px;
+    line-height: 1.15;
+    font-weight: 700;
+}
+
+.post-edit-subtitle {
+    margin: 6px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.post-edit-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 10px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+}
+
+.post-edit-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.post-edit-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.post-edit-section {
+    padding-top: 14px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.post-edit-section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.post-edit-media-head {
+    align-items: flex-start;
+}
+
+.post-edit-section-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.post-edit-section-hint {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.post-edit-cover {
+    padding: 12px;
+    border: 1px dashed var(--borderColor-default);
+    border-radius: 12px;
+    background: var(--bgColor-muted);
+}
+
+.post-edit-cover.d-none {
+    display: none !important;
+}
+
+.post-edit-cover .image-upload-container {
+    border: 0;
     background: transparent;
+    padding: 0;
 }
 
-.btn-outline-danger:hover {
-    background: rgba(220, 53, 69, 0.1);
-    border-color: rgba(220, 53, 69, 0.8);
-    color: rgba(220, 53, 69, 1);
-}
-
-.btn-outline-secondary {
-    border-color: rgba(255, 255, 255, 0.3);
-    color: rgba(255, 255, 255, 0.8);
-    background: transparent;
-}
-
-.btn-outline-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: rgba(255, 255, 255, 1);
-}
-
-/* 编辑表单输入框文字颜色 */
-.form-control {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-control:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.form-select {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-select:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-.form-label {
-    color: white !important;
-}
-
-/* 图片上传样式 */
-.image-upload-container {
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    padding: 20px;
-    text-align: center;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.05);
-}
-
-.image-upload-container:hover {
-    border-color: rgba(255, 255, 255, 0.5);
-    background: rgba(255, 255, 255, 0.1);
-}
-
-.image-upload-area {
+.post-edit-cover .image-upload-area {
+    min-height: 176px;
+    border: 1px dashed var(--borderColor-default);
+    border-radius: 10px;
+    background: var(--bgColor-default);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
     cursor: pointer;
 }
 
-.upload-placeholder {
-    color: rgba(255, 255, 255, 0.7);
+.post-edit-cover .image-upload-area:hover {
+    border-color: var(--borderColor-accent-emphasis);
 }
 
-.image-preview {
+.post-edit-cover .image-preview {
     position: relative;
     max-width: 100%;
 }
 
-.image-preview img {
-    max-width: 100%;
-    max-height: 300px;
-    object-fit: cover;
-    border-radius: 8px;
+.post-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: auto;
+    min-height: 34px;
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--button-default-borderColor);
+    background: var(--button-default-bgColor-rest);
+    color: var(--button-default-fgColor) !important;
+    box-shadow: var(--shadow-resting-xsmall);
+    text-decoration: none !important;
 }
 
-.image-actions {
-    margin-top: 10px;
+.post-edit-btn-compact {
+    min-width: 112px;
+    padding: 0 14px;
+}
+
+.post-edit-btn:hover {
+    background: var(--button-default-bgColor-hover);
+    border-color: var(--borderColor-emphasis);
+    color: var(--button-default-fgColor) !important;
+}
+
+.post-edit-btn-primary {
+    background: var(--button-primary-bgColor-rest);
+    border-color: var(--button-primary-bgColor-rest);
+    color: var(--button-primary-fgColor) !important;
+}
+
+.post-edit-btn-primary:hover {
+    background: var(--button-primary-bgColor-hover);
+    border-color: var(--button-primary-bgColor-hover);
+    color: var(--button-primary-fgColor) !important;
+}
+
+.post-edit-btn-danger {
+    border-color: rgba(209, 36, 47, 0.16);
+    background: rgba(209, 36, 47, 0.04);
+    color: var(--button-danger-fgColor-rest) !important;
+}
+
+.post-edit-btn-danger:hover {
+    background: var(--button-danger-bgColor-hover);
+    border-color: var(--button-danger-bgColor-hover);
+    color: var(--fgColor-onEmphasis) !important;
+}
+
+.post-edit-btn-secondary {
+    color: var(--button-default-fgColor) !important;
+}
+
+.post-edit-toolbar {
     display: flex;
-    gap: 10px;
-    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 6px;
+    padding: 14px 0 0;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.post-edit-toolbar-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.post-edit-toolbar-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.post-edit-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-left: auto;
 }
 
 .upload-progress {
     margin-top: 10px;
     display: none;
 }
+
+#content {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+#tiptap-container .tiptap-editor {
+    min-height: 540px;
+    height: min(72vh, 780px);
+}
+
+@media (max-width: 767px) {
+    .post-edit-header {
+        flex-direction: column;
+    }
+
+    .post-edit-title {
+        font-size: 24px;
+    }
+
+    .post-edit-inline-settings {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .post-edit-inline-field-wide {
+        grid-column: auto;
+    }
+
+    .post-edit-media-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .post-edit-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .post-edit-toolbar-actions {
+        flex-direction: column;
+        margin-left: 0;
+    }
+
+    .post-edit-btn-compact {
+        width: 100%;
+    }
+
+    #tiptap-container .tiptap-editor {
+        min-height: 440px;
+        height: min(66vh, 640px);
+    }
+}
 </style>
 {% endblock %}
 
 {% block extra_js %}
-<!-- 简化版 Tiptap 编辑器 JavaScript -->
 <script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
 
 <script>
+function openModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('d-none');
+    el.classList.add('d-flex');
+}
+function closeModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('d-none');
+    el.classList.remove('d-flex');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化简化版 Tiptap 编辑器
-    const tiptapContainer = document.getElementById('tiptap-container');
-    const contentTextarea = document.getElementById('content');
-    
-    const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
+    var tiptapContainer = document.getElementById('tiptap-container');
+    var contentTextarea = document.getElementById('content');
+
+    var tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
         placeholder: '开始写作...',
         content: contentTextarea.value || ''
     });
 
-    // 获取表单元素
-    const titleInput = document.getElementById('title');
-    const excerptInput = document.getElementById('excerpt');
-    const categorySelect = document.getElementById('category');
-    
-    // 图片上传相关元素
-    const imageUploadArea = document.getElementById('image-upload-area');
-    const imageUploadInput = document.getElementById('image-upload-input');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImage = document.getElementById('preview-image');
-    const featuredImageInput = document.getElementById('featured_image');
-    
-    // 统一的内容变化处理函数
+    var imageUploadArea = document.getElementById('image-upload-area');
+    var imageUploadInput = document.getElementById('image-upload-input');
+    var imagePreview = document.getElementById('image-preview');
+    var previewImage = document.getElementById('preview-image');
+    var featuredImageInput = document.getElementById('featured_image');
+    var imagePanel = document.getElementById('image-panel');
+    var imageToggleBtn = document.getElementById('image-toggle-btn');
+
     tiptapEditor.onContentChange = function(htmlContent) {
-        // 确保内容不为空或undefined
-        if (htmlContent === undefined || htmlContent === null) {
-            htmlContent = '';
-        }
-        
-        // 同步到隐藏的 textarea
+        if (htmlContent === undefined || htmlContent === null) htmlContent = '';
         contentTextarea.value = htmlContent;
     };
-    
-    // 删除文章按钮事件
-    const deleteBtn = document.querySelector('.delete-post-btn');
+
+    var deleteBtn = document.querySelector('.delete-post-btn');
     if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            deleteModal.show();
+        deleteBtn.addEventListener('click', function() { openModal('deleteModal'); });
+    }
+
+    if (imageToggleBtn) {
+        imageToggleBtn.addEventListener('click', function() {
+            var shouldOpen = imagePanel.classList.contains('d-none');
+            setImagePanelVisible(shouldOpen);
         });
     }
-    
-    // 初始化现有图片
+
     if (featuredImageInput && featuredImageInput.value) {
         showImagePreview(featuredImageInput.value);
+    } else {
+        setImagePanelVisible(false);
     }
-    
-    // 图片上传功能
+
     if (imageUploadArea && imageUploadInput) {
-        // 点击上传区域
         imageUploadArea.addEventListener('click', function() {
-            imageUploadInput.click();
+            var inp = document.getElementById('image-upload-input');
+            if (inp) inp.click();
         });
-        
-        // 文件选择
         imageUploadInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                uploadImage(file);
-            }
+            var file = e.target.files[0];
+            if (file) uploadImage(file);
         });
-        
-        // 拖拽上传
         imageUploadArea.addEventListener('dragover', function(e) {
             e.preventDefault();
-            imageUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.7)';
+            imageUploadArea.style.borderColor = 'var(--fgColor-accent)';
         });
-        
         imageUploadArea.addEventListener('dragleave', function(e) {
             e.preventDefault();
-            imageUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            imageUploadArea.style.borderColor = '';
         });
-        
         imageUploadArea.addEventListener('drop', function(e) {
             e.preventDefault();
-            imageUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                uploadImage(files[0]);
-            }
+            imageUploadArea.style.borderColor = '';
+            var files = e.dataTransfer.files;
+            if (files.length > 0) uploadImage(files[0]);
         });
     }
 });
 
-// 图片上传函数
 function uploadImage(file) {
-    // 检查文件类型
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
         alert('请选择图片文件（JPG、PNG、GIF、WebP）');
         return;
     }
-    
-    // 检查文件大小（5MB）
     if (file.size > 5 * 1024 * 1024) {
         alert('图片大小不能超过5MB');
         return;
     }
-    
-    // 显示上传进度
-    const uploadArea = document.getElementById('image-upload-area');
-    uploadArea.innerHTML = '<i class="fas fa-spinner fa-spin fa-2x mb-3"></i><p>上传中...</p>';
-    
-    // 创建FormData
-    const formData = new FormData();
+    var uploadArea = document.getElementById('image-upload-area');
+    uploadArea.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin f2 color-fg-muted mb-3"></i><p class="f5 color-fg-muted m-0">上传中...</p></div>';
+
+    var formData = new FormData();
     formData.append('image', file);
-    
-    // 上传图片
-    fetch('/api/upload-image', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // 显示预览
-            showImagePreview(data.url);
-            document.getElementById('featured_image').value = data.url;
-        } else {
-            alert('上传失败：' + data.message);
+
+    fetch('/api/upload-image', { method: 'POST', body: formData })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                showImagePreview(data.url);
+                document.getElementById('featured_image').value = data.url;
+            } else {
+                alert('上传失败：' + data.message);
+                resetUploadArea();
+            }
+        })
+        .catch(function(err) {
+            console.error('上传错误:', err);
+            alert('上传失败，请稍后重试');
             resetUploadArea();
-        }
-    })
-    .catch(error => {
-        console.error('上传错误:', error);
-        alert('上传失败，请稍后重试');
-        resetUploadArea();
-    });
+        });
 }
 
-// 显示图片预览
+function updateImageToggleButton() {
+    var imagePanel = document.getElementById('image-panel');
+    var imageToggleLabel = document.getElementById('image-toggle-label');
+    var imageToggleIcon = document.getElementById('image-toggle-icon');
+    var featuredImageInput = document.getElementById('featured_image');
+    if (!imagePanel || !imageToggleLabel || !imageToggleIcon) return;
+
+    var hasImage = !!(featuredImageInput && featuredImageInput.value);
+    var isOpen = !imagePanel.classList.contains('d-none');
+
+    if (hasImage) {
+        imageToggleLabel.textContent = isOpen ? '收起图片' : '查看图片';
+        imageToggleIcon.className = isOpen ? 'fas fa-chevron-up' : 'fas fa-image';
+        return;
+    }
+
+    imageToggleLabel.textContent = isOpen ? '收起' : '添加图片';
+    imageToggleIcon.className = isOpen ? 'fas fa-chevron-up' : 'fas fa-plus';
+}
+
+function setImagePanelVisible(visible) {
+    var imagePanel = document.getElementById('image-panel');
+    if (!imagePanel) return;
+    imagePanel.classList.toggle('d-none', !visible);
+    updateImageToggleButton();
+}
+
 function showImagePreview(imageUrl) {
-    const uploadArea = document.getElementById('image-upload-area');
-    const imagePreview = document.getElementById('image-preview');
-    const previewImage = document.getElementById('preview-image');
-    
+    var uploadArea = document.getElementById('image-upload-area');
+    var previewEl = document.getElementById('image-preview');
+    var previewImage = document.getElementById('preview-image');
     previewImage.src = imageUrl;
-    uploadArea.style.display = 'none';
-    imagePreview.style.display = 'block';
+    setImagePanelVisible(true);
+    uploadArea.classList.add('d-none');
+    previewEl.classList.remove('d-none');
+    updateImageToggleButton();
 }
 
-// 重置上传区域
 function resetUploadArea() {
-    const uploadArea = document.getElementById('image-upload-area');
-    uploadArea.innerHTML = `
-        <div class="upload-placeholder">
-            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-            <p class="text-muted">点击或拖拽上传图片</p>
-            <p class="text-muted small">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p>
-        </div>
-        <input type="file" id="image-upload-input" accept="image/*" style="display: none;">
-    `;
-    
-    // 重新绑定事件
-    const newInput = uploadArea.querySelector('#image-upload-input');
+    var uploadArea = document.getElementById('image-upload-area');
+    uploadArea.classList.remove('d-none');
+    uploadArea.innerHTML = '<div class="upload-placeholder text-center">' +
+        '<i class="fas fa-cloud-upload-alt f2 color-fg-muted mb-3"></i>' +
+        '<p class="f5 color-fg-muted m-0 mb-1">点击或拖拽上传图片</p>' +
+        '<p class="f6 color-fg-subtle m-0">支持 JPG、PNG、GIF、WebP 格式，最大 5MB</p></div>' +
+        '<input type="file" id="image-upload-input" accept="image/*" class="d-none" tabindex="-1" aria-hidden="true">';
+    var newInput = uploadArea.querySelector('#image-upload-input');
     newInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            uploadImage(file);
-        }
+        var file = e.target.files[0];
+        if (file) uploadImage(file);
     });
+    updateImageToggleButton();
 }
 
-// 更换图片
 function changeImage() {
-    document.getElementById('image-upload-input').click();
+    setImagePanelVisible(true);
+    var inp = document.getElementById('image-upload-input');
+    if (inp) inp.click();
 }
 
-// 删除图片
 function removeImage() {
-    const uploadArea = document.getElementById('image-upload-area');
-    const imagePreview = document.getElementById('image-preview');
-    const featuredImageInput = document.getElementById('featured_image');
-    
+    var uploadArea = document.getElementById('image-upload-area');
+    var previewEl = document.getElementById('image-preview');
+    var featuredImageInput = document.getElementById('featured_image');
     featuredImageInput.value = '';
-    imagePreview.style.display = 'none';
-    uploadArea.style.display = 'block';
+    previewEl.classList.add('d-none');
+    uploadArea.classList.remove('d-none');
     resetUploadArea();
+    setImagePanelVisible(false);
 }
 </script>
-{% endblock %} 
+{% endblock %}

@@ -2,79 +2,365 @@
 
 {% block title %}博客 - Kim's Blog{% endblock %}
 
+{% block extra_css %}
+<style>
+.blog-page .blog-list-layout {
+    gap: 24px !important;
+}
+
+.blog-page .blog-page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.blog-page .blog-page-title {
+    margin: 0 0 6px;
+    font-size: clamp(1.75rem, 4vw, 2.1rem);
+    line-height: 1.08;
+    color: var(--fgColor-default);
+}
+
+.blog-page .blog-page-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 0.95rem;
+    line-height: 1.75;
+}
+
+.blog-page .blog-list {
+    gap: 18px !important;
+}
+
+.blog-page .blog-list-card {
+    position: relative;
+    padding: 18px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.blog-page .blog-list-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--borderColor-emphasis);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.blog-page .blog-card-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.blog-page .blog-card-top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.blog-page .blog-card-category {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fgColor-accent);
+}
+
+.blog-page .blog-card-date {
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.blog-page .blog-card-title {
+    margin: 0;
+    font-size: 1.3rem;
+    line-height: 1.3;
+}
+
+.blog-page .blog-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.blog-page .blog-card-heading-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.blog-page .blog-card-meta-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 8px;
+}
+
+.blog-page .blog-card-title a {
+    color: var(--fgColor-default) !important;
+}
+
+.blog-page .blog-card-title a:hover {
+    color: var(--fgColor-accent) !important;
+    text-decoration: none;
+}
+
+.blog-page .blog-card-excerpt {
+    margin-bottom: 8px;
+    color: var(--fgColor-muted);
+    font-size: 0.9rem;
+    line-height: 1.68;
+}
+
+.blog-page .blog-card-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+}
+
+.blog-page .blog-card-head-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.blog-page .blog-sidebar-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.blog-page .blog-side-card {
+    padding: 18px;
+    border-radius: 14px;
+}
+
+.blog-page .blog-side-title {
+    margin: 0 0 14px;
+    font-size: 1rem;
+    color: var(--fgColor-default);
+}
+
+.blog-page .blog-side-search {
+    position: relative;
+}
+
+.blog-page .blog-side-search .form-control {
+    padding-left: 34px;
+}
+
+.blog-page .blog-side-search i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+    pointer-events: none;
+}
+
+.blog-page .blog-side-list {
+    display: grid;
+    gap: 10px;
+}
+
+.blog-page .blog-side-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    color: var(--fgColor-muted);
+    text-decoration: none;
+}
+
+.blog-page .blog-side-link:hover {
+    color: var(--fgColor-default);
+    text-decoration: none;
+}
+
+.blog-page .blog-popular-list {
+    display: grid;
+    gap: 12px;
+}
+
+.blog-page .blog-popular-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.blog-page .blog-popular-link:hover {
+    text-decoration: none;
+}
+
+.blog-page .blog-popular-thumb {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border-radius: 12px;
+}
+
+.blog-page .blog-popular-meta h4 {
+    margin: 0;
+}
+
+.blog-page .blog-pagination {
+    margin-top: 28px;
+}
+
+.blog-page .blog-card-icon-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 10px;
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+}
+
+.blog-page .blog-card-icon-btn:hover {
+    border-color: transparent;
+    background: var(--bgColor-muted);
+}
+
+.blog-page .blog-card-link-btn {
+    color: var(--fgColor-accent);
+}
+
+.blog-page .blog-card-link-btn:hover {
+    color: var(--fgColor-accent);
+}
+
+.blog-page .blog-card-delete-btn {
+    color: var(--fgColor-subtle);
+}
+
+.blog-page .blog-card-delete-btn:hover {
+    color: var(--fgColor-danger);
+    background: var(--bgColor-danger-muted);
+}
+
+@media (min-width: 768px) {
+    .blog-page .blog-sidebar {
+        position: sticky;
+        top: 72px;
+        align-self: flex-start;
+    }
+}
+
+@media (max-width: 767px) {
+    .blog-page .blog-card-heading,
+    .blog-page .blog-card-head-actions {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .blog-page .blog-card-meta-inline {
+        gap: 8px 10px;
+    }
+
+    .blog-page .blog-card-head-actions {
+        justify-content: flex-end;
+    }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="flex flex-col md:flex-row">
+<div class="blog-page">
+<div class="d-flex flex-column flex-regular-row blog-list-layout">
     <!-- 文章列表 -->
-    <div class="w-full md:w-2/3 lg:w-3/4 md:pr-8">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-indigo-300">最新文章</h1>
+    <div class="width-full w-regular-2/3 w-large-3/4 pr-regular-4">
+        <div class="blog-page-head">
+            <div>
+                <h1 class="blog-page-title">最新文章</h1>
+                <p class="blog-page-copy">按时间排序展示，当前共 {{ posts.total }} 篇文章。</p>
+            </div>
             {% if current_user.is_authenticated and current_user.is_admin %}
-            <div class="flex space-x-2">
-                <a href="{{ url_for('admin.new_post') }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium inline-flex items-center">
-                    <i class="fas fa-plus mr-2"></i> 新增文章
+            <div class="d-flex space-x-2">
+                <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary btn-sm d-inline-flex items-center no-underline">
+                    <i class="fas fa-plus mr-2" aria-hidden="true"></i> 新增文章
                 </a>
             </div>
             {% endif %}
         </div>
         
         <!-- 文章卡片 -->
-        <div class="grid grid-cols-1 gap-8">
+        <div class="d-grid grid-cols-1 blog-list">
             {% for post in posts.items %}
-            <article class="glass-card rounded-xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <span class="text-sm text-indigo-300">{{ post.category or '未分类' }}</span>
-                    <span class="text-sm text-slate-400">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
-                </div>
-                
-                <h2 class="text-2xl font-bold mb-3 hover:text-indigo-300 cursor-pointer">
-                    <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}">{{ post.title }}</a>
-                </h2>
-                
-                <p class="text-slate-300 mb-4">{{ (post.excerpt or post.content[:200] + '...' if post.content|length > 200 else post.content)|striptags }}</p>
-                
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-2 text-sm text-slate-400">
-                            <i class="fas fa-user"></i>
-                            <span>{{ post.author.username if post.author else '未知' }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 text-sm text-slate-400">
-                            <i class="fas fa-eye"></i>
-                            <span>{{ post.view_count }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 text-sm text-slate-400">
-                            <i class="far fa-heart"></i>
-                            <span>{{ post.like_count }}</span>
-                        </div>
-                        <div class="flex items-center space-x-2 text-sm text-slate-400">
-                            <i class="far fa-comment"></i>
-                            <span>{{ post.comment_count }}</span>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center space-x-2">
-                        <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium inline-flex items-center">
-                            阅读更多 <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
+            <article class="Box blog-list-card" data-post-url="{{ url_for('main.post_detail', slug=post.safe_slug) }}" role="link" tabindex="0" aria-label="查看文章 {{ post.title }}">
+                <div class="blog-card-top">
+                    <span class="blog-card-category">{{ post.category or '未分类' }}</span>
+                    <div class="blog-card-top-right">
+                        <span class="blog-card-date">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
                         {% if current_user.is_authenticated and current_user.is_admin %}
-                        <button onclick="deletePost({{ post.id }})" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-full text-sm font-medium inline-flex items-center transition-colors" title="删除文章">
-                            <i class="fas fa-trash"></i>
+                        <button type="button" onclick="deletePost({{ post.id }})" class="btn btn-invisible btn-sm blog-card-icon-btn blog-card-delete-btn" title="删除文章" aria-label="删除文章">
+                            <i class="fas fa-trash" aria-hidden="true"></i>
                         </button>
                         {% endif %}
                     </div>
                 </div>
+                
+                <div class="blog-card-heading">
+                    <div class="blog-card-heading-main">
+                        <h2 class="blog-card-title text-bold color-fg-default">
+                            <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="no-underline">{{ post.title }}</a>
+                        </h2>
+                        <div class="blog-card-meta-inline">
+                            <div class="blog-card-stat">
+                                <i class="fas fa-user" aria-hidden="true"></i>
+                                <span>{{ post.author.username if post.author else '未知' }}</span>
+                            </div>
+                            <div class="blog-card-stat">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                                <span>{{ post.view_count }}</span>
+                            </div>
+                            <div class="blog-card-stat">
+                                <i class="far fa-heart" aria-hidden="true"></i>
+                                <span>{{ post.like_count }}</span>
+                            </div>
+                            <div class="blog-card-stat">
+                                <i class="far fa-comment" aria-hidden="true"></i>
+                                <span>{{ post.comment_count }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="blog-card-head-actions">
+                        <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn btn-invisible btn-sm no-underline blog-card-icon-btn blog-card-link-btn" aria-label="查看文章 {{ post.title }}">
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <p class="blog-card-excerpt line-clamp-2">{{ (post.excerpt or post.content[:120] + '...' if post.content|length > 120 else post.content)|striptags }}</p>
             </article>
             {% endfor %}
         </div>
         
         <!-- 分页 -->
         {% if posts.pages > 1 %}
-        <div class="flex justify-center mt-10">
-            <nav class="flex items-center space-x-2">
+        <div class="d-flex justify-center blog-pagination">
+            <nav class="d-flex items-center space-x-2" aria-label="分页">
                 {% if posts.has_prev %}
                 <a href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search) }}" 
-                   class="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white">
-                    <i class="fas fa-chevron-left"></i>
+                   class="btn btn-secondary btn-sm no-underline">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
                 </a>
                 {% endif %}
                 
@@ -82,21 +368,21 @@
                     {% if page_num %}
                         {% if page_num != posts.page %}
                         <a href="{{ url_for('main.blog', page=page_num, category=current_category, search=search) }}" 
-                           class="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white">
+                           class="btn btn-secondary btn-sm no-underline">
                             {{ page_num }}
                         </a>
                         {% else %}
-                        <span class="px-4 py-2 rounded-md bg-indigo-600 text-white">{{ page_num }}</span>
+                        <span class="px-3 py-2 rounded-2 color-bg-accent-emphasis color-fg-onEmphasis f5 text-semibold">{{ page_num }}</span>
                         {% endif %}
                     {% else %}
-                    <span class="px-4 py-2 text-slate-400">...</span>
+                    <span class="px-3 py-2 color-fg-subtle f5">...</span>
                     {% endif %}
                 {% endfor %}
                 
                 {% if posts.has_next %}
                 <a href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search) }}" 
-                   class="px-4 py-2 rounded-md bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white">
-                    <i class="fas fa-chevron-right"></i>
+                   class="btn btn-secondary btn-sm no-underline">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
                 </a>
                 {% endif %}
             </nav>
@@ -105,73 +391,100 @@
     </div>
     
     <!-- 侧边栏 -->
-    <aside class="w-full md:w-1/3 lg:w-1/4 mt-8 md:mt-0">
-        <div class="glass-card rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
-                <i class="fas fa-search mr-2"></i> 搜索
+    <aside class="width-full w-regular-1/3 w-large-1/4 mt-8 mt-regular-0 blog-sidebar">
+        <div class="blog-sidebar-stack">
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-search mr-2" aria-hidden="true"></i> 搜索
             </h3>
-            <form method="GET" action="{{ url_for('main.blog') }}">
-                <div class="relative">
+            <form method="GET" action="{{ url_for('main.blog') }}" class="blog-side-search">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <div>
                     <input type="text" name="search" placeholder="搜索文章..." 
                            value="{{ search or '' }}"
-                           class="bg-slate-800/50 border border-slate-700 rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full">
-                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                           class="form-control flex-1 f5">
                 </div>
             </form>
         </div>
         
-        <div class="glass-card rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
-                <i class="fas fa-tags mr-2"></i> 文章分类
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-tags mr-2" aria-hidden="true"></i> 文章分类
             </h3>
-            <ul class="space-y-2">
+            <ul class="list-style-none p-0 m-0 blog-side-list">
                 <li>
-                    <a href="{{ url_for('main.blog') }}" class="flex items-center justify-between text-slate-300 hover:text-indigo-300">
+                    <a href="{{ url_for('main.blog') }}" class="blog-side-link f5">
                         <span>所有文章</span>
-                        <span class="text-xs bg-slate-800 px-2 py-1 rounded-full">{{ posts.total }}</span>
+                        <span class="Label Label--secondary">{{ posts.total }}</span>
                     </a>
                 </li>
                 {% for category in categories %}
                 <li>
-                    <a href="{{ url_for('main.blog', category=category) }}" class="flex items-center justify-between text-slate-300 hover:text-indigo-300">
+                    <a href="{{ url_for('main.blog', category=category) }}" class="blog-side-link f5">
                         <span>{{ category }}</span>
-                        <span class="text-xs bg-slate-800 px-2 py-1 rounded-full">{{ category_count[category] if category_count else 0 }}</span>
+                        <span class="Label Label--secondary">{{ category_count[category] if category_count else 0 }}</span>
                     </a>
                 </li>
                 {% endfor %}
             </ul>
         </div>
         
-        <div class="glass-card rounded-xl p-6">
-            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
-                <i class="fas fa-fire mr-2"></i> 热门文章
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-fire mr-2" aria-hidden="true"></i> 热门文章
             </h3>
-            <ul class="space-y-4">
+            <ul class="list-style-none p-0 m-0 blog-popular-list">
                 {% for popular_post in popular_posts %}
                 <li>
-                    <a href="{{ url_for('main.post_detail', slug=popular_post.safe_slug) }}" class="flex items-start space-x-3 group">
-                        <div class="w-16 h-16 bg-slate-700 rounded-md overflow-hidden flex-shrink-0">
+                    <a href="{{ url_for('main.post_detail', slug=popular_post.safe_slug) }}" class="blog-popular-link">
+                        <div class="blog-popular-thumb color-bg-subtle overflow-hidden">
                             {% if popular_post.featured_image %}
-                            <img src="{{ popular_post.featured_image }}" alt="{{ popular_post.title }}" class="w-full h-full object-cover">
+                            <img src="{{ popular_post.featured_image }}" alt="{{ popular_post.title }}" class="width-full h-16 object-cover">
                             {% else %}
-                            <div class="w-full h-full flex items-center justify-center">
-                                <i class="fas fa-file-alt text-slate-400"></i>
+                            <div class="width-full h-16 d-flex items-center justify-center">
+                                <i class="fas fa-file-alt color-fg-subtle" aria-hidden="true"></i>
                             </div>
                             {% endif %}
                         </div>
-                        <div>
-                            <h4 class="text-sm font-medium group-hover:text-indigo-300">{{ popular_post.title }}</h4>
-                            <p class="text-xs text-slate-400 mt-1">{{ popular_post.view_count }} 浏览</p>
+                        <div class="blog-popular-meta flex-1 overflow-hidden">
+                            <h4 class="f5 text-semibold color-fg-default line-clamp-2">{{ popular_post.title }}</h4>
+                            <p class="f6 color-fg-subtle mt-1">{{ popular_post.view_count }} 浏览</p>
                         </div>
                     </a>
                 </li>
                 {% endfor %}
             </ul>
         </div>
+        </div>
     </aside>
+</div>
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.blog-list-card[data-post-url]').forEach(function(card) {
+        const goToPost = function() {
+            const url = card.getAttribute('data-post-url');
+            if (url) {
+                window.location.href = url;
+            }
+        };
+
+        card.addEventListener('click', function(e) {
+            if (e.target.closest('a, button, input, textarea, select, label, form')) return;
+            goToPost();
+        });
+
+        card.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                if (e.target.closest('a, button, input, textarea, select, label, form')) return;
+                e.preventDefault();
+                goToPost();
+            }
+        });
+    });
+});
+
 // 删除文章函数
 function deletePost(postId) {
     if (confirm('确定要删除这篇文章吗？此操作不可撤销！')) {
@@ -205,9 +518,8 @@ function deletePost(postId) {
 // 显示提示消息
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    }`;
+    const variant = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
+    toast.className = 'position-fixed top-0 right-0 z-50 m-3 text-semibold ' + variant;
     toast.textContent = message;
     
     document.body.appendChild(toast);

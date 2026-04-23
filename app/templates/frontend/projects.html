@@ -3,170 +3,162 @@
 {% block title %}项目展示 - Kim's Blog{% endblock %}
 
 {% block content %}
-<div class="flex flex-col md:flex-row">
-    <!-- 项目列表 -->
-    <div class="w-full md:w-2/3 lg:w-3/4 md:pr-8">
-        <div class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-indigo-300">项目展示</h1>
+<div class="d-flex flex-column d-regular-flex flex-regular-row gap-6">
+    <div class="width-full w-regular-2/3 w-large-3/4 pr-regular-4">
+        <div class="d-flex justify-between items-center flex-wrap gap-3 mb-6">
+            <h1 class="f00 text-bold color-fg-default">项目展示</h1>
             {% if current_user.is_authenticated and current_user.is_admin %}
-            <div class="flex space-x-2">
-                <a href="{{ url_for('admin.new_project') }}" class="btn-primary text-white px-4 py-2 rounded-full text-sm font-medium inline-flex items-center">
-                    <i class="fas fa-plus mr-2"></i> 新增项目
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('admin.new_project') }}" class="btn btn-primary btn-sm no-underline d-inline-flex items-center gap-2">
+                    <i class="fas fa-plus"></i> 新增项目
                 </a>
             </div>
             {% endif %}
         </div>
-        
-        <!-- 项目筛选 -->
-        <div class="flex justify-center flex-wrap gap-2 mb-8">
-            <button class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-indigo-600 text-white" data-filter="all">全部</button>
+
+        <div class="d-flex justify-center flex-wrap gap-2 mb-6">
+            <button type="button" class="btn btn-sm btn-primary" data-filter="all">全部</button>
             {% for category in categories %}
-            <button class="px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 bg-slate-800 text-slate-300 hover:bg-indigo-600 hover:text-white" data-filter="{{ category }}">{{ category }}</button>
+            <button type="button" class="btn btn-sm btn-secondary" data-filter="{{ category }}">{{ category }}</button>
             {% endfor %}
         </div>
-        
-        <!-- 项目网格 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8" id="projects-container">
+
+        <div class="d-grid grid-cols-1 gap-8 d-regular-grid grid-regular-cols-2" id="projects-container">
             {% for project in projects %}
-            <div class="glass-card rounded-xl overflow-hidden project-item" data-category="{{ project.category or 'other' }}">
-                <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="block">
+            <div class="Box shadow-sm overflow-hidden project-item" data-category="{{ project.category or 'other' }}">
+                <a href="#" class="d-block no-underline color-fg-default">
                     {% if project.image_url %}
-                    <div class="h-48 overflow-hidden">
-                        <img src="{{ project.image_url }}" alt="{{ project.title }}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+                    <div class="overflow-hidden color-bg-subtle d-flex items-center justify-center" style="height: 192px;">
+                        <img src="{{ project.image_url }}" alt="{{ project.title }}" class="width-full object-cover" style="height: 100%;">
                     </div>
                     {% else %}
-                    <div class="h-48 bg-slate-700 flex items-center justify-center">
-                        <i class="fas fa-code fa-3x text-slate-400"></i>
+                    <div class="color-bg-subtle d-flex items-center justify-center" style="height: 192px;">
+                        <i class="fas fa-code f00 color-fg-subtle"></i>
                     </div>
                     {% endif %}
-                    
-                    <div class="p-6">
-                        <div class="flex items-center justify-between mb-3">
-                            <span class="text-sm text-indigo-300">{{ project.category or '未分类' }}</span>
-                            <span class="text-sm text-slate-400">{{ project.created_at.strftime('%Y-%m-%d') }}</span>
+
+                    <div class="p-6 pb-4">
+                        <div class="d-flex items-center justify-between mb-3">
+                            <span class="f5 color-fg-accent">{{ project.category or '未分类' }}</span>
+                            <span class="f5 color-fg-subtle">{{ project.created_at.strftime('%Y-%m-%d') }}</span>
                         </div>
-                        
-                        <h3 class="text-xl font-bold mb-3 text-white hover:text-indigo-300 transition-colors">{{ project.title }}</h3>
-                        
-                        <p class="text-slate-300 mb-4 line-clamp-3">{{ project.short_description or project.description[:150] + '...' if project.description|length > 150 else project.description }}</p>
-                        
-                        <!-- 技术栈 -->
+
+                        <h3 class="f2 text-bold mb-3 color-fg-default">{{ project.title }}</h3>
+
+                        <p class="color-fg-muted mb-4 line-clamp-3 lh-default">{{ project.short_description or project.description[:150] + '...' if project.description|length > 150 else project.description }}</p>
+
                         {% if project.technologies %}
-                        <div class="flex flex-wrap gap-2 mb-4">
+                        <div class="d-flex flex-wrap gap-2 mb-0">
                             {% for tech in project.get_technologies_list()[:4] %}
-                            <span class="px-2 py-1 bg-slate-800 text-slate-300 text-xs rounded-full">{{ tech }}</span>
+                            <span class="Label Label--secondary">{{ tech }}</span>
                             {% endfor %}
                         </div>
                         {% endif %}
-                        
-                        <!-- 项目链接 -->
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center space-x-4 text-sm text-slate-400">
-                                <div class="flex items-center space-x-1">
-                                    <i class="fas fa-eye"></i>
-                                    <span>{{ project.view_count }}</span>
-                                </div>
-                                <div class="flex items-center space-x-1">
-                                    <i class="far fa-heart"></i>
-                                    <span>{{ project.like_count }}</span>
-                                </div>
-                                <div class="flex items-center space-x-1">
-                                    <i class="far fa-star"></i>
-                                    <span>{{ project.favorite_count }}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="flex space-x-2">
-                                {% if project.github_url %}
-                                <a href="{{ project.github_url }}" target="_blank" class="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors" title="GitHub">
-                                    <i class="fab fa-github"></i>
-                                </a>
-                                {% endif %}
-                                {% if project.live_url %}
-                                <a href="{{ project.live_url }}" target="_blank" class="p-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 transition-colors" title="在线演示">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </a>
-                                {% endif %}
-                                {% if current_user.is_authenticated and current_user.is_admin %}
-                                <button onclick="deleteProject({{ project.id }})" class="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors" title="删除项目">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                                {% endif %}
-                            </div>
-                        </div>
                     </div>
                 </a>
+
+                <div class="px-6 pb-6 pt-0 d-flex items-center justify-between flex-wrap gap-3 border-top">
+                    <div class="d-flex items-center f5 color-fg-subtle gap-4">
+                        <div class="d-flex items-center gap-1">
+                            <i class="fas fa-eye"></i>
+                            <span>{{ project.view_count }}</span>
+                        </div>
+                        <div class="d-flex items-center gap-1">
+                            <i class="far fa-heart"></i>
+                            <span>{{ project.like_count }}</span>
+                        </div>
+                        <div class="d-flex items-center gap-1">
+                            <i class="far fa-star"></i>
+                            <span>{{ project.favorite_count }}</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        {% if project.github_url %}
+                        <a href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm no-underline p-2" style="min-width: 36px;" title="GitHub">
+                            <i class="fab fa-github"></i>
+                        </a>
+                        {% endif %}
+                        {% if project.live_url %}
+                        <a href="{{ project.live_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm no-underline p-2" style="min-width: 36px;" title="在线演示">
+                            <i class="fas fa-external-link-alt"></i>
+                        </a>
+                        {% endif %}
+                        {% if current_user.is_authenticated and current_user.is_admin %}
+                        <button type="button" onclick="deleteProject({{ project.id }})" class="btn btn-danger btn-sm p-2" style="min-width: 36px;" title="删除项目">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
             {% endfor %}
         </div>
-        
+
         {% if not projects %}
         <div class="text-center py-12">
-            <i class="fas fa-folder-open fa-4x text-slate-400 mb-4"></i>
-            <h3 class="text-xl font-semibold text-slate-300 mb-2">暂无项目</h3>
-            <p class="text-slate-400">还没有发布任何项目，敬请期待！</p>
+            <i class="fas fa-folder-open f00 color-fg-subtle mb-4 d-block"></i>
+            <h3 class="f2 text-semibold color-fg-muted mb-2">暂无项目</h3>
+            <p class="color-fg-subtle">还没有发布任何项目，敬请期待！</p>
         </div>
         {% endif %}
     </div>
-    
-    <!-- 侧边栏 -->
-    <aside class="w-full md:w-1/3 lg:w-1/4 mt-8 md:mt-0">
-        <div class="glass-card rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
-                <i class="fas fa-search mr-2"></i> 搜索项目
+
+    <aside class="width-full w-regular-1/3 w-large-1/4 mt-8 mt-regular-0">
+        <div class="Box shadow-sm p-6 mb-6">
+            <h3 class="f2 text-bold mb-4 color-fg-default d-flex items-center gap-2">
+                <i class="fas fa-search color-fg-muted"></i> 搜索项目
             </h3>
-            <form method="GET" action="{{ url_for('main.projects') }}">
-                <div class="relative">
-                    <input type="text" name="search" placeholder="搜索项目..." 
+            <form method="GET" action="#">
+                <div class="position-relative">
+                    <input type="text" name="search" placeholder="搜索项目..."
                            value="{{ search or '' }}"
-                           class="bg-slate-800/50 border border-slate-700 rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full">
-                    <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                           class="form-control width-full pl-10">
+                    <i class="fas fa-search position-absolute color-fg-subtle f5" style="left: 12px; top: 50%; transform: translateY(-50%);"></i>
                 </div>
             </form>
         </div>
-        
-        <div class="glass-card rounded-xl p-6 mb-6">
-            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
-                <i class="fas fa-tags mr-2"></i> 项目分类
+
+        <div class="Box shadow-sm p-6 mb-6">
+            <h3 class="f2 text-bold mb-4 color-fg-default d-flex items-center gap-2">
+                <i class="fas fa-tags color-fg-muted"></i> 项目分类
             </h3>
-            <ul class="space-y-2">
+            <ul class="list-style-none p-0 m-0 space-y-2">
                 <li>
-                    <a href="{{ url_for('main.projects') }}" class="flex items-center justify-between text-slate-300 hover:text-indigo-300">
+                    <a href="#" class="d-flex items-center justify-between no-underline color-fg-muted transition-colors">
                         <span>全部项目</span>
-                        <span class="text-xs bg-slate-800 px-2 py-1 rounded-full">{{ projects|length }}</span>
+                        <span class="f6 Label Label--secondary">{{ projects|length }}</span>
                     </a>
                 </li>
                 {% for category in categories %}
                 <li>
-                    <a href="{{ url_for('main.projects', category=category) }}" class="flex items-center justify-between text-slate-300 hover:text-indigo-300">
+                    <a href="{{ url_for('main.projects', category=category) }}" class="d-flex items-center justify-between no-underline color-fg-muted transition-colors">
                         <span>{{ category }}</span>
-                        <span class="text-xs bg-slate-800 px-2 py-1 rounded-full">{{ projects|selectattr('category', 'equalto', category)|list|length }}</span>
+                        <span class="f6 Label Label--secondary">{{ projects|selectattr('category', 'equalto', category)|list|length }}</span>
                     </a>
                 </li>
                 {% endfor %}
             </ul>
         </div>
-        
-        <div class="glass-card rounded-xl p-6">
-            <h3 class="text-lg font-bold mb-4 text-indigo-300 flex items-center">
-                <i class="fas fa-fire mr-2"></i> 热门项目
+
+        <div class="Box shadow-sm p-6">
+            <h3 class="f2 text-bold mb-4 color-fg-default d-flex items-center gap-2">
+                <i class="fas fa-fire color-fg-muted"></i> 热门项目
             </h3>
-            <ul class="space-y-4">
+            <ul class="list-style-none p-0 m-0 space-y-4">
                 {% for project in projects[:3] %}
                 <li>
-                    <a href="{{ url_for('main.project_detail', project_id=project.id) }}" class="flex items-start space-x-3 group">
-                        <div class="w-16 h-16 bg-slate-700 rounded-md overflow-hidden flex-shrink-0">
+                    <a href="#" class="d-flex items-start gap-3 no-underline color-fg-default">
+                        <div class="w-16 h-16 color-bg-subtle rounded-2 overflow-hidden flex-shrink-0 d-flex items-center justify-center">
                             {% if project.image_url %}
-                            <img src="{{ project.image_url }}" alt="{{ project.title }}" class="w-full h-full object-cover">
+                            <img src="{{ project.image_url }}" alt="{{ project.title }}" class="width-full object-cover" style="height: 100%;">
                             {% else %}
-                            <div class="w-full h-full flex items-center justify-center">
-                                <i class="fas fa-code text-slate-400"></i>
-                            </div>
+                            <i class="fas fa-code color-fg-subtle"></i>
                             {% endif %}
                         </div>
                         <div>
-                            <h4 class="text-sm font-medium group-hover:text-indigo-300">{{ project.title }}</h4>
-                            <p class="text-xs text-slate-400 mt-1">{{ project.view_count }} 浏览</p>
+                            <h4 class="f5 text-semibold color-fg-default">{{ project.title }}</h4>
+                            <p class="f6 color-fg-subtle mt-1">{{ project.view_count }} 浏览</p>
                         </div>
                     </a>
                 </li>
@@ -177,36 +169,32 @@
 </div>
 
 <script>
-// 项目筛选功能
 document.addEventListener('DOMContentLoaded', function() {
     const filterButtons = document.querySelectorAll('[data-filter]');
     const projectItems = document.querySelectorAll('.project-item');
-    
+
     filterButtons.forEach(button => {
         button.addEventListener('click', function() {
             const filter = this.getAttribute('data-filter');
-            
-            // 更新按钮状态
+
             filterButtons.forEach(btn => {
-                btn.classList.remove('bg-indigo-600', 'text-white');
-                btn.classList.add('bg-slate-800', 'text-slate-300');
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-secondary');
             });
-            this.classList.remove('bg-slate-800', 'text-slate-300');
-            this.classList.add('bg-indigo-600', 'text-white');
-            
-            // 筛选项目
+            this.classList.remove('btn-secondary');
+            this.classList.add('btn-primary');
+
             projectItems.forEach(item => {
                 if (filter === 'all' || item.getAttribute('data-category') === filter) {
-                    item.style.display = 'block';
+                    item.classList.remove('d-none');
                 } else {
-                    item.style.display = 'none';
+                    item.classList.add('d-none');
                 }
             });
         });
     });
 });
 
-// 删除项目函数
 function deleteProject(projectId) {
     if (confirm('确定要删除这个项目吗？此操作不可撤销！')) {
         fetch(`/admin/projects/${projectId}/delete`, {
@@ -219,9 +207,7 @@ function deleteProject(projectId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 显示成功消息
                 showToast(data.message, 'success');
-                // 延迟刷新页面
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
@@ -236,16 +222,17 @@ function deleteProject(projectId) {
     }
 }
 
-// 显示提示消息
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 z-50 px-6 py-3 rounded-lg text-white font-medium ${
-        type === 'success' ? 'bg-green-500' : 'bg-red-500'
-    }`;
+    const variant = type === 'success' ? 'color-bg-success-muted color-fg-success border' : 'color-bg-danger-muted color-fg-danger border';
+    toast.className = 'position-fixed z-50 rounded-2 p-3 f5 text-semibold shadow-md ' + variant;
+    toast.style.top = '16px';
+    toast.style.right = '16px';
+    toast.style.maxWidth = 'min(360px, calc(100vw - 32px))';
     toast.textContent = message;
-    
+
     document.body.appendChild(toast);
-    
+
     setTimeout(() => {
         if (toast.parentNode) {
             toast.parentNode.removeChild(toast);

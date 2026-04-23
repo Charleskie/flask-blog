@@ -1,179 +1,186 @@
-/* 按钮样式 */
+/* Button styles - Primer aligned */
 
-.btn {
+.btn,
+.btn-submit {
+    --btn-bg: var(--button-default-bgColor-rest);
+    --btn-bg-hover: var(--button-default-bgColor-hover);
+    --btn-bg-active: #eaeef2;
+    --btn-border: var(--button-default-borderColor);
+    --btn-color: var(--button-default-fgColor);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.5;
+    gap: 8px;
+    min-height: 38px;
+    padding: 0 15px;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
     text-align: center;
     text-decoration: none;
-    border: 1px solid transparent;
-    border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
     user-select: none;
+    border: 1px solid var(--btn-border);
+    border-radius: 10px;
+    background-color: var(--btn-bg);
+    color: var(--btn-color);
+    box-shadow: var(--shadow-resting-xsmall);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.btn:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-/* 主要按钮 */
-.btn-primary {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    border-color: var(--primary-color);
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    color: white;
+.btn:hover,
+.btn-submit:hover {
+    background-color: var(--btn-bg-hover);
+    border-color: var(--borderColor-emphasis);
+    color: var(--btn-color);
+    box-shadow: var(--shadow-resting-small);
+    transform: translateY(-1px);
     text-decoration: none;
 }
 
-.btn-primary:active {
+.btn:active,
+.btn-submit:active {
+    background-color: var(--btn-bg-active);
     transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+    box-shadow: var(--shadow-resting-xsmall);
 }
 
-/* 次要按钮 */
+.btn:disabled,
+.btn-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn:focus-visible,
+.btn-submit:focus-visible {
+    outline: 2px solid var(--focus-outlineColor);
+    outline-offset: 2px;
+}
+
+.btn-primary,
+.btn-submit {
+    --btn-bg: var(--button-primary-bgColor-rest);
+    --btn-bg-hover: var(--button-primary-bgColor-hover);
+    --btn-bg-active: var(--button-primary-bgColor-active);
+    --btn-border: var(--button-primary-bgColor-rest);
+    --btn-color: var(--button-primary-fgColor);
+    box-shadow: 0 1px 0 rgba(3, 61, 139, 0.08), 0 1px 3px rgba(9, 105, 218, 0.2);
+}
+
+.btn-primary:hover,
+.btn-submit:hover {
+    border-color: var(--button-primary-bgColor-hover);
+    color: var(--button-primary-fgColor);
+}
+
+/* Secondary button */
 .btn-secondary {
-    background: rgba(25, 33, 68, 0.8);
-    color: var(--text-primary);
-    border-color: rgba(25, 33, 68, 0.6);
+    --btn-bg: var(--button-default-bgColor-rest);
+    --btn-bg-hover: var(--button-default-bgColor-hover);
+    --btn-bg-active: #eaeef2;
+    --btn-border: var(--button-default-borderColor);
+    --btn-color: var(--button-default-fgColor);
 }
 
-.btn-secondary:hover {
-    background: rgba(25, 33, 68, 0.6);
-    color: var(--text-primary);
-    text-decoration: none;
-}
-
-/* 成功按钮 */
-.btn-success {
-    background: linear-gradient(135deg, var(--success-color), #059669);
-    color: white;
-    border-color: var(--success-color);
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
-.btn-success:hover {
-    background: linear-gradient(135deg, #059669, var(--success-color));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-    color: white;
-    text-decoration: none;
-}
-
-/* 警告按钮 */
-.btn-warning {
-    background: linear-gradient(135deg, var(--warning-color), #d97706);
-    color: white;
-    border-color: var(--warning-color);
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
-}
-
-.btn-warning:hover {
-    background: linear-gradient(135deg, #d97706, var(--warning-color));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-    color: white;
-    text-decoration: none;
-}
-
-/* 危险按钮 */
+/* Danger button */
 .btn-danger {
-    background: linear-gradient(135deg, var(--danger-color), #dc2626);
-    color: white;
-    border-color: var(--danger-color);
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+    --btn-bg: #fff5f5;
+    --btn-bg-hover: var(--button-danger-bgColor-hover);
+    --btn-bg-active: #a40e26;
+    --btn-border: rgba(209, 36, 47, 0.22);
+    --btn-color: var(--button-danger-fgColor-rest);
 }
 
 .btn-danger:hover {
-    background: linear-gradient(135deg, #dc2626, var(--danger-color));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
-    color: white;
-    text-decoration: none;
+    color: var(--fgColor-onEmphasis);
+    border-color: var(--button-danger-bgColor-hover);
 }
 
-/* 轮廓按钮 */
+/* Success button */
+.btn-success {
+    --btn-bg: var(--bgColor-success-emphasis);
+    --btn-bg-hover: #1a7f37;
+    --btn-bg-active: #176f32;
+    --btn-border: var(--bgColor-success-emphasis);
+    --btn-color: var(--fgColor-onEmphasis);
+}
+
+/* Warning button */
+.btn-warning {
+    --btn-bg: var(--bgColor-attention-emphasis);
+    --btn-bg-hover: #7d5600;
+    --btn-bg-active: #694800;
+    --btn-border: var(--bgColor-attention-emphasis);
+    --btn-color: var(--fgColor-onEmphasis);
+}
+
+/* Outline button */
 .btn-outline {
-    background: transparent;
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    --btn-bg: transparent;
+    --btn-bg-hover: var(--bgColor-accent-muted);
+    --btn-bg-active: rgba(9, 105, 218, 0.12);
+    --btn-border: rgba(9, 105, 218, 0.24);
+    --btn-color: var(--button-outline-fgColor);
+    box-shadow: none;
 }
 
 .btn-outline:hover {
-    background: var(--primary-color);
-    color: white;
-    text-decoration: none;
+    color: var(--button-outline-fgColor);
+    border-color: var(--borderColor-accent-emphasis);
 }
 
-/* 幽灵按钮 */
-.btn-ghost {
-    background: transparent;
-    color: var(--text-primary);
-    border-color: transparent;
+/* Ghost / Invisible button */
+.btn-ghost,
+.btn-invisible {
+    --btn-bg: transparent;
+    --btn-bg-hover: var(--bgColor-muted);
+    --btn-bg-active: rgba(209, 217, 224, 0.4);
+    --btn-border: transparent;
+    --btn-color: var(--fgColor-muted);
+    box-shadow: none;
 }
 
-.btn-ghost:hover {
-    background: rgba(25, 33, 68, 0.8);
-    color: var(--text-primary);
-    text-decoration: none;
+.btn-ghost:hover,
+.btn-invisible:hover {
+    color: var(--fgColor-default);
 }
 
-/* 按钮尺寸 */
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
+/* Button sizes */
+.btn.btn-sm,
+.btn-submit.btn-sm {
+    min-height: 32px;
+    padding: 0 12px;
+    font-size: 12px;
+    border-radius: 9px;
 }
 
-.btn-lg {
-    padding: 1rem 2rem;
-    font-size: 1.125rem;
+.btn.btn-lg,
+.btn-submit.btn-lg {
+    min-height: 44px;
+    padding: 0 18px;
+    font-size: 15px;
+    border-radius: 12px;
 }
 
-.btn-xl {
-    padding: 1.25rem 2.5rem;
-    font-size: 1.25rem;
-}
-
-/* 按钮形状 */
+/* Button shapes */
 .btn-rounded {
-    border-radius: 50px;
-}
-
-.btn-square {
-    border-radius: var(--radius-md);
+    border-radius: var(--borderRadius-full);
 }
 
 .btn-circle {
     border-radius: 50%;
-    width: 3rem;
-    height: 3rem;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
     padding: 0;
 }
 
-/* 按钮组 */
+/* Button group */
 .btn-group {
     display: inline-flex;
-    border-radius: var(--radius-lg);
+    border-radius: var(--borderRadius-medium);
     overflow: hidden;
 }
 
@@ -183,157 +190,50 @@
 }
 
 .btn-group .btn:first-child {
-    border-top-left-radius: var(--radius-lg);
-    border-bottom-left-radius: var(--radius-lg);
+    border-top-left-radius: var(--borderRadius-medium);
+    border-bottom-left-radius: var(--borderRadius-medium);
 }
 
 .btn-group .btn:last-child {
-    border-top-right-radius: var(--radius-lg);
-    border-bottom-right-radius: var(--radius-lg);
+    border-top-right-radius: var(--borderRadius-medium);
+    border-bottom-right-radius: var(--borderRadius-medium);
     border-right-width: 1px;
 }
 
-/* 加载状态 */
+/* Loading state */
 .btn-loading {
     position: relative;
     color: transparent;
 }
 
-.btn-loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    border-top-color: white;
-    animation: spin 1s linear infinite;
-}
-
-/* 特殊效果按钮 */
-.btn-glow {
-    box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
-    animation: pulse 2s infinite;
-}
-
-.btn-gradient {
-    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color), var(--accent-color));
-    background-size: 200% 200%;
-    animation: gradientShift 3s ease infinite;
-}
-
-/* 图标按钮 */
-.btn-icon {
-    padding: 0.75rem;
-    width: auto;
-    height: auto;
-}
-
-.btn-icon i {
-    font-size: 1.25rem;
-}
-
-/* 浮动按钮 */
-.btn-floating {
-    position: fixed;
-    bottom: 2rem;
-    right: 2rem;
-    width: 4rem;
-    height: 4rem;
-    border-radius: 50%;
-    box-shadow: var(--shadow-lg);
-    z-index: 1000;
-}
-
-.btn-floating:hover {
-    transform: scale(1.1);
-    box-shadow: var(--shadow-xl);
-}
-
-/* 统一提交按钮样式 */
-.btn-submit {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-    color: white;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    border-radius: var(--radius-lg);
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-    position: relative;
-    overflow: hidden;
-    user-select: none;
-}
-
-.btn-submit:hover {
-    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-    color: white;
-    text-decoration: none;
-}
-
-.btn-submit:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
-}
-
-.btn-submit:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn-submit:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
-
-/* 提交按钮尺寸变体 */
-.btn-submit.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-}
-
-.btn-submit.btn-lg {
-    padding: 1rem 2rem;
-    font-size: 1.125rem;
-}
-
-.btn-submit.btn-xl {
-    padding: 1.25rem 2.5rem;
-    font-size: 1.25rem;
-}
-
-/* 提交按钮加载状态 */
-.btn-submit.loading {
-    color: transparent;
-}
-
+.btn-loading::after,
 .btn-submit.loading::after {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border: 2px solid rgba(255, 255, 255, 0.3);
     border-radius: 50%;
     border-top-color: white;
-    animation: spin 1s linear infinite;
+    animation: spin 0.8s linear infinite;
 }
 
-/* 登录提示弹窗样式 */
+/* Icon button */
+.btn-icon {
+    width: auto;
+    min-width: 36px;
+    padding: 0 10px;
+}
+
+.btn-submit.loading,
+.btn-loading {
+    color: transparent;
+}
+
+/* Login prompt modal */
 .login-prompt-modal {
     position: fixed;
     top: 0;
@@ -341,7 +241,7 @@
     width: 100%;
     height: 100%;
     z-index: 9999;
-    animation: fadeIn 0.3s ease-out;
+    animation: fadeIn 0.15s ease-out;
 }
 
 .login-prompt-overlay {
@@ -350,72 +250,71 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+    background: rgba(31, 35, 40, 0.5);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    padding: 16px;
 }
 
 .login-prompt-content {
-    background: #192144;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    box-shadow: var(--shadow-floating-large);
     max-width: 400px;
     width: 100%;
-    animation: slideIn 0.3s ease-out;
+    animation: fadeInUp 0.15s ease-out;
 }
 
 .login-prompt-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1.5rem 1.5rem 0;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 1rem;
+    padding: 16px 16px 0;
+    border-bottom: 1px solid var(--borderColor-default);
+    margin-bottom: 16px;
 }
 
 .login-prompt-header h4 {
     margin: 0;
-    color: var(--text-primary);
+    color: var(--fgColor-default);
     font-size: 1.25rem;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 8px;
 }
 
 .login-prompt-close {
     background: none;
     border: none;
-    color: var(--text-secondary);
+    color: var(--fgColor-muted);
     font-size: 1.25rem;
     cursor: pointer;
-    padding: 0.25rem;
-    border-radius: var(--border-radius);
-    transition: all 0.2s ease;
+    padding: 4px;
+    border-radius: var(--borderRadius-medium);
+    transition: background-color 0.15s ease;
 }
 
 .login-prompt-close:hover {
-    background: var(--bg-hover);
-    color: var(--text-primary);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
 }
 
 .login-prompt-body {
-    padding: 0 1.5rem 1.5rem;
+    padding: 0 16px 16px;
 }
 
 .login-prompt-body p {
-    margin: 0 0 1.5rem;
-    color: var(--text-secondary);
+    margin: 0 0 16px;
+    color: var(--fgColor-muted);
     text-align: center;
 }
 
 .login-prompt-actions {
     display: flex;
-    gap: 1rem;
+    gap: 8px;
     justify-content: center;
 }
 
@@ -425,21 +324,11 @@
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
 }

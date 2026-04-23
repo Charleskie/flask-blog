@@ -3,204 +3,170 @@
 {% block title %}联系我 - 我的个人网站{% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-16 mb-12">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            联系我
-        </h1>
-        <p class="text-xl text-slate-300 mb-8">如果你有合作意向或建议和意见？欢迎随时联系我。</p>
+<div class="text-center py-12 mb-8">
+    <div class="max-w-4xl mx-auto px-3">
+        <h1 class="f00 text-bold mb-3 color-fg-default">联系我</h1>
+        <p class="f3 color-fg-muted mb-4">如果你有合作意向或建议和意见？欢迎随时联系我。</p>
         {% if current_user.is_authenticated %}
-        <div class="flex justify-center">
-            <a href="{{ url_for('main.contact_messages') }}" class="btn-secondary">
-                <i class="fas fa-envelope-open mr-2"></i> 查看我的私信记录
+        <div class="d-flex justify-center">
+            <a href="{{ url_for('main.contact_messages') }}" class="btn btn-secondary no-underline">
+                <i class="fas fa-envelope-open"></i> 查看我的私信记录
             </a>
         </div>
         {% endif %}
     </div>
 </div>
 
-<div class="max-w-6xl mx-auto px-4">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- 联系表单 -->
-        <div class="lg:col-span-2">
-            <div class="glass-card rounded-xl p-8">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-envelope text-white text-xl"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-white">发送消息</h2>
-                </div>
-                
-                <form id="contact-form" class="space-y-6">
-                    {% if current_user.is_authenticated %}
-                    <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-info-circle text-blue-400 mr-2"></i>
-                            <span class="text-blue-400 text-sm">已自动填充您的用户信息，如需修改请直接编辑</span>
+<div class="max-w-6xl mx-auto px-3">
+    <div class="d-grid grid-cols-1 grid-large-cols-3 gap-6">
+        <div class="col-large-span-2">
+            <div class="Box">
+                <div class="Box-body p-6">
+                    <div class="d-flex items-center mb-4 gap-3">
+                        <div class="d-flex items-center justify-center rounded-2 color-bg-accent-muted" style="width: 40px; height: 40px;">
+                            <i class="fas fa-envelope color-fg-accent f3"></i>
                         </div>
+                        <h2 class="f1 text-bold color-fg-default m-0">发送消息</h2>
                     </div>
-                    {% else %}
-                    <div class="bg-slate-600/20 border border-slate-600/30 rounded-lg p-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <i class="fas fa-user-plus text-slate-400 mr-2"></i>
-                                <span class="text-slate-400 text-sm">登录后可自动填充您的信息</span>
+
+                    <form id="contact-form" class="space-y-4">
+                        {% if current_user.is_authenticated %}
+                        <div class="flash p-3">
+                            <div class="d-flex items-center gap-2">
+                                <i class="fas fa-info-circle color-fg-accent"></i>
+                                <span class="f5 color-fg-default">已自动填充您的用户信息，如需修改请直接编辑</span>
                             </div>
-                            <a href="{{ url_for('auth.login') }}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors">
-                                立即登录
-                            </a>
                         </div>
-                    </div>
-                    {% endif %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% else %}
+                        <div class="border rounded-2 p-3 color-bg-subtle">
+                            <div class="d-flex flex-column flex-regular-row items-regular-center justify-between gap-2">
+                                <div class="d-flex items-center gap-2">
+                                    <i class="fas fa-user-plus color-fg-subtle"></i>
+                                    <span class="f5 color-fg-muted">登录后可自动填充您的信息</span>
+                                </div>
+                                <a href="{{ url_for('auth.login') }}" class="f5 text-semibold no-underline color-fg-accent">立即登录</a>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-grid grid-cols-1 grid-regular-cols-2 gap-4">
+                            <div>
+                                <label for="name" class="form-label">姓名 *</label>
+                                <input type="text" class="form-control" id="name" name="name"
+                                       value="{% if current_user.is_authenticated %}{{ current_user.username }}{% endif %}"
+                                       placeholder="请输入您的姓名" required>
+                            </div>
+                            <div>
+                                <label for="email" class="form-label">邮箱 *</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{% if current_user.is_authenticated %}{{ current_user.email }}{% endif %}"
+                                       placeholder="请输入您的邮箱" required>
+                            </div>
+                        </div>
+
                         <div>
-                            <label for="name" class="block text-sm font-medium text-slate-300 mb-2">姓名 *</label>
-                            <input type="text" 
-                                   class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                                   id="name" name="name" 
-                                   value="{% if current_user.is_authenticated %}{{ current_user.username }}{% endif %}"
-                                   placeholder="请输入您的姓名" required>
+                            <label for="subject" class="form-label">主题 *</label>
+                            <input type="text" class="form-control" id="subject" name="subject" placeholder="请输入消息主题" required>
                         </div>
+
                         <div>
-                            <label for="email" class="block text-sm font-medium text-slate-300 mb-2">邮箱 *</label>
-                            <input type="email" 
-                                   class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                                   id="email" name="email" 
-                                   value="{% if current_user.is_authenticated %}{{ current_user.email }}{% endif %}"
-                                   placeholder="请输入您的邮箱" required>
+                            <label for="message" class="form-label">消息内容 *</label>
+                            <textarea class="form-control" id="message" name="message" rows="6" placeholder="请输入您的消息内容..." required style="resize: vertical; min-height: 120px;"></textarea>
                         </div>
-                    </div>
-                    
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-slate-300 mb-2">主题 *</label>
-                        <input type="text" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="subject" name="subject" placeholder="请输入消息主题" required>
-                    </div>
-                    
-                    <div>
-                        <label for="message" class="block text-sm font-medium text-slate-300 mb-2">消息内容 *</label>
-                        <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" 
-                                  id="message" name="message" rows="6" placeholder="请输入您的消息内容..." required></textarea>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-slate-400">
-                            <i class="fas fa-shield-alt mr-1"></i> 您的信息将被安全保护
+
+                        <div class="d-flex flex-column flex-regular-row items-regular-center justify-between gap-3">
+                            <span class="f5 color-fg-subtle">
+                                <i class="fas fa-shield-alt mr-1"></i> 您的信息将被安全保护
+                            </span>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> 发送消息
+                            </button>
                         </div>
-                        <button type="submit" class="btn-primary-send">
-                            <i class="fas fa-paper-plane mr-2"></i> 发送消息
-                        </button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
 
-        <!-- 联系信息 -->
-        <div class="space-y-6">
-            <!-- 联系信息卡片 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-address-card text-white"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white">联系信息</h3>
-                </div>
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-envelope text-white text-sm"></i>
+        <div class="d-flex flex-column gap-4">
+            <div class="Box">
+                <div class="Box-body p-4">
+                    <div class="d-flex items-center mb-3 gap-2">
+                        <div class="d-flex items-center justify-center rounded-2 color-bg-accent-muted" style="width: 36px; height: 36px;">
+                            <i class="fas fa-address-card color-fg-accent"></i>
                         </div>
-                        <a href="mailto:wdws851421092@gmail.com" class="text-indigo-400 hover:text-indigo-300 transition-colors">
-                            wdws851421092@gmail.com
-                        </a>
+                        <h3 class="f3 text-semibold color-fg-default m-0">联系信息</h3>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-phone text-white text-sm"></i>
+                    <div class="space-y-3">
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-envelope color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <a href="mailto:wdws851421092@gmail.com" class="no-underline color-fg-accent f5 wb-break-word">wdws851421092@gmail.com</a>
                         </div>
-                        <span class="text-slate-300">+86 135 **** ****</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-phone color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span class="f5 color-fg-muted">+86 135 **** ****</span>
                         </div>
-                        <span class="text-slate-300">深圳，中国</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-clock text-white text-sm"></i>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-map-marker-alt color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span class="f5 color-fg-muted">深圳，中国</span>
                         </div>
-                        <span class="text-slate-300">周一至周五 9:00-18:00</span>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-clock color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span class="f5 color-fg-muted">周一至周五 9:00-18:00</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 社交媒体 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-share-alt text-white"></i>
+            <div class="Box">
+                <div class="Box-body p-4">
+                    <div class="d-flex items-center mb-3 gap-2">
+                        <div class="d-flex items-center justify-center rounded-2 color-bg-accent-muted" style="width: 36px; height: 36px;">
+                            <i class="fas fa-share-alt color-fg-accent"></i>
+                        </div>
+                        <h3 class="f3 text-semibold color-fg-default m-0">社交媒体</h3>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">社交媒体</h3>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="https://github.com/Charleskie" class="social-btn bg-slate-800 hover:bg-slate-700" target="_blank">
-                        <i class="fab fa-github"></i>
-                        <span>GitHub</span>
-                    </a>
-                    <a href="#" class="social-btn bg-blue-600 hover:bg-blue-500" target="_blank">
-                        <i class="fab fa-linkedin"></i>
-                        <span>LinkedIn</span>
-                    </a>
-                    <a href="#" class="social-btn bg-sky-500 hover:bg-sky-400" target="_blank">
-                        <i class="fab fa-twitter"></i>
-                        <span>Twitter</span>
-                    </a>
-                    <a href="#" class="social-btn bg-red-600 hover:bg-red-500" target="_blank">
-                        <i class="fab fa-weibo"></i>
-                        <span>微博</span>
+                    <a href="https://github.com/Charleskie" class="social-btn no-underline d-flex flex-column items-center justify-center border rounded-2 p-4 color-fg-default" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-github f1 mb-2 color-fg-default"></i>
+                        <span class="f5 text-semibold">GitHub</span>
                     </a>
                 </div>
             </div>
 
-            <!-- 常见问题 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-comments text-white"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white">常见问题</h3>
-                </div>
-                <div class="space-y-3">
-                    <div class="faq-item">
-                        <button class="faq-button" onclick="toggleFaq('faq1')">
-                            <span>如何开始合作项目？</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </button>
-                        <div id="faq1" class="faq-content hidden">
-                            <p class="text-slate-300 text-sm">请通过联系表单发送详细的项目需求，我会在24小时内回复您。</p>
+            <div class="Box">
+                <div class="Box-body p-4">
+                    <div class="d-flex items-center mb-3 gap-2">
+                        <div class="d-flex items-center justify-center rounded-2 color-bg-accent-muted" style="width: 36px; height: 36px;">
+                            <i class="fas fa-comments color-fg-accent"></i>
                         </div>
+                        <h3 class="f3 text-semibold color-fg-default m-0">常见问题</h3>
                     </div>
-                    
-                    <div class="faq-item">
-                        <button class="faq-button" onclick="toggleFaq('faq2')">
-                            <span>提供哪些技术服务？</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </button>
-                        <div id="faq2" class="faq-content hidden">
-                            <p class="text-slate-300 text-sm">包括Web开发、移动应用开发、API设计、数据库设计、系统架构等。</p>
+                    <div class="space-y-2">
+                        <div class="faq-item border rounded-2 overflow-hidden">
+                            <button type="button" class="faq-button" onclick="toggleFaq('faq1')">
+                                <span>如何开始合作项目？</span>
+                                <i class="fas fa-chevron-down faq-icon color-fg-subtle"></i>
+                            </button>
+                            <div id="faq1" class="faq-content d-none">
+                                <p class="f5 color-fg-muted m-0">请通过联系表单发送详细的项目需求，我会在24小时内回复您。</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <button class="faq-button" onclick="toggleFaq('faq3')">
-                            <span>项目周期大概多久？</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </button>
-                        <div id="faq3" class="faq-content hidden">
-                            <p class="text-slate-300 text-sm">根据项目复杂度，通常2-8周不等，具体时间会在项目开始前确定。</p>
+                        <div class="faq-item border rounded-2 overflow-hidden">
+                            <button type="button" class="faq-button" onclick="toggleFaq('faq2')">
+                                <span>提供哪些技术服务？</span>
+                                <i class="fas fa-chevron-down faq-icon color-fg-subtle"></i>
+                            </button>
+                            <div id="faq2" class="faq-content d-none">
+                                <p class="f5 color-fg-muted m-0">包括Web开发、移动应用开发、API设计、数据库设计、系统架构等。</p>
+                            </div>
+                        </div>
+                        <div class="faq-item border rounded-2 overflow-hidden">
+                            <button type="button" class="faq-button" onclick="toggleFaq('faq3')">
+                                <span>项目周期大概多久？</span>
+                                <i class="fas fa-chevron-down faq-icon color-fg-subtle"></i>
+                            </button>
+                            <div id="faq3" class="faq-content d-none">
+                                <p class="f5 color-fg-muted m-0">根据项目复杂度，通常2-8周不等，具体时间会在项目开始前确定。</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -209,77 +175,62 @@
     </div>
 </div>
 
-<!-- 地图区域 -->
-<div class="max-w-6xl mx-auto px-4 mt-12">
-    <div class="glass-card rounded-xl p-8">
-        <div class="flex items-center mb-6">
-            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
-                <i class="fas fa-map-marker-alt text-white text-xl"></i>
+<div class="max-w-6xl mx-auto px-3 mt-8">
+    <div class="Box">
+        <div class="Box-body p-6">
+            <div class="d-flex items-center mb-4 gap-3">
+                <div class="d-flex items-center justify-center rounded-2 color-bg-accent-muted" style="width: 40px; height: 40px;">
+                    <i class="fas fa-map-marker-alt color-fg-accent f3"></i>
+                </div>
+                <h2 class="f1 text-bold color-fg-default m-0">位置信息</h2>
             </div>
-            <h2 class="text-2xl font-bold text-white">位置信息</h2>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="space-y-6">
-                <div>
-                    <label for="office-select" class="block text-sm font-medium text-slate-300 mb-2">选择办公地点</label>
-                    <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                            id="office-select" onchange="changeOffice()">
-                        <option value="0">深圳 - 南山高新园</option>
-                    </select>
+
+            <div class="d-grid grid-cols-1 grid-regular-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div>
+                        <label for="office-select" class="form-label">选择办公地点</label>
+                        <select class="form-select" id="office-select" onchange="changeOffice()">
+                            <option value="0">深圳 - 南山高新园</option>
+                        </select>
+                    </div>
+
+                    <div id="office-info" class="space-y-3">
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-map-marker-alt color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span id="office-address" class="f5 color-fg-muted">深圳市南山区高新南一道</span>
+                        </div>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-phone color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span id="office-phone" class="f5 color-fg-muted">+86 135 **** 8704</span>
+                        </div>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-envelope color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span id="office-email" class="f5 color-fg-muted">wdws851421092@gmail.com</span>
+                        </div>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-clock color-fg-subtle mt-1" style="width: 1.25rem;"></i>
+                            <span id="office-hours" class="f5 color-fg-muted">工作时间：周一至周五 9:00-18:00</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column flex-regular-row gap-2">
+                        <button type="button" class="btn btn-secondary flex-1" onclick="getCurrentLocation()">
+                            <i class="fas fa-location-arrow"></i> 获取我的位置
+                        </button>
+                        <button type="button" class="btn btn-secondary flex-1" onclick="openInMaps()">
+                            <i class="fas fa-external-link-alt"></i> 在导航中打开
+                        </button>
+                    </div>
+
+                    <div id="location-status" class="d-none"></div>
                 </div>
-                
-                <div id="office-info" class="space-y-4">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
+
+                <div class="map-container">
+                    <div id="map" class="width-full rounded-2 overflow-hidden color-bg-subtle border d-flex items-center justify-center" style="height: 320px;">
+                        <div class="text-center p-4">
+                            <i class="fas fa-map f00 color-fg-subtle mb-2"></i>
+                            <p class="f5 color-fg-subtle m-0">点击上方按钮加载地图</p>
                         </div>
-                        <span id="office-address" class="text-slate-300">深圳市南山区高新南一道</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-phone text-white text-sm"></i>
-                        </div>
-                        <span id="office-phone" class="text-slate-300">+86 135 **** 8704</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-envelope text-white text-sm"></i>
-                        </div>
-                        <span id="office-email" class="text-slate-300">wdws851421092@gmail.com</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-clock text-white text-sm"></i>
-                        </div>
-                        <span id="office-hours" class="text-slate-300">工作时间：周一至周五 9:00-18:00</span>
-                    </div>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button class="btn-secondary flex-1" onclick="getCurrentLocation()">
-                        <i class="fas fa-location-arrow mr-2"></i> 获取我的位置
-                    </button>
-                    <button class="btn-secondary flex-1" onclick="openInMaps()">
-                        <i class="fas fa-external-link-alt mr-2"></i> 在导航中打开
-                    </button>
-                </div>
-                
-                <div id="location-status" class="hidden">
-                    <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-spinner fa-spin text-blue-400 mr-2"></i>
-                            <span class="text-blue-400">正在获取位置...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="map-container">
-                <div id="map" class="w-full h-80 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center">
-                    <div class="text-center">
-                        <i class="fas fa-map fa-3x text-slate-400 mb-3"></i>
-                        <p class="text-slate-400">点击上方按钮加载地图</p>
                     </div>
                 </div>
             </div>
@@ -291,39 +242,15 @@
 {% block extra_css %}
 <style>
 .social-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    color: white;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    min-height: 80px;
+    background: var(--bgColor-default);
+    border-color: var(--borderColor-default);
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-
 .social-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
     text-decoration: none;
-    color: white;
-}
-
-.social-btn i {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-}
-
-.social-btn span {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.faq-item {
-    border: 1px solid rgba(71, 85, 105, 0.3);
-    border-radius: 0.5rem;
-    overflow: hidden;
+    color: var(--fgColor-default);
 }
 
 .faq-button {
@@ -331,145 +258,48 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
-    background: rgba(30, 41, 59, 0.5);
+    padding: 12px 16px;
+    background: var(--bgColor-muted);
     border: none;
-    color: white;
+    color: var(--fgColor-default);
     cursor: pointer;
-    transition: all 0.3s ease;
     text-align: left;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.15s ease;
 }
-
 .faq-button:hover {
-    background: rgba(30, 41, 59, 0.8);
+    background: var(--bgColor-inset);
 }
-
 .faq-icon {
-    transition: transform 0.3s ease;
+    transition: transform 0.2s ease;
 }
-
 .faq-button.active .faq-icon {
     transform: rotate(180deg);
 }
-
 .faq-content {
-    padding: 0 1rem;
+    padding: 0 16px;
     max-height: 0;
     overflow: hidden;
-    transition: all 0.3s ease;
-    background: rgba(30, 41, 59, 0.3);
+    transition: max-height 0.2s ease, padding 0.2s ease;
+    background: var(--bgColor-default);
+    border-top: 1px solid var(--borderColor-default);
 }
-
-.faq-content:not(.hidden) {
-    padding: 1rem;
+.faq-content:not(.d-none) {
+    padding: 12px 16px;
     max-height: 200px;
 }
-
-.faq-content.hidden {
-    padding: 0 1rem;
+.faq-content.d-none {
+    padding: 0 16px;
     max-height: 0;
-}
-
-.map-container {
-    position: relative;
-}
-
-.map-container img {
-    transition: transform 0.3s ease;
-}
-
-.map-container img:hover {
-    transform: scale(1.02);
-}
-
-.btn-secondary {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.btn-secondary:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-
-/* 发送消息按钮样式 */
-.btn-primary-send {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.875rem 2rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    position: relative;
-    overflow: hidden;
-}
-
-.btn-primary-send::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
-}
-
-.btn-primary-send:hover::before {
-    left: 100%;
-}
-
-.btn-primary-send:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    text-decoration: none;
-    color: white;
-}
-
-.btn-primary-send:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-}
-
-.btn-primary-send:disabled {
-    background: rgba(100, 116, 139, 0.5);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-primary-send:disabled:hover {
-    background: rgba(100, 116, 139, 0.5);
-    transform: none;
-    box-shadow: none;
+    border-top: none;
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// 办公地址配置
 const OFFICE_LOCATIONS = [
     {
         name: '深圳 - 南山高新园',
@@ -482,309 +312,226 @@ const OFFICE_LOCATIONS = [
     }
 ];
 
-let currentOfficeIndex = 0; // 默认选择深圳南山高新园
-
+let currentOfficeIndex = 0;
 let map = null;
 let userMarker = null;
 let officeMarker = null;
 
-// FAQ切换功能
 function toggleFaq(faqId) {
     const content = document.getElementById(faqId);
     const button = content.previousElementSibling;
-    const icon = button.querySelector('.faq-icon');
-    
-    if (content.classList.contains('hidden')) {
-        // 展开
-        content.classList.remove('hidden');
+    if (content.classList.contains('d-none')) {
+        content.classList.remove('d-none');
         button.classList.add('active');
     } else {
-        // 折叠
-        content.classList.add('hidden');
+        content.classList.add('d-none');
         button.classList.remove('active');
     }
 }
 
 document.addEventListener('DOMContentLoaded', function() {
     const contactForm = document.getElementById('contact-form');
-    
     contactForm.addEventListener('submit', function(e) {
         e.preventDefault();
-        
-        // 获取表单数据
         const formData = new FormData(contactForm);
-        
-        // 显示加载状态
         const submitBtn = contactForm.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中...';
         submitBtn.disabled = true;
-        
-        // 发送AJAX请求
+
         fetch('/contact', {
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 显示成功提示
                 showToast('success', data.message || '消息发送成功！我们会尽快回复您。');
                 contactForm.reset();
             } else {
-                // 显示错误提示
                 showToast('error', data.message || '发送失败，请稍后重试');
             }
         })
-        .catch(error => {
+        .catch(function() {
             showToast('error', '发送失败，请稍后重试');
         })
-        .finally(() => {
-            // 恢复按钮状态
+        .finally(function() {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
         });
     });
 });
 
-// 显示提示消息
 function showToast(type, message) {
     const toast = document.createElement('div');
-    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
+    const flashClass = type === 'success' ? 'flash-success' : 'flash-danger';
     const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-    
-    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-    toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas ${icon} mr-2"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    
+
+    toast.className = 'position-fixed flash ' + flashClass + ' z-100';
+    toast.style.top = '16px';
+    toast.style.right = '16px';
+    toast.style.maxWidth = '360px';
+    toast.innerHTML =
+        '<div class="d-flex items-center gap-2">' +
+        '<i class="fas ' + icon + '"></i>' +
+        '<span>' + message + '</span>' +
+        '</div>';
+
     document.body.appendChild(toast);
-    
-    // 3秒后移除
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
+    setTimeout(function() {
+        if (toast.parentNode) toast.remove();
     }, 3000);
 }
 
-// 获取用户当前位置
 function getCurrentLocation() {
     const statusDiv = document.getElementById('location-status');
-    statusDiv.classList.remove('hidden');
-    statusDiv.innerHTML = '<div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4"><div class="flex items-center"><i class="fas fa-spinner fa-spin text-blue-400 mr-2"></i><span class="text-blue-400">正在获取位置...</span></div></div>';
-    
+    statusDiv.classList.remove('d-none');
+    statusDiv.innerHTML = '<div class="flash p-3 mt-2"><div class="d-flex items-center gap-2"><i class="fas fa-spinner fa-spin color-fg-accent"></i><span class="f5 color-fg-default">正在获取位置...</span></div></div>';
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             function(position) {
                 const userLat = position.coords.latitude;
                 const userLng = position.coords.longitude;
                 const accuracy = position.coords.accuracy;
-                
-                // 显示位置信息
-                statusDiv.innerHTML = `
-                    <div class="bg-green-600/20 border border-green-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-400 mr-2"></i>
-                            <span class="text-green-400">位置获取成功！</span>
-                        </div>
-                        <div class="text-green-300 text-sm mt-1">精度: ${Math.round(accuracy)}米</div>
-                    </div>
-                `;
-                
-                // 初始化地图并显示位置
+
+                statusDiv.innerHTML =
+                    '<div class="flash flash-success p-3 mt-2">' +
+                    '<div class="d-flex items-center gap-2"><i class="fas fa-check-circle color-fg-success"></i>' +
+                    '<span class="f5 color-fg-success">位置获取成功！</span></div>' +
+                    '<div class="f6 color-fg-muted mt-1">精度: ' + Math.round(accuracy) + '米</div></div>';
+
                 initMap(userLat, userLng);
-                
-                // 计算距离
                 const office = OFFICE_LOCATIONS[currentOfficeIndex];
                 const distance = calculateDistance(userLat, userLng, office.lat, office.lng);
                 showDistanceInfo(distance, office.name);
-                
             },
             function(error) {
                 let errorMessage = '无法获取位置信息';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = '用户拒绝了位置请求';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = '位置信息不可用';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = '获取位置超时';
-                        break;
+                switch (error.code) {
+                    case error.PERMISSION_DENIED: errorMessage = '用户拒绝了位置请求'; break;
+                    case error.POSITION_UNAVAILABLE: errorMessage = '位置信息不可用'; break;
+                    case error.TIMEOUT: errorMessage = '获取位置超时'; break;
                 }
-                
-                statusDiv.innerHTML = `
-                    <div class="bg-yellow-600/20 border border-yellow-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
-                            <span class="text-yellow-400">${errorMessage}</span>
-                        </div>
-                        <div class="text-yellow-300 text-sm mt-1">将显示默认办公地址</div>
-                    </div>
-                `;
-                
-                // 显示默认办公地址
+                statusDiv.innerHTML =
+                    '<div class="flash flash-warning p-3 mt-2">' +
+                    '<div class="d-flex items-center gap-2"><i class="fas fa-exclamation-triangle color-fg-attention"></i>' +
+                    '<span class="f5 color-fg-attention">' + errorMessage + '</span></div>' +
+                    '<div class="f6 color-fg-muted mt-1">将显示默认办公地址</div></div>';
                 const office = OFFICE_LOCATIONS[currentOfficeIndex];
                 initMap(office.lat, office.lng);
             },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
-            }
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
         );
     } else {
-        statusDiv.innerHTML = `
-            <div class="bg-yellow-600/20 border border-yellow-600/30 rounded-lg p-4">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
-                    <span class="text-yellow-400">浏览器不支持地理定位</span>
-                </div>
-                <div class="text-yellow-300 text-sm mt-1">将显示默认办公地址</div>
-            </div>
-        `;
+        statusDiv.innerHTML =
+            '<div class="flash flash-warning p-3 mt-2">' +
+            '<div class="d-flex items-center gap-2"><i class="fas fa-exclamation-triangle color-fg-attention"></i>' +
+            '<span class="f5 color-fg-attention">浏览器不支持地理定位</span></div>' +
+            '<div class="f6 color-fg-muted mt-1">将显示默认办公地址</div></div>';
         const office = OFFICE_LOCATIONS[currentOfficeIndex];
         initMap(office.lat, office.lng);
     }
 }
 
-// 初始化地图
 function initMap(userLat, userLng) {
     const mapDiv = document.getElementById('map');
-    
-    // 清除现有内容
     mapDiv.innerHTML = '';
-    
-    // 创建地图容器
+
     const mapContainer = document.createElement('div');
     mapContainer.style.width = '100%';
     mapContainer.style.height = '100%';
     mapContainer.style.position = 'relative';
     mapDiv.appendChild(mapContainer);
-    
-    // 使用高德地图静态图片API（无需密钥）
-    const mapUrl = `https://restapi.amap.com/v3/staticmap?location=${userLng},${userLat}&zoom=15&size=400*300&markers=mid,red,A:${userLng},${userLat}&key=`;
-    
+
+    const mapUrl = 'https://restapi.amap.com/v3/staticmap?location=' + userLng + ',' + userLat + '&zoom=15&size=400*300&markers=mid,red,A:' + userLng + ',' + userLat + '&key=';
+
     const img = document.createElement('img');
     img.src = mapUrl;
+    img.alt = '';
     img.style.width = '100%';
     img.style.height = '100%';
     img.style.objectFit = 'cover';
-    img.style.borderRadius = '8px';
-    
-    // 如果图片加载失败，显示备用方案
+    img.style.borderRadius = 'var(--borderRadius-medium)';
+
     img.onerror = function() {
-        mapContainer.innerHTML = `
-            <div class="flex items-center justify-center h-full bg-slate-800 rounded-lg">
-                <div class="text-center">
-                    <i class="fas fa-map-marker-alt fa-3x text-indigo-400 mb-3"></i>
-                    <h6 class="text-white font-semibold mb-2">位置信息</h6>
-                    <p class="text-slate-300 text-sm">纬度: ${userLat.toFixed(6)}</p>
-                    <p class="text-slate-300 text-sm">经度: ${userLng.toFixed(6)}</p>
-                    <div class="flex gap-2 mt-4">
-                        <a href="https://www.amap.com/place/${userLng},${userLat}" target="_blank" class="btn-secondary text-sm">
-                            <i class="fas fa-external-link-alt mr-1"></i> 高德地图
-                        </a>
-                        <a href="https://maps.google.com/?q=${userLat},${userLng}" target="_blank" class="btn-secondary text-sm">
-                            <i class="fas fa-external-link-alt mr-1"></i> Google地图
-                        </a>
-                    </div>
-                </div>
-            </div>
-        `;
+        mapContainer.innerHTML =
+            '<div class="d-flex items-center justify-center width-full color-bg-subtle border rounded-2" style="height: 100%; min-height: 280px;">' +
+            '<div class="text-center p-4">' +
+            '<i class="fas fa-map-marker-alt f00 color-fg-accent mb-2"></i>' +
+            '<h3 class="f3 text-semibold color-fg-default mb-2">位置信息</h3>' +
+            '<p class="f5 color-fg-muted mb-1">纬度: ' + userLat.toFixed(6) + '</p>' +
+            '<p class="f5 color-fg-muted mb-3">经度: ' + userLng.toFixed(6) + '</p>' +
+            '<div class="d-flex flex-wrap justify-center gap-2">' +
+            '<a href="https://www.amap.com/place/' + userLng + ',' + userLat + '" target="_blank" rel="noopener" class="btn btn-secondary btn-sm no-underline">高德地图</a>' +
+            '<a href="https://maps.google.com/?q=' + userLat + ',' + userLng + '" target="_blank" rel="noopener" class="btn btn-secondary btn-sm no-underline">Google地图</a>' +
+            '</div></div></div>';
     };
-    
-    // 添加点击事件，点击图片可以打开地图
+
     img.style.cursor = 'pointer';
     img.onclick = function() {
-        window.open(`https://www.amap.com/place/${userLng},${userLat}`, '_blank');
+        window.open('https://www.amap.com/place/' + userLng + ',' + userLat, '_blank');
     };
-    
-    // 添加提示文字
+
     const overlay = document.createElement('div');
     overlay.style.position = 'absolute';
-    overlay.style.top = '10px';
-    overlay.style.left = '10px';
-    overlay.style.background = 'rgba(0,0,0,0.7)';
-    overlay.style.color = 'white';
-    overlay.style.padding = '5px 10px';
-    overlay.style.borderRadius = '4px';
+    overlay.style.top = '8px';
+    overlay.style.left = '8px';
+    overlay.style.background = 'var(--bgColor-emphasis)';
+    overlay.style.color = 'var(--fgColor-onEmphasis)';
+    overlay.style.padding = '4px 8px';
+    overlay.style.borderRadius = 'var(--borderRadius-small)';
     overlay.style.fontSize = '12px';
-    overlay.innerHTML = '点击查看详细地图';
-    
+    overlay.textContent = '点击查看详细地图';
+
     mapContainer.appendChild(img);
     mapContainer.appendChild(overlay);
 }
 
-// 计算两点间距离（使用Haversine公式）
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371; // 地球半径（公里）
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
 
-// 显示距离信息
 function showDistanceInfo(distance, officeName) {
     const statusDiv = document.getElementById('location-status');
     const currentContent = statusDiv.innerHTML;
-    
-    statusDiv.innerHTML = currentContent + `
-        <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4 mt-2">
-            <div class="flex items-center">
-                <i class="fas fa-route text-blue-400 mr-2"></i>
-                <span class="text-blue-400">距离${officeName}: ${distance.toFixed(1)} 公里</span>
-            </div>
-        </div>
-    `;
+    statusDiv.innerHTML = currentContent +
+        '<div class="flash p-3 mt-2"><div class="d-flex items-center gap-2">' +
+        '<i class="fas fa-route color-fg-accent"></i>' +
+        '<span class="f5 color-fg-default">距离' + officeName + ': ' + distance.toFixed(1) + ' 公里</span></div></div>';
 }
 
-// 切换办公地址
 function changeOffice() {
     const select = document.getElementById('office-select');
-    currentOfficeIndex = parseInt(select.value);
+    currentOfficeIndex = parseInt(select.value, 10);
     const office = OFFICE_LOCATIONS[currentOfficeIndex];
-    
-    // 更新显示信息
     document.getElementById('office-address').textContent = office.address;
     document.getElementById('office-phone').textContent = office.phone;
     document.getElementById('office-email').textContent = office.email;
     document.getElementById('office-hours').textContent = office.workingHours;
-    
-    // 更新地图
     initMap(office.lat, office.lng);
-    
-    // 清除位置状态
-    const statusDiv = document.getElementById('location-status');
-    statusDiv.classList.add('hidden');
+    document.getElementById('location-status').classList.add('d-none');
 }
 
-// 在导航中打开
 function openInMaps() {
     const office = OFFICE_LOCATIONS[currentOfficeIndex];
-    const url = `https://uri.amap.com/navigation?to=${office.lng},${office.lat},${encodeURIComponent(office.address)}&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=0`;
+    const url = 'https://uri.amap.com/navigation?to=' + office.lng + ',' + office.lat + ',' + encodeURIComponent(office.address) + '&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=0';
     window.open(url, '_blank');
 }
 
-// 页面加载时显示默认位置
 document.addEventListener('DOMContentLoaded', function() {
-    // 延迟加载，避免影响页面性能
-    setTimeout(() => {
+    setTimeout(function() {
         const office = OFFICE_LOCATIONS[currentOfficeIndex];
         initMap(office.lat, office.lng);
     }, 1000);
 });
 </script>
-{% endblock %} 
+{% endblock %}

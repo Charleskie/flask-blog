@@ -3,189 +3,123 @@
 {% block title %}管理后台 - 我的个人网站{% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-6 mb-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            管理后台
-        </h1>
-        <p class="text-lg text-slate-300">欢迎回来，{{ current_user.username }}！</p>
-    </div>
+<div class="text-center py-6 mb-6">
+    <h1 class="f2 text-bold color-fg-default m-0 mb-2">管理后台</h1>
+    <p class="f5 color-fg-muted m-0">欢迎回来，{{ current_user.username }}！</p>
 </div>
 
-<!-- 管理功能网格 -->
-<div class="max-w-6xl mx-auto px-4">
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <!-- 文章管理 -->
-        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-blog text-white text-xl"></i>
+<div class="d-grid gap-4 mb-8 grid-cols-1 grid-regular-cols-2 grid-large-cols-3">
+    <!-- 文章管理 -->
+    <div class="Box border rounded-2 overflow-hidden shadow-sm">
+        <div class="Box-body p-4">
+            <div class="d-flex items-start gap-3 mb-3">
+                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="fas fa-blog color-fg-accent"></i>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-white">文章管理</h3>
-                    <p class="text-slate-300 text-sm">管理博客文章和内容</p>
+                <div class="flex-1 overflow-hidden">
+                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">文章管理</h2>
+                    <p class="f6 color-fg-muted m-0">管理博客文章和内容</p>
                 </div>
             </div>
-            <div class="flex gap-2 flex-wrap">
-                <a href="{{ url_for('admin.new_post') }}" class="btn-primary-sm">
-                    <i class="fas fa-plus"></i> 新建
-                </a>
-                <a href="{{ url_for('admin.admin_posts') }}" class="btn-secondary-sm">
-                    <i class="fas fa-list"></i> 列表
-                </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-plus"></i> 新建</a>
+                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
             </div>
         </div>
-        
-        <!-- 项目管理 -->
-        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-code text-white text-xl"></i>
+    </div>
+
+    <!-- 友链管理 -->
+    <div class="Box border rounded-2 overflow-hidden shadow-sm">
+        <div class="Box-body p-4">
+            <div class="d-flex items-start gap-3 mb-3">
+                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="fas fa-link color-fg-success"></i>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-white">项目管理</h3>
-                    <p class="text-slate-300 text-sm">管理项目作品展示</p>
+                <div class="flex-1 overflow-hidden">
+                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">友链管理</h2>
+                    <p class="f6 color-fg-muted m-0">管理友情链接申请和展示</p>
                 </div>
             </div>
-            <div class="flex gap-2 flex-wrap">
-                <a href="{{ url_for('admin.new_project') }}" class="btn-primary-sm">
-                    <i class="fas fa-plus"></i> 添加
-                </a>
-                <a href="{{ url_for('admin.admin_projects') }}" class="btn-secondary-sm">
-                    <i class="fas fa-list"></i> 列表
-                </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('admin.new_link') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-plus"></i> 新增</a>
+                <a href="{{ url_for('admin.admin_links') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
             </div>
         </div>
-        
-        <!-- 关于页面 -->
-        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-purple-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-user-circle text-white text-xl"></i>
+    </div>
+
+    <!-- 关于页面 -->
+    <div class="Box border rounded-2 overflow-hidden shadow-sm">
+        <div class="Box-body p-4">
+            <div class="d-flex items-start gap-3 mb-3">
+                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="fas fa-user-circle color-fg-default"></i>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-white">关于页面</h3>
-                    <p class="text-slate-300 text-sm">管理个人介绍页面</p>
-                </div>
-            </div>
-            <div class="flex gap-2 flex-wrap">
-                <a href="{{ url_for('admin.admin_about') }}" class="btn-primary-sm">
-                    <i class="fas fa-cog"></i> 管理
-                </a>
-            </div>
-        </div>
-        
-        <!-- 版本管理 -->
-        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-orange-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-code-branch text-white text-xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-white">版本管理</h3>
-                    <p class="text-slate-300 text-sm">管理项目版本信息</p>
+                <div class="flex-1 overflow-hidden">
+                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">关于页面</h2>
+                    <p class="f6 color-fg-muted m-0">管理个人介绍页面</p>
                 </div>
             </div>
-            <div class="flex gap-2 flex-wrap">
-                <a href="{{ url_for('version.admin_versions') }}" class="btn-primary-sm">
-                    <i class="fas fa-list"></i> 列表
-                </a>
-                <a href="{{ url_for('version.new_version') }}" class="btn-secondary-sm">
-                    <i class="fas fa-plus"></i> 新建
-                </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-cog"></i> 管理</a>
             </div>
         </div>
-        
-        <!-- 技能管理 -->
-        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-tools text-white text-xl"></i>
+    </div>
+
+    <!-- 版本管理 -->
+    <div class="Box border rounded-2 overflow-hidden shadow-sm">
+        <div class="Box-body p-4">
+            <div class="d-flex items-start gap-3 mb-3">
+                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="fas fa-code-branch color-fg-attention"></i>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-white">技能管理</h3>
-                    <p class="text-slate-300 text-sm">管理技能标签</p>
+                <div class="flex-1 overflow-hidden">
+                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">版本管理</h2>
+                    <p class="f6 color-fg-muted m-0">管理项目版本信息</p>
                 </div>
             </div>
-            <div class="flex gap-2 flex-wrap">
-                <a href="{{ url_for('admin.admin_skills') }}" class="btn-primary-sm">
-                    <i class="fas fa-list"></i> 列表
-                </a>
-                <a href="{{ url_for('admin.new_skill') }}" class="btn-secondary-sm">
-                    <i class="fas fa-plus"></i> 新建
-                </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('version.admin_versions') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
+                <a href="{{ url_for('version.new_version') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-plus"></i> 新建</a>
             </div>
         </div>
-        
-        <!-- 系统设置 -->
-        <div class="glass-card rounded-xl p-6 hover:transform hover:scale-105 transition-all duration-300">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
-                    <i class="fas fa-cog text-white text-xl"></i>
+    </div>
+
+    <!-- 技能管理 -->
+    <div class="Box border rounded-2 overflow-hidden shadow-sm">
+        <div class="Box-body p-4">
+            <div class="d-flex items-start gap-3 mb-3">
+                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="fas fa-tools color-fg-danger"></i>
                 </div>
-                <div>
-                    <h3 class="text-xl font-semibold text-white">系统设置</h3>
-                    <p class="text-slate-300 text-sm">网站配置和管理</p>
+                <div class="flex-1 overflow-hidden">
+                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">技能管理</h2>
+                    <p class="f6 color-fg-muted m-0">管理技能标签</p>
                 </div>
             </div>
-            <div class="flex gap-2 flex-wrap">
-                <a href="{{ url_for('settings.profile_settings') }}" class="btn-primary-sm">
-                    <i class="fas fa-user-edit"></i> 个人资料
-                </a>
-                <a href="{{ url_for('settings.security_settings') }}" class="btn-secondary-sm">
-                    <i class="fas fa-shield-alt"></i> 安全
-                </a>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
+                <a href="{{ url_for('admin.new_skill') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-plus"></i> 新建</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 系统设置 -->
+    <div class="Box border rounded-2 overflow-hidden shadow-sm">
+        <div class="Box-body p-4">
+            <div class="d-flex items-start gap-3 mb-3">
+                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
+                    <i class="fas fa-cog color-fg-muted"></i>
+                </div>
+                <div class="flex-1 overflow-hidden">
+                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">系统设置</h2>
+                    <p class="f6 color-fg-muted m-0">网站配置和管理</p>
+                </div>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{{ url_for('settings.profile_settings') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-user-edit"></i> 个人资料</a>
+                <a href="{{ url_for('settings.security_settings') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-shield-alt"></i> 安全</a>
             </div>
         </div>
     </div>
 </div>
-
-<style>
-.btn-primary-sm {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    text-decoration: none;
-}
-
-.btn-primary-sm:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-    text-decoration: none;
-    color: white;
-}
-
-.btn-secondary-sm {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    text-decoration: none;
-}
-
-.btn-secondary-sm:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-1px);
-    text-decoration: none;
-    color: white;
-}
-</style>
-{% endblock %} 
+{% endblock %}

@@ -1,12 +1,11 @@
-/* 评分系统样式 */
+/* Rating system styles - Primer aligned */
 
-/* 评分输入样式 */
 .rating-input {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     align-items: center;
     justify-content: center;
-    margin-top: 10px;
+    margin-top: 8px;
 }
 
 .rating-input input[type="radio"] {
@@ -15,92 +14,75 @@
 
 .rating-input label {
     cursor: pointer;
-    font-size: 28px;
-    color: #ffffff;
-transition: all 0.2s ease;
-padding: 5px;
-border-radius: 50%;
+    font-size: 24px;
+    color: var(--borderColor-default);
+    transition: color 0.15s ease;
+    padding: 4px;
 }
 
-/* 基础星星样式 */
-.rating-input label {
-    cursor: pointer;
-    font-size: 28px;
-    color: #ddd;
-    transition: all 0.2s ease;
-    padding: 5px;
-    border-radius: 50%;
-}
-
-/* 悬停效果 - 通过JavaScript控制 */
 .rating-input label.hover-active i {
-    color: #ffc107;
-    transform: scale(1.2);
-    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+    color: #d4a72c;
 }
 
-/* 选中效果 */
 .rating-input input:checked + label i,
 .rating-input input:checked ~ label i {
-    color: #ffc107;
-    transform: scale(1.2);
-    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+    color: #d4a72c;
 }
 
-/* 评分显示 */
+/* Rating display */
 .rating-display {
     display: flex;
     align-items: center;
     gap: 2px;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .rating-display .fas.fa-star {
-    color: #fbbf24;
-    font-size: 16px;
+    color: #d4a72c;
+    font-size: 14px;
 }
 
 .rating-display .far.fa-star {
-    color: #d1d5db;
-    font-size: 16px;
+    color: var(--borderColor-default);
+    font-size: 14px;
 }
 
 .rating-display .rating-text,
 .comment-rating .rating-text {
     margin-left: 8px;
-    font-size: 16px;
-    color: var(--text-muted);
+    font-size: 14px;
+    color: var(--fgColor-subtle);
     font-weight: 600;
 }
 
-/* 评论中的星级评分样式 */
+/* Comment inline rating */
 .comment-rating {
     display: flex;
     align-items: center;
     gap: 2px;
-    margin-top: 5px;
+    margin-top: 4px;
 }
 
 .comment-rating .fas.fa-star {
-    color: #fbbf24;
+    color: #d4a72c;
     font-size: 12px;
 }
 
 .comment-rating .far.fa-star {
-    color: #d1d5db;
+    color: var(--borderColor-default);
     font-size: 12px;
 }
 
-/* 编辑评分输入样式 */
+/* Edit rating */
 .edit-rating-input {
     margin-bottom: 8px;
     font-weight: 500;
-    color: var(--text-primary);
+    color: var(--fgColor-default);
 }
 
 .edit-rating-input .rating-stars {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     align-items: center;
     justify-content: center;
 }
@@ -111,34 +93,17 @@ border-radius: 50%;
 
 .edit-rating-input .rating-stars label {
     cursor: pointer;
-    font-size: 28px;
-    color: #ddd;
-    transition: all 0.2s ease;
-    padding: 5px;
-    border-radius: 50%;
+    font-size: 24px;
+    color: var(--borderColor-default);
+    transition: color 0.15s ease;
+    padding: 4px;
 }
 
-/* 编辑评分基础星星样式 */
-.edit-rating-input .rating-stars label {
-    cursor: pointer;
-    font-size: 28px;
-    color: #ddd;
-    transition: all 0.2s ease;
-    padding: 5px;
-    border-radius: 50%;
-}
-
-/* 编辑评分悬停效果 - 通过JavaScript控制 */
 .edit-rating-input .rating-stars label.hover-active i {
-    color: #ffc107;
-    transform: scale(1.2);
-    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+    color: #d4a72c;
 }
 
-/* 编辑评分选中效果 */
 .edit-rating-input .rating-stars input:checked + label i,
 .edit-rating-input .rating-stars input:checked ~ label i {
-    color: #ffc107;
-    transform: scale(1.2);
-    text-shadow: 0 2px 4px rgba(255, 193, 7, 0.5);
+    color: #d4a72c;
 }

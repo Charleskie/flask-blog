@@ -1,4 +1,4 @@
-/* 基础重置和全局样式 */
+/* Base reset and global styles - Primer aligned */
 
 * {
     margin: 0;
@@ -11,123 +11,106 @@ html {
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    line-height: 1.6;
-    color: var(--text-primary);
-    background: #192144;
-    transition: all 0.3s ease;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    line-height: 1.5;
+    color: var(--fgColor-default);
+    background: var(--bgColor-default);
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* 滚动条样式 */
-::-webkit-scrollbar {
-    width: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: var(--bg-secondary);
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: var(--primary-color);
-    border-radius: 4px;
-    transition: background 0.3s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-dark);
-}
-
-/* 选择文本样式 */
 ::selection {
-    background: var(--primary-color);
-    color: white;
+    background: rgba(9, 105, 218, 0.3);
+    color: var(--fgColor-default);
 }
 
 ::-moz-selection {
-    background: var(--primary-color);
-    color: white;
+    background: rgba(9, 105, 218, 0.3);
+    color: var(--fgColor-default);
 }
 
-/* 链接样式 */
 a {
-    color: var(--primary-color);
+    color: var(--fgColor-link);
     text-decoration: none;
-    transition: color 0.3s ease;
+    transition: color 0.15s ease;
 }
 
 a:hover {
-    color: var(--primary-dark);
+    color: #0550ae;
     text-decoration: underline;
 }
 
-/* 标题样式 */
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
-    line-height: 1.2;
-    margin-bottom: 1rem;
-    color: var(--text-primary);
+    line-height: 1.25;
+    margin-bottom: 16px;
+    color: var(--fgColor-default);
 }
 
-h1 { font-size: 2.5rem; }
-h2 { font-size: 2rem; }
-h3 { font-size: 1.75rem; }
-h4 { font-size: 1.5rem; }
-h5 { font-size: 1.25rem; }
-h6 { font-size: 1rem; }
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1rem; }
+h5 { font-size: 0.875rem; }
+h6 { font-size: 0.75rem; }
 
-/* 文本颜色 */
-.text-primary { color: var(--text-primary) !important; }
-.text-secondary { color: var(--text-secondary) !important; }
-.text-muted { color: var(--text-muted) !important; }
+img {
+    max-width: 100%;
+    height: auto;
+}
 
-/* 背景颜色 */
-.bg-primary { background-color: var(--bg-primary) !important; }
-.bg-secondary { background-color: var(--bg-secondary) !important; }
-.bg-tertiary { background-color: var(--bg-tertiary) !important; }
-
-/* 边框颜色 */
-.border-primary { border-color: var(--primary-color) !important; }
-.border-secondary { border-color: var(--bg-tertiary) !important; }
-
-/* 工具提示样式 */
 [data-tooltip] {
     position: relative;
     cursor: help;
 }
 
-/* 徽章样式 */
+/* Primer badge */
 .badge {
     display: inline-block;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    line-height: 1;
+    padding: 0 7px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 18px;
     text-align: center;
     white-space: nowrap;
     vertical-align: baseline;
-    border-radius: var(--radius-sm);
-    background: var(--primary-color);
-    color: white;
+    border-radius: var(--borderRadius-full);
+    background: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .badge-secondary {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    border: 1px solid var(--borderColor-default);
 }
 
 .badge-success {
-    background: var(--success-color);
-    color: white;
+    background: var(--bgColor-success-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .badge-warning {
-    background: var(--warning-color);
-    color: white;
+    background: var(--bgColor-attention-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .badge-danger {
-    background: var(--danger-color);
-    color: white;
+    background: var(--bgColor-danger-emphasis);
+    color: var(--fgColor-onEmphasis);
+}
+
+/* Focus ring */
+:focus-visible {
+    outline: 2px solid var(--focus-outlineColor);
+    outline-offset: -2px;
+    box-shadow: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

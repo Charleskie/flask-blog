@@ -3,7 +3,6 @@
 {% block title %}个人信息设置 - 我的个人网站{% endblock %}
 
 {% block extra_js %}
-<!-- 添加图片裁剪库 -->
 <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.5.13/dist/cropper.min.css">
 
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const avatarContainer = document.querySelector('.avatar-container');
     let cropper = null;
 
-    // 点击头像或上传按钮触发文件选择
     avatarContainer.addEventListener('click', function() {
         avatarInput.click();
     });
@@ -28,7 +26,6 @@ document.addEventListener('DOMContentLoaded', function() {
         avatarInput.click();
     });
 
-    // 确保DOM元素存在// 压缩图片函数
     function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.8) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -37,23 +34,19 @@ document.addEventListener('DOMContentLoaded', function() {
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    
+
                     let { width, height } = img;
-                    
-                    // 计算缩放比例
+
                     if (width > maxWidth || height > maxHeight) {
                         const ratio = Math.min(maxWidth / width, maxHeight / height);
                         width *= ratio;
                         height *= ratio;
                     }
-                    
+
                     canvas.width = width;
                     canvas.height = height;
-                    
-                    // 绘制压缩后的图片
                     ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // 转换为blob
+
                     canvas.toBlob(function(blob) {
                         resolve(blob);
                     }, file.type, quality);
@@ -66,28 +59,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 文件选择处理
     avatarInput.addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (file) {
-            // 验证文件类型
             if (!file.type.startsWith('image/')) {
                 alert('请选择图片文件！');
                 return;
             }
 
-            // 验证文件大小 (5MB)
             if (file.size > 5 * 1024 * 1024) {
                 alert('文件大小不能超过5MB！');
                 return;
             }
 
             try {
-                // 压缩图片
                 const compressedBlob = await compressImage(file, 800, 800, 0.8);
                 const compressedFile = new File([compressedBlob], file.name, { type: file.type });
-                
-                // 显示裁剪模态框
                 showCropModal(compressedFile);
             } catch (error) {
                 console.error('图片压缩失败:', error);
@@ -96,43 +83,36 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // 显示裁剪模态框
     function showCropModal(file) {
-        // 创建模态框
         const modalHtml = `
-            <div class="modal fade show" id="cropModal" style="display: block; background: rgba(0,0,0,0.5);">
-                <div class="modal-dialog modal-lg">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">裁剪头像</h5>
-                            <button type="button" class="close" onclick="closeCropModal()">&times;</button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img id="crop-image" style="max-width: 100%;">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" onclick="closeCropModal()">取消</button>
-                            <button type="button" class="btn btn-primary" onclick="confirmCrop()">确认裁剪</button>
-                        </div>
+            <div id="cropModal" style="position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(0,0,0,0.5);">
+                <div class="Box" style="max-width: 720px; width: 100%; max-height: 90vh; overflow: auto;">
+                    <div class="Box-header d-flex justify-between items-center">
+                        <span class="f5 text-bold color-fg-default">裁剪头像</span>
+                        <button type="button" class="btn btn-sm btn-outline" onclick="closeCropModal()" aria-label="关闭">&times;</button>
+                    </div>
+                    <div class="Box-body text-center">
+                        <img id="crop-image" class="width-full" style="max-height: 60vh; display: block; margin: 0 auto;">
+                    </div>
+                    <div class="Box-footer d-flex justify-end gap-2">
+                        <button type="button" class="btn btn-secondary" onclick="closeCropModal()">取消</button>
+                        <button type="button" class="btn btn-primary" onclick="confirmCrop()">确认裁剪</button>
                     </div>
                 </div>
             </div>
         `;
-        
-        // 移除已存在的模态框
+
         const existingModal = document.getElementById('cropModal');
         if (existingModal) {
             existingModal.remove();
         }
-        
+
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        
+
         const cropImage = document.getElementById('crop-image');
         const reader = new FileReader();
         reader.onload = function(e) {
             cropImage.src = e.target.result;
-            
-            // 初始化裁剪器
             cropper = new Cropper(cropImage, {
                 aspectRatio: 1,
                 viewMode: 1,
@@ -148,19 +128,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 cropBoxResizable: true,
                 cropBoxMovable: true,
                 minCropBoxWidth: 100,
-                minCropBoxHeight: 100,
-                ready: function() {
-                    // 裁剪器准备就绪
-                }
+                minCropBoxHeight: 100
             });
         };
         reader.readAsDataURL(file);
-        
-        // 将文件保存到全局变量
+
         window.currentCropFile = file;
     }
 
-    // 关闭裁剪模态框
     window.closeCropModal = function() {
         const modal = document.getElementById('cropModal');
         if (modal) {
@@ -173,24 +148,19 @@ document.addEventListener('DOMContentLoaded', function() {
         window.currentCropFile = null;
     };
 
-    // 确认裁剪
     window.confirmCrop = function() {
         if (!cropper) return;
-        
-        // 获取裁剪后的图片
+
         cropper.getCroppedCanvas({
             width: 300,
             height: 300
         }).toBlob(function(blob) {
-            // 创建新的文件对象
-            const croppedFile = new File([blob], window.currentCropFile.name, { 
-                type: window.currentCropFile.type 
+            const croppedFile = new File([blob], window.currentCropFile.name, {
+                type: window.currentCropFile.type
             });
-            
-            // 关闭模态框
+
             closeCropModal();
-            
-            // 显示预览
+
             const reader = new FileReader();
             reader.onload = function(e) {
                 avatarPreview.src = e.target.result;
@@ -200,16 +170,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 currentAvatar.style.opacity = '0.5';
             };
             reader.readAsDataURL(blob);
-            
-            // 更新文件输入
+
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(croppedFile);
             avatarInput.files = dataTransfer.files;
-            
+
         }, window.currentCropFile.type, 0.9);
     };
 
-    // 取消上传
     cancelBtn.addEventListener('click', function() {
         avatarInput.value = '';
         previewContainer.classList.add('d-none');
@@ -218,20 +186,19 @@ document.addEventListener('DOMContentLoaded', function() {
         currentAvatar.style.opacity = '1';
     });
 
-    // 拖拽上传
     avatarContainer.addEventListener('dragover', function(e) {
         e.preventDefault();
-        avatarContainer.style.border = '2px dashed #007bff';
+        avatarContainer.style.border = '2px dashed var(--fgColor-accent)';
     });
 
     avatarContainer.addEventListener('dragleave', function(e) {
         e.preventDefault();
-        avatarContainer.style.border = 'none';
+        avatarContainer.style.border = '';
     });
 
     avatarContainer.addEventListener('drop', function(e) {
         e.preventDefault();
-        avatarContainer.style.border = 'none';
+        avatarContainer.style.border = '';
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             avatarInput.files = files;
@@ -243,256 +210,146 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-.avatar-container {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
+.avatar-container { position: relative; display: inline-block; cursor: pointer; }
 .avatar-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(59, 130, 246, 0.8);
-    color: white;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    border-radius: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
     opacity: 0;
-    transition: opacity 0.3s ease;
-    font-size: 14px;
+    transition: opacity 0.15s ease;
+    color: white;
 }
-
-.avatar-overlay i {
-    font-size: 24px;
-    margin-bottom: 5px;
-}
-
-.avatar-container:hover .avatar-overlay {
-    opacity: 1;
-}
-
-.avatar-container:hover {
-    transform: scale(1.05);
-}
-
+.avatar-container:hover .avatar-overlay { opacity: 1; }
 .avatar-preview-container {
-    border: 2px solid #3b82f6;
+    border: 2px solid var(--borderColor-default);
     border-radius: 50%;
-    padding: 5px;
+    padding: 4px;
     display: inline-block;
 }
-
 .avatar-actions {
     display: flex;
     gap: 10px;
     justify-content: center;
+    flex-wrap: wrap;
 }
-
-.d-none {
-    display: none !important;
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-}
-
-.btn-secondary {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-secondary:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-}
+.settings-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 767px) { .settings-form-grid { grid-template-columns: 1fr; } }
 </style>
 {% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-6 mb-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            个人信息设置
-        </h1>
-        <p class="text-slate-300">管理您的个人资料和头像</p>
-    </div>
-</div>
+<div class="container-xl py-4">
+    <a href="{{ url_for('settings.settings') }}" class="d-flex items-center gap-2 mb-3 color-fg-default no-underline">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>返回设置</span>
+    </a>
 
-<!-- 设置内容 -->
-<div class="max-w-4xl mx-auto px-4">
+    <h2 class="f3 text-bold color-fg-default mb-2">个人信息设置</h2>
+    <p class="f5 color-fg-muted mb-4">管理您的个人资料和头像</p>
+
     <form method="POST" enctype="multipart/form-data">
-        <div class="glass-card rounded-xl p-8">
-            <!-- 头像设置区域 -->
-            <div class="text-center mb-8">
-                <h2 class="text-xl font-semibold mb-6 text-white">头像设置</h2>
-                <div class="avatar-container mb-4">
-                    <img src="{{ current_user.get_avatar_url() }}" 
-                         alt="头像" 
+        <div class="Box mb-4">
+            <div class="Box-header">
+                <h3 class="f5 text-bold m-0 color-fg-default">头像设置</h3>
+            </div>
+            <div class="Box-body text-center">
+                <div class="avatar-container mb-3">
+                    <img src="{{ current_user.get_avatar_url() }}"
+                         alt="头像"
                          id="current-avatar"
-                         class="rounded-full mx-auto" 
-                         style="width: 120px; height: 120px; object-fit: cover; border: 3px solid rgba(255, 255, 255, 0.1);">
+                         width="120"
+                         height="120"
+                         style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 2px solid var(--borderColor-default); display: block;">
                     <div class="avatar-overlay">
-                        <i class="fas fa-camera"></i>
-                        <span>点击更换</span>
+                        <i class="fas fa-camera mb-1" aria-hidden="true"></i>
+                        <span class="f6">点击更换</span>
                     </div>
                 </div>
-                <input type="file" 
-                       class="form-control d-none" 
-                       id="avatar-input" 
-                       name="avatar" 
+
+                <input type="file"
+                       class="d-none"
+                       id="avatar-input"
+                       name="avatar"
                        accept="image/*">
-                <div class="avatar-preview-container d-none mb-4">
-                    <img id="avatar-preview" class="rounded-full mx-auto" style="width: 120px; height: 120px; object-fit: cover; border: 3px solid #3b82f6;">
+
+                <div class="avatar-preview-container d-none mb-3">
+                    <img id="avatar-preview" alt="" width="120" height="120"
+                         style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 2px solid var(--borderColor-default); display: block;">
                 </div>
-                <div class="avatar-actions d-none mb-4">
-                    <button type="button" id="cancel-avatar" class="btn-secondary mr-3">
-                        <i class="fas fa-times"></i> 取消
+
+                <div class="avatar-actions d-none mb-3">
+                    <button type="button" id="cancel-avatar" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-times" aria-hidden="true"></i> 取消
                     </button>
-                    <button type="submit" 
-                            class="btn-primary" 
+                    <button type="submit"
+                            class="btn btn-primary btn-sm"
                             formaction="{{ url_for('settings.upload_avatar') }}">
-                        <i class="fas fa-upload"></i> 确认上传
+                        <i class="fas fa-upload" aria-hidden="true"></i> 确认上传
                     </button>
                 </div>
-                <button type="button" 
-                        id="upload-avatar-btn"
-                        class="btn-primary">
-                    <i class="fas fa-upload"></i> 上传头像
-                </button>
-            </div>
-            
-            <!-- 基本信息设置 -->
-            <div class="border-t border-slate-700 pt-8">
-                <h2 class="text-xl font-semibold mb-6 text-white">基本信息</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="nickname" class="block text-sm font-medium text-slate-300 mb-2">昵称</label>
-                        <input type="text" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="nickname" 
-                               name="nickname" 
-                               value="{{ current_user.nickname or '' }}" 
-                               placeholder="请输入昵称">
-                    </div>
-                    
-                    <div>
-                        <label for="location" class="block text-sm font-medium text-slate-300 mb-2">所在地</label>
-                        <input type="text" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="location" 
-                               name="location" 
-                               value="{{ current_user.location or '' }}" 
-                               placeholder="请输入所在地">
-                    </div>
-                    
-                    <div>
-                        <label for="company" class="block text-sm font-medium text-slate-300 mb-2">公司</label>
-                        <input type="text" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="company" 
-                               name="company" 
-                               value="{{ current_user.company or '' }}" 
-                               placeholder="请输入公司名称">
-                    </div>
-                    
-                    <div>
-                        <label for="job_title" class="block text-sm font-medium text-slate-300 mb-2">职位</label>
-                        <input type="text" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="job_title" 
-                               name="job_title" 
-                               value="{{ current_user.job_title or '' }}" 
-                               placeholder="请输入职位">
-                    </div>
-                    
-                    <div>
-                        <label for="website" class="block text-sm font-medium text-slate-300 mb-2">个人网站</label>
-                        <input type="url" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="website" 
-                               name="website" 
-                               value="{{ current_user.website or '' }}" 
-                               placeholder="https://example.com">
-                    </div>
-                    
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-slate-300 mb-2">电话</label>
-                        <input type="tel" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="phone" 
-                               name="phone" 
-                               value="{{ current_user.phone or '' }}" 
-                               placeholder="请输入电话号码">
-                    </div>
-                </div>
-                
-                <div class="mt-6">
-                    <label for="bio" class="block text-sm font-medium text-slate-300 mb-2">个人简介</label>
-                    <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                              id="bio" 
-                              name="bio" 
-                              rows="4" 
-                              placeholder="介绍一下自己...">{{ current_user.bio or '' }}</textarea>
-                </div>
-            </div>
-            
-            <!-- 操作按钮 -->
-            <div class="flex justify-between items-center mt-8 pt-6 border-t border-slate-700">
-                <a href="{{ url_for('settings.settings') }}" class="btn-secondary">
-                    <i class="fas fa-arrow-left"></i> 返回设置
-                </a>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save"></i> 保存更改
+
+                <button type="button" id="upload-avatar-btn" class="btn btn-outline btn-sm">
+                    <i class="fas fa-upload" aria-hidden="true"></i> 上传头像
                 </button>
             </div>
         </div>
+
+        <div class="Box mb-4">
+            <div class="Box-header">
+                <h3 class="f5 text-bold m-0 color-fg-default">基本信息</h3>
+            </div>
+            <div class="Box-body">
+                <div class="settings-form-grid">
+                    <div>
+                        <label for="nickname" class="form-label">昵称</label>
+                        <input type="text" class="form-control" id="nickname" name="nickname"
+                               value="{{ current_user.nickname or '' }}" placeholder="请输入昵称">
+                    </div>
+                    <div>
+                        <label for="location" class="form-label">所在地</label>
+                        <input type="text" class="form-control" id="location" name="location"
+                               value="{{ current_user.location or '' }}" placeholder="请输入所在地">
+                    </div>
+                    <div>
+                        <label for="company" class="form-label">公司</label>
+                        <input type="text" class="form-control" id="company" name="company"
+                               value="{{ current_user.company or '' }}" placeholder="请输入公司名称">
+                    </div>
+                    <div>
+                        <label for="job_title" class="form-label">职位</label>
+                        <input type="text" class="form-control" id="job_title" name="job_title"
+                               value="{{ current_user.job_title or '' }}" placeholder="请输入职位">
+                    </div>
+                    <div>
+                        <label for="website" class="form-label">个人网站</label>
+                        <input type="url" class="form-control" id="website" name="website"
+                               value="{{ current_user.website or '' }}" placeholder="https://example.com">
+                    </div>
+                    <div>
+                        <label for="phone" class="form-label">电话</label>
+                        <input type="tel" class="form-control" id="phone" name="phone"
+                               value="{{ current_user.phone or '' }}" placeholder="请输入电话号码">
+                    </div>
+                </div>
+
+                <div class="mt-3">
+                    <label for="bio" class="form-label">个人简介</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="4"
+                              placeholder="介绍一下自己...">{{ current_user.bio or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-end border-top pt-3 mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save" aria-hidden="true"></i> 保存更改
+            </button>
+        </div>
     </form>
 </div>
-
-<style>
-.avatar-container {
-    position: relative;
-    display: inline-block;
-}
-
-.avatar-container img {
-    border: 3px solid #dee2e6;
-    transition: border-color 0.3s ease;
-}
-
-.avatar-container:hover img {
-    border-color: #007bff;
-}
-</style>
 {% endblock %}
