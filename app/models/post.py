@@ -1,12 +1,14 @@
 from .user import db
 from datetime import datetime
 import re
+from app.utils.post_content import extract_post_plain_text, normalize_plain_text, render_post_content
 
 class Post(db.Model):
     """文章模型"""
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     content = db.Column(db.Text, nullable=False)
+    content_format = db.Column(db.String(20), nullable=False, default='html')  # html, markdown
     excerpt = db.Column(db.Text, nullable=True)  # 文章摘要
     slug = db.Column(db.String(200), unique=True, nullable=True)  # URL友好的标题
     status = db.Column(db.String(20), default='draft')  # draft, published
@@ -48,9 +50,51 @@ class Post(db.Model):
         if self.slug:
             return self.slug
         return self.generate_slug()
+
+    @property
+    def normalized_content_format(self):
+        """返回受支持的文章内容格式。"""
+        if (self.content_format or '').lower() == 'markdown':
+            return 'markdown'
+        return 'html'
+
+    @property
+    def rendered_content(self):
+        """返回可直接用于前台展示的 HTML 内容。"""
+        return render_post_content(self.content, self.normalized_content_format)
+
+    @property
+    def plain_text_content(self):
+        """返回去除格式后的正文纯文本。"""
+        return extract_post_plain_text(self.content, self.normalized_content_format)
+
+    @property
+    def display_excerpt(self):
+        """返回兼容 HTML / Markdown 的摘要文本。"""
+        if self.excerpt:
+            return normalize_plain_text(self.excerpt)
+        return self.plain_text_content
     
     def get_tags_list(self):
         """获取标签列表"""
         if self.tags:
             return [tag.strip() for tag in self.tags.split(',')]
-        return [] 
+        return []
+
+
+def ensure_post_schema():
+    """兼容现有数据库，为文章表补齐内容格式字段。"""
+    inspector = db.inspect(db.engine)
+    if 'post' not in inspector.get_table_names():
+        return
+
+    existing_columns = {column['name'] for column in inspector.get_columns('post')}
+
+    with db.engine.begin() as conn:
+        if 'content_format' not in existing_columns:
+            conn.execute(db.text("ALTER TABLE post ADD COLUMN content_format VARCHAR(20) DEFAULT 'html'"))
+
+        conn.execute(db.text(
+            "UPDATE post SET content_format = 'html' "
+            "WHERE content_format IS NULL OR TRIM(content_format) = ''"
+        ))

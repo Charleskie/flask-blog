@@ -634,17 +634,6 @@ class InteractionManager {
         let html = '';
         
         if (comments.length === 0) {
-            html = `
-                <div class="no-comments">
-                    <div class="no-comments-icon">
-                        <i class="fas fa-comment-slash"></i>
-                    </div>
-                    <div class="no-comments-text">
-                        <h4>暂无评论</h4>
-                        <p>快来抢沙发，发表你的看法吧！</p>
-                    </div>
-                </div>
-            `;
         } else {
             comments.forEach((comment, index) => {
                 // 使用随机头像作为默认头像

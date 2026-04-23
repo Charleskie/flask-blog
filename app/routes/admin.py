@@ -97,6 +97,7 @@ def new_post():
     if request.method == 'POST':
         title = request.form.get('title')
         content = request.form.get('content')
+        content_format = (request.form.get('content_format') or 'markdown').strip().lower()
         excerpt = request.form.get('excerpt')
         category = (request.form.get('category') or '').strip() or None
         tags = request.form.get('tags')
@@ -115,11 +116,15 @@ def new_post():
                 return jsonify({'success': False, 'message': '分类长度不能超过50个字符'})
 
             return render_template('admin/new_post.html', categories=categories)
+
+        if content_format not in {'html', 'markdown'}:
+            content_format = 'markdown'
         
         try:
             post = Post(
                 title=title,
                 content=content,
+                content_format=content_format,
                 excerpt=excerpt,
                 category=category,
                 tags=tags,
@@ -164,6 +169,7 @@ def edit_post(post_id):
     if request.method == 'POST':
         title = request.form.get('title')
         content = request.form.get('content')
+        content_format = (request.form.get('content_format') or post.normalized_content_format).strip().lower()
         excerpt = request.form.get('excerpt')
         category = (request.form.get('category') or '').strip() or None
         tags = request.form.get('tags')
@@ -182,10 +188,14 @@ def edit_post(post_id):
                 return jsonify({'success': False, 'message': '分类长度不能超过50个字符'})
 
             return render_template('admin/edit_post.html', post=post, categories=categories)
+
+        if content_format not in {'html', 'markdown'}:
+            content_format = post.normalized_content_format
         
         try:
             post.title = title
             post.content = content
+            post.content_format = content_format
             post.excerpt = excerpt
             post.category = category
             post.tags = tags

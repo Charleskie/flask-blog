@@ -47,7 +47,7 @@
                         {% endif %}
                     </p>
                     <p class="f4 color-fg-muted mb-3 m-0">
-                        {{ post.excerpt or post.content[:150] + '...' if post.content|length > 150 else post.content }}
+                        {{ post.display_excerpt|truncate(150, True, '...') }}
                     </p>
                     <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn btn-primary btn-sm no-underline">阅读更多</a>
                 </div>

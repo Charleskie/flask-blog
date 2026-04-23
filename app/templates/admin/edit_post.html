@@ -45,19 +45,19 @@
                     <div class="Box-body post-edit-stack">
                         <div>
                             <label for="title" class="form-label">文章标题 *</label>
-                            <input type="text" class="form-control width-full" id="title" name="title" value="{{ post.title }}" required>
+                            <input type="text" class="form-control width-full" id="title" name="title" value="{{ request.form.get('title', post.title) }}" required>
                         </div>
                         <div>
                             <label for="excerpt" class="form-label">文章摘要</label>
-                            <textarea class="form-control width-full" id="excerpt" name="excerpt" rows="3" placeholder="文章摘要，用于列表页显示">{{ post.excerpt or '' }}</textarea>
+                            <textarea class="form-control width-full" id="excerpt" name="excerpt" rows="3" placeholder="文章摘要，用于列表页显示">{{ request.form.get('excerpt', post.excerpt or '') }}</textarea>
                             <p class="f6 color-fg-muted m-0 mt-1">摘要会直接显示在博客列表里，尽量简短一点。</p>
                         </div>
                         <div class="post-edit-inline-settings">
                             <div class="post-edit-inline-field">
                                 <label for="status" class="form-label">发布状态</label>
                                 <select class="form-select width-full" id="status" name="status">
-                                    <option value="draft" {{ 'selected' if post.status == 'draft' }}>草稿</option>
-                                    <option value="published" {{ 'selected' if post.status == 'published' }}>已发布</option>
+                                    <option value="draft" {{ 'selected' if request.form.get('status', post.status) == 'draft' }}>草稿</option>
+                                    <option value="published" {{ 'selected' if request.form.get('status', post.status) == 'published' }}>已发布</option>
                                 </select>
                             </div>
                             <div class="post-edit-inline-field">
@@ -80,7 +80,7 @@
                             </div>
                             <div class="post-edit-inline-field post-edit-inline-field-wide">
                                 <label for="tags" class="form-label">标签</label>
-                                <input type="text" class="form-control width-full" id="tags" name="tags" value="{{ post.tags or '' }}" placeholder="Python, Flask, Web开发">
+                                <input type="text" class="form-control width-full" id="tags" name="tags" value="{{ request.form.get('tags', post.tags or '') }}" placeholder="Python, Flask, Web开发">
                                 <p class="f6 color-fg-muted m-0 mt-1">多个标签请用逗号分隔。</p>
                             </div>
                         </div>
@@ -112,7 +112,7 @@
                                             <button type="button" class="btn btn-danger btn-sm" onclick="removeImage()"><i class="fas fa-trash"></i> 删除</button>
                                         </div>
                                     </div>
-                                    <input type="hidden" id="featured_image" name="featured_image" value="{{ post.featured_image or '' }}">
+                                    <input type="hidden" id="featured_image" name="featured_image" value="{{ request.form.get('featured_image', post.featured_image or '') }}">
                                 </div>
                             </div>
                         </div>
@@ -125,8 +125,14 @@
                     </div>
                     <div class="Box-body post-edit-stack">
                         <label for="content" class="form-label m-0">文章内容 *</label>
-                        <div id="tiptap-container"></div>
-                        <textarea id="content" name="content" class="d-none" aria-hidden="true">{{ post.content }}</textarea>
+                        {% if post.normalized_content_format == 'markdown' %}
+                        <p class="post-edit-editor-note m-0">当前文章使用 Markdown 存储，编辑区内支持实时预览。</p>
+                        {% else %}
+                        <p class="post-edit-editor-note m-0">这是一篇旧版 HTML 文章，当前会以兼容模式编辑并继续保存为 HTML。</p>
+                        {% endif %}
+                        <div id="toastui-editor"></div>
+                        <input type="hidden" id="content_format" name="content_format" value="{{ request.form.get('content_format', post.normalized_content_format) }}">
+                        <textarea id="content" name="content" class="d-none" aria-hidden="true">{{ request.form.get('content', post.content) }}</textarea>
                         <div class="post-edit-toolbar">
                             <div class="post-edit-toolbar-meta">
                                 {% if post.status == 'published' %}
@@ -134,6 +140,7 @@
                                 {% else %}
                                 <span class="post-edit-toolbar-pill">当前为草稿</span>
                                 {% endif %}
+                                <span class="post-edit-toolbar-pill">{{ 'Markdown 存储' if post.normalized_content_format == 'markdown' else '兼容旧版 HTML' }}</span>
                             </div>
                             <div class="post-edit-toolbar-actions">
                                 <button type="submit" class="btn btn-sm post-edit-btn post-edit-btn-primary post-edit-btn-compact"><i class="fas fa-save"></i> 保存更改</button>
@@ -173,7 +180,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui/toastui-editor.min.css') }}">
 
 <style>
 .post-edit-header {
@@ -298,6 +305,12 @@
     display: flex;
     flex-direction: column;
     gap: 14px;
+}
+
+.post-edit-editor-note {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .post-edit-section {
@@ -463,15 +476,55 @@
     display: none;
 }
 
-#content {
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: 14px;
-    line-height: 1.6;
+#toastui-editor {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bgColor-default);
 }
 
-#tiptap-container .tiptap-editor {
+#toastui-editor .toastui-editor-defaultUI {
+    border: 0;
+    font-family: inherit;
+}
+
+#toastui-editor .toastui-editor-toolbar {
+    border-bottom-color: var(--borderColor-default);
+    background: var(--bgColor-muted);
+}
+
+#toastui-editor .toastui-editor-mode-switch {
+    border-top-color: var(--borderColor-default);
+    background: var(--bgColor-muted);
+}
+
+#toastui-editor .toastui-editor-md-tab-container,
+#toastui-editor .toastui-editor-tabs {
+    background: var(--bgColor-muted);
+}
+
+#toastui-editor .tab-item {
+    color: var(--fgColor-muted);
+}
+
+#toastui-editor .tab-item.active {
+    color: var(--fgColor-default);
+    font-weight: 600;
+}
+
+#toastui-editor .toastui-editor-main {
     min-height: 540px;
-    height: min(72vh, 780px);
+}
+
+#toastui-editor .toastui-editor-md-container,
+#toastui-editor .toastui-editor-ww-container {
+    background: var(--bgColor-default);
+}
+
+#toastui-editor .toastui-editor-contents {
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--fgColor-default);
 }
 
 @media (max-width: 767px) {
@@ -510,18 +563,54 @@
         width: 100%;
     }
 
-    #tiptap-container .tiptap-editor {
+    #toastui-editor .toastui-editor-main {
         min-height: 440px;
-        height: min(66vh, 640px);
     }
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor-all.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor-zh-cn.js') }}"></script>
 
 <script>
+function getToastEditorHeight() {
+    return window.innerWidth < 768 ? '460px' : '640px';
+}
+
+function getToastPreviewStyle() {
+    return window.innerWidth < 992 ? 'tab' : 'vertical';
+}
+
+function extractEditorPlainText(editor) {
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = editor.getHTML();
+    return (tempDiv.textContent || tempDiv.innerText || '').replace(/\s+/g, ' ').trim();
+}
+
+function requestImageUpload(file) {
+    var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+        return Promise.reject('请选择图片文件（JPG、PNG、GIF、WebP、SVG）');
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        return Promise.reject('图片大小不能超过5MB');
+    }
+
+    var formData = new FormData();
+    formData.append('image', file);
+
+    return fetch('/api/upload-image', { method: 'POST', body: formData })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                throw new Error(data.message || '上传失败，请稍后重试');
+            }
+            return data;
+        });
+}
+
 function openModal(id) {
     var el = document.getElementById(id);
     if (!el) return;
@@ -536,26 +625,55 @@ function closeModal(id) {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    var tiptapContainer = document.getElementById('tiptap-container');
+    var editorContainer = document.getElementById('toastui-editor');
     var contentTextarea = document.getElementById('content');
+    var contentFormatInput = document.getElementById('content_format');
+    var initialFormat = (contentFormatInput && contentFormatInput.value ? contentFormatInput.value : 'html').toLowerCase();
+    if (initialFormat !== 'markdown') {
+        initialFormat = 'html';
+    }
 
-    var tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
+    var toastEditor = new toastui.Editor({
+        el: editorContainer,
+        height: getToastEditorHeight(),
+        initialEditType: initialFormat === 'markdown' ? 'markdown' : 'wysiwyg',
+        previewStyle: getToastPreviewStyle(),
+        initialValue: initialFormat === 'markdown' ? (contentTextarea.value || '') : '',
+        usageStatistics: false,
+        language: 'zh-CN',
         placeholder: '开始写作...',
-        content: contentTextarea.value || ''
+        hooks: {
+            addImageBlobHook: function(blob, callback) {
+                requestImageUpload(blob)
+                    .then(function(data) {
+                        callback(data.url, data.alt || blob.name || 'image');
+                    })
+                    .catch(function(error) {
+                        alert(error.message || error);
+                    });
+                return false;
+            }
+        }
     });
+
+    if (initialFormat === 'html' && contentTextarea.value) {
+        toastEditor.setHTML(contentTextarea.value);
+    }
 
     var imageUploadArea = document.getElementById('image-upload-area');
     var imageUploadInput = document.getElementById('image-upload-input');
-    var imagePreview = document.getElementById('image-preview');
-    var previewImage = document.getElementById('preview-image');
     var featuredImageInput = document.getElementById('featured_image');
     var imagePanel = document.getElementById('image-panel');
     var imageToggleBtn = document.getElementById('image-toggle-btn');
 
-    tiptapEditor.onContentChange = function(htmlContent) {
-        if (htmlContent === undefined || htmlContent === null) htmlContent = '';
-        contentTextarea.value = htmlContent;
-    };
+    function syncEditorContent() {
+        var format = (contentFormatInput && contentFormatInput.value ? contentFormatInput.value : initialFormat).toLowerCase();
+        if (format !== 'markdown') {
+            format = 'html';
+        }
+        contentTextarea.value = format === 'markdown' ? toastEditor.getMarkdown() : toastEditor.getHTML();
+        return contentTextarea.value;
+    }
 
     var deleteBtn = document.querySelector('.delete-post-btn');
     if (deleteBtn) {
@@ -574,6 +692,10 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         setImagePanelVisible(false);
     }
+
+    toastEditor.on('change', function() {
+        syncEditorContent();
+    });
 
     if (imageUploadArea && imageUploadInput) {
         imageUploadArea.addEventListener('click', function() {
@@ -599,38 +721,49 @@ document.addEventListener('DOMContentLoaded', function() {
             if (files.length > 0) uploadImage(files[0]);
         });
     }
+
+    var form = document.getElementById('post-form');
+    var titleInput = document.getElementById('title');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var title = titleInput.value.trim();
+            syncEditorContent();
+            var content = extractEditorPlainText(toastEditor);
+            if (!title) {
+                e.preventDefault();
+                alert('请输入文章标题');
+                titleInput.focus();
+                return;
+            }
+            if (!content) {
+                e.preventDefault();
+                alert('请输入文章内容');
+                toastEditor.focus();
+                return;
+            }
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
+    syncEditorContent();
 });
 
 function uploadImage(file) {
-    var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-        alert('请选择图片文件（JPG、PNG、GIF、WebP）');
-        return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-        alert('图片大小不能超过5MB');
-        return;
-    }
     var uploadArea = document.getElementById('image-upload-area');
     uploadArea.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin f2 color-fg-muted mb-3"></i><p class="f5 color-fg-muted m-0">上传中...</p></div>';
 
-    var formData = new FormData();
-    formData.append('image', file);
-
-    fetch('/api/upload-image', { method: 'POST', body: formData })
-        .then(function(r) { return r.json(); })
+    requestImageUpload(file)
         .then(function(data) {
-            if (data.success) {
-                showImagePreview(data.url);
-                document.getElementById('featured_image').value = data.url;
-            } else {
-                alert('上传失败：' + data.message);
-                resetUploadArea();
-            }
+            showImagePreview(data.url);
+            document.getElementById('featured_image').value = data.url;
         })
         .catch(function(err) {
             console.error('上传错误:', err);
-            alert('上传失败，请稍后重试');
+            alert(err.message || err || '上传失败，请稍后重试');
             resetUploadArea();
         });
 }

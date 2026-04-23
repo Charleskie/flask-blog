@@ -106,19 +106,6 @@
             </div>
         </div>
 
-        <div class="Box">
-            <div class="Box-header">
-                <h3 class="f4 text-bold color-fg-default m-0">快速操作</h3>
-            </div>
-            <div class="Box-body d-flex flex-column gap-2">
-                {% if current_user.is_admin %}
-                <a href="{{ url_for('admin.admin') }}" class="btn btn-primary btn-sm width-full no-underline">管理后台</a>
-                {% endif %}
-                <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-sm btn-outline width-full no-underline">编辑资料</a>
-                <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-sm btn-outline width-full no-underline">重置密码</a>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-sm btn-danger width-full no-underline">退出登录</a>
-            </div>
-        </div>
     </div>
 </div>
 

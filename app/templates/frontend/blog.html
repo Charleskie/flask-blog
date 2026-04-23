@@ -141,11 +141,14 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0;
 }
 
 .blog-page .blog-side-card {
     padding: 18px;
     border-radius: 14px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .blog-page .blog-side-title {
@@ -156,9 +159,21 @@
 
 .blog-page .blog-side-search {
     position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.blog-page .blog-side-search > div {
+    width: 100%;
+    min-width: 0;
 }
 
 .blog-page .blog-side-search .form-control {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
     padding-left: 34px;
 }
 
@@ -348,7 +363,7 @@
                     </div>
                 </div>
                 
-                <p class="blog-card-excerpt line-clamp-2">{{ (post.excerpt or post.content[:120] + '...' if post.content|length > 120 else post.content)|striptags }}</p>
+                <p class="blog-card-excerpt line-clamp-2">{{ post.display_excerpt|truncate(120, True, '...') }}</p>
             </article>
             {% endfor %}
         </div>

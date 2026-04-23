@@ -92,6 +92,12 @@ def create_app():
 
     with app.app_context():
         try:
+            from app.models.post import ensure_post_schema
+            ensure_post_schema()
+        except Exception as e:
+            app.logger.warning(f"文章表结构检查失败: {e}")
+
+        try:
             from app.models.interaction import ensure_comment_reply_schema
             ensure_comment_reply_schema()
         except Exception as e:

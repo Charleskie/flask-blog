@@ -854,7 +854,7 @@
                     </div>
                     <h2>{{ featured_post.title }}</h2>
                     <p class="home-feature-excerpt">
-                        {{ (featured_post.excerpt or featured_post.content)|striptags|truncate(160, True, '...') }}
+                        {{ featured_post.display_excerpt|truncate(160, True, '...') }}
                     </p>
                     <div class="home-feature-meta">
                         <span><i class="fas fa-eye" aria-hidden="true"></i>{{ featured_post.view_count }}</span>
@@ -904,7 +904,7 @@
                     <div class="home-writing-main">
                         <div class="home-writing-copy">
                             <h3>{{ post.title }}</h3>
-                            <p>{{ (post.excerpt or post.content)|striptags|truncate(105, True, '...') }}</p>
+                            <p>{{ post.display_excerpt|truncate(105, True, '...') }}</p>
                             <div class="home-writing-foot">
                                 <span><i class="fas fa-eye" aria-hidden="true"></i>{{ post.view_count }}</span>
                                 <span><i class="far fa-heart" aria-hidden="true"></i>{{ post.like_count }}</span>
