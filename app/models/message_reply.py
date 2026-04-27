@@ -14,7 +14,15 @@ class MessageReply(db.Model):
     sent_at = db.Column(db.DateTime, nullable=True)  # 发送时间
     
     # 关联关系
-    message = db.relationship('Message', backref=db.backref('replies', lazy=True, order_by='MessageReply.created_at.desc()'))
+    message = db.relationship(
+        'Message',
+        backref=db.backref(
+            'replies',
+            lazy=True,
+            order_by='MessageReply.created_at.desc()',
+            cascade='all, delete-orphan'
+        )
+    )
     
     def __repr__(self):
         return f'<MessageReply {self.id}>'

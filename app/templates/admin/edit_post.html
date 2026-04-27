@@ -160,16 +160,22 @@
     </form>
 </div>
 
-<div id="deleteModal" class="position-fixed inset-0 d-none items-center justify-center" style="background: rgba(31, 35, 40, 0.5); z-index: 1000; padding: 16px;">
-    <div class="Box shadow-xl width-full overflow-hidden" style="max-width: 500px;">
-        <div class="Box-header d-flex items-center justify-between border-bottom">
-            <h3 class="f3 text-bold m-0 color-fg-default">确认删除</h3>
-            <button type="button" onclick="closeModal('deleteModal')" class="btn btn-invisible btn-sm cursor-pointer" aria-label="关闭">&times;</button>
+<div id="deleteModal" class="site-confirm-overlay position-fixed inset-0 d-none items-center justify-center" style="z-index: 1000; padding: 16px;">
+    <div class="site-confirm-card">
+        <div class="site-confirm-head">
+            <div class="site-confirm-head-main">
+                <span class="site-confirm-icon" aria-hidden="true"><i class="fas fa-trash"></i></span>
+                <div>
+                    <h3 class="site-confirm-title">确认删除</h3>
+                    <p class="site-confirm-subtitle">删除后将无法恢复，请再次确认。</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeModal('deleteModal')" class="btn-close cursor-pointer" aria-label="关闭"></button>
         </div>
-        <div class="Box-body">
+        <div class="site-confirm-body">
             <p class="f5 color-fg-default m-0">确定要删除文章「{{ post.title }}」吗？此操作无法撤销。</p>
         </div>
-        <div class="Box-footer d-flex justify-end gap-2 border-top">
+        <div class="site-confirm-footer">
             <button type="button" class="btn btn-secondary btn-sm" onclick="closeModal('deleteModal')">取消</button>
             <form method="POST" action="{{ url_for('admin.delete_post', post_id=post.id) }}" class="d-inline-block m-0">
                 <button type="submit" class="btn btn-danger btn-sm">确认删除</button>
@@ -616,12 +622,14 @@ function openModal(id) {
     if (!el) return;
     el.classList.remove('d-none');
     el.classList.add('d-flex');
+    document.body.classList.add('has-site-dialog');
 }
 function closeModal(id) {
     var el = document.getElementById(id);
     if (!el) return;
     el.classList.add('d-none');
     el.classList.remove('d-flex');
+    document.body.classList.remove('has-site-dialog');
 }
 
 document.addEventListener('DOMContentLoaded', function() {

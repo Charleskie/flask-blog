@@ -137,8 +137,7 @@
     .home-hero-actions,
     .home-hero-stats,
     .home-topic-row,
-    .home-closing-actions,
-    .home-skill-tags {
+    .home-closing-actions {
         display: flex;
         flex-wrap: wrap;
         gap: 10px;
@@ -598,7 +597,7 @@
 
     .home-skill-grid {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
         margin-top: 14px;
     }
@@ -606,7 +605,7 @@
     .home-skill-group {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 14px;
         padding: 16px;
         border: 1px solid var(--home-line);
         border-radius: 18px;
@@ -625,25 +624,47 @@
         font-size: 11px;
     }
 
-    .home-skill-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 10px;
-        border-radius: 999px;
-        border: 1px solid var(--home-line);
-        background: var(--home-card-strong);
-        color: var(--home-ink);
-        font-size: 12px;
-        line-height: 1.3;
+    .home-skill-icons {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
     }
 
-    .home-skill-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--home-accent);
-        opacity: 0.72;
+    .home-skill-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        text-align: center;
+    }
+
+    .home-skill-icon-frame {
+        width: 54px;
+        height: 54px;
+        border-radius: 16px;
+        border: 1px solid var(--home-line);
+        background: var(--home-card-strong);
+        color: var(--home-accent);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    }
+
+    .home-skill-icon-frame i {
+        font-size: 1.55rem;
+    }
+
+    .home-skill-icon-image {
+        width: 30px;
+        height: 30px;
+        object-fit: contain;
+    }
+
+    .home-skill-item-name {
+        color: var(--home-muted);
+        font-size: 11px;
+        line-height: 1.45;
     }
 
     .home-closing-panel {
@@ -696,10 +717,6 @@
         .home-closing-panel {
             grid-template-columns: minmax(0, 1fr);
         }
-
-        .home-skill-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
     }
 
     @media (max-width: 767px) {
@@ -743,6 +760,10 @@
             grid-template-columns: minmax(0, 1fr);
         }
 
+        .home-skill-icons {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
         .home-hero-actions,
         .home-hero-stats,
         .home-topic-row,
@@ -778,26 +799,24 @@
 {% else %}
     {% set version_feed = versions[:3] %}
 {% endif %}
+{% set hero_intro = about_excerpt|truncate(92, True, '...') if about_excerpt else '这里先放最近文章、当前进展和常用技术，方便快速了解这个站。' %}
 
 <div class="home-editorial">
     <section class="home-hero">
         <div class="home-hero-grid">
             <div class="home-hero-copy">
                 <span class="home-eyebrow">Kim's Blog</span>
-                <h1 class="home-hero-title">把文章、技术和站点本身，做成一个持续更新的个人作品。</h1>
-                <p class="home-hero-lead">
-                    {{ about_excerpt or '这里不是传统的模块首页，而是一个更像个人工作台的入口页。先看最近写了什么，再看我正在做什么，最后再决定要不要继续往里走。' }}
-                </p>
+                <h1 class="home-hero-title">把写作、技术和站点更新，放进同一个持续生长的作品里。</h1>
+                <p class="home-hero-lead">{{ hero_intro }}</p>
 
                 <div class="home-topic-row">
                     {% if top_categories %}
-                        {% for category, count in top_categories[:4] %}
+                        {% for category, count in top_categories[:3] %}
                         <span class="home-topic-pill"><strong>{{ category }}</strong> {{ count }} 篇</span>
                         {% endfor %}
                     {% else %}
                         <span class="home-topic-pill"><strong>写作</strong> 最近文章与长期记录</span>
                         <span class="home-topic-pill"><strong>技术</strong> 正在使用的工具与方法</span>
-                        <span class="home-topic-pill"><strong>站点</strong> 博客本身的迭代与调整</span>
                     {% endif %}
                 </div>
 
@@ -839,9 +858,9 @@
                     </h3>
                     <p>
                         {% if latest_version %}
-                            {{ latest_version.description|truncate(110, True, '...') }}
+                            {{ latest_version.description|truncate(86, True, '...') }}
                         {% else %}
-                            最近我更想把博客做成一个真正能代表自己长期输出的地方，而不是把信息拆成很多松散模块。
+                            最近在持续整理这个站，让它更适合长期写作和展示。
                         {% endif %}
                     </p>
                 </div>
@@ -854,7 +873,7 @@
                     </div>
                     <h2>{{ featured_post.title }}</h2>
                     <p class="home-feature-excerpt">
-                        {{ featured_post.display_excerpt|truncate(160, True, '...') }}
+                        {{ featured_post.display_excerpt|truncate(118, True, '...') }}
                     </p>
                     <div class="home-feature-meta">
                         <span><i class="fas fa-eye" aria-hidden="true"></i>{{ featured_post.view_count }}</span>
@@ -885,7 +904,7 @@
                 <div class="home-panel-head-copy">
                     <span class="home-section-label">Writing Desk</span>
                     <h2>最近写作</h2>
-                    <p>首页的主内容只保留一件事：把最近发布的文章放在最前面，降低第一次进入时的选择成本。</p>
+                    <p>最近发布的内容优先放在这里，先从文章开始看。</p>
                 </div>
                 <a href="{{ url_for('main.blog') }}" class="home-panel-link no-underline">
                     查看全部文章
@@ -904,7 +923,7 @@
                     <div class="home-writing-main">
                         <div class="home-writing-copy">
                             <h3>{{ post.title }}</h3>
-                            <p>{{ post.display_excerpt|truncate(105, True, '...') }}</p>
+                            <p>{{ post.display_excerpt|truncate(76, True, '...') }}</p>
                             <div class="home-writing-foot">
                                 <span><i class="fas fa-eye" aria-hidden="true"></i>{{ post.view_count }}</span>
                                 <span><i class="far fa-heart" aria-hidden="true"></i>{{ post.like_count }}</span>
@@ -971,7 +990,7 @@
                         </div>
                         <div class="home-version-copy">
                             <strong>{{ version.title }}</strong>
-                            <p>{{ version.description|truncate(82, True, '...') }}</p>
+                            <p>{{ version.description|truncate(58, True, '...') }}</p>
                         </div>
                     </div>
                     {% endfor %}
@@ -1011,7 +1030,7 @@
             <div class="home-panel-head-copy">
                 <span class="home-section-label">Tool Shelf</span>
                 <h2>我在用的技术地图</h2>
-                <p>技能区不再单独做成一个大模块页，而是像工具架一样，告诉你这个站点和这些文章大致建立在什么技术之上。</p>
+                <p>常用技术直接摆在这里，快速说明这个站和这些内容大致建立在什么之上。</p>
             </div>
             <a href="{{ url_for('main.about') }}" class="home-panel-link no-underline">
                 继续了解我
@@ -1027,12 +1046,22 @@
                     <h3>{{ category }}</h3>
                     <span>{{ items|length }} 项</span>
                 </div>
-                <div class="home-skill-tags">
+                <div class="home-skill-icons">
                     {% for skill in items[:6] %}
-                    <span class="home-skill-tag">
-                        <span class="home-skill-dot" aria-hidden="true"></span>
-                        {{ skill.name }}
-                    </span>
+                    <div class="home-skill-item" title="{{ skill.name }}">
+                        <div class="home-skill-icon-frame">
+                            {% if skill.icon %}
+                                {% if skill.icon.startswith('http') or skill.icon.startswith('/') %}
+                                <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="home-skill-icon-image">
+                                {% else %}
+                                <i class="{{ skill.icon }}" aria-hidden="true"></i>
+                                {% endif %}
+                            {% else %}
+                            <i class="fas fa-code" aria-hidden="true"></i>
+                            {% endif %}
+                        </div>
+                        <span class="home-skill-item-name">{{ skill.name }}</span>
+                    </div>
                     {% endfor %}
                 </div>
             </div>
@@ -1046,8 +1075,8 @@
     <section class="home-closing-panel">
         <div class="home-closing-copy">
             <span class="home-section-label">Start Here</span>
-            <h2>如果你第一次来到这里，最好的路径是先看文章，再决定要不要继续逛下去。</h2>
-            <p>这个首页想承担的不是“展示所有功能”，而是帮访客快速知道这里有什么、最近在发生什么，以及下一步应该点去哪里。</p>
+            <h2>如果你第一次来到这里，最适合先看文章。</h2>
+            <p>首页不负责展示所有功能，只负责告诉你最近写了什么，以及下一步该去哪里。</p>
             <div class="home-closing-note">
                 <span>先从博客进入</span>
                 <span>再看关于与友链</span>

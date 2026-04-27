@@ -1,140 +1,237 @@
 // 主要的JavaScript功能
 
-// 全局消息提示函数
-function showMessage(message, type = 'info', duration = 3000) {
-    // 创建消息容器（如果不存在）
-    let messageContainer = document.getElementById('message-container');
-    if (!messageContainer) {
-        messageContainer = document.createElement('div');
-        messageContainer.id = 'message-container';
-        messageContainer.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10000;
-            max-width: 400px;
-        `;
-        document.body.appendChild(messageContainer);
-    }
-
-    // 创建消息元素
-    const messageEl = document.createElement('div');
-    messageEl.className = `message-toast message-${type}`;
-    messageEl.style.cssText = `
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        padding: 1rem 1.5rem;
-        margin-bottom: 0.5rem;
-        box-shadow: var(--shadow-lg);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        animation: slideInRight 0.3s ease-out;
-        position: relative;
-        min-width: 300px;
-    `;
-
-    // 根据类型设置图标和颜色
-    let icon, color;
+function getToastIconClass(type) {
     switch (type) {
         case 'success':
-            icon = 'fas fa-check-circle';
-            color = '#10b981';
-            break;
+            return 'fa-check';
         case 'error':
-            icon = 'fas fa-exclamation-circle';
-            color = '#ef4444';
-            break;
+            return 'fa-circle-exclamation';
         case 'warning':
-            icon = 'fas fa-exclamation-triangle';
-            color = '#f59e0b';
-            break;
+            return 'fa-triangle-exclamation';
         case 'info':
         default:
-            icon = 'fas fa-info-circle';
-            color = '#3b82f6';
-            break;
+            return 'fa-info';
     }
+}
 
-    messageEl.innerHTML = `
-        <i class="${icon}" style="color: ${color}; font-size: 1.25rem;"></i>
-        <span style="color: var(--text-primary); flex: 1;">${message}</span>
-        <button class="message-close" style="
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            padding: 0.25rem;
-            border-radius: var(--border-radius);
-            transition: all 0.2s ease;
-        ">
+function getDialogIconClass(type) {
+    switch (type) {
+        case 'success':
+            return 'fa-check';
+        case 'error':
+            return 'fa-trash';
+        case 'warning':
+            return 'fa-triangle-exclamation';
+        case 'info':
+        default:
+            return 'fa-bell';
+    }
+}
+
+function ensureToastContainer() {
+    let container = document.getElementById('site-toast-stack');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'site-toast-stack';
+        container.className = 'site-toast-stack';
+        container.setAttribute('aria-live', 'polite');
+        container.setAttribute('aria-atomic', 'false');
+        document.body.appendChild(container);
+    }
+    return container;
+}
+
+function releaseDialogLock() {
+    if (!document.querySelector('.site-dialog-backdrop, #loginModal.d-flex, .site-confirm-overlay.d-flex')) {
+        document.body.classList.remove('has-site-dialog');
+    }
+}
+
+function showToast(message, type = 'info', duration = 3000) {
+    const container = ensureToastContainer();
+    const toast = document.createElement('div');
+    toast.className = `message-toast ${type}`;
+    toast.innerHTML = `
+        <span class="message-toast-icon" aria-hidden="true">
+            <i class="fas ${getToastIconClass(type)}"></i>
+        </span>
+        <div class="message-toast-content">
+            <div class="message-toast-message"></div>
+        </div>
+        <button type="button" class="message-toast-close" aria-label="关闭提醒">
             <i class="fas fa-times"></i>
         </button>
     `;
 
-    // 添加关闭按钮事件
-    const closeBtn = messageEl.querySelector('.message-close');
-    closeBtn.addEventListener('click', () => {
-        messageEl.style.animation = 'slideOutRight 0.3s ease-in';
+    const messageNode = toast.querySelector('.message-toast-message');
+    messageNode.textContent = String(message ?? '');
+
+    const closeToast = () => {
+        if (!toast.parentNode) {
+            return;
+        }
+        toast.classList.add('hide');
         setTimeout(() => {
-            if (messageEl.parentNode) {
-                messageEl.remove();
+            if (toast.parentNode) {
+                toast.remove();
             }
-        }, 300);
-    });
+        }, 220);
+    };
 
-    // 添加到容器
-    messageContainer.appendChild(messageEl);
+    toast.querySelector('.message-toast-close').addEventListener('click', closeToast);
+    container.appendChild(toast);
 
-    // 自动关闭
     if (duration > 0) {
-        setTimeout(() => {
-            if (messageEl.parentNode) {
-                messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-                setTimeout(() => {
-                    if (messageEl.parentNode) {
-                        messageEl.remove();
-                    }
-                }, 300);
-            }
-        }, duration);
+        setTimeout(closeToast, duration);
     }
 
-    return messageEl;
+    return toast;
 }
 
-// 添加CSS动画
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from {
-            opacity: 0;
-            transform: translateX(100%);
+function buildDialog(options = {}) {
+    const {
+        title = '提示',
+        message = '',
+        type = 'info',
+        confirmText = '知道了',
+        cancelText = '取消',
+        showCancel = false,
+        danger = false
+    } = options;
+
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'site-dialog-backdrop';
+
+        const panel = document.createElement('div');
+        panel.className = 'site-dialog-panel';
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-modal', 'true');
+
+        const head = document.createElement('div');
+        head.className = 'site-dialog-head';
+
+        const headMain = document.createElement('div');
+        headMain.className = 'site-dialog-head-main';
+
+        const icon = document.createElement('span');
+        icon.className = `site-dialog-icon ${danger ? 'error' : type}`;
+        icon.setAttribute('aria-hidden', 'true');
+        icon.innerHTML = `<i class="fas ${getDialogIconClass(danger ? 'error' : type)}"></i>`;
+
+        const heading = document.createElement('h3');
+        heading.className = 'site-dialog-title';
+        heading.textContent = title;
+
+        const closeButton = document.createElement('button');
+        closeButton.type = 'button';
+        closeButton.className = 'btn-close';
+        closeButton.setAttribute('aria-label', '关闭');
+
+        const body = document.createElement('div');
+        body.className = 'site-dialog-body';
+
+        const content = document.createElement('p');
+        content.className = 'site-dialog-message';
+        content.textContent = String(message ?? '');
+
+        const actions = document.createElement('div');
+        actions.className = 'site-dialog-actions';
+        if (!showCancel) {
+            actions.classList.add('site-dialog-actions-centered');
         }
-        to {
-            opacity: 1;
-            transform: translateX(0);
+
+        const confirmButton = document.createElement('button');
+        confirmButton.type = 'button';
+        confirmButton.className = danger ? 'btn btn-danger' : 'btn btn-primary';
+        confirmButton.textContent = confirmText;
+
+        let cancelButton = null;
+        if (showCancel) {
+            cancelButton = document.createElement('button');
+            cancelButton.type = 'button';
+            cancelButton.className = 'btn btn-secondary';
+            cancelButton.textContent = cancelText;
+            actions.appendChild(cancelButton);
         }
-    }
-    
-    @keyframes slideOutRight {
-        from {
-            opacity: 1;
-            transform: translateX(0);
+        actions.appendChild(confirmButton);
+
+        headMain.append(icon, heading);
+        head.append(headMain, closeButton);
+        body.append(content, actions);
+        panel.append(head, body);
+        overlay.appendChild(panel);
+        document.body.appendChild(overlay);
+        document.body.classList.add('has-site-dialog');
+
+        const cleanup = (result) => {
+            document.removeEventListener('keydown', onKeyDown);
+            overlay.remove();
+            releaseDialogLock();
+            resolve(result);
+        };
+
+        const onKeyDown = (event) => {
+            if (event.key === 'Escape') {
+                cleanup(false);
+            }
+        };
+
+        document.addEventListener('keydown', onKeyDown);
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) {
+                cleanup(false);
+            }
+        });
+        closeButton.addEventListener('click', () => cleanup(false));
+        if (cancelButton) {
+            cancelButton.addEventListener('click', () => cleanup(false));
         }
-        to {
-            opacity: 0;
-            transform: translateX(100%);
-        }
-    }
-    
-    .message-close:hover {
-        background: var(--bg-hover) !important;
-        color: var(--text-primary) !important;
-    }
-`;
-document.head.appendChild(style);
+        confirmButton.addEventListener('click', () => cleanup(true));
+        confirmButton.focus();
+    });
+}
+
+window.siteUI = window.siteUI || {};
+window.siteUI.showToast = showToast;
+window.siteUI.alert = function(message, options = {}) {
+    return buildDialog({
+        title: options.title || '提示',
+        message,
+        type: options.type || 'info',
+        confirmText: options.confirmText || '知道了',
+        danger: false,
+        showCancel: false
+    });
+};
+window.siteUI.confirm = function(message, options = {}) {
+    return buildDialog({
+        title: options.title || '确认操作',
+        message,
+        type: options.type || 'warning',
+        confirmText: options.confirmText || '确认',
+        cancelText: options.cancelText || '取消',
+        danger: Boolean(options.danger),
+        showCancel: true
+    });
+};
+
+window.showToast = showToast;
+window.showAlert = function(message, type = 'info') {
+    return showToast(message, type);
+};
+window.confirmAsync = function(message, options = {}) {
+    return window.siteUI.confirm(message, options);
+};
+window.alert = function(message) {
+    return window.showToast(String(message ?? ''), 'warning', 3600);
+};
+
+function showMessage(message, type = 'info', duration = 3000) {
+    return window.showToast(message, type, duration);
+}
+
+window.showMessage = showMessage;
 
 // 处理表单提交和消息显示
 function handleFormSubmit(form, options = {}) {
@@ -301,30 +398,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // 项目筛选功能
-    const filterButtons = document.querySelectorAll('[data-filter]');
-    const projectItems = document.querySelectorAll('.project-item');
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const filter = this.getAttribute('data-filter');
-            
-            // 更新按钮状态
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-            
-            // 筛选项目
-            projectItems.forEach(item => {
-                if (filter === 'all' || item.getAttribute('data-category') === filter) {
-                    item.style.display = 'block';
-                    item.classList.add('fade-in-up');
-                } else {
-                    item.style.display = 'none';
-                }
-            });
-        });
-    });
-
     // 搜索功能
     const searchInput = document.querySelector('input[placeholder*="搜索"]');
     if (searchInput) {
@@ -375,25 +448,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // 消息提示功能
+    // 消息提示功能使用共享提醒组件
     window.showAlert = function(message, type = 'info') {
         try {
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-            alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-            alertDiv.innerHTML = `
-                ${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            
-            document.body.appendChild(alertDiv);
-            
-            // 自动移除
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
-                }
-            }, 3000);
+            return showMessage(message, type);
         } catch (error) {
             console.error('showAlert函数错误:', error);
         }
@@ -615,13 +673,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // 现在使用模拟数据
         const mockSuggestions = [
             { title: 'Python开发教程', type: '文章', url: '/blog/python-tutorial' },
-            { title: 'Flask项目实战', type: '项目', url: '/projects/flask-project' },
             { title: 'JavaScript基础', type: '文章', url: '/blog/javascript-basics' },
-            { title: 'React组件开发', type: '项目', url: '/projects/react-components' },
             { title: 'Docker容器化部署', type: '文章', url: '/blog/docker-deployment' },
-            { title: 'Vue.js前端框架', type: '项目', url: '/projects/vue-framework' },
-            { title: 'MySQL数据库优化', type: '文章', url: '/blog/mysql-optimization' },
-            { title: '微服务架构设计', type: '项目', url: '/projects/microservices' }
+            { title: 'MySQL数据库优化', type: '文章', url: '/blog/mysql-optimization' }
         ];
 
         const filteredSuggestions = mockSuggestions.filter(item => 
@@ -756,7 +810,9 @@ function throttle(func, limit) {
 window.utils = {
     debounce,
     throttle,
+    showToast: window.showToast,
     showAlert: window.showAlert,
+    confirmAsync: window.confirmAsync,
     safeClassListOperation,
     safeQuerySelector
-}; 
+};

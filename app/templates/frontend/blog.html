@@ -31,6 +31,37 @@
     line-height: 1.75;
 }
 
+.blog-page .blog-new-post-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid rgba(9, 105, 218, 0.2);
+    border-radius: 999px;
+    background: rgba(221, 244, 255, 0.72);
+    color: var(--fgColor-accent);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.blog-page .blog-new-post-btn:hover {
+    background: rgba(221, 244, 255, 0.95);
+    border-color: rgba(9, 105, 218, 0.34);
+    color: var(--fgColor-accent);
+    text-decoration: none;
+}
+
+.blog-page .blog-new-post-btn i {
+    margin: 0;
+    line-height: 1;
+}
+
 .blog-page .blog-list {
     gap: 18px !important;
 }
@@ -309,8 +340,9 @@
             </div>
             {% if current_user.is_authenticated and current_user.is_admin %}
             <div class="d-flex space-x-2">
-                <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary btn-sm d-inline-flex items-center no-underline">
-                    <i class="fas fa-plus mr-2" aria-hidden="true"></i> 新增文章
+                <a href="{{ url_for('admin.new_post') }}" class="blog-new-post-btn">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
+                    <span>新增文章</span>
                 </a>
             </div>
             {% endif %}
@@ -502,7 +534,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // 删除文章函数
 function deletePost(postId) {
-    if (confirm('确定要删除这篇文章吗？此操作不可撤销！')) {
+    window.confirmAsync('确定要删除这篇文章吗？此操作不可撤销！', {
+        title: '删除文章',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    }).then((confirmed) => {
+        if (!confirmed) {
+            return;
+        }
         fetch(`/admin/posts/${postId}/delete`, {
             method: 'POST',
             headers: {
@@ -513,37 +553,26 @@ function deletePost(postId) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                // 显示成功消息
-                showToast(data.message, 'success');
-                // 延迟刷新页面
+                emitToast(data.message, 'success');
                 setTimeout(() => {
                     window.location.reload();
                 }, 1500);
             } else {
-                showToast(data.message || '删除失败', 'error');
+                emitToast(data.message || '删除失败', 'error');
             }
         })
         .catch(error => {
             console.error('删除文章失败:', error);
-            showToast('删除失败，请稍后重试', 'error');
+            emitToast('删除失败，请稍后重试', 'error');
         });
-    }
+    });
 }
 
 // 显示提示消息
-function showToast(message, type = 'info') {
-    const toast = document.createElement('div');
-    const variant = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
-    toast.className = 'position-fixed top-0 right-0 z-50 m-3 text-semibold ' + variant;
-    toast.textContent = message;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
-    }, 3000);
+function emitToast(message, type = 'info') {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 </script>
 {% endblock %}

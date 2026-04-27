@@ -186,8 +186,14 @@
 
 {% block extra_js %}
 <script>
-function deleteSkill(skillId, skillName) {
-    if (!confirm('确定要删除技能「' + skillName + '」吗？此操作不可撤销。')) return;
+async function deleteSkill(skillId, skillName) {
+    const confirmed = await window.confirmAsync('确定要删除技能「' + skillName + '」吗？此操作不可撤销。', {
+        title: '删除技能',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) return;
     fetch('/admin/skills/' + skillId + '/delete', {
         method: 'POST',
         headers: {
@@ -198,14 +204,14 @@ function deleteSkill(skillId, skillName) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showMessage(data.message, 'success');
+            emitMessage(data.message, 'success');
             setTimeout(function() { location.reload(); }, 800);
         } else {
-            showMessage(data.message, 'error');
+            emitMessage(data.message, 'error');
         }
     })
     .catch(function() {
-        showMessage('删除失败，请稍后重试', 'error');
+        emitMessage('删除失败，请稍后重试', 'error');
     });
 }
 
@@ -213,15 +219,10 @@ function refreshSkills() {
     location.reload();
 }
 
-function showMessage(message, type) {
-    var messageDiv = document.createElement('div');
-    messageDiv.className = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
-    messageDiv.style.cssText = 'position:fixed;top:20px;right:20px;z-index:9999;max-width:320px;padding:12px 16px;';
-    messageDiv.textContent = message;
-    document.body.appendChild(messageDiv);
-    setTimeout(function() {
-        if (messageDiv.parentNode) messageDiv.parentNode.removeChild(messageDiv);
-    }, 3000);
+function emitMessage(message, type) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

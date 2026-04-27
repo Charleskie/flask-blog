@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, session
 from flask_login import login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from app.models import User
+from app.models import User, Post
 from app.models.user import db
 import os
 import secrets
@@ -19,13 +19,20 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
+        remember = bool(request.form.get('remember'))
         user = User.query.filter_by(username=username).first()
         
         if user and check_password_hash(user.password_hash, password):
-            login_user(user)
+            login_user(user, remember=remember)
             # 检查是否是AJAX请求
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '登录成功！', 'redirect': url_for('main.index')})
+                redirect_url = url_for('main.index')
+                return jsonify({
+                    'success': True,
+                    'message': '登录成功！',
+                    'redirect': redirect_url,
+                    'redirect_url': redirect_url
+                })
 
             return redirect(url_for('main.index'))
         else:
@@ -40,7 +47,7 @@ def register():
     """注册页面"""
     if request.method == 'POST':
         username = request.form.get('username')
-        nickname = request.form.get('nickname')
+        nickname = request.form.get('nickname') or request.form.get('display_name')
         email = request.form.get('email')
         password = request.form.get('password')
         confirm_password = request.form.get('confirm_password')
@@ -129,7 +136,13 @@ def register():
             login_user(user)
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '注册成功！已自动登录。', 'redirect': url_for('main.index')})
+                redirect_url = url_for('main.index')
+                return jsonify({
+                    'success': True,
+                    'message': '注册成功！已自动登录。',
+                    'redirect': redirect_url,
+                    'redirect_url': redirect_url
+                })
 
             return redirect(url_for('main.index'))
             
@@ -262,67 +275,187 @@ def logout():
 @login_required
 def profile():
     """用户资料页面"""
-    return render_template('auth/profile.html')
+    published_post_count = Post.query.filter_by(author_id=current_user.id, status='published').count()
+    draft_post_count = Post.query.filter_by(author_id=current_user.id, status='draft').count()
+
+    post_views = db.session.query(
+        db.func.coalesce(db.func.sum(Post.view_count), 0)
+    ).filter(Post.author_id == current_user.id).scalar() or 0
+
+    profile_stats = {
+        'published_posts': published_post_count,
+        'draft_posts': draft_post_count,
+        'content_views': int(post_views),
+    }
+
+    return render_template('auth/profile.html', profile_stats=profile_stats)
 
 @auth_bp.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
     """编辑用户资料"""
+    profile_form = {
+        'nickname': current_user.nickname or '',
+        'bio': current_user.bio or '',
+        'email': current_user.email or '',
+        'website': current_user.website or '',
+        'location': current_user.location or '',
+        'company': current_user.company or '',
+        'job_title': current_user.job_title or '',
+        'phone': current_user.phone or '',
+        'profile_public': bool(current_user.profile_public),
+        'show_email': bool(current_user.show_email),
+        'show_phone': bool(current_user.show_phone),
+    }
+    active_form = request.args.get('section', 'profile')
+
     if request.method == 'POST':
-        # 获取表单数据
+        form_type = (request.form.get('form_type') or 'profile').strip()
+        active_form = form_type
+
+        if form_type == 'password':
+            current_password = request.form.get('current_password', '').strip()
+            new_password = request.form.get('new_password', '').strip()
+            confirm_password = request.form.get('confirm_password', '').strip()
+
+            error_message = None
+            if not current_password:
+                error_message = '请输入当前密码'
+            elif not check_password_hash(current_user.password_hash, current_password):
+                error_message = '当前密码错误'
+            elif not new_password:
+                error_message = '请输入新密码'
+            elif len(new_password) < 6:
+                error_message = '新密码长度至少6位'
+            elif new_password != confirm_password:
+                error_message = '两次输入的新密码不一致'
+
+            if error_message:
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_message})
+                return render_template(
+                    'auth/edit_profile.html',
+                    error_message=error_message,
+                    active_form='password',
+                    profile_form=profile_form
+                )
+
+            try:
+                current_user.password_hash = generate_password_hash(new_password)
+                db.session.commit()
+
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': True, 'message': '密码更新成功！'})
+
+                return redirect(url_for('auth.profile'))
+
+            except Exception as e:
+                db.session.rollback()
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
+
+                print(f"更新用户密码错误: {e}")
+                return render_template(
+                    'auth/edit_profile.html',
+                    error_message='密码更新失败，请稍后重试',
+                    active_form='password',
+                    profile_form=profile_form
+                )
+
         nickname = request.form.get('nickname', '').strip()
         bio = request.form.get('bio', '').strip()
         email = request.form.get('email', '').strip()
-        current_password = request.form.get('current_password', '').strip()
-        new_password = request.form.get('new_password', '').strip()
-        confirm_password = request.form.get('confirm_password', '').strip()
-        
-        # 验证当前密码（只有在修改密码时才需要）
-        if new_password and not check_password_hash(current_user.password_hash, current_password):
+        website = request.form.get('website', '').strip()
+        location = request.form.get('location', '').strip()
+        company = request.form.get('company', '').strip()
+        job_title = request.form.get('job_title', '').strip()
+        phone = request.form.get('phone', '').strip()
+        profile_public = request.form.get('profile_public') == 'on'
+        show_email = request.form.get('show_email') == 'on'
+        show_phone = request.form.get('show_phone') == 'on'
+
+        profile_form = {
+            'nickname': nickname,
+            'bio': bio,
+            'email': email,
+            'website': website,
+            'location': location,
+            'company': company,
+            'job_title': job_title,
+            'phone': phone,
+            'profile_public': profile_public,
+            'show_email': show_email,
+            'show_phone': show_phone,
+        }
+
+        if not email:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '当前密码错误'})
-            return render_template('auth/edit_profile.html')
-        
-        # 检查邮箱是否已被其他用户使用
-        if email and email != current_user.email:
+                return jsonify({'success': False, 'message': '请输入邮箱地址'})
+            return render_template(
+                'auth/edit_profile.html',
+                error_message='请输入邮箱地址',
+                active_form='profile',
+                profile_form=profile_form
+            )
+
+        import re
+        email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
+        if not re.match(email_pattern, email):
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '请输入有效的邮箱地址'})
+            return render_template(
+                'auth/edit_profile.html',
+                error_message='请输入有效的邮箱地址',
+                active_form='profile',
+                profile_form=profile_form
+            )
+
+        if email != current_user.email:
             existing_email = User.query.filter_by(email=email).first()
             if existing_email and existing_email.id != current_user.id:
                 if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                     return jsonify({'success': False, 'message': '邮箱已被使用'})
-                return render_template('auth/edit_profile.html')
-        
+                return render_template(
+                    'auth/edit_profile.html',
+                    error_message='邮箱已被使用',
+                    active_form='profile',
+                    profile_form=profile_form
+                )
+
         try:
-            # 更新用户信息
-            if nickname:
-                current_user.nickname = nickname
-            if bio:
-                current_user.bio = bio
-            if email:
-                current_user.email = email
-            
-            # 如果提供了新密码，则更新密码
-            if new_password:
-                if new_password != confirm_password:
-                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                        return jsonify({'success': False, 'message': '两次输入的新密码不一致'})
-                    return render_template('auth/edit_profile.html')
-                current_user.password_hash = generate_password_hash(new_password)
-            
+            current_user.nickname = nickname or None
+            current_user.bio = bio or None
+            current_user.email = email
+            current_user.website = website or None
+            current_user.location = location or None
+            current_user.company = company or None
+            current_user.job_title = job_title or None
+            current_user.phone = phone or None
+            current_user.profile_public = profile_public
+            current_user.show_email = show_email
+            current_user.show_phone = show_phone
+
             db.session.commit()
-            
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': True, 'message': '个人资料更新成功！'})
-            
+
             return redirect(url_for('auth.profile'))
-            
+
         except Exception as e:
             db.session.rollback()
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
-            
+
             print(f"更新用户资料错误: {e}")
-    
-    return render_template('auth/edit_profile.html')
+            return render_template(
+                'auth/edit_profile.html',
+                error_message='更新失败，请稍后重试',
+                active_form='profile',
+                profile_form=profile_form
+            )
+
+    return render_template('auth/edit_profile.html', active_form=active_form, profile_form=profile_form)
 
 def send_reset_email(user, token):
     """发送重置密码邮件"""

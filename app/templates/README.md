@@ -8,8 +8,6 @@ app/templates/
 ├── frontend/                    # 前台页面模板
 │   ├── index.html              # 首页
 │   ├── about.html              # 关于页面
-│   ├── projects.html           # 项目列表页
-│   ├── project_detail.html     # 项目详情页
 │   ├── blog.html               # 博客列表页
 │   ├── post_detail.html        # 文章详情页
 │   └── contact.html            # 联系页面
@@ -18,9 +16,6 @@ app/templates/
 │   ├── admin_posts.html        # 文章管理列表
 │   ├── new_post.html           # 新建文章
 │   ├── edit_post.html          # 编辑文章
-│   ├── admin_projects.html     # 项目管理列表
-│   ├── new_project.html        # 新建项目
-│   ├── edit_project.html       # 编辑项目
 │   ├── admin_messages.html     # 消息管理列表
 │   ├── view_message.html       # 查看消息
 │   └── reply_message.html      # 回复消息
@@ -40,12 +35,12 @@ app/templates/
 
 ### 1. **frontend/** - 前台页面
 - **用户可见的公开页面**
-- 包含首页、关于、项目展示、博客、联系等
+- 包含首页、关于、博客、联系等
 - 注重用户体验和视觉效果
 
 ### 2. **admin/** - 管理后台
 - **管理员专用页面**
-- 包含内容管理、项目管理、消息管理等
+- 包含内容管理、消息管理等
 - 注重功能性和操作效率
 
 ### 3. **auth/** - 认证相关

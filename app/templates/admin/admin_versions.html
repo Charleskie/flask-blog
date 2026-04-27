@@ -142,28 +142,36 @@
 
 {% block extra_js %}
 <script>
-function deleteVersion(versionId, versionNumber) {
-    if (confirm('确定要删除版本 ' + versionNumber + ' 吗？此操作不可撤销。')) {
-        fetch('/admin/versions/' + versionId + '/delete', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showMessage(data.message, 'success');
-                setTimeout(() => { location.reload(); }, 1000);
-            } else {
-                showMessage(data.message, 'error');
-            }
-        })
-        .catch(() => {
-            showMessage('删除失败，请稍后重试', 'error');
-        });
+async function deleteVersion(versionId, versionNumber) {
+    const confirmed = await window.confirmAsync('确定要删除版本 ' + versionNumber + ' 吗？此操作不可撤销。', {
+        title: '删除版本',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) {
+        return;
     }
+
+    fetch('/admin/versions/' + versionId + '/delete', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            emitMessage(data.message, 'success');
+            setTimeout(() => { location.reload(); }, 1000);
+        } else {
+            emitMessage(data.message, 'error');
+        }
+    })
+    .catch(() => {
+        emitMessage('删除失败，请稍后重试', 'error');
+    });
 }
 
 function toggleFilters() {
@@ -195,7 +203,7 @@ function updateVersionBatchActions() {
     }
 }
 
-function batchActionVersions(action) {
+async function batchActionVersions(action) {
     const checkedBoxes = document.querySelectorAll('.version-checkbox:checked');
     if (checkedBoxes.length === 0) {
         alert('请先选择要操作的版本');
@@ -203,20 +211,21 @@ function batchActionVersions(action) {
     }
     const ids = Array.from(checkedBoxes).map(cb => cb.value);
     const actionText = { activate: '激活', deactivate: '禁用', delete: '删除' };
-    if (confirm('确定要' + actionText[action] + '选中的 ' + ids.length + ' 个版本吗？')) {
+    const confirmed = await window.confirmAsync('确定要' + actionText[action] + '选中的 ' + ids.length + ' 个版本吗？', {
+        title: '批量操作版本',
+        confirmText: '确认操作',
+        cancelText: '取消',
+        danger: action === 'delete'
+    });
+    if (confirmed) {
         /* 批量操作接口待实现 */
     }
 }
 
-function showMessage(message, type) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
-    messageDiv.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 320px; padding: 12px 16px;';
-    messageDiv.textContent = message;
-    document.body.appendChild(messageDiv);
-    setTimeout(() => {
-        if (messageDiv.parentNode) messageDiv.parentNode.removeChild(messageDiv);
-    }, 3000);
+function emitMessage(message, type) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

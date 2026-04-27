@@ -87,7 +87,6 @@ def show_db_status():
         from app import create_app
         from app.models.user import User
         from app.models.post import Post
-        from app.models.project import Project
         from app.models.message import Message
         
         app = create_app()
@@ -107,7 +106,7 @@ def show_db_status():
                 print("=" * 50)
                 
                 # 统计表信息
-                tables = [User, Post, Project, Message]
+                tables = [User, Post, Message]
                 print("\n📋 表统计信息:")
                 total_rows = 0
                 

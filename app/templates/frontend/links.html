@@ -72,7 +72,71 @@
 .links-page .links-list-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
+}
+
+.links-page .btn,
+.links-page .link-action,
+.links-page .links-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--links-border);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.78);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.links-page .btn:hover,
+.links-page .link-action:hover,
+.links-page .links-modal-close:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--links-surface-muted);
+    border-color: var(--links-border-strong);
+    color: var(--fgColor-default);
+    text-decoration: none;
+}
+
+.links-page .btn i,
+.links-page .link-action i,
+.links-page .links-modal-close i {
+    margin: 0;
+    line-height: 1;
+}
+
+.links-page .btn-primary,
+.links-page .link-action {
+    background: rgba(221, 244, 255, 0.72);
+    border-color: rgba(9, 105, 218, 0.2);
+    color: var(--links-accent);
+}
+
+.links-page .btn-primary:hover,
+.links-page .link-action:hover {
+    background: rgba(221, 244, 255, 0.95);
+    border-color: rgba(9, 105, 218, 0.34);
+    color: var(--links-accent);
+}
+
+.links-page .btn-secondary {
+    background: rgba(255, 255, 255, 0.72);
+    border-color: var(--links-border);
+    color: var(--fgColor-muted);
+}
+
+.links-page .links-list-actions .btn,
+.links-page .links-apply-actions .btn {
+    min-height: 34px;
 }
 
 .links-page .links-grid {
@@ -193,14 +257,7 @@
 }
 
 .links-page .link-action {
-    color: var(--links-accent);
-    font-weight: 600;
-    text-decoration: none;
     white-space: nowrap;
-}
-
-.links-page .link-action:hover {
-    text-decoration: none;
 }
 
 .links-page .links-empty {
@@ -238,7 +295,7 @@
 .links-page .links-apply-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 8px;
 }
 
 .links-page .links-modal {
@@ -248,83 +305,105 @@
 
 .links-page .links-modal-dialog {
     width: 100%;
-    max-width: 520px;
+    max-width: 560px;
     max-height: 90vh;
     overflow-y: auto;
-    box-shadow: var(--shadow-floating-large);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.18);
+}
+
+.links-page .links-modal-body {
+    padding: 26px 28px 24px;
 }
 
 .links-page .links-modal-header {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 18px;
+    margin-bottom: 18px;
 }
 
 .links-page .links-modal-title {
-    margin: 0 0 8px;
-    font-size: 1.5rem;
+    margin: 0 0 6px;
+    font-size: 1.42rem;
+    line-height: 1.15;
     color: var(--fgColor-default);
 }
 
 .links-page .links-modal-copy {
     margin: 0;
     color: var(--fgColor-muted);
-    line-height: 1.75;
-    font-size: 14px;
+    line-height: 1.55;
+    font-size: 13px;
 }
 
 .links-page .links-modal-close {
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
+    min-height: 36px;
+    padding: 0;
     flex-shrink: 0;
-    border: 1px solid var(--links-border);
-    border-radius: 12px;
-    background: var(--links-surface);
-    color: var(--fgColor-subtle);
     cursor: pointer;
-}
-
-.links-page .links-modal-close:hover {
-    color: var(--fgColor-default);
+    font-size: 14px;
 }
 
 .links-page .links-form {
     display: grid;
-    gap: 16px;
+    gap: 13px;
 }
 
 .links-page .links-form .form-label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 7px;
     color: var(--fgColor-default);
+    font-size: 13px;
     font-weight: 600;
 }
 
 .links-page .links-form .form-control {
-    border-radius: 14px;
-    border-color: var(--links-border);
+    width: 100%;
+    min-height: 42px;
+    padding: 0 13px;
+    border: 1px solid var(--links-border);
+    border-radius: 13px;
     background: var(--links-surface);
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.4;
+    box-shadow: none;
+    box-sizing: border-box;
+}
+
+.links-page .links-form textarea.form-control {
+    min-height: 92px;
+    padding-top: 11px;
+    resize: vertical;
 }
 
 .links-page .links-form .form-control:focus {
+    outline: none;
     border-color: var(--links-accent);
-    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
+}
+
+.links-page .links-form .form-control::placeholder {
+    color: var(--fgColor-subtle);
 }
 
 .links-page .links-form-hint {
-    margin: 8px 0 0;
+    margin: 7px 0 0;
     color: var(--fgColor-subtle);
-    font-size: 13px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.45;
 }
 
 .links-page .links-form-actions {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
-    gap: 12px;
-    padding-top: 8px;
+    gap: 8px;
+    padding-top: 4px;
+    margin-top: 2px;
 }
 
 @media (min-width: 768px) {
@@ -350,6 +429,14 @@
     .links-page .links-apply-actions .btn,
     .links-page .links-form-actions .btn {
         width: 100%;
+    }
+
+    .links-page .links-modal-body {
+        padding: 22px 20px;
+    }
+
+    .links-page .links-modal-header {
+        align-items: flex-start;
     }
 
     .links-page .link-footer {
@@ -393,7 +480,8 @@
             <span title="{{ link.url }}">{{ clean_url }}</span>
         </div>
         <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-action">
-            访问网站
+            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
+            <span>访问网站</span>
         </a>
     </div>
 </article>
@@ -418,7 +506,7 @@
                     <div class="links-list-actions">
                         <button type="button" id="applyLinkBtn" class="btn btn-primary" data-open-link-modal>
                             <i class="fas fa-plus" aria-hidden="true"></i>
-                            申请友链
+                            <span>申请友链</span>
                         </button>
                     </div>
                 </div>
@@ -443,10 +531,12 @@
                 </p>
                 <div class="links-apply-actions">
                     <button type="button" class="btn btn-primary" data-open-link-modal>
-                        提交申请
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        <span>提交申请</span>
                     </button>
                     <a href="mailto:wdws851421092@gmail.com" class="btn btn-secondary no-underline">
-                        发邮件
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        <span>发邮件</span>
                     </a>
                 </div>
             </div>
@@ -487,7 +577,10 @@
                 </div>
                 <div class="links-form-actions">
                     <button type="button" id="cancelApply" class="btn btn-secondary">取消</button>
-                    <button type="submit" class="btn btn-primary">提交申请</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        <span>提交申请</span>
+                    </button>
                 </div>
             </form>
         </div>
@@ -558,15 +651,15 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const result = await response.json();
             if (result.success) {
-                alert('申请提交成功！我会尽快查看并审核你的站点。');
+                window.showToast('申请提交成功！我会尽快查看并审核你的站点。', 'success');
                 form.reset();
                 closeModal();
             } else {
-                alert('申请提交失败：' + (result.message || '未知错误'));
+                window.showToast('申请提交失败：' + (result.message || '未知错误'), 'error');
             }
         } catch (err) {
             console.error('申请友链失败:', err);
-            alert('网络错误，请稍后重试');
+            window.showToast('网络错误，请稍后重试', 'error');
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;

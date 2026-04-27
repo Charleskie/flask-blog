@@ -2,13 +2,13 @@ from datetime import datetime
 from app.models.user import db
 
 class UserInteraction(db.Model):
-    """用户互动模型 - 统一管理点赞、收藏、评分"""
+    """用户互动模型 - 统一管理文章点赞、收藏、评分"""
     __tablename__ = 'user_interactions'
     
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    content_id = db.Column(db.Integer, nullable=False)  # 文章或项目ID
-    type = db.Column(db.Integer, nullable=False)  # 1-博客；2-项目
+    content_id = db.Column(db.Integer, nullable=False)  # 文章ID
+    type = db.Column(db.Integer, nullable=False)  # 1-博客文章
     like = db.Column(db.Integer, default=0)  # 1-点赞；0-没有点赞
     favorite = db.Column(db.Integer, default=0)  # 1-收藏；0-没有收藏
     rating = db.Column(db.Integer, default=0)  # 0~5分，0表示没有评分
@@ -50,7 +50,6 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'), nullable=True)
-    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
     content = db.Column(db.Text, nullable=False)
     is_approved = db.Column(db.Boolean, default=True)
     like_count = db.Column(db.Integer, default=0)  # 点赞数
@@ -60,7 +59,6 @@ class Comment(db.Model):
     # 关联关系
     user = db.relationship('User', backref=db.backref('comments', lazy='dynamic'))
     post = db.relationship('Post', backref=db.backref('comments', lazy='dynamic'))
-    project = db.relationship('Project', backref=db.backref('comments', lazy='dynamic'))
     
     # 回复关系
     replies = db.relationship('CommentReply', backref='comment', lazy='dynamic', cascade='all, delete-orphan')

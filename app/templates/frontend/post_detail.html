@@ -33,12 +33,14 @@
                 {% if current_user.is_authenticated and current_user.is_admin %}
                 <div class="admin-actions d-flex gap-2 flex-shrink-0">
                     <a href="{{ url_for('admin.edit_post', post_id=post.id) }}"
-                       class="btn btn-primary btn-sm no-underline" title="编辑文章">
-                        <i class="fas fa-edit" aria-hidden="true"></i> 编辑
+                       class="post-admin-action post-admin-action-edit" title="编辑文章">
+                        <i class="fas fa-edit" aria-hidden="true"></i>
+                        <span>编辑</span>
                     </a>
-                    <button type="button" class="btn btn-danger btn-sm"
+                    <button type="button" class="post-admin-action post-admin-action-delete"
                             onclick="deletePost({{ post.id }})" title="删除文章">
-                        <i class="fas fa-trash" aria-hidden="true"></i> 删除
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                        <span>删除</span>
                     </button>
                 </div>
                 {% endif %}
@@ -1137,8 +1139,59 @@
     border: 1px solid var(--borderColor-default);
 }
 
-.admin-actions .btn {
+.post-admin-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.78);
+    color: var(--fgColor-muted);
     font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.post-admin-action:hover {
+    text-decoration: none;
+}
+
+.post-admin-action i {
+    margin: 0;
+    line-height: 1;
+}
+
+.post-admin-action-edit {
+    background: rgba(221, 244, 255, 0.72);
+    border-color: rgba(9, 105, 218, 0.2);
+    color: var(--fgColor-accent);
+}
+
+.post-admin-action-edit:hover {
+    background: rgba(221, 244, 255, 0.95);
+    border-color: rgba(9, 105, 218, 0.34);
+    color: var(--fgColor-accent);
+}
+
+.post-admin-action-delete {
+    background: rgba(255, 245, 245, 0.8);
+    border-color: rgba(209, 36, 47, 0.18);
+    color: var(--fgColor-danger);
+}
+
+.post-admin-action-delete:hover {
+    background: var(--bgColor-danger-muted);
+    border-color: rgba(209, 36, 47, 0.32);
+    color: var(--fgColor-danger);
 }
 
 @media (max-width: 1200px) {
@@ -1225,7 +1278,7 @@
         width: 100%;
     }
 
-    .admin-actions .btn {
+    .admin-actions .post-admin-action {
         font-size: 12px;
         justify-content: center;
     }
@@ -1479,6 +1532,11 @@ async function setupFloatingButtons() {
 
     try {
         const response = await fetch(`/api/user-status/${contentId}?type=${contentType}`);
+        const responseType = response.headers.get('content-type') || '';
+        if (!responseType.includes('application/json')) {
+            return;
+        }
+
         const result = await response.json();
 
         if (result.success) {
@@ -1572,19 +1630,38 @@ function shareToWeibo() {
     window.open(weiboUrl, '_blank');
 }
 
-function copyLink() {
+async function copyLink() {
     const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
-        showToast('链接已复制到剪贴板', 'success');
-    }).catch(() => {
+    try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function' && window.isSecureContext) {
+            await navigator.clipboard.writeText(url);
+            emitToast('链接已复制到剪贴板', 'success');
+            return;
+        }
+    } catch (error) {
+        console.error('Clipboard API 复制失败，尝试降级方案:', error);
+    }
+
+    try {
         const textArea = document.createElement('textarea');
         textArea.value = url;
+        textArea.setAttribute('readonly', '');
+        textArea.style.position = 'fixed';
+        textArea.style.opacity = '0';
+        textArea.style.pointerEvents = 'none';
         document.body.appendChild(textArea);
+        textArea.focus();
         textArea.select();
-        document.execCommand('copy');
+        textArea.setSelectionRange(0, textArea.value.length);
+
+        const copied = document.execCommand('copy');
         document.body.removeChild(textArea);
-        showToast('链接已复制到剪贴板', 'success');
-    });
+
+        emitToast(copied ? '链接已复制到剪贴板' : '复制失败，请手动复制地址栏链接', copied ? 'success' : 'error');
+    } catch (error) {
+        console.error('复制链接失败:', error);
+        emitToast('复制失败，请手动复制地址栏链接', 'error');
+    }
 }
 
 function generateQRCode() {
@@ -1604,57 +1681,55 @@ function generateQRCode() {
     qrContainer.appendChild(qrImg);
 }
 
-function showToast(message, type) {
-    const toast = document.createElement('div');
-    let flashClass = 'flash';
-    if (type === 'success') {
-        flashClass = 'flash flash-success';
-    } else if (type === 'error') {
-        flashClass = 'flash flash-danger';
+function emitToast(message, type) {
+    if (window.siteUI && typeof window.siteUI.showToast === 'function') {
+        return window.siteUI.showToast(message, type);
     }
-    toast.className = flashClass + ' position-fixed p-3 rounded-2';
-    toast.style.cssText = 'top: 20px; right: 20px; z-index: 1001; min-width: 200px; max-width: 90vw;';
-    toast.innerHTML = `
-        <span class="d-flex items-center gap-2">
-            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}" aria-hidden="true"></i>
-            <span>${message}</span>
-        </span>
-    `;
 
-    document.body.appendChild(toast);
+    if (typeof window.showToast === 'function') {
+        return window.showToast(message, type);
+    }
 
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-        }
-    }, 3000);
+    if (typeof window.showMessage === 'function') {
+        return window.showMessage(message, type);
+    }
+
+    return null;
 }
 
-function deletePost(postId) {
-    if (confirm('确定要删除这篇文章吗？此操作不可撤销！')) {
-        fetch(`/admin/posts/${postId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast(data.message, 'success');
-                setTimeout(() => {
-                    window.location.href = '/blog';
-                }, 1500);
-            } else {
-                showToast(data.message || '删除失败', 'error');
-            }
-        })
-        .catch(error => {
-            console.error('删除文章失败:', error);
-            showToast('删除失败，请稍后重试', 'error');
-        });
+async function deletePost(postId) {
+    const confirmed = await window.confirmAsync('确定要删除这篇文章吗？此操作不可撤销！', {
+        title: '删除文章',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) {
+        return;
     }
+
+    fetch(`/admin/posts/${postId}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            emitToast(data.message, 'success');
+            setTimeout(() => {
+                window.location.href = '/blog';
+            }, 1500);
+        } else {
+            emitToast(data.message || '删除失败', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('删除文章失败:', error);
+        emitToast('删除失败，请稍后重试', 'error');
+    });
 }
 </script>
 {% endblock %}

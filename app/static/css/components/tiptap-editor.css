@@ -500,7 +500,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(31, 35, 40, 0.5);
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -508,10 +509,12 @@
 }
 
 .link-modal-content {
-    background: var(--bgColor-default);
-    border-radius: var(--borderRadius-large);
-    border: 1px solid var(--borderColor-default);
-    box-shadow: var(--shadow-floating-small);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.96)),
+        var(--bgColor-default);
+    border-radius: 24px;
+    border: 1px solid rgba(208, 215, 222, 0.82);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
     max-width: 500px;
     width: 100%;
     max-height: 90vh;
@@ -528,8 +531,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
+    padding: 22px 24px 16px;
     border-bottom: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.04), rgba(9, 105, 218, 0));
 }
 
 .link-modal-header h3 {
@@ -540,13 +544,15 @@
 }
 
 .link-modal-close {
-    background: none;
-    border: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
     font-size: 18px;
     color: var(--fgColor-muted);
     cursor: pointer;
-    padding: 4px;
-    border-radius: var(--borderRadius-small);
+    padding: 0;
+    border-radius: 10px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -556,7 +562,7 @@
 }
 
 .link-modal-body {
-    padding: 24px;
+    padding: 20px 24px 24px;
 }
 
 .link-modal-body .form-group {
@@ -578,7 +584,7 @@
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--borderColor-default);
-    border-radius: var(--borderRadius-large);
+    border-radius: 16px;
     font-size: 14px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
@@ -596,7 +602,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 20px 24px;
+    padding: 14px 24px 22px;
     border-top: 1px solid var(--borderColor-default);
 }
 
@@ -656,7 +662,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(31, 35, 40, 0.5);
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -664,10 +671,12 @@
 }
 
 .code-modal-content {
-    background: var(--bgColor-default);
-    border-radius: var(--borderRadius-large);
-    border: 1px solid var(--borderColor-default);
-    box-shadow: var(--shadow-floating-small);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.96)),
+        var(--bgColor-default);
+    border-radius: 24px;
+    border: 1px solid rgba(208, 215, 222, 0.82);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
     max-width: 600px;
     width: 100%;
     max-height: 90vh;
@@ -684,8 +693,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
+    padding: 22px 24px 16px;
     border-bottom: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.04), rgba(9, 105, 218, 0));
 }
 
 .code-modal-header h3 {
@@ -696,13 +706,15 @@
 }
 
 .code-modal-close {
-    background: none;
-    border: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
     font-size: 18px;
     color: var(--fgColor-muted);
     cursor: pointer;
-    padding: 4px;
-    border-radius: var(--borderRadius-small);
+    padding: 0;
+    border-radius: 10px;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
@@ -712,7 +724,7 @@
 }
 
 .code-modal-body {
-    padding: 24px;
+    padding: 20px 24px 24px;
 }
 
 .code-modal-body .form-group {
@@ -734,7 +746,7 @@
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--borderColor-default);
-    border-radius: var(--borderRadius-large);
+    border-radius: 16px;
     font-size: 14px;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
@@ -752,7 +764,7 @@
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--borderColor-default);
-    border-radius: var(--borderRadius-large);
+    border-radius: 16px;
     font-size: 14px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
@@ -773,7 +785,7 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 20px 24px;
+    padding: 14px 24px 22px;
     border-top: 1px solid var(--borderColor-default);
 }
 

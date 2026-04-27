@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, jsonify, redirect, request, url_for
 from flask_login import LoginManager
 from app.models.user import db
-from app.utils.filters import nl2br_filter, markdown_filter, html_filter
+from app.utils.filters import nl2br_filter, markdown_filter, html_filter, localtime_filter
 from app.utils.logger import setup_app_logging, log_manager
 import os
 
@@ -45,6 +45,23 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        wants_json = (
+            request.path.startswith('/api/')
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            or 'application/json' in request.headers.get('Accept', '')
+        )
+
+        if wants_json:
+            return jsonify({
+                'success': False,
+                'message': '请先登录后再继续操作',
+                'require_login': True
+            }), 401
+
+        return redirect(url_for(login_manager.login_view, next=request.url))
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -55,6 +72,7 @@ def create_app():
     app.template_filter('nl2br')(nl2br_filter)
     app.template_filter('markdown')(markdown_filter)
     app.template_filter('html')(html_filter)
+    app.template_filter('localtime')(localtime_filter)
     
     # 初始化 OAuth
     try:
@@ -96,6 +114,12 @@ def create_app():
             ensure_post_schema()
         except Exception as e:
             app.logger.warning(f"文章表结构检查失败: {e}")
+
+        try:
+            from app.models.message import ensure_message_schema
+            ensure_message_schema()
+        except Exception as e:
+            app.logger.warning(f"消息表结构检查失败: {e}")
 
         try:
             from app.models.interaction import ensure_comment_reply_schema

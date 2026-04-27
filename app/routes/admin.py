@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, flash, current_app
 from flask_login import login_required, current_user
-from app.models import Post, Project, Message, User, AboutContent, AboutContact, Skill, Link
+from app.models import Post, Message, User, AboutContent, AboutContact, Skill, Link
 from app.models.user import db
 from app.utils import admin_required
 from datetime import datetime
@@ -16,6 +16,15 @@ def get_post_categories():
     ).distinct().order_by(Post.category.asc()).all()
     return [item[0] for item in categories]
 
+
+def get_admin_unread_messages_count():
+    """按最新一条来信时间统计管理员侧未读会话数。"""
+    return sum(
+        1
+        for message in Message.visible_to_admin_query().order_by(Message.created_at.desc()).all()
+        if message.has_unread_for_admin()
+    )
+
 @admin_bp.route('/admin')
 @login_required
 @admin_required
@@ -24,29 +33,21 @@ def admin():
     # 统计数据
     total_posts = Post.query.count()
     published_posts = Post.query.filter_by(status='published').count()
-    total_projects = Project.query.count()
-    active_projects = Project.query.filter_by(status='active').count()
-    total_messages = Message.query.count()
-    unread_messages = Message.query.filter_by(status='unread').count()
+    total_messages = Message.visible_to_admin_query().count()
+    unread_messages = get_admin_unread_messages_count()
     
     # 最近的文章
     recent_posts = Post.query.order_by(Post.created_at.desc()).limit(5).all()
     
-    # 最近的项目
-    recent_projects = Project.query.order_by(Project.created_at.desc()).limit(5).all()
-    
     # 最近的消息
-    recent_messages = Message.query.order_by(Message.created_at.desc()).limit(5).all()
+    recent_messages = Message.visible_to_admin_query().order_by(Message.created_at.desc()).limit(5).all()
     
     return render_template('admin/admin.html',
                          total_posts=total_posts,
                          published_posts=published_posts,
-                         total_projects=total_projects,
-                         active_projects=active_projects,
                          total_messages=total_messages,
                          unread_messages=unread_messages,
                          recent_posts=recent_posts,
-                         recent_projects=recent_projects,
                          recent_messages=recent_messages)
 
 # 文章管理
@@ -246,194 +247,6 @@ def delete_post(post_id):
     
     return redirect(url_for('admin.admin_posts'))
 
-# 项目管理
-@admin_bp.route('/admin/projects')
-@login_required
-@admin_required
-def admin_projects():
-    """项目管理页面"""
-    page = request.args.get('page', 1, type=int)
-    status_filter = request.args.get('status', '')
-    search_query = request.args.get('search', '')
-    
-    # 构建查询
-    query = Project.query
-    
-    # 状态筛选
-    if status_filter:
-        query = query.filter_by(status=status_filter)
-    
-    # 搜索功能
-    if search_query:
-        query = query.filter(
-            db.or_(
-                Project.title.contains(search_query),
-                Project.description.contains(search_query),
-                Project.short_description.contains(search_query),
-                Project.category.contains(search_query),
-                Project.tags.contains(search_query),
-                Project.technologies.contains(search_query)
-            )
-        )
-    
-    projects = query.order_by(Project.created_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    
-    return render_template('admin/admin_projects.html', 
-                         projects=projects, 
-                         status_filter=status_filter,
-                         search_query=search_query)
-
-@admin_bp.route('/admin/projects/new', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def new_project():
-    """新建项目"""
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        short_description = request.form.get('short_description')
-        image_url = request.form.get('image_url')
-        github_url = request.form.get('github_url')
-        live_url = request.form.get('live_url')
-        demo_url = request.form.get('demo_url')
-        status = request.form.get('status', 'active')
-        category = request.form.get('category')
-        tags = request.form.get('tags')
-        technologies = request.form.get('technologies')
-        features = request.form.get('features')
-        challenges = request.form.get('challenges')
-        lessons_learned = request.form.get('lessons_learned')
-        featured = 'featured' in request.form
-        
-        if not title or not description:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '请填写项目标题和描述'})
-
-            return render_template('admin/new_project.html')
-        
-        try:
-            project = Project(
-                title=title,
-                description=description,
-                short_description=short_description,
-                image_url=image_url,
-                github_url=github_url,
-                live_url=live_url,
-                demo_url=demo_url,
-                status=status,
-                category=category,
-                tags=tags,
-                technologies=technologies,
-                features=features,
-                challenges=challenges,
-                lessons_learned=lessons_learned,
-                featured=featured
-            )
-            
-            db.session.add(project)
-            db.session.commit()
-            
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '项目创建成功！'})
-
-            return redirect(url_for('admin.admin_projects'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '创建失败，请稍后重试'})
-
-            print(f"创建项目错误: {e}")
-    
-    return render_template('admin/new_project.html')
-
-@admin_bp.route('/admin/projects/<int:project_id>/edit', methods=['GET', 'POST'])
-@login_required
-@admin_required
-def edit_project(project_id):
-    """编辑项目"""
-    project = Project.query.get_or_404(project_id)
-    
-    if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
-        short_description = request.form.get('short_description')
-        image_url = request.form.get('image_url')
-        github_url = request.form.get('github_url')
-        live_url = request.form.get('live_url')
-        demo_url = request.form.get('demo_url')
-        status = request.form.get('status')
-        category = request.form.get('category')
-        tags = request.form.get('tags')
-        technologies = request.form.get('technologies')
-        features = request.form.get('features')
-        challenges = request.form.get('challenges')
-        lessons_learned = request.form.get('lessons_learned')
-        featured = 'featured' in request.form
-        
-        if not title or not description:
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '请填写项目标题和描述'})
-
-            return render_template('admin/edit_project.html', project=project)
-        
-        try:
-            project.title = title
-            project.description = description
-            project.short_description = short_description
-            project.image_url = image_url
-            project.github_url = github_url
-            project.live_url = live_url
-            project.demo_url = demo_url
-            project.status = status
-            project.category = category
-            project.tags = tags
-            project.technologies = technologies
-            project.features = features
-            project.challenges = challenges
-            project.lessons_learned = lessons_learned
-            project.featured = featured
-            project.updated_at = datetime.utcnow()
-            
-            db.session.commit()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '项目更新成功！'})
-
-            return redirect(url_for('admin.admin_projects'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
-
-            print(f"更新项目错误: {e}")
-    
-    return render_template('admin/edit_project.html', project=project)
-
-@admin_bp.route('/admin/projects/<int:project_id>/delete', methods=['POST'])
-@login_required
-@admin_required
-def delete_project(project_id):
-    """删除项目"""
-    project = Project.query.get_or_404(project_id)
-    
-    try:
-        db.session.delete(project)
-        db.session.commit()
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True, 'message': '项目删除成功！'})
-
-    except Exception as e:
-        db.session.rollback()
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
-
-        print(f"删除项目错误: {e}")
-    
-    return redirect(url_for('admin.admin_projects'))
-
 # 消息管理
 @admin_bp.route('/admin/messages')
 @login_required
@@ -441,28 +254,48 @@ def delete_project(project_id):
 def admin_messages():
     """消息管理页面"""
     page = request.args.get('page', 1, type=int)
-    status_filter = request.args.get('status', '')
+    selected_message_id = request.args.get('message_id', type=int)
     
-    query = Message.query
-    if status_filter:
-        query = query.filter_by(status=status_filter)
-    
+    query = Message.visible_to_admin_query()
+
     messages = query.order_by(Message.created_at.desc()).paginate(
         page=page, per_page=20, error_out=False
     )
+
+    selected_message = None
+    if messages.items:
+        if selected_message_id:
+            selected_message = next(
+                (message for message in messages.items if message.id == selected_message_id),
+                None
+            )
+
+        if selected_message is None:
+            selected_message = messages.items[0]
+
+        if selected_message and selected_message.has_unread_for_admin():
+            selected_message.mark_as_read_by_admin()
+            db.session.commit()
+
+    unread_total = get_admin_unread_messages_count()
     
-    return render_template('admin/admin_messages.html', messages=messages, status_filter=status_filter)
+    return render_template(
+        'admin/admin_messages.html',
+        messages=messages,
+        selected_message=selected_message,
+        unread_total=unread_total
+    )
 
 @admin_bp.route('/admin/messages/<int:message_id>')
 @login_required
 @admin_required
 def view_message(message_id):
     """查看消息详情"""
-    message = Message.query.get_or_404(message_id)
+    message = Message.visible_to_admin_query().filter_by(id=message_id).first_or_404()
     
     # 标记为已读
-    if message.is_unread():
-        message.mark_as_read()
+    if message.has_unread_for_admin():
+        message.mark_as_read_by_admin()
         db.session.commit()
     
     return render_template('admin/view_message.html', message=message)
@@ -475,7 +308,7 @@ def reply_message(message_id):
     from app.models import MessageReply
     from app.utils.email_sender import send_reply_email
     
-    message = Message.query.get_or_404(message_id)
+    message = Message.visible_to_admin_query().filter_by(id=message_id).first_or_404()
     
     if request.method == 'POST':
         reply_content = request.form.get('reply_content')
@@ -501,6 +334,7 @@ def reply_message(message_id):
             
             # 标记原消息为已回复
             message.mark_as_replied()
+            message.restore_for_user()
             
             # 发送邮件给用户
             email_sent = send_reply_email(message, reply_content, reply_record)
@@ -549,14 +383,18 @@ def reply_message(message_id):
 @admin_required
 def delete_message(message_id):
     """删除消息"""
-    message = Message.query.get_or_404(message_id)
+    message = Message.visible_to_admin_query().filter_by(id=message_id).first_or_404()
     
     try:
-        db.session.delete(message)
+        message.hide_for_admin()
+        purged = False
+        if message.can_purge():
+            message.purge_related_records()
+            purged = True
         db.session.commit()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True, 'message': '消息删除成功！'})
-        flash('消息删除成功！', 'success')
+            return jsonify({'success': True, 'message': '会话已从管理员消息列表移除', 'purged': purged})
+        flash('会话已从管理员消息列表移除', 'success')
     except Exception as e:
         db.session.rollback()
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -573,7 +411,7 @@ def delete_message_reply(message_id, reply_id):
     """删除消息回复"""
     from app.models import MessageReply
     
-    message = Message.query.get_or_404(message_id)
+    message = Message.visible_to_admin_query().filter_by(id=message_id).first_or_404()
     reply = MessageReply.query.filter_by(id=reply_id, message_id=message_id).first_or_404()
     
     try:
@@ -618,7 +456,7 @@ def batch_delete_message_replies(message_id):
     """批量删除消息回复"""
     from app.models import MessageReply
     
-    message = Message.query.get_or_404(message_id)
+    message = Message.visible_to_admin_query().filter_by(id=message_id).first_or_404()
     
     try:
         data = request.get_json()
@@ -674,10 +512,10 @@ def batch_delete_message_replies(message_id):
 @admin_required
 def change_message_status(message_id):
     """更改消息状态"""
-    message = Message.query.get_or_404(message_id)
+    message = Message.visible_to_admin_query().filter_by(id=message_id).first_or_404()
     new_status = request.form.get('status')
     
-    if new_status not in ['unread', 'read', 'replied', 'archived']:
+    if new_status not in ['unread', 'read', 'replied', 'in_conversation', 'archived']:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': '无效的状态'})
         flash('无效的状态', 'error')
@@ -1063,7 +901,11 @@ def mark_all_messages_read():
     """一键标记所有未读消息为已读"""
     try:
         # 获取所有未读消息
-        unread_messages = Message.query.filter_by(status='unread').all()
+        unread_messages = [
+            message
+            for message in Message.visible_to_admin_query().order_by(Message.created_at.desc()).all()
+            if message.has_unread_for_admin()
+        ]
         count = len(unread_messages)
         
         if count == 0:
@@ -1075,7 +917,7 @@ def mark_all_messages_read():
         
         # 批量更新状态
         for message in unread_messages:
-            message.mark_as_read()
+            message.mark_as_read_by_admin()
         
         db.session.commit()
         
@@ -1099,7 +941,7 @@ def mark_all_messages_read():
 def api_unread_messages_count():
     """API: 获取未读消息数量"""
     try:
-        unread_count = Message.query.filter_by(status='unread').count()
+        unread_count = get_admin_unread_messages_count()
         return jsonify({
             'success': True,
             'count': unread_count

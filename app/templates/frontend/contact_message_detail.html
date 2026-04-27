@@ -21,7 +21,7 @@
             </a>
         </div>
         <div class="f5 color-fg-subtle">
-            {{ message.created_at.strftime('%Y年%m月%d日 %H:%M') }}
+            {{ message.created_at|localtime('%Y年%m月%d日 %H:%M') }}
         </div>
     </div>
 
@@ -54,8 +54,8 @@
                     <i class="fas fa-user color-fg-accent"></i>
                 </div>
                 <div>
-                    <p class="f4 text-semibold color-fg-default m-0">{{ message.name }}</p>
-                    <p class="f5 color-fg-subtle m-0">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                    <p class="f4 text-semibold color-fg-default m-0">你</p>
+                    <p class="f5 color-fg-subtle m-0">{{ message.created_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                 </div>
             </div>
             <div class="border rounded-2 p-3 color-bg-subtle">
@@ -83,10 +83,10 @@
                                 {% if reply.reply_type == 'admin' %}
                                     {{ reply.sender_name or '管理员' }}
                                 {% else %}
-                                    {{ reply.sender_name or message.name }}
+                                    你
                                 {% endif %}
                             </p>
-                            <p class="f5 color-fg-subtle m-0">{{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="f5 color-fg-subtle m-0">{{ reply.created_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                         </div>
                     </div>
                     <div class="d-flex flex-wrap items-center gap-2">
@@ -109,7 +109,7 @@
 
                 {% if reply.sent_at %}
                 <div class="mt-2 f6 color-fg-subtle">
-                    <i class="fas fa-paper-plane mr-1"></i>邮件发送时间：{{ reply.sent_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                    <i class="fas fa-paper-plane mr-1"></i>邮件发送时间：{{ reply.sent_at|localtime('%Y-%m-%d %H:%M:%S') }}
                 </div>
                 {% endif %}
             </div>

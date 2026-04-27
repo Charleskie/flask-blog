@@ -18,6 +18,9 @@ def settings():
 @login_required
 def profile_settings():
     """个人信息设置"""
+    if request.method == 'GET':
+        return redirect(url_for('auth.profile'))
+
     if request.method == 'POST':
         nickname = request.form.get('nickname', '').strip()
         bio = request.form.get('bio', '').strip()
@@ -40,7 +43,7 @@ def profile_settings():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': True, 'message': '个人信息更新成功！'})
 
-            return redirect(url_for('settings.profile_settings'))
+            return redirect(url_for('auth.profile'))
             
         except Exception as e:
             db.session.rollback()
@@ -49,7 +52,7 @@ def profile_settings():
 
             print(f"更新个人信息错误: {e}")
     
-    return render_template('settings/profile.html')
+    return redirect(url_for('auth.profile'))
 
 @settings_bp.route('/settings/account', methods=['GET', 'POST'])
 @login_required
@@ -120,29 +123,8 @@ def account_settings():
 @settings_bp.route('/settings/security', methods=['GET', 'POST'])
 @login_required
 def security_settings():
-    """安全设置"""
-    if request.method == 'POST':
-        login_notifications = request.form.get('login_notifications') == 'on'
-        session_timeout = int(request.form.get('session_timeout', 30))
-        
-        try:
-            current_user.login_notifications = login_notifications
-            current_user.session_timeout = session_timeout
-            
-            db.session.commit()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '安全设置更新成功！'})
-
-            return redirect(url_for('settings.security_settings'))
-            
-        except Exception as e:
-            db.session.rollback()
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': False, 'message': '更新失败，请稍后重试'})
-
-            print(f"更新安全设置错误: {e}")
-    
-    return render_template('settings/security.html')
+    """兼容旧链接，安全设置入口已移除。"""
+    return redirect(url_for('settings.settings'))
 
 @settings_bp.route('/settings/privacy', methods=['GET', 'POST'])
 @login_required
@@ -177,18 +159,20 @@ def privacy_settings():
 @login_required
 def upload_avatar():
     """上传头像"""
+    fallback_redirect = request.referrer or url_for('auth.edit_profile')
+
     if 'avatar' not in request.files:
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': '没有选择文件'})
 
-        return redirect(url_for('settings.profile_settings'))
+        return redirect(fallback_redirect)
     
     file = request.files['avatar']
     if file.filename == '':
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             return jsonify({'success': False, 'message': '没有选择文件'})
 
-        return redirect(url_for('settings.profile_settings'))
+        return redirect(fallback_redirect)
     
     if file:
         # 检查文件类型
@@ -198,7 +182,7 @@ def upload_avatar():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '不支持的文件类型，支持：PNG、JPG、JPEG、GIF、WebP'})
 
-            return redirect(url_for('settings.profile_settings'))
+            return redirect(fallback_redirect)
         
         # 检查文件大小 (最大5MB)
         file.seek(0, os.SEEK_END)
@@ -209,7 +193,7 @@ def upload_avatar():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '文件大小不能超过5MB'})
 
-            return redirect(url_for('settings.profile_settings'))
+            return redirect(fallback_redirect)
         
         try:
             # 生成唯一文件名
@@ -244,7 +228,7 @@ def upload_avatar():
                 })
             
             flash('头像上传成功！', 'success')
-            return redirect(url_for('settings.profile_settings'))
+            return redirect(fallback_redirect)
 
         except Exception as e:
             db.session.rollback()
@@ -254,4 +238,4 @@ def upload_avatar():
             
             flash('头像上传失败，请稍后重试', 'error')
     
-    return redirect(url_for('settings.profile_settings'))
+    return redirect(fallback_redirect)

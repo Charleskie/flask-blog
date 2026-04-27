@@ -4,348 +4,92 @@
 
 {% block content %}
 <div class="container-xl mx-auto px-3">
-    <div class="text-center py-6 mb-6">
-        <h1 class="f2 text-bold color-fg-default m-0 mb-2">私信管理</h1>
-        <p class="f5 color-fg-muted m-0">管理联系表单和用户消息</p>
-    </div>
-
-    <div class="d-flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div class="d-flex flex-wrap items-center gap-3">
-            <span class="Label Label--secondary">共 {{ messages.total }} 条消息</span>
-            <span class="Label Label--danger">{{ messages.items | selectattr('status', 'equalto', 'unread') | list | length }} 未读</span>
-        </div>
-    </div>
-
-    <div class="Box mb-4">
-        <div class="Box-body p-4">
-            <form method="GET" class="d-flex flex-column gap-3">
-                <div class="d-flex flex-column gap-2">
-                    <label for="status" class="form-label m-0">状态筛选</label>
-                    <select class="form-select width-full" id="status" name="status">
-                        <option value="">全部状态</option>
-                        <option value="unread" {% if status_filter == 'unread' %}selected{% endif %}>未读</option>
-                        <option value="read" {% if status_filter == 'read' %}selected{% endif %}>已读</option>
-                        <option value="replied" {% if status_filter == 'replied' %}selected{% endif %}>已回复</option>
-                        <option value="in_conversation" {% if status_filter == 'in_conversation' %}selected{% endif %}>对话中</option>
-                        <option value="archived" {% if status_filter == 'archived' %}selected{% endif %}>已归档</option>
-                    </select>
-                </div>
+    {% if messages.total > 0 %}
+        {% set conversation_mode = 'admin' %}
+        {% set conversation_items = messages.items %}
+        {% set conversation_selected = selected_message %}
+        {% set conversation_total = messages.total %}
+        {% set conversation_unread_total = unread_total %}
+        {% set conversation_current_page = messages.page %}
+        {% set conversation_page_obj = messages %}
+        {% set conversation_header_kicker = '消息中心' %}
+        {% set conversation_header_title = '私信会话' %}
+        {% set conversation_toolbar_title = '全部会话' %}
+        {% set conversation_empty_title = '当前无私信' %}
+        {% set conversation_thread_empty_title = '请选择一条消息' %}
+        {% set conversation_compose_mode = false %}
+        {% include "components/conversation_inbox.html" %}
+    {% else %}
+        <div class="message-center">
+            <div class="message-center-header">
                 <div>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="markAllAsRead(this)">一键已读</button>
+                    <span class="message-center-kicker">消息中心</span>
+                    <h1 class="message-center-title">私信会话</h1>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="Box">
-        <div class="Box-body p-4">
-        {% if messages.items %}
-            <div class="d-flex flex-column gap-3">
-                {% for message in messages.items %}
-                <div class="Box message-card position-relative"
-                     data-message-id="{{ message.id }}"
-                     data-message-subject="{{ message.subject|e }}"
-                     style="{% if message.is_unread() %}border-left: 4px solid var(--fgColor-danger);{% endif %} cursor: pointer;">
-                    <div class="Box-body p-4">
-                        <div class="d-flex items-start justify-between gap-3">
-                            <div class="flex-1 min-width-0">
-                                <div class="d-flex items-start gap-3">
-                                    <div class="color-bg-muted border rounded-2 d-flex items-center justify-center flex-shrink-0" style="width: 40px; height: 40px;">
-                                        <i class="fas fa-user color-fg-muted"></i>
-                                    </div>
-                                    <div class="flex-1 min-width-0">
-                                        <div class="d-flex flex-wrap items-center gap-2 mb-2">
-                                            <span class="text-semibold color-fg-default">{{ message.name }}</span>
-                                            {% if message.status == 'unread' %}
-                                                <span class="Label Label--danger">未读</span>
-                                            {% elif message.status == 'read' %}
-                                                <span class="Label Label--primary">已读</span>
-                                            {% elif message.status == 'replied' %}
-                                                <span class="Label Label--success">已回复</span>
-                                            {% elif message.status == 'in_conversation' %}
-                                                <span class="Label Label--secondary">对话中</span>
-                                            {% else %}
-                                                <span class="Label Label--secondary">已归档</span>
-                                            {% endif %}
-                                        </div>
-                                        <h3 class="f4 text-semibold color-fg-default m-0 mb-2 truncate" onclick="event.stopPropagation(); handleMessageClick({{ message.id }}, {{ message.subject|tojson }})">{{ message.subject }}</h3>
-                                        <p class="f6 color-fg-muted m-0 mb-3 line-clamp-2">{{ message.message[:100] }}{% if message.message|length > 100 %}...{% endif %}</p>
-                                        <div class="d-flex flex-wrap items-center gap-3 f6 color-fg-muted">
-                                            <span class="d-inline-flex items-center gap-1">
-                                                <i class="fas fa-envelope"></i>
-                                                <a href="mailto:{{ message.email }}" class="color-fg-accent no-underline" onclick="event.stopPropagation()">{{ message.email }}</a>
-                                            </span>
-                                            <span class="d-inline-flex items-center gap-1">
-                                                <i class="fas fa-clock"></i>
-                                                {{ message.created_at.strftime('%Y-%m-%d %H:%M') }}
-                                            </span>
-                                            {% if message.ip_address %}
-                                            <span class="d-inline-flex items-center gap-1">
-                                                <i class="fas fa-globe"></i>
-                                                {{ message.ip_address }}
-                                            </span>
-                                            {% endif %}
-                                            {% if message.read_at %}
-                                            <span class="d-inline-flex items-center gap-1">
-                                                <i class="fas fa-eye"></i>
-                                                已读: {{ message.read_at.strftime('%H:%M') }}
-                                            </span>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="message-card-actions d-flex items-center gap-1 flex-shrink-0" onclick="event.stopPropagation()">
-                                <a href="{{ url_for('admin.view_message', message_id=message.id) }}"
-                                   class="btn btn-sm btn-outline" title="查看"><i class="fas fa-eye"></i></a>
-                                {% if not message.is_replied() %}
-                                <a href="{{ url_for('admin.reply_message', message_id=message.id) }}"
-                                   class="btn btn-sm btn-outline" title="回复"><i class="fas fa-reply"></i></a>
-                                {% endif %}
-                                <div class="position-relative">
-                                    <button type="button" class="btn btn-sm btn-outline" onclick="toggleDropdown({{ message.id }})" title="更多操作" aria-expanded="false">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </button>
-                                    <div id="dropdown-{{ message.id }}" class="admin-dropdown-menu d-none">
-                                        <a href="#" onclick="changeStatus({{ message.id }}, 'unread')" class="admin-dropdown-item">
-                                            <i class="fas fa-circle color-fg-danger"></i> 标记为未读
-                                        </a>
-                                        <a href="#" onclick="changeStatus({{ message.id }}, 'read')" class="admin-dropdown-item">
-                                            <i class="fas fa-circle color-fg-accent"></i> 标记为已读
-                                        </a>
-                                        <a href="#" onclick="changeStatus({{ message.id }}, 'replied')" class="admin-dropdown-item">
-                                            <i class="fas fa-circle color-fg-success"></i> 标记为已回复
-                                        </a>
-                                        <a href="#" onclick="changeStatus({{ message.id }}, 'in_conversation')" class="admin-dropdown-item">
-                                            <i class="fas fa-circle color-fg-muted"></i> 标记为对话中
-                                        </a>
-                                        <a href="#" onclick="changeStatus({{ message.id }}, 'archived')" class="admin-dropdown-item">
-                                            <i class="fas fa-circle color-fg-subtle"></i> 归档
-                                        </a>
-                                        <hr class="admin-dropdown-divider">
-                                        <a href="#" onclick="deleteMessage({{ message.id }}, '{{ message.subject|e }}')" class="admin-dropdown-item color-fg-danger">
-                                            <i class="fas fa-trash"></i> 删除
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
             </div>
-        {% else %}
-            <div class="text-center py-6">
-                <div class="color-bg-muted border rounded-2 d-inline-flex items-center justify-center mb-3" style="width: 64px; height: 64px;">
-                    <i class="fas fa-envelope f2 color-fg-muted"></i>
-                </div>
-                <h3 class="f4 text-semibold color-fg-default m-0 mb-2">暂无消息</h3>
-                <p class="f5 color-fg-muted m-0">当有新的联系表单提交时，消息会显示在这里。</p>
-            </div>
-        {% endif %}
-        </div>
-    </div>
 
-    {% if messages.pages > 1 %}
-    <div class="d-flex justify-center mt-6">
-        <nav class="d-flex items-center gap-2 flex-wrap justify-center">
-            {% if messages.has_prev %}
-            <a href="{{ url_for('admin.admin_messages', page=messages.prev_num, status=status_filter) }}" class="btn btn-sm btn-outline">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-            {% endif %}
-            {% for page_num in messages.iter_pages() %}
-                {% if page_num %}
-                    {% if page_num != messages.page %}
-                    <a href="{{ url_for('admin.admin_messages', page=page_num, status=status_filter) }}" class="btn btn-sm btn-outline">{{ page_num }}</a>
-                    {% else %}
-                    <span class="btn btn-sm btn-primary" aria-current="page">{{ page_num }}</span>
-                    {% endif %}
-                {% else %}
-                <span class="btn btn-sm btn-invisible" disabled>…</span>
-                {% endif %}
-            {% endfor %}
-            {% if messages.has_next %}
-            <a href="{{ url_for('admin.admin_messages', page=messages.next_num, status=status_filter) }}" class="btn btn-sm btn-outline">
-                <i class="fas fa-chevron-right"></i>
-            </a>
-            {% endif %}
-        </nav>
-    </div>
+            <div class="message-empty-state">
+                <div class="message-empty-icon">
+                    <i class="fas fa-inbox"></i>
+                </div>
+                <h3>当前无私信</h3>
+                <p>还没有人给你发送消息，新的联系表单和站内私信会显示在这里。</p>
+            </div>
+        </div>
     {% endif %}
 </div>
 
-<div id="deleteModal" class="position-fixed inset-0 d-none items-center justify-center" style="background: rgba(31,35,40,0.5); z-index: 1000; padding: 16px;">
-    <div class="Box shadow-xl" style="max-width: 500px; width: 100%;">
-        <div class="Box-header d-flex items-center justify-between border-bottom">
-            <h3 class="f3 text-bold m-0">确认删除</h3>
-            <button type="button" onclick="closeModal('deleteModal')" class="btn btn-invisible btn-sm" aria-label="关闭">&times;</button>
-        </div>
-        <div class="Box-body">
-            <p class="color-fg-default m-0">您确定要删除消息「<span id="delete-message-subject" class="text-semibold"></span>」吗？</p>
-            <p class="flash flash-danger mt-3 mb-0 f6"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
-        </div>
-        <div class="Box-footer border-top d-flex justify-end gap-2">
-            <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">取消</button>
-            <form id="delete-form" method="POST" class="d-inline">
-                <button type="submit" class="btn btn-danger">确认删除</button>
-            </form>
-        </div>
-    </div>
-</div>
+{% endblock %}
 
-<form id="status-form" method="POST" class="d-none">
-    <input type="hidden" id="status-message-id" name="message_id">
-    <input type="hidden" id="status-value" name="status">
-</form>
-
-<style>
-.min-width-0 { min-width: 0; }
-.admin-dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 4px;
-    min-width: 180px;
-    padding: 8px 0;
-    background: var(--bgColor-default);
-    border: 1px solid var(--borderColor-default);
-    border-radius: var(--borderRadius-medium);
-    box-shadow: var(--shadow-floating-small);
-    z-index: 100;
-}
-.admin-dropdown-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    font-size: 14px;
-    color: var(--fgColor-default);
-    text-decoration: none;
-}
-.admin-dropdown-item:hover {
-    background: var(--bgColor-muted);
-    text-decoration: none;
-    color: var(--fgColor-default);
-}
-.admin-dropdown-divider {
-    border: 0;
-    border-top: 1px solid var(--borderColor-default);
-    margin: 8px 0;
-}
-.message-card { user-select: none; }
-</style>
+{% block extra_css %}
+{% include "components/conversation_inbox_styles.html" %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-function viewMessage(messageId) {
-    try {
-        window.location.href = `/admin/messages/${messageId}`;
-    } catch (error) {
-        window.open(`/admin/messages/${messageId}`, '_self');
-    }
-}
+async function deleteMessage(messageId, messageSubject) {
+    const subject = messageSubject || '未命名会话';
+    const confirmed = window.confirmAsync
+        ? await window.confirmAsync(`确定要删除消息「${subject}」吗？会话会先从管理员消息列表中移除，不会立即影响用户侧。`, {
+            title: '确认删除',
+            confirmText: '确认删除',
+            cancelText: '取消',
+            danger: true
+        })
+        : window.confirm(`确定要删除消息「${subject}」吗？`);
 
-function handleMessageClick(messageId, subject) {
-    const messageCard = document.querySelector(`[data-message-id="${messageId}"]`);
-    if (!messageCard) {
-        viewMessage(messageId);
+    if (!confirmed) {
         return;
     }
-    const messageContent = messageCard.querySelector('p').textContent.toLowerCase();
-    const messageSubject = subject.toLowerCase();
-    if (messageContent.includes('评论') || messageSubject.includes('评论')) {
-        const postId = extractIdFromMessage(messageContent, 'post');
-        if (postId) {
-            window.location.href = `/blog/post/${postId}`;
-            return;
-        }
-    } else if (messageContent.includes('点赞') || messageSubject.includes('点赞')) {
-        const contentId = extractIdFromMessage(messageContent, 'like');
-        if (contentId) {
-            if (messageContent.includes('文章')) {
-                window.location.href = `/blog/post/${contentId}`;
-            } else if (messageContent.includes('项目')) {
-                window.location.href = `/projects/${contentId}`;
-            }
-            return;
-        }
-    } else if (messageContent.includes('收藏') || messageSubject.includes('收藏')) {
-        const contentId = extractIdFromMessage(messageContent, 'favorite');
-        if (contentId) {
-            if (messageContent.includes('文章')) {
-                window.location.href = `/blog/post/${contentId}`;
-            } else if (messageContent.includes('项目')) {
-                window.location.href = `/projects/${contentId}`;
-            }
-            return;
-        }
-    } else if (messageContent.includes('评分') || messageSubject.includes('评分')) {
-        const contentId = extractIdFromMessage(messageContent, 'rating');
-        if (contentId) {
-            if (messageContent.includes('文章')) {
-                window.location.href = `/blog/post/${contentId}`;
-            } else if (messageContent.includes('项目')) {
-                window.location.href = `/projects/${contentId}`;
-            }
-            return;
-        }
-    }
-    viewMessage(messageId);
+
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = `/admin/messages/${messageId}/delete`;
+    form.style.display = 'none';
+    document.body.appendChild(form);
+    form.submit();
 }
 
-function extractIdFromMessage(content, type) {
-    const patterns = [
-        /\/blog\/post\/(\d+)/,
-        /\/projects\/(\d+)/,
-        /文章(\d+)/,
-        /项目(\d+)/,
-        /post\/(\d+)/,
-        /project\/(\d+)/
-    ];
-    for (const pattern of patterns) {
-        const match = content.match(pattern);
-        if (match && match[1]) {
-            return match[1];
-        }
-    }
-    return null;
+function emitToast(type, message) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
-function openModal(id) {
-    var el = document.getElementById(id);
-    el.classList.remove('d-none');
-    el.classList.add('d-flex');
-}
-function closeModal(id) {
-    var el = document.getElementById(id);
-    el.classList.add('d-none');
-    el.classList.remove('d-flex');
-}
-
-function deleteMessage(messageId, messageSubject) {
-    document.getElementById('delete-message-subject').textContent = messageSubject;
-    document.getElementById('delete-form').action = `/admin/messages/${messageId}/delete`;
-    openModal('deleteModal');
-}
-
-function changeStatus(messageId, status) {
-    const statusForm = document.getElementById('status-form');
-    document.getElementById('status-message-id').value = messageId;
-    document.getElementById('status-value').value = status;
-    statusForm.action = `/admin/messages/${messageId}/status`;
-    statusForm.submit();
-}
-
-function markAllAsRead(btn) {
-    if (!confirm('确定要将所有未读消息标记为已读吗？')) {
+async function markAllAsRead(btn) {
+    const confirmed = await window.confirmAsync('确定要将所有未读消息标记为已读吗？', {
+        title: '全部标记已读',
+        confirmText: '确认标记',
+        cancelText: '取消'
+    });
+    if (!confirmed) {
         return;
     }
-    const button = btn;
-    const originalText = button.innerHTML;
-    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
-    button.disabled = true;
+
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>处理中...';
+    btn.disabled = true;
+
     fetch('/admin/messages/mark-all-read', {
         method: 'POST',
         headers: {
@@ -353,70 +97,94 @@ function markAllAsRead(btn) {
             'X-Requested-With': 'XMLHttpRequest'
         }
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            showToast('success', `已成功标记 ${data.count} 条消息为已读`);
-            setTimeout(() => { location.reload(); }, 1500);
-        } else {
-            showToast('error', data.message || '操作失败，请稍后重试');
-        }
-    })
-    .catch(() => {
-        showToast('error', '网络错误，请稍后重试');
-    })
-    .finally(() => {
-        button.innerHTML = originalText;
-        button.disabled = false;
-    });
+        .then((response) => response.json())
+        .then((data) => {
+            if (data.success) {
+                emitToast('success', `已成功标记 ${data.count} 条消息为已读`);
+                setTimeout(() => window.location.reload(), 900);
+            } else {
+                emitToast('error', data.message || '操作失败，请稍后重试');
+            }
+        })
+        .catch(() => {
+            emitToast('error', '网络错误，请稍后重试');
+        })
+        .finally(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
 }
 
-function showToast(type, message) {
-    const toast = document.createElement('div');
-    const cls = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
-    toast.className = 'position-fixed p-3 rounded-2 shadow-md f5 text-semibold ' + cls;
-    toast.style.cssText = 'top: 16px; right: 16px; z-index: 2000; max-width: 360px;';
-    toast.innerHTML = '<div class="d-flex items-center gap-2"><i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i><span>' + message + '</span></div>';
-    document.body.appendChild(toast);
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
-}
-
-function toggleDropdown(messageId) {
-    const dropdown = document.getElementById('dropdown-' + messageId);
-    const isHidden = dropdown.classList.contains('d-none');
-    document.querySelectorAll('.admin-dropdown-menu').forEach(menu => {
-        if (menu.id !== 'dropdown-' + messageId) {
-            menu.classList.add('d-none');
-        }
-    });
-    if (isHidden) {
-        dropdown.classList.remove('d-none');
-    } else {
-        dropdown.classList.add('d-none');
+function clearQuickReply() {
+    const textarea = document.getElementById('quick_reply_content');
+    if (textarea) {
+        textarea.value = '';
+        textarea.focus();
     }
 }
 
-document.addEventListener('click', function(event) {
-    if (!event.target.closest('.message-card-actions')) {
-        document.querySelectorAll('.admin-dropdown-menu').forEach(menu => menu.classList.add('d-none'));
+function scrollConversationToLatest(container) {
+    if (!container) {
+        return;
     }
-});
 
-document.getElementById('status').addEventListener('change', function() {
-    this.form.submit();
-});
+    const scrollToBottom = () => {
+        container.scrollTop = container.scrollHeight;
+    };
+
+    scrollToBottom();
+    requestAnimationFrame(scrollToBottom);
+    setTimeout(scrollToBottom, 80);
+}
 
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.message-card').forEach((card) => {
-        const messageId = card.getAttribute('data-message-id');
-        const subject = card.getAttribute('data-message-subject') || '';
-        card.addEventListener('click', function(e) {
-            if (e.target.closest('.message-card-actions')) {
-                return;
-            }
-            handleMessageClick(parseInt(messageId, 10), subject);
+    document.querySelectorAll('[data-scroll-latest]').forEach(scrollConversationToLatest);
+
+    document.querySelectorAll('.js-delete-message').forEach(function(button) {
+        button.addEventListener('click', function() {
+            deleteMessage(button.dataset.messageId, button.dataset.messageSubject || '');
         });
     });
+
+    const quickReplyForm = document.getElementById('quick-reply-form');
+    if (quickReplyForm) {
+        quickReplyForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const messageId = quickReplyForm.dataset.messageId;
+            const submitButton = quickReplyForm.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            const formData = new FormData(quickReplyForm);
+
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>发送中...';
+
+            fetch(`/admin/messages/${messageId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.success) {
+                        emitToast('success', data.message || '回复已发送');
+                        quickReplyForm.reset();
+                        setTimeout(() => window.location.reload(), 600);
+                    } else {
+                        emitToast('error', data.message || '发送失败，请稍后重试');
+                    }
+                })
+                .catch(() => {
+                    emitToast('error', '网络错误，请稍后重试');
+                })
+                .finally(() => {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                });
+        });
+    }
 });
 </script>
 {% endblock %}

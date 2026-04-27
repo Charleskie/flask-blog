@@ -30,7 +30,7 @@
                             <div class="min-width-0">
                                 <h2 class="f3 text-bold color-fg-default m-0 mb-2">{{ message.subject }}</h2>
                                 <div class="d-flex flex-wrap items-center gap-2 f6 color-fg-muted">
-                                    <span>{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                    <span>{{ message.created_at|localtime('%Y-%m-%d %H:%M:%S') }}</span>
                                     {% if message.replies %}
                                     <span class="Label Label--primary"><i class="fas fa-comments mr-1"></i>{{ message.replies|length }} 条回复</span>
                                     {% endif %}
@@ -101,7 +101,7 @@
                                             {{ reply.sender_name or message.name }}
                                         {% endif %}
                                     </p>
-                                    <p class="f6 color-fg-muted m-0">{{ reply.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                                    <p class="f6 color-fg-muted m-0">{{ reply.created_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                                 </div>
                             </div>
                             <div class="d-flex items-center flex-wrap gap-2">
@@ -127,7 +127,7 @@
                         </div>
                         {% if reply.sent_at %}
                         <p class="f6 color-fg-muted m-0 mt-3">
-                            <i class="fas fa-paper-plane mr-1"></i>邮件发送时间：{{ reply.sent_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            <i class="fas fa-paper-plane mr-1"></i>邮件发送时间：{{ reply.sent_at|localtime('%Y-%m-%d %H:%M:%S') }}
                         </p>
                         {% endif %}
                     </div>
@@ -228,24 +228,24 @@
                     <div class="d-flex flex-column gap-3">
                         <div>
                             <p class="form-label m-0 mb-1">发送时间</p>
-                            <p class="color-fg-default m-0 f6">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="color-fg-default m-0 f6">{{ message.created_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                         </div>
                         {% if message.read_at %}
                         <div>
                             <p class="form-label m-0 mb-1">阅读时间</p>
-                            <p class="color-fg-accent m-0 f6">{{ message.read_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="color-fg-accent m-0 f6">{{ message.read_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                         </div>
                         {% endif %}
                         {% if message.replied_at %}
                         <div>
                             <p class="form-label m-0 mb-1">首次回复时间</p>
-                            <p class="color-fg-success m-0 f6">{{ message.replied_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="color-fg-success m-0 f6">{{ message.replied_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                         </div>
                         {% endif %}
                         {% if message.replies %}
                         <div>
                             <p class="form-label m-0 mb-1">最后回复时间</p>
-                            <p class="color-fg-muted m-0 f6">{{ message.replies[0].created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                            <p class="color-fg-muted m-0 f6">{{ message.replies[0].created_at|localtime('%Y-%m-%d %H:%M:%S') }}</p>
                         </div>
                         {% endif %}
                     </div>
@@ -259,7 +259,7 @@
                         <i class="fas fa-reply mr-2"></i> 回复消息
                     </a>
                     <button type="button" class="btn btn-danger width-full" onclick="deleteMessage()">
-                        <i class="fas fa-trash mr-2"></i> 删除消息
+                        <i class="fas fa-trash mr-2"></i> 从管理员侧删除
                     </button>
                 </div>
             </div>
@@ -267,17 +267,23 @@
     </div>
 </div>
 
-<div id="deleteModal" class="position-fixed inset-0 d-none items-center justify-center" style="background: rgba(31,35,40,0.5); z-index: 1000; padding: 16px;">
-    <div class="Box shadow-xl" style="max-width: 500px; width: 100%;">
-        <div class="Box-header d-flex items-center justify-between border-bottom">
-            <h3 class="f3 text-bold m-0">确认删除消息</h3>
-            <button type="button" onclick="closeModal('deleteModal')" class="btn btn-invisible btn-sm" aria-label="关闭">&times;</button>
+<div id="deleteModal" class="site-confirm-overlay position-fixed inset-0 d-none items-center justify-center" style="z-index: 1000; padding: 16px;">
+    <div class="site-confirm-card">
+        <div class="site-confirm-head">
+            <div class="site-confirm-head-main">
+                <span class="site-confirm-icon" aria-hidden="true"><i class="fas fa-trash"></i></span>
+                <div>
+                    <h3 class="site-confirm-title">确认删除消息</h3>
+                    <p class="site-confirm-subtitle">会话会先从管理员消息列表中移除，不会立即影响用户侧。</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeModal('deleteModal')" class="btn-close" aria-label="关闭"></button>
         </div>
-        <div class="Box-body">
+        <div class="site-confirm-body">
             <p class="color-fg-default m-0">您确定要删除这条消息吗？</p>
-            <p class="flash flash-danger mt-3 mb-0 f6"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
+            <p class="site-confirm-warning mt-3 mb-0 f6"><i class="fas fa-exclamation-triangle mr-1"></i><span>只有当用户侧也删除后，这条会话才会被真正清理。</span></p>
         </div>
-        <div class="Box-footer border-top d-flex justify-end gap-2">
+        <div class="site-confirm-footer">
             <button type="button" class="btn btn-secondary" onclick="closeModal('deleteModal')">取消</button>
             <form method="POST" action="{{ url_for('admin.delete_message', message_id=message.id) }}" class="d-inline">
                 <button type="submit" class="btn btn-danger">确认删除</button>
@@ -286,21 +292,27 @@
     </div>
 </div>
 
-<div id="deleteReplyModal" class="position-fixed inset-0 d-none items-center justify-center" style="background: rgba(31,35,40,0.5); z-index: 1000; padding: 16px;">
-    <div class="Box shadow-xl" style="max-width: 500px; width: 100%;">
-        <div class="Box-header d-flex items-center justify-between border-bottom">
-            <h3 class="f3 text-bold m-0">确认删除回复</h3>
-            <button type="button" onclick="closeModal('deleteReplyModal')" class="btn btn-invisible btn-sm" aria-label="关闭">&times;</button>
+<div id="deleteReplyModal" class="site-confirm-overlay position-fixed inset-0 d-none items-center justify-center" style="z-index: 1000; padding: 16px;">
+    <div class="site-confirm-card">
+        <div class="site-confirm-head">
+            <div class="site-confirm-head-main">
+                <span class="site-confirm-icon" aria-hidden="true"><i class="fas fa-trash"></i></span>
+                <div>
+                    <h3 class="site-confirm-title">确认删除回复</h3>
+                    <p class="site-confirm-subtitle">删除后将无法恢复，请再次确认。</p>
+                </div>
+            </div>
+            <button type="button" onclick="closeModal('deleteReplyModal')" class="btn-close" aria-label="关闭"></button>
         </div>
-        <div class="Box-body">
+        <div class="site-confirm-body">
             <p class="color-fg-default m-0">您确定要删除这条回复吗？</p>
-            <div class="border rounded-2 color-bg-muted p-3 mt-3">
+            <div class="site-confirm-preview mt-3">
                 <p class="f6 color-fg-muted m-0 mb-1">回复内容预览：</p>
                 <p class="f6 color-fg-default m-0" id="replyPreview"></p>
             </div>
-            <p class="flash flash-danger mt-3 mb-0 f6"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
+            <p class="site-confirm-warning mt-3 mb-0 f6"><i class="fas fa-exclamation-triangle mr-1"></i><span>此操作不可撤销！</span></p>
         </div>
-        <div class="Box-footer border-top d-flex justify-end gap-2">
+        <div class="site-confirm-footer">
             <button type="button" class="btn btn-secondary" onclick="closeModal('deleteReplyModal')">取消</button>
             <button type="button" class="btn btn-danger" id="confirmDeleteReply">确认删除</button>
         </div>
@@ -336,11 +348,13 @@ function openModal(id) {
     var el = document.getElementById(id);
     el.classList.remove('d-none');
     el.classList.add('d-flex');
+    document.body.classList.add('has-site-dialog');
 }
 function closeModal(id) {
     var el = document.getElementById(id);
     el.classList.add('d-none');
     el.classList.remove('d-flex');
+    document.body.classList.remove('has-site-dialog');
 }
 
 function changeStatus(status) {
@@ -358,7 +372,7 @@ document.getElementById('quick-reply-form').addEventListener('submit', function(
     e.preventDefault();
     const replyContent = document.getElementById('quick_reply_content').value.trim();
     if (!replyContent) {
-        showToast('error', '请输入回复内容');
+        emitToast('error', '请输入回复内容');
         document.getElementById('quick_reply_content').focus();
         return;
     }
@@ -376,15 +390,15 @@ document.getElementById('quick-reply-form').addEventListener('submit', function(
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('success', data.message || '回复发送成功！');
+            emitToast('success', data.message || '回复发送成功！');
             document.getElementById('quick_reply_content').value = '';
             setTimeout(() => { window.location.reload(); }, 1500);
         } else {
-            showToast('error', data.message || '发送失败，请稍后重试');
+            emitToast('error', data.message || '发送失败，请稍后重试');
         }
     })
     .catch(() => {
-        showToast('error', '发送失败，请稍后重试');
+        emitToast('error', '发送失败，请稍后重试');
     })
     .finally(() => {
         submitBtn.innerHTML = originalText;
@@ -410,15 +424,15 @@ function deleteReply(replyId, replyPreview) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showToast('success', data.message || '回复删除成功！');
+                emitToast('success', data.message || '回复删除成功！');
                 closeModal('deleteReplyModal');
                 setTimeout(() => { window.location.reload(); }, 1500);
             } else {
-                showToast('error', data.message || '删除失败，请稍后重试');
+                emitToast('error', data.message || '删除失败，请稍后重试');
             }
         })
         .catch(() => {
-            showToast('error', '删除失败，请稍后重试');
+            emitToast('error', '删除失败，请稍后重试');
         });
     };
     openModal('deleteReplyModal');
@@ -457,45 +471,49 @@ function updateBatchDeleteButton() {
     }
 }
 
-function batchDeleteReplies() {
+async function batchDeleteReplies() {
     const checkedBoxes = document.querySelectorAll('.reply-checkbox:checked');
     if (checkedBoxes.length === 0) {
-        showToast('error', '请先选择要删除的回复');
+        emitToast('error', '请先选择要删除的回复');
         return;
     }
     const replyIds = Array.from(checkedBoxes).map(cb => cb.value);
-    if (confirm(`确定要删除选中的 ${replyIds.length} 条回复吗？此操作不可撤销！`)) {
-        fetch(`/admin/messages/{{ message.id }}/replies/batch-delete`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ reply_ids: replyIds })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                showToast('success', data.message || '批量删除成功！');
-                setTimeout(() => { window.location.reload(); }, 1500);
-            } else {
-                showToast('error', data.message || '批量删除失败，请稍后重试');
-            }
-        })
-        .catch(() => {
-            showToast('error', '批量删除失败，请稍后重试');
-        });
+    const confirmed = await window.confirmAsync(`确定要删除选中的 ${replyIds.length} 条回复吗？此操作不可撤销！`, {
+        title: '批量删除回复',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) {
+        return;
     }
+
+    fetch(`/admin/messages/{{ message.id }}/replies/batch-delete`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ reply_ids: replyIds })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            emitToast('success', data.message || '批量删除成功！');
+            setTimeout(() => { window.location.reload(); }, 1500);
+        } else {
+            emitToast('error', data.message || '批量删除失败，请稍后重试');
+        }
+    })
+    .catch(() => {
+        emitToast('error', '批量删除失败，请稍后重试');
+    });
 }
 
-function showToast(type, message) {
-    const toast = document.createElement('div');
-    const cls = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
-    toast.className = 'position-fixed p-3 rounded-2 shadow-md f5 text-semibold ' + cls;
-    toast.style.cssText = 'top: 16px; right: 16px; z-index: 2000; max-width: 360px;';
-    toast.innerHTML = '<div class="d-flex items-center gap-2"><i class="fas fa-' + (type === 'success' ? 'check-circle' : 'exclamation-circle') + '"></i><span>' + message + '</span></div>';
-    document.body.appendChild(toast);
-    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3000);
+function emitToast(type, message) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
 document.addEventListener('DOMContentLoaded', function() {

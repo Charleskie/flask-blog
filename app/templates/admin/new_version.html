@@ -56,13 +56,10 @@
 
 {% block extra_js %}
 <script>
-function showMessage(message, type) {
-    const el = document.createElement('div');
-    el.className = type === 'success' ? 'flash flash-success' : 'flash flash-danger';
-    el.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 9999; max-width: 320px; padding: 12px 16px;';
-    el.textContent = message;
-    document.body.appendChild(el);
-    setTimeout(() => { if (el.parentNode) el.remove(); }, 3000);
+function emitMessage(message, type) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
 document.getElementById('versionForm').addEventListener('submit', function(e) {
@@ -84,14 +81,14 @@ document.getElementById('versionForm').addEventListener('submit', function(e) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showMessage(data.message, 'success');
+            emitMessage(data.message, 'success');
             setTimeout(() => { window.location.href = '{{ url_for("version.admin_versions") }}'; }, 1000);
         } else {
-            showMessage(data.message, 'error');
+            emitMessage(data.message, 'error');
         }
     })
     .catch(() => {
-        showMessage('创建失败，请稍后重试', 'error');
+        emitMessage('创建失败，请稍后重试', 'error');
     });
 });
 </script>

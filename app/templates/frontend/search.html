@@ -8,7 +8,7 @@
 
     <div class="global-search mb-5">
         <form method="GET" action="{{ url_for('main.search') }}">
-            <input type="text" class="search-input" name="q" placeholder="搜索文章、项目、技术内容..."
+            <input type="text" class="search-input" name="q" placeholder="搜索文章和技术内容..."
                    value="{{ query }}" id="searchPageInput">
             <button type="submit" class="search-btn" aria-label="搜索">
                 <i class="fas fa-search"></i>
@@ -93,60 +93,6 @@
     </div>
     {% endif %}
 
-    {% if results.projects %}
-    <div class="mb-6">
-        <h3 class="mb-3 f2 text-semibold color-fg-default">
-            <i class="fas fa-code color-fg-success"></i> 项目 ({{ results.projects|length }})
-        </h3>
-        <div class="d-grid grid-cols-1 grid-regular-cols-2 grid-large-cols-3 gap-4">
-            {% for project in results.projects %}
-            <div class="Box d-flex flex-column overflow-hidden">
-                {% if project.image_url %}
-                <img src="{{ project.image_url }}" class="width-full object-cover border-bottom" alt="{{ project.title }}" style="height: 200px;">
-                {% else %}
-                <div class="width-full color-bg-subtle border-bottom d-flex items-center justify-center" style="height: 200px;">
-                    <i class="fas fa-image f00 color-fg-subtle"></i>
-                </div>
-                {% endif %}
-                <div class="Box-body flex-1">
-                    <h4 class="f3 text-semibold color-fg-default mt-0 mb-2">
-                        <a href="#" class="no-underline color-fg-default">{{ project.title }}</a>
-                    </h4>
-                    <p class="f4 color-fg-muted mb-2 m-0">
-                        {{ project.short_description or project.description[:100] + '...' if project.description|length > 100 else project.description }}
-                    </p>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
-                        {% if project.technologies %}
-                            {% for tech in project.get_technologies_list()[:3] %}
-                            <span class="Label Label--primary">{{ tech }}</span>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="Box-footer">
-                    <div class="d-flex justify-between gap-2 flex-wrap">
-                        {% if project.github_url %}
-                        <a href="{{ project.github_url }}" class="btn btn-secondary btn-sm no-underline" target="_blank" rel="noopener noreferrer">
-                            <i class="fab fa-github"></i> 代码
-                        </a>
-                        {% endif %}
-                        {% if project.live_url %}
-                        <a href="{{ project.live_url }}" class="btn btn-primary btn-sm no-underline" target="_blank" rel="noopener noreferrer">
-                            <i class="fas fa-external-link-alt"></i> 演示
-                        </a>
-                        {% else %}
-                        <a href="#" class="btn btn-primary btn-sm no-underline">
-                            <i class="fas fa-eye"></i> 查看详情
-                        </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
-
     {% else %}
     <div class="text-center py-8">
         <i class="fas fa-search f00 color-fg-subtle mb-3"></i>
@@ -167,7 +113,7 @@
     <div class="text-center py-8">
         <i class="fas fa-search f00 color-fg-subtle mb-3"></i>
         <h4 class="color-fg-muted f2 text-semibold mb-2">请输入搜索关键词</h4>
-        <p class="color-fg-subtle f4 m-0">在上方搜索框中输入关键词来搜索文章和项目。</p>
+        <p class="color-fg-subtle f4 m-0">在上方搜索框中输入关键词来搜索文章内容。</p>
     </div>
     {% endif %}
 </div>

@@ -2,124 +2,650 @@
 
 {% block title %}管理后台 - 我的个人网站{% endblock %}
 
+{% macro admin_status_badge(label, tone='default') -%}
+    <span class="admin-status-badge {% if tone != 'default' %}is-{{ tone }}{% endif %}">{{ label }}</span>
+{%- endmacro %}
+
 {% block content %}
-<div class="text-center py-6 mb-6">
-    <h1 class="f2 text-bold color-fg-default m-0 mb-2">管理后台</h1>
-    <p class="f5 color-fg-muted m-0">欢迎回来，{{ current_user.username }}！</p>
+<div class="container-xl admin-dashboard-shell">
+    <section class="admin-dashboard-hero">
+        <div class="admin-dashboard-hero-main">
+            <span class="admin-dashboard-kicker">管理后台</span>
+            <h1 class="admin-dashboard-title">你好，{{ current_user.username }}</h1>
+            <p class="admin-dashboard-subtitle">内容、消息、站点维护。</p>
+            <div class="admin-dashboard-summary">
+                <span class="admin-summary-pill"><i class="fas fa-file-alt"></i>{{ total_posts }} 篇文章</span>
+                <span class="admin-summary-pill {% if unread_messages %}is-danger{% endif %}"><i class="fas fa-envelope"></i>{{ unread_messages }} 条未读消息</span>
+            </div>
+        </div>
+        <div class="admin-dashboard-hero-actions">
+            <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary no-underline">
+                <i class="fas fa-pen"></i><span>新建文章</span>
+            </a>
+            <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-secondary no-underline">
+                <i class="fas fa-comments"></i><span>消息中心</span>
+            </a>
+        </div>
+    </section>
+
+    <section class="admin-stats-grid">
+        <article class="admin-stat-card">
+            <div class="admin-stat-icon is-accent"><i class="fas fa-file-alt"></i></div>
+            <div class="admin-stat-copy">
+                <p class="admin-stat-label">文章总数</p>
+                <p class="admin-stat-value">{{ total_posts }}</p>
+                <p class="admin-stat-meta">已发布 {{ published_posts }} 篇</p>
+            </div>
+        </article>
+        <article class="admin-stat-card">
+            <div class="admin-stat-icon is-warning"><i class="fas fa-envelope"></i></div>
+            <div class="admin-stat-copy">
+                <p class="admin-stat-label">全部会话</p>
+                <p class="admin-stat-value">{{ total_messages }}</p>
+                <p class="admin-stat-meta">当前未读 {{ unread_messages }} 条</p>
+            </div>
+        </article>
+        <article class="admin-stat-card">
+            <div class="admin-stat-icon is-muted"><i class="fas fa-layer-group"></i></div>
+            <div class="admin-stat-copy">
+                <p class="admin-stat-label">发布率</p>
+                <p class="admin-stat-value">
+                    {% if total_posts %}
+                        {{ ((published_posts / total_posts) * 100) | round(0) | int }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </p>
+                <p class="admin-stat-meta">内容发布情况</p>
+            </div>
+        </article>
+    </section>
+
+    <section class="admin-workbench-grid">
+        <article class="admin-workbench-card">
+            <div class="admin-workbench-head">
+                <div class="admin-workbench-icon is-accent"><i class="fas fa-blog"></i></div>
+                <div>
+                    <h2>文章管理</h2>
+                </div>
+            </div>
+            <div class="admin-workbench-actions">
+                <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary btn-sm no-underline">新建文章</a>
+                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-secondary btn-sm no-underline">文章列表</a>
+            </div>
+        </article>
+
+        <article class="admin-workbench-card">
+            <div class="admin-workbench-head">
+                <div class="admin-workbench-icon is-warning"><i class="fas fa-comments"></i></div>
+                <div>
+                    <h2>消息中心</h2>
+                </div>
+            </div>
+            <div class="admin-workbench-actions">
+                <a href="{{ url_for('admin.admin_messages') }}" class="btn btn-primary btn-sm no-underline">查看会话</a>
+                {% if unread_messages %}
+                    {{ admin_status_badge(unread_messages ~ ' 条未读', 'danger') }}
+                {% else %}
+                    {{ admin_status_badge('全部已读', 'success') }}
+                {% endif %}
+            </div>
+        </article>
+
+        <article class="admin-workbench-card">
+            <div class="admin-workbench-head">
+                <div class="admin-workbench-icon is-link"><i class="fas fa-link"></i></div>
+                <div>
+                    <h2>友链管理</h2>
+                </div>
+            </div>
+            <div class="admin-workbench-actions">
+                <a href="{{ url_for('admin.new_link') }}" class="btn btn-primary btn-sm no-underline">新增友链</a>
+                <a href="{{ url_for('admin.admin_links') }}" class="btn btn-secondary btn-sm no-underline">友链列表</a>
+            </div>
+        </article>
+
+        <article class="admin-workbench-card">
+            <div class="admin-workbench-head">
+                <div class="admin-workbench-icon is-danger"><i class="fas fa-tools"></i></div>
+                <div>
+                    <h2>技能与版本</h2>
+                </div>
+            </div>
+            <div class="admin-workbench-actions">
+                <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-secondary btn-sm no-underline">技能管理</a>
+                <a href="{{ url_for('version.admin_versions') }}" class="btn btn-secondary btn-sm no-underline">版本管理</a>
+            </div>
+        </article>
+
+        <article class="admin-workbench-card">
+            <div class="admin-workbench-head">
+                <div class="admin-workbench-icon is-muted"><i class="fas fa-cog"></i></div>
+                <div>
+                    <h2>站点设置</h2>
+                </div>
+            </div>
+            <div class="admin-workbench-actions">
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-primary btn-sm no-underline">个人资料</a>
+                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary btn-sm no-underline">关于页面</a>
+            </div>
+        </article>
+    </section>
+
+    <section class="admin-activity-grid">
+        <article class="admin-panel-card">
+            <div class="admin-panel-head">
+                <div>
+                    <span class="admin-panel-kicker">最近写作</span>
+                    <h2>最新文章</h2>
+                </div>
+                <a href="{{ url_for('admin.admin_posts') }}" class="admin-panel-link">查看全部</a>
+            </div>
+            <div class="admin-panel-list">
+                {% for post in recent_posts %}
+                    <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" class="admin-list-item no-underline">
+                        <div class="admin-list-copy">
+                            <p class="admin-list-title">{{ post.title }}</p>
+                            <p class="admin-list-meta">
+                                <span>{{ post.created_at|localtime('%m-%d %H:%M') }}</span>
+                                {% if post.category %}<span>{{ post.category }}</span>{% endif %}
+                            </p>
+                        </div>
+                        <div class="admin-list-side">
+                            {% if post.status == 'published' %}
+                                {{ admin_status_badge('已发布', 'success') }}
+                            {% elif post.status == 'draft' %}
+                                {{ admin_status_badge('草稿', 'muted') }}
+                            {% else %}
+                                {{ admin_status_badge(post.status or '未知') }}
+                            {% endif %}
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="admin-empty-inline">还没有文章，先写第一篇内容吧。</div>
+                {% endfor %}
+            </div>
+        </article>
+
+        <article class="admin-panel-card">
+            <div class="admin-panel-head">
+                <div>
+                    <span class="admin-panel-kicker">最近对话</span>
+                    <h2>最新消息</h2>
+                </div>
+                <a href="{{ url_for('admin.admin_messages') }}" class="admin-panel-link">查看全部</a>
+            </div>
+            <div class="admin-panel-list">
+                {% for message in recent_messages %}
+                    {% set latest_reply = message.replies[0] if message.replies else none %}
+                    {% set preview_text = latest_reply.reply_content if latest_reply else message.message %}
+                    <a href="{{ url_for('admin.admin_messages', message_id=message.id) }}" class="admin-list-item no-underline">
+                        <div class="admin-list-copy">
+                            <p class="admin-list-title">{{ message.subject or '未命名会话' }}</p>
+                            <p class="admin-list-meta">
+                                <span>{{ message.name }}</span>
+                                <span>{{ message.created_at|localtime('%m-%d %H:%M') }}</span>
+                            </p>
+                            <p class="admin-list-preview">{{ preview_text[:52] }}{% if preview_text|length > 52 %}...{% endif %}</p>
+                        </div>
+                        <div class="admin-list-side">
+                            {% if message.has_unread_for_admin() %}
+                                {{ admin_status_badge('未读', 'danger') }}
+                            {% elif message.status == 'in_conversation' %}
+                                {{ admin_status_badge('对话中', 'accent') }}
+                            {% elif message.status == 'replied' %}
+                                {{ admin_status_badge('已回复', 'success') }}
+                            {% else %}
+                                {{ admin_status_badge('已处理', 'muted') }}
+                            {% endif %}
+                        </div>
+                    </a>
+                {% else %}
+                    <div class="admin-empty-inline">当前还没有新的私信或联系记录。</div>
+                {% endfor %}
+            </div>
+        </article>
+
+    </section>
 </div>
+{% endblock %}
 
-<div class="d-grid gap-4 mb-8 grid-cols-1 grid-regular-cols-2 grid-large-cols-3">
-    <!-- 文章管理 -->
-    <div class="Box border rounded-2 overflow-hidden shadow-sm">
-        <div class="Box-body p-4">
-            <div class="d-flex items-start gap-3 mb-3">
-                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="fas fa-blog color-fg-accent"></i>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">文章管理</h2>
-                    <p class="f6 color-fg-muted m-0">管理博客文章和内容</p>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('admin.new_post') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-plus"></i> 新建</a>
-                <a href="{{ url_for('admin.admin_posts') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
-            </div>
-        </div>
-    </div>
+{% block extra_css %}
+<style>
+.admin-dashboard-shell {
+    padding-top: 8px;
+    padding-bottom: 24px;
+}
 
-    <!-- 友链管理 -->
-    <div class="Box border rounded-2 overflow-hidden shadow-sm">
-        <div class="Box-body p-4">
-            <div class="d-flex items-start gap-3 mb-3">
-                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="fas fa-link color-fg-success"></i>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">友链管理</h2>
-                    <p class="f6 color-fg-muted m-0">管理友情链接申请和展示</p>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('admin.new_link') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-plus"></i> 新增</a>
-                <a href="{{ url_for('admin.admin_links') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
-            </div>
-        </div>
-    </div>
+.admin-dashboard-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 12px 0 16px;
+    border-bottom: 1px solid var(--borderColor-default);
+}
 
-    <!-- 关于页面 -->
-    <div class="Box border rounded-2 overflow-hidden shadow-sm">
-        <div class="Box-body p-4">
-            <div class="d-flex items-start gap-3 mb-3">
-                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="fas fa-user-circle color-fg-default"></i>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">关于页面</h2>
-                    <p class="f6 color-fg-muted m-0">管理个人介绍页面</p>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-cog"></i> 管理</a>
-            </div>
-        </div>
-    </div>
+.admin-dashboard-hero-main {
+    min-width: 0;
+}
 
-    <!-- 版本管理 -->
-    <div class="Box border rounded-2 overflow-hidden shadow-sm">
-        <div class="Box-body p-4">
-            <div class="d-flex items-start gap-3 mb-3">
-                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="fas fa-code-branch color-fg-attention"></i>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">版本管理</h2>
-                    <p class="f6 color-fg-muted m-0">管理项目版本信息</p>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('version.admin_versions') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
-                <a href="{{ url_for('version.new_version') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-plus"></i> 新建</a>
-            </div>
-        </div>
-    </div>
+.admin-dashboard-kicker,
+.admin-panel-kicker {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+}
 
-    <!-- 技能管理 -->
-    <div class="Box border rounded-2 overflow-hidden shadow-sm">
-        <div class="Box-body p-4">
-            <div class="d-flex items-start gap-3 mb-3">
-                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="fas fa-tools color-fg-danger"></i>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">技能管理</h2>
-                    <p class="f6 color-fg-muted m-0">管理技能标签</p>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('admin.admin_skills') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-list"></i> 列表</a>
-                <a href="{{ url_for('admin.new_skill') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-plus"></i> 新建</a>
-            </div>
-        </div>
-    </div>
+.admin-dashboard-title {
+    margin: 8px 0 4px;
+    font-size: 1.7rem;
+    line-height: 1.05;
+    font-weight: 700;
+    color: var(--fgColor-default);
+}
 
-    <!-- 系统设置 -->
-    <div class="Box border rounded-2 overflow-hidden shadow-sm">
-        <div class="Box-body p-4">
-            <div class="d-flex items-start gap-3 mb-3">
-                <div class="d-flex items-center justify-center color-bg-muted border rounded-2 flex-shrink-0" style="width: 40px; height: 40px;">
-                    <i class="fas fa-cog color-fg-muted"></i>
-                </div>
-                <div class="flex-1 overflow-hidden">
-                    <h2 class="f4 text-semibold color-fg-default m-0 mb-1">系统设置</h2>
-                    <p class="f6 color-fg-muted m-0">网站配置和管理</p>
-                </div>
-            </div>
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{{ url_for('settings.profile_settings') }}" class="btn btn-primary btn-sm no-underline"><i class="fas fa-user-edit"></i> 个人资料</a>
-                <a href="{{ url_for('settings.security_settings') }}" class="btn btn-secondary btn-sm no-underline"><i class="fas fa-shield-alt"></i> 安全</a>
-            </div>
-        </div>
-    </div>
-</div>
+.admin-dashboard-subtitle {
+    margin: 0;
+    max-width: 460px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.admin-dashboard-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.admin-summary-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.admin-summary-pill.is-danger {
+    background: rgba(207, 34, 46, 0.08);
+    color: #cf222e;
+}
+
+.admin-dashboard-hero-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.admin-dashboard-shell .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border-width: 1px;
+    font-size: 13px;
+    line-height: 1;
+    box-shadow: none;
+}
+
+.admin-dashboard-shell .btn i {
+    margin: 0 !important;
+    line-height: 1;
+}
+
+.admin-dashboard-shell .btn.btn-primary {
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.14), rgba(9, 105, 218, 0.1));
+    border-color: rgba(9, 105, 218, 0.24);
+    color: var(--fgColor-accent);
+}
+
+.admin-dashboard-shell .btn.btn-primary:hover {
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.18), rgba(9, 105, 218, 0.14));
+    border-color: rgba(9, 105, 218, 0.3);
+    color: var(--fgColor-accent);
+}
+
+.admin-dashboard-shell .btn.btn-secondary {
+    background: var(--bgColor-default);
+    border-color: rgba(31, 35, 40, 0.12);
+    color: var(--fgColor-default);
+}
+
+.admin-dashboard-shell .btn.btn-secondary:hover {
+    background: rgba(9, 105, 218, 0.04);
+    border-color: rgba(9, 105, 218, 0.18);
+    color: var(--fgColor-accent);
+}
+
+.admin-stats-grid,
+.admin-workbench-grid,
+.admin-activity-grid {
+    display: grid;
+    gap: 12px;
+    margin-top: 14px;
+}
+
+.admin-stats-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-stat-card,
+.admin-workbench-card,
+.admin-panel-card {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    background: var(--bgColor-default);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
+.admin-stat-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+}
+
+.admin-stat-icon,
+.admin-workbench-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+}
+
+.admin-stat-icon.is-success,
+.admin-stat-icon.is-warning,
+.admin-workbench-icon.is-warning {
+    background: rgba(154, 103, 0, 0.1);
+    color: #9a6700;
+}
+
+.admin-stat-icon.is-muted,
+.admin-workbench-icon.is-muted {
+    background: rgba(101, 109, 118, 0.1);
+    color: var(--fgColor-muted);
+}
+
+.admin-workbench-icon.is-link {
+    background: rgba(130, 80, 223, 0.08);
+    color: #8250df;
+}
+
+.admin-workbench-icon.is-danger {
+    background: rgba(207, 34, 46, 0.08);
+    color: #cf222e;
+}
+
+.admin-stat-copy {
+    min-width: 0;
+}
+
+.admin-stat-label,
+.admin-stat-meta,
+.admin-list-meta,
+.admin-list-preview {
+    margin: 0;
+}
+
+.admin-stat-label {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+}
+
+.admin-stat-value {
+    margin: 3px 0;
+    color: var(--fgColor-default);
+    font-size: 1.55rem;
+    line-height: 1;
+    font-weight: 700;
+}
+
+.admin-stat-meta {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+}
+
+.admin-workbench-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-workbench-card {
+    padding: 14px;
+}
+
+.admin-workbench-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-workbench-head h2,
+.admin-panel-head h2 {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 1rem;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.admin-workbench-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.admin-workbench-actions .btn,
+.admin-workbench-actions .admin-status-badge {
+    min-height: 30px;
+    padding: 0 11px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.admin-workbench-actions .btn {
+    min-width: 0;
+}
+
+.admin-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.admin-status-badge.is-success {
+    background: rgba(26, 127, 55, 0.08);
+    color: #1a7f37;
+}
+
+.admin-status-badge.is-danger {
+    background: rgba(207, 34, 46, 0.08);
+    color: #cf222e;
+}
+
+.admin-status-badge.is-muted {
+    background: rgba(101, 109, 118, 0.1);
+    color: var(--fgColor-muted);
+}
+
+.admin-status-badge.is-accent {
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+}
+
+.admin-activity-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-panel-card {
+    padding: 14px;
+}
+
+.admin-panel-span-2 {
+    grid-column: span 2;
+}
+
+.admin-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.admin-panel-link {
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.admin-panel-link:hover {
+    text-decoration: none;
+    color: var(--fgColor-accent);
+}
+
+.admin-panel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.admin-list-item {
+    display: block;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    background: var(--bgColor-default);
+    padding: 12px;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.admin-list-item:hover {
+    text-decoration: none;
+    border-color: rgba(9, 105, 218, 0.24);
+    box-shadow: 0 10px 24px rgba(9, 105, 218, 0.08);
+    transform: translateY(-1px);
+}
+
+.admin-list-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.admin-list-copy,
+.admin-list-side {
+    min-width: 0;
+}
+
+.admin-list-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.35;
+    font-weight: 700;
+}
+
+.admin-list-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 5px;
+    color: var(--fgColor-muted);
+    font-size: 12px;
+}
+
+.admin-list-preview {
+    margin-top: 6px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.admin-empty-inline {
+    border: 1px dashed rgba(208, 215, 222, 0.9);
+    border-radius: 14px;
+    padding: 14px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
+    background: rgba(246, 248, 250, 0.7);
+}
+
+@media (max-width: 1200px) {
+    .admin-stats-grid,
+    .admin-workbench-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 960px) {
+    .admin-dashboard-hero {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-dashboard-hero-actions {
+        justify-content: flex-start;
+    }
+
+    .admin-activity-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .admin-stats-grid,
+    .admin-workbench-grid,
+    .admin-activity-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-list-item,
+    .admin-panel-head {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .admin-dashboard-title {
+        font-size: 1.7rem;
+    }
+}
+</style>
 {% endblock %}

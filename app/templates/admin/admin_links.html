@@ -157,7 +157,12 @@
 {% block extra_js %}
 <script>
 async function approveLink(linkId) {
-    if (!confirm('确定要通过这个友链申请吗？')) return;
+    const confirmed = await window.confirmAsync('确定要通过这个友链申请吗？', {
+        title: '通过友链申请',
+        confirmText: '确认通过',
+        cancelText: '取消'
+    });
+    if (!confirmed) return;
     try {
         const response = await fetch('/admin/links/' + linkId + '/approve', {
             method: 'POST',
@@ -165,19 +170,25 @@ async function approveLink(linkId) {
         });
         const result = await response.json();
         if (result.success) {
-            alert('友链审批通过');
+            window.showToast('友链审批通过', 'success');
             location.reload();
         } else {
-            alert('操作失败：' + result.message);
+            window.showToast('操作失败：' + result.message, 'error');
         }
     } catch (error) {
         console.error(error);
-        alert('网络错误，请稍后重试');
+        window.showToast('网络错误，请稍后重试', 'error');
     }
 }
 
 async function rejectLink(linkId) {
-    if (!confirm('确定要拒绝这个友链申请吗？')) return;
+    const confirmed = await window.confirmAsync('确定要拒绝这个友链申请吗？', {
+        title: '拒绝友链申请',
+        confirmText: '确认拒绝',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) return;
     try {
         const response = await fetch('/admin/links/' + linkId + '/reject', {
             method: 'POST',
@@ -185,19 +196,25 @@ async function rejectLink(linkId) {
         });
         const result = await response.json();
         if (result.success) {
-            alert('友链申请已拒绝');
+            window.showToast('友链申请已拒绝', 'success');
             location.reload();
         } else {
-            alert('操作失败：' + result.message);
+            window.showToast('操作失败：' + result.message, 'error');
         }
     } catch (error) {
         console.error(error);
-        alert('网络错误，请稍后重试');
+        window.showToast('网络错误，请稍后重试', 'error');
     }
 }
 
 async function deleteLink(linkId) {
-    if (!confirm('确定要删除这个友链吗？此操作不可恢复！')) return;
+    const confirmed = await window.confirmAsync('确定要删除这个友链吗？此操作不可恢复！', {
+        title: '删除友链',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) return;
     try {
         const response = await fetch('/admin/links/' + linkId + '/delete', {
             method: 'POST',
@@ -205,14 +222,14 @@ async function deleteLink(linkId) {
         });
         const result = await response.json();
         if (result.success) {
-            alert('友链删除成功');
+            window.showToast('友链删除成功', 'success');
             location.reload();
         } else {
-            alert('删除失败：' + result.message);
+            window.showToast('删除失败：' + result.message, 'error');
         }
     } catch (error) {
         console.error(error);
-        alert('网络错误，请稍后重试');
+        window.showToast('网络错误，请稍后重试', 'error');
     }
 }
 </script>

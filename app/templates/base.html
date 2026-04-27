@@ -26,9 +26,9 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Primer-aligned CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/primer-utilities.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactions/comments.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v='20260424-toast-fix') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/primer-utilities.css', v='20260424-toast-fix') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactions/comments.css', v='20260424-toast-fix') }}">
 
     {% block extra_css %}{% endblock %}
     
@@ -64,6 +64,52 @@
             border-radius: 6px;
         }
 
+        .nav-auth-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-auth-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+            text-decoration: none;
+            transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .nav-auth-link:hover {
+            text-decoration: none;
+        }
+
+        .nav-auth-link-login {
+            color: var(--fgColor-muted);
+        }
+
+        .nav-auth-link-login:hover {
+            color: var(--fgColor-default);
+            background: var(--bgColor-muted);
+        }
+
+        .nav-auth-link-register {
+            color: var(--fgColor-accent);
+            background: rgba(9, 105, 218, 0.06);
+            border-color: rgba(9, 105, 218, 0.12);
+        }
+
+        .nav-auth-link-register:hover {
+            color: var(--fgColor-accent);
+            background: rgba(9, 105, 218, 0.1);
+            border-color: rgba(9, 105, 218, 0.2);
+        }
+
         /* Mobile menu */
         .mobile-menu {
             transform: translateX(100%);
@@ -94,6 +140,157 @@
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
+        }
+
+        .nav-utility-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            color: var(--fgColor-muted);
+            background: transparent;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .nav-utility-btn:hover {
+            color: var(--fgColor-default);
+            background: var(--bgColor-muted);
+            border-color: rgba(208, 215, 222, 0.78);
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .nav-utility-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: var(--bgColor-danger-emphasis);
+            color: var(--fgColor-onEmphasis);
+            font-size: 10px;
+            font-weight: 700;
+            border: 2px solid var(--bgColor-default);
+            line-height: 1;
+        }
+
+        .user-menu-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 38px;
+            padding: 4px 10px 4px 4px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--fgColor-default);
+            font: inherit;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .user-menu-trigger:hover,
+        .user-menu-trigger.open {
+            background: var(--bgColor-muted);
+            border-color: rgba(208, 215, 222, 0.78);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .user-menu-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 0 1px rgba(208, 215, 222, 0.9);
+        }
+
+        .user-menu-name {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .user-menu-chevron {
+            font-size: 10px;
+            color: var(--fgColor-subtle);
+            transition: transform 0.15s ease, color 0.15s ease;
+        }
+
+        .user-menu-trigger.open .user-menu-chevron {
+            transform: rotate(180deg);
+            color: var(--fgColor-muted);
+        }
+
+        .user-dropdown-panel {
+            right: 0;
+            margin-top: 8px;
+            width: 224px;
+            padding: 8px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.98));
+            border: 1px solid rgba(208, 215, 222, 0.9);
+            border-radius: 18px;
+            box-shadow: 0 22px 44px rgba(15, 23, 42, 0.12);
+            z-index: 100;
+        }
+
+        .user-dropdown-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-dropdown-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            padding: 0 12px;
+            border-radius: 12px;
+            color: var(--fgColor-default);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .user-dropdown-item:hover {
+            background: rgba(9, 105, 218, 0.05);
+            color: var(--fgColor-default);
+            text-decoration: none;
+        }
+
+        .user-dropdown-item-icon {
+            width: 16px;
+            color: var(--fgColor-subtle);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            margin: 6px 4px;
+            background: var(--borderColor-default);
+        }
+
+        .user-dropdown-item-danger {
+            color: var(--fgColor-danger);
+        }
+
+        .user-dropdown-item-danger .user-dropdown-item-icon {
+            color: currentColor;
+        }
+
+        .user-dropdown-item-danger:hover {
+            background: rgba(218, 54, 51, 0.08);
+            color: var(--fgColor-danger);
         }
 
         /* Guest mode */
@@ -237,7 +434,6 @@
                     <a href="{{ url_for('main.about') }}" class="nav-link-item {% if request.endpoint == 'main.about' %}active{% endif %}">关于</a>
                     <a href="{{ url_for('main.blog') }}" class="nav-link-item {% if request.endpoint == 'main.blog' %}active{% endif %}">博客</a>
                     <a href="{{ url_for('main.links') }}" class="nav-link-item {% if request.endpoint == 'main.links' %}active{% endif %}">友链</a>
-                    <a href="{{ url_for('main.contact') }}" class="nav-link-item {% if request.endpoint == 'main.contact' %}active{% endif %}">联系</a>
                 </nav>
             </div>
             
@@ -255,58 +451,60 @@
                     {% if current_user.is_authenticated %}
                         {% if current_user.is_admin %}
                         <div class="position-relative">
-                            <a href="{{ url_for('admin.admin_messages') }}" class="position-relative d-inline-flex items-center justify-center" style="padding: 6px; color: var(--fgColor-muted); transition: color 0.15s ease;">
+                            <a href="{{ url_for('admin.admin_messages') }}" class="nav-utility-btn" aria-label="管理员消息">
                                 <i class="fas fa-envelope" style="font-size: 16px;"></i>
-                                <span id="message-badge" class="position-absolute d-none items-center justify-center badge-notification" style="top: -2px; right: -2px; width: 18px; height: 18px; background: var(--bgColor-danger-emphasis); color: var(--fgColor-onEmphasis); font-size: 10px; border-radius: 50%; font-weight: 600;">0</span>
+                                <span id="message-badge" class="nav-utility-badge position-absolute d-none items-center justify-center badge-notification">0</span>
                             </a>
                         </div>
                         {% endif %}
                         
                         <div class="position-relative">
-                            <a href="{{ url_for('notification.notifications') }}" class="position-relative d-inline-flex items-center justify-center" style="padding: 6px; color: var(--fgColor-muted); transition: color 0.15s ease;">
+                            <a href="{{ url_for('notification.notifications') }}" class="nav-utility-btn" aria-label="通知">
                                 <i class="fas fa-bell" style="font-size: 16px;"></i>
-                                <span id="notification-badge" class="position-absolute d-none items-center justify-center badge-notification" style="top: -2px; right: -2px; width: 18px; height: 18px; background: var(--bgColor-danger-emphasis); color: var(--fgColor-onEmphasis); font-size: 10px; border-radius: 50%; font-weight: 600;">0</span>
+                                <span id="notification-badge" class="nav-utility-badge position-absolute d-none items-center justify-center badge-notification">0</span>
                             </a>
                         </div>
                         
                         <div class="position-relative" id="userDropdown">
-                            <button id="userDropdownButton" class="d-flex items-center cursor-pointer" style="gap: 8px; color: var(--fgColor-default); background: none; border: none; font: inherit; padding: 4px; border-radius: var(--borderRadius-medium); transition: background-color 0.15s ease;">
+                            <button id="userDropdownButton" class="user-menu-trigger">
                                 {% if current_user.avatar %}
-                                    <img src="{{ current_user.avatar }}" alt="头像" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                                    <img src="{{ current_user.avatar }}" alt="头像" class="user-menu-avatar">
                                 {% else %}
-                                    <img src="{{ url_for('static', filename='avatar/avatar' + (current_user.id % 4 + 1)|string + '.png') }}" alt="头像" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover;">
+                                    <img src="{{ url_for('static', filename='avatar/avatar' + (current_user.id % 4 + 1)|string + '.png') }}" alt="头像" class="user-menu-avatar">
                                 {% endif %}
-                                <span class="f5 text-semibold">{{ current_user.get_display_name() }}</span>
-                                <i class="fas fa-chevron-down" style="font-size: 10px; color: var(--fgColor-subtle);"></i>
+                                <span class="user-menu-name">{{ current_user.get_display_name() }}</span>
+                                <i class="fas fa-chevron-down user-menu-chevron"></i>
                             </button>
                             
-                            <div id="userDropdownMenu" class="dropdown-panel position-absolute" style="right: 0; margin-top: 8px; width: 200px; background: var(--bgColor-default); border: 1px solid var(--borderColor-default); border-radius: var(--borderRadius-large); box-shadow: var(--shadow-floating-small); z-index: 100;">
-                                <div style="padding: 4px 0;">
-                                    <a href="{{ url_for('auth.profile') }}" class="d-flex items-center no-underline" style="padding: 8px 16px; font-size: 14px; color: var(--fgColor-default); transition: background-color 0.1s ease;">
-                                        <i class="fas fa-user" style="margin-right: 12px; width: 16px; color: var(--fgColor-subtle);"></i>
+                            <div id="userDropdownMenu" class="dropdown-panel user-dropdown-panel position-absolute">
+                                <div class="user-dropdown-section">
+                                    <a href="{{ url_for('auth.profile') }}" class="user-dropdown-item no-underline">
+                                        <i class="fas fa-user user-dropdown-item-icon"></i>
                                         个人资料
                                     </a>
-                                    <a href="{{ url_for('settings.settings') }}" class="d-flex items-center no-underline" style="padding: 8px 16px; font-size: 14px; color: var(--fgColor-default); transition: background-color 0.1s ease;">
-                                        <i class="fas fa-cog" style="margin-right: 12px; width: 16px; color: var(--fgColor-subtle);"></i>
+                                    <a href="{{ url_for('settings.settings') }}" class="user-dropdown-item no-underline">
+                                        <i class="fas fa-cog user-dropdown-item-icon"></i>
                                         设置
                                     </a>
                                     {% if current_user.is_admin %}
-                                    <a href="{{ url_for('admin.admin') }}" class="d-flex items-center no-underline" style="padding: 8px 16px; font-size: 14px; color: var(--fgColor-default); transition: background-color 0.1s ease;">
-                                        <i class="fas fa-tools" style="margin-right: 12px; width: 16px; color: var(--fgColor-subtle);"></i>
+                                    <a href="{{ url_for('admin.admin') }}" class="user-dropdown-item no-underline">
+                                        <i class="fas fa-tools user-dropdown-item-icon"></i>
                                         管理后台
                                     </a>
                                     {% endif %}
-                                    <div style="height: 1px; background: var(--borderColor-default); margin: 4px 0;"></div>
-                                    <a href="{{ url_for('auth.logout') }}" class="d-flex items-center no-underline" style="padding: 8px 16px; font-size: 14px; color: var(--fgColor-danger); transition: background-color 0.1s ease;">
-                                        <i class="fas fa-sign-out-alt" style="margin-right: 12px; width: 16px;"></i>
+                                    <div class="user-dropdown-divider"></div>
+                                    <a href="{{ url_for('auth.logout') }}" class="user-dropdown-item user-dropdown-item-danger no-underline">
+                                        <i class="fas fa-sign-out-alt user-dropdown-item-icon"></i>
                                         退出登录
                                     </a>
                                 </div>
                             </div>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm no-underline">登录</a>
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm no-underline">注册</a>
+                        <div class="nav-auth-actions">
+                            <a href="{{ url_for('auth.login') }}" class="no-underline nav-auth-link nav-auth-link-login">登录</a>
+                            <a href="{{ url_for('auth.register') }}" class="no-underline nav-auth-link nav-auth-link-register">注册</a>
+                        </div>
                     {% endif %}
                 </div>
                 
@@ -324,8 +522,6 @@
             <a href="{{ url_for('main.about') }}" class="no-underline f2 {% if request.endpoint == 'main.about' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">关于</a>
             <a href="{{ url_for('main.blog') }}" class="no-underline f2 {% if request.endpoint == 'main.blog' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">博客</a>
             <a href="{{ url_for('main.links') }}" class="no-underline f2 {% if request.endpoint == 'main.links' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">友链</a>
-            <a href="{{ url_for('main.contact') }}" class="no-underline f2 {% if request.endpoint == 'main.contact' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">联系</a>
-            
             <div class="position-relative mt-3">
                 <form method="GET" action="{{ url_for('main.search') }}">
                     <input type="text" name="q" placeholder="搜索..." 
@@ -362,7 +558,6 @@
                     <a href="{{ url_for('main.about') }}" class="site-footer-link">关于</a>
                     <a href="{{ url_for('main.blog') }}" class="site-footer-link">博客</a>
                     <a href="{{ url_for('main.links') }}" class="site-footer-link">友链</a>
-                    <a href="{{ url_for('main.contact') }}" class="site-footer-link">联系</a>
                 </nav>
 
                 <div class="site-footer-social" aria-label="社交链接">
@@ -389,8 +584,116 @@
     <!-- jQuery (Editor.md dependency) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/interaction.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v='20260424-toast-fix') }}"></script>
+    <script src="{{ url_for('static', filename='js/interaction.js', v='20260424-toast-fix') }}"></script>
+    <script>
+    (function() {
+        function ensureFallbackToastContainer() {
+            let container = document.getElementById('site-toast-stack');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'site-toast-stack';
+                container.style.position = 'fixed';
+                container.style.top = '16px';
+                container.style.right = '16px';
+                container.style.zIndex = '10010';
+                container.style.display = 'flex';
+                container.style.alignItems = 'flex-end';
+                container.style.flexDirection = 'column';
+                container.style.gap = '8px';
+                container.style.width = 'min(320px, calc(100vw - 24px))';
+                container.style.pointerEvents = 'none';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        function fallbackToast(message, type = 'info', duration = 3000) {
+            const container = ensureFallbackToastContainer();
+            const toast = document.createElement('div');
+            const accentMap = {
+                success: ['#1a7f37', '#dafbe1'],
+                error: ['#d1242f', '#ffebe9'],
+                warning: ['#9a6700', '#fff8c5'],
+                info: ['#0969da', '#ddf4ff']
+            };
+            const [accent, tint] = accentMap[type] || accentMap.info;
+
+            toast.style.pointerEvents = 'auto';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'flex-start';
+            toast.style.gap = '10px';
+            toast.style.width = 'auto';
+            toast.style.minWidth = '220px';
+            toast.style.maxWidth = '100%';
+            toast.style.padding = '12px 14px';
+            toast.style.borderRadius = '16px';
+            toast.style.border = '1px solid rgba(208, 215, 222, 0.82)';
+            toast.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,248,250,0.96))';
+            toast.style.boxShadow = '0 20px 40px rgba(15, 23, 42, 0.12)';
+            toast.style.color = '#1f2328';
+
+            const icon = document.createElement('span');
+            icon.style.display = 'inline-flex';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.style.width = '30px';
+            icon.style.height = '30px';
+            icon.style.borderRadius = '10px';
+            icon.style.flexShrink = '0';
+            icon.style.background = tint;
+            icon.style.color = accent;
+            icon.innerHTML = '<i class="fas fa-bell"></i>';
+
+            const content = document.createElement('div');
+            content.style.flex = '1';
+            content.style.minWidth = '0';
+            content.style.fontSize = '13px';
+            content.style.fontWeight = '600';
+            content.style.lineHeight = '1.45';
+            content.style.wordBreak = 'break-word';
+            content.textContent = String(message ?? '');
+
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.setAttribute('aria-label', '关闭提醒');
+            close.style.display = 'inline-flex';
+            close.style.alignItems = 'center';
+            close.style.justifyContent = 'center';
+            close.style.width = '28px';
+            close.style.height = '28px';
+            close.style.border = '0';
+            close.style.borderRadius = '8px';
+            close.style.background = 'transparent';
+            close.style.color = '#59636e';
+            close.style.cursor = 'pointer';
+            close.innerHTML = '<i class="fas fa-times"></i>';
+
+            const removeToast = () => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            };
+
+            close.addEventListener('click', removeToast);
+            toast.append(icon, content, close);
+            container.appendChild(toast);
+
+            if (duration > 0) {
+                setTimeout(removeToast, duration);
+            }
+
+            return toast;
+        }
+
+        window.siteUI = window.siteUI || {};
+        window.siteUI.showToast = fallbackToast;
+        window.showToast = fallbackToast;
+        window.showMessage = function(message, type = 'info', duration = 3000) {
+            return fallbackToast(message, type, duration);
+        };
+    })();
+    </script>
     
     <script>
         // Mobile menu toggle
@@ -428,23 +731,18 @@
             userDropdownButton.addEventListener('click', function(e) {
                 e.stopPropagation();
                 userDropdownMenu.classList.toggle('open');
+                userDropdownButton.classList.toggle('open', userDropdownMenu.classList.contains('open'));
             });
             
             document.addEventListener('click', function(e) {
                 if (userDropdownButton && userDropdownMenu &&
                     !userDropdownButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
                     userDropdownMenu.classList.remove('open');
+                    userDropdownButton.classList.remove('open');
                 }
             });
         }
 
-        // Dropdown hover effects
-        document.querySelectorAll('.dropdown-panel a, #userDropdownMenu a').forEach(function(link) {
-            link.addEventListener('mouseenter', function() { this.style.background = 'var(--bgColor-muted)'; });
-            link.addEventListener('mouseleave', function() { this.style.background = ''; });
-        });
-
-        initVisitorStats();
     </script>
     
     <!-- Visitor stats -->
@@ -494,6 +792,12 @@
         if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
         if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
         return num.toString();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initVisitorStats);
+    } else {
+        initVisitorStats();
     }
     </script>
     
@@ -561,19 +865,27 @@
     {% endif %}
     
     <!-- Login Prompt Modal -->
-    <div id="loginModal" class="position-fixed inset-0 d-none items-center justify-center" style="background: rgba(31, 35, 40, 0.5); z-index: 10001; padding: 16px;">
-        <div style="background: var(--bgColor-default); border-radius: var(--borderRadius-large); max-width: 360px; width: 100%; box-shadow: var(--shadow-floating-large); border: 1px solid var(--borderColor-default);">
-            <div style="padding: 24px; text-align: center;">
-                <div style="width: 48px; height: 48px; background: var(--bgColor-accent-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
-                    <i class="fas fa-lock" style="color: var(--fgColor-accent); font-size: 18px;"></i>
+    <div id="loginModal" class="login-prompt-modal d-none" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <div class="login-prompt-content">
+            <div class="site-dialog-head">
+                <div class="site-dialog-head-main">
+                    <span class="site-dialog-icon" aria-hidden="true">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <h3 id="loginModalTitle" class="site-dialog-title">登录后继续操作</h3>
                 </div>
-                <h3 class="f2 text-bold color-fg-default mb-2" style="margin-bottom: 8px;">需要登录</h3>
-                <p class="f5 color-fg-muted" id="loginModalMessage" style="margin-bottom: 24px;">登录后即可使用点赞、收藏、评论等功能</p>
-                <div class="d-flex" style="gap: 12px;">
-                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary flex-1 no-underline text-center" style="padding: 8px 16px;">登录</a>
-                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary flex-1 no-underline text-center" style="padding: 8px 16px;">注册</a>
+                <button type="button" class="btn-close" aria-label="关闭"
+                        onclick="document.getElementById('loginModal').classList.add('d-none');document.getElementById('loginModal').classList.remove('d-flex');document.body.classList.remove('has-site-dialog');"></button>
+            </div>
+            <div class="login-prompt-body">
+                <span class="site-dialog-badge">需要登录</span>
+                <p class="site-dialog-message" id="loginModalMessage">登录后即可使用点赞、收藏、评论等功能</p>
+                <div class="login-prompt-actions">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary no-underline text-center">登录</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary no-underline text-center">注册</a>
                 </div>
-                <button onclick="document.getElementById('loginModal').classList.add('d-none');document.getElementById('loginModal').classList.remove('d-flex');" class="f5 color-fg-subtle mt-3" style="background: none; border: none; cursor: pointer; padding: 8px; margin-top: 12px;">
+                <button type="button" class="login-prompt-note"
+                        onclick="document.getElementById('loginModal').classList.add('d-none');document.getElementById('loginModal').classList.remove('d-flex');document.body.classList.remove('has-site-dialog');">
                     继续浏览
                 </button>
             </div>

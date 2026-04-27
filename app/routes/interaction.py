@@ -3,7 +3,7 @@ import random
 from flask import Blueprint, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app.models.user import db
-from app.models import Post, Project, Comment, CommentReply, UserInteraction, CommentLike, Notification
+from app.models import Post, Comment, CommentReply, UserInteraction, CommentLike, Notification
 from datetime import datetime
 import os
 import uuid
@@ -92,22 +92,17 @@ def get_user_info():
 @interaction_bp.route('/like-status', methods=['GET'])
 def get_like_status():
     """获取点赞状态（支持访客模式）"""
-    content_type = request.args.get('type')  # 'post' or 'project'
+    content_type = request.args.get('type')
     content_id = request.args.get('id')
     
     if not content_type or not content_id:
         return jsonify({'success': False, 'message': '参数错误'}), 400
     
     try:
-        # 获取内容对象
-        if content_type == 'post':
-            content = Post.query.get_or_404(content_id)
-            type_code = 1  # 1-博客
-        elif content_type == 'project':
-            content = Project.query.get_or_404(content_id)
-            type_code = 2  # 2-项目
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        content = Post.query.get_or_404(content_id)
+        type_code = 1
         
         # 获取点赞数
         like_count = content.like_count
@@ -146,21 +141,16 @@ def toggle_like():
     
     try:
         data = request.get_json()
-        content_type = data.get('type')  # 'post' or 'project'
+        content_type = data.get('type')
         content_id = data.get('id')
         
         if not content_type or not content_id:
             return jsonify({'success': False, 'message': '参数错误'}), 400
         
-        # 获取内容对象
-        if content_type == 'post':
-            content = Post.query.get_or_404(content_id)
-            type_code = 1  # 1-博客
-        elif content_type == 'project':
-            content = Project.query.get_or_404(content_id)
-            type_code = 2  # 2-项目
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        content = Post.query.get_or_404(content_id)
+        type_code = 1
         
         # 查找或创建用户互动记录
         interaction = UserInteraction.query.filter_by(
@@ -217,21 +207,16 @@ def toggle_favorite():
     """切换收藏状态"""
     try:
         data = request.get_json()
-        content_type = data.get('type')  # 'post' or 'project'
+        content_type = data.get('type')
         content_id = data.get('id')
         
         if not content_type or not content_id:
             return jsonify({'success': False, 'message': '参数错误'}), 400
         
-        # 获取内容对象
-        if content_type == 'post':
-            content = Post.query.get_or_404(content_id)
-            type_code = 1  # 1-博客
-        elif content_type == 'project':
-            content = Project.query.get_or_404(content_id)
-            type_code = 2  # 2-项目
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        content = Post.query.get_or_404(content_id)
+        type_code = 1
         
         # 查找或创建用户互动记录
         interaction = UserInteraction.query.filter_by(
@@ -288,7 +273,7 @@ def add_comment():
     """添加评论"""
     try:
         data = request.get_json()
-        content_type = data.get('type')  # 'post' or 'project'
+        content_type = data.get('type')
         content_id = data.get('id')
         comment_text = data.get('content', '').strip()
         
@@ -298,25 +283,21 @@ def add_comment():
         if len(comment_text) > 1000:
             return jsonify({'success': False, 'message': '评论内容过长'}), 400
         
-        # 获取内容对象
-        if content_type == 'post':
-            content = Post.query.get_or_404(content_id)
-        elif content_type == 'project':
-            content = Project.query.get_or_404(content_id)
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        content = Post.query.get_or_404(content_id)
         
         # 创建新的评论记录（允许多条评论）
         new_comment = Comment(
             user_id=current_user.id,
             content=comment_text,
-            **{f'{content_type}_id': content_id}
+            post_id=content_id
         )
         db.session.add(new_comment)
         
         # 重新计算评论计数（只计算有内容的评论）
         actual_comment_count = Comment.query.filter_by(
-            **{f'{content_type}_id': content_id}
+            post_id=content_id
         ).filter(Comment.content != '').count()
         content.comment_count = actual_comment_count
         
@@ -344,16 +325,13 @@ def get_comments(content_id):
         page = request.args.get('page', 1, type=int)
         per_page = request.args.get('per_page', 10, type=int)
         
-        if content_type == 'post':
-            content = Post.query.get_or_404(content_id)
-        elif content_type == 'project':
-            content = Project.query.get_or_404(content_id)
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        Post.query.get_or_404(content_id)
         
         # 获取评论（只显示有内容的评论，不包括仅评分的记录）
         comments = Comment.query.filter_by(
-            **{f'{content_type}_id': content_id},
+            post_id=content_id,
             is_approved=True
         ).filter(Comment.content != '').order_by(Comment.created_at.desc()).paginate(
             page=page, per_page=per_page, error_out=False
@@ -409,31 +387,32 @@ def get_comments(content_id):
         return jsonify({'success': False, 'message': '获取评论失败'}), 500
 
 @interaction_bp.route('/user-status/<int:content_id>')
-@login_required
 def get_user_status(content_id):
     """获取用户对内容的交互状态"""
     try:
         content_type = request.args.get('type', 'post')
         
-        # 确定类型代码
-        if content_type == 'post':
-            type_code = 1  # 1-博客
-        elif content_type == 'project':
-            type_code = 2  # 2-项目
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        content = Post.query.get_or_404(content_id)
+        type_code = 1
         
         # 获取用户互动记录
-        interaction = UserInteraction.query.filter_by(
-            user_id=current_user.id,
-            content_id=content_id,
-            type=type_code
-        ).first()
-        
-        if interaction:
-            is_liked = interaction.like == 1
-            is_favorited = interaction.favorite == 1
-            user_rating = interaction.rating if interaction.rating > 0 else None
+        if current_user.is_authenticated:
+            interaction = UserInteraction.query.filter_by(
+                user_id=current_user.id,
+                content_id=content_id,
+                type=type_code
+            ).first()
+            
+            if interaction:
+                is_liked = interaction.like == 1
+                is_favorited = interaction.favorite == 1
+                user_rating = interaction.rating if interaction.rating > 0 else None
+            else:
+                is_liked = False
+                is_favorited = False
+                user_rating = None
         else:
             is_liked = False
             is_favorited = False
@@ -443,7 +422,11 @@ def get_user_status(content_id):
             'success': True,
             'is_liked': is_liked,
             'is_favorited': is_favorited,
-            'user_rating': user_rating
+            'user_rating': user_rating,
+            'like_count': content.like_count or 0,
+            'favorite_count': content.favorite_count or 0,
+            'is_authenticated': current_user.is_authenticated,
+            'is_guest': not current_user.is_authenticated
         })
         
     except Exception as e:
@@ -466,14 +449,10 @@ def save_rating():
         if rating < 1 or rating > 5:
             return jsonify({'success': False, 'message': '评分必须在1-5之间'}), 400
 
-        if content_type == 'post':
-            content = Post.query.get_or_404(content_id)
-            type_code = 1  # 1-博客
-        elif content_type == 'project':
-            content = Project.query.get_or_404(content_id)
-            type_code = 2  # 2-项目
-        else:
+        if content_type != 'post':
             return jsonify({'success': False, 'message': '类型错误'}), 400
+        content = Post.query.get_or_404(content_id)
+        type_code = 1
 
         # 查找或创建用户互动记录
         interaction = UserInteraction.query.filter_by(
@@ -541,16 +520,10 @@ def delete_comment(comment_id):
             return jsonify({'success': False, 'message': '无权限删除此评论'}), 403
 
         # 获取关联的内容
-        if comment.post_id:
-            content_type = 'post'
-            content_id = comment.post_id
-            content = Post.query.get(content_id)
-        elif comment.project_id:
-            content_type = 'project'
-            content_id = comment.project_id
-            content = Project.query.get(content_id)
-        else:
+        if not comment.post_id:
             return jsonify({'success': False, 'message': '评论关联的内容不存在'}), 400
+        content_id = comment.post_id
+        content = Post.query.get(content_id)
 
         # 删除评论
         db.session.delete(comment)
@@ -558,7 +531,7 @@ def delete_comment(comment_id):
         # 重新计算评论计数（只计算有内容的评论）
         if content:
             actual_comment_count = Comment.query.filter_by(
-                **{f'{content_type}_id': content_id}
+                post_id=content_id
             ).filter(Comment.content != '').count()
             content.comment_count = actual_comment_count
 
@@ -724,12 +697,7 @@ def add_comment_reply(comment_id):
         
         # 创建回复通知
         # 获取评论所属的内容
-        content_type = 'post' if comment.post_id else 'project'
-        content_id = comment.post_id or comment.project_id
-        if content_type == 'post':
-            content_item = Post.query.get(content_id)
-        else:
-            content_item = Project.query.get(content_id)
+        content_item = Post.query.get(comment.post_id) if comment.post_id else None
         
         if content_item:
             create_notification_for_reply(
@@ -820,23 +788,13 @@ def comment_like():
             
             # 创建点赞通知（如果不是自己的评论）
             if comment.user_id != current_user.id:
-                # 获取评论所属的文章或项目
-                if comment.post_id:
-                    post = Post.query.get(comment.post_id)
-                    if post:
-                        notification = Notification.create_like_notification(
-                            post.author_id, current_user.username, '文章', 
-                            post.id, post.title
-                        )
-                        db.session.add(notification)
-                elif comment.project_id:
-                    project = Project.query.get(comment.project_id)
-                    if project:
-                        notification = Notification.create_like_notification(
-                            project.author_id, current_user.username, '项目', 
-                            project.id, project.title
-                        )
-                        db.session.add(notification)
+                post = Post.query.get(comment.post_id) if comment.post_id else None
+                if post:
+                    notification = Notification.create_like_notification(
+                        post.author_id, current_user.username, '文章',
+                        post.id, post.title
+                    )
+                    db.session.add(notification)
         
         db.session.commit()
         
@@ -860,7 +818,7 @@ def create_notification_for_comment(comment, content_type, content_title, conten
         if content_author_id != comment.user_id:
             notification = Notification.create_comment_notification(
                 content_author_id, comment.user.username, comment.content,
-                comment.post_id or comment.project_id, content_title
+                comment.post_id, content_title
             )
             db.session.add(notification)
     except Exception as e:
@@ -876,7 +834,7 @@ def create_notification_for_reply(reply, comment, content_title, target_user_id,
                 reply.user.username,
                 reply.content,
                 comment.id,
-                comment.post_id or comment.project_id,
+                comment.post_id,
                 content_title,
                 target_label=target_label
             )
