@@ -39,6 +39,13 @@ class User(UserMixin, db.Model):
     profile_public = db.Column(db.Boolean, default=True)  # 个人资料是否公开
     show_email = db.Column(db.Boolean, default=False)  # 是否显示邮箱
     show_phone = db.Column(db.Boolean, default=False)  # 是否显示电话
+    
+    # 社交登录相关
+    google_id = db.Column(db.String(100), unique=True)  # Google ID
+    github_id = db.Column(db.String(100), unique=True)  # GitHub ID
+    wechat_id = db.Column(db.String(100), unique=True)  # 微信 OpenID
+    avatar_url = db.Column(db.String(500))  # 社交头像URL
+    social_provider = db.Column(db.String(20))  # 社交登录提供商 (google, github, wechat)
 
     def __repr__(self):
         return f'<User {self.username}>'

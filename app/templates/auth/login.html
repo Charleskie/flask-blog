@@ -1,87 +1,706 @@
 {% extends "base.html" %}
 
-{% block title %}登录 - 我的个人网站{% endblock %}
+{% block title %}登录 - Kim's Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+.auth-login-page {
+    min-height: calc(100vh - 180px);
+    display: flex;
+    align-items: center;
+}
+
+.auth-login-layout {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 430px);
+    gap: 24px;
+    align-items: stretch;
+}
+
+.auth-login-panel,
+.auth-login-card {
+    min-width: 0;
+}
+
+.auth-login-panel {
+    padding: 30px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top left, rgba(9, 105, 218, 0.12), transparent 42%),
+        linear-gradient(180deg, var(--bgColor-muted) 0%, var(--bgColor-default) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+}
+
+.auth-login-panel-top {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.auth-login-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(9, 105, 218, 0.18);
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.auth-login-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+}
+
+.auth-login-copy {
+    margin: 0;
+    max-width: 36rem;
+    color: var(--fgColor-muted);
+    font-size: 15px;
+    line-height: 1.9;
+}
+
+.auth-login-feature-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-login-feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.auth-login-feature-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-accent-muted);
+    color: var(--fgColor-accent);
+}
+
+.auth-login-feature-copy strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.auth-login-feature-copy span {
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.auth-login-panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.auth-login-link-muted,
+.auth-login-link-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.auth-login-link-muted {
+    color: var(--fgColor-muted);
+}
+
+.auth-login-link-muted:hover {
+    color: var(--fgColor-default);
+    text-decoration: none;
+}
+
+.auth-login-link-accent {
+    color: var(--fgColor-accent);
+}
+
+.auth-login-link-accent:hover {
+    text-decoration: none;
+}
+
+.auth-login-card {
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-resting-small);
+}
+
+.auth-login-card .Box-body {
+    padding: 26px;
+}
+
+.auth-login-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.auth-login-card-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 1.45rem;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.auth-login-card-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.auth-login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.auth-login-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.auth-login-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.auth-login-field .form-control {
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    box-shadow: inset 0 1px 2px rgba(31, 35, 40, 0.03);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.auth-login-field .form-control:focus {
+    border-color: var(--borderColor-accent-emphasis);
+    background: var(--bgColor-default);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.auth-login-password {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.auth-login-password .form-control {
+    padding-right: 52px;
+}
+
+.auth-login-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--fgColor-muted);
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.auth-login-password-toggle:hover {
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+}
+
+.auth-login-password-toggle:focus-visible {
+    outline: none;
+    border-color: rgba(9, 105, 218, 0.22);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.auth-login-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.auth-login-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+}
+
+.auth-login-checkbox input {
+    margin: 0;
+    accent-color: var(--fgColor-accent);
+}
+
+.auth-login-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 1px solid var(--button-primary-bgColor-rest);
+    background: var(--button-primary-bgColor-rest);
+    color: var(--button-primary-fgColor);
+    font-size: 14px;
+    font-weight: 600;
+    appearance: none;
+    -webkit-appearance: none;
+    box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04), 0 2px 8px rgba(9, 105, 218, 0.18);
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.auth-login-submit:hover {
+    background: var(--button-primary-bgColor-hover);
+    border-color: var(--button-primary-bgColor-hover);
+    box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04), 0 6px 14px rgba(9, 105, 218, 0.18);
+    transform: translateY(-1px);
+}
+
+.auth-login-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-login-submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.16);
+}
+
+.auth-login-divider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 4px 0;
+}
+
+.auth-login-divider::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.auth-login-divider span {
+    position: relative;
+    padding: 0 12px;
+    background: var(--bgColor-default);
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+.auth-login-oauth {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.auth-login-oauth .btn {
+    display: flex;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.auth-login-oauth .btn:hover {
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-default);
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-login-oauth .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.auth-login-oauth .btn span {
+    color: inherit;
+}
+
+.auth-login-oauth .btn svg {
+    flex-shrink: 0;
+}
+
+.auth-login-oauth .btn .color-fg-default {
+    color: var(--fgColor-default) !important;
+}
+
+.auth-login-oauth .btn[disabled] {
+    opacity: 0.55;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
+    border-color: var(--borderColor-default);
+    transform: none;
+}
+
+.auth-login-footer {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--borderColor-default);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.auth-login-footer a {
+    color: var(--fgColor-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-login-footer a:hover {
+    text-decoration: none;
+}
+
+@media (max-width: 767px) {
+    .auth-login-page {
+        min-height: auto;
+    }
+
+    .auth-login-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .auth-login-panel,
+    .auth-login-card .Box-body {
+        padding: 20px;
+    }
+
+    .auth-login-panel-foot,
+    .auth-login-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .auth-login-title {
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4><i class="fas fa-sign-in-alt"></i> 用户登录</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST" data-ajax-form>
-                    <div class="mb-3">
-                        <label for="username" class="form-label">用户名</label>
-                        <input type="text" class="form-control" id="username" name="username" required style="background-color: rgba(15, 23, 42, 0.8) !important; border-color: rgba(71, 85, 105, 0.3) !important; color: white !important;">
+<div class="auth-login-page py-5">
+    <div class="container-xl width-full">
+        <div class="auth-login-layout">
+            <section class="auth-login-panel">
+                <div class="auth-login-panel-top">
+                    <span class="auth-login-badge">
+                        <i class="fas fa-shield-heart" aria-hidden="true"></i>
+                        账户中心
+                    </span>
+
+                    <div>
+                        <h1 class="auth-login-title">欢迎回来</h1>
+                        <p class="auth-login-copy">
+                            登录后就可以继续写作、评论、收藏文章，也能把你的通知、资料和站点互动保持在同一个账户里。
+                        </p>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">密码</label>
-                        <input type="password" class="form-control" id="password" name="password" required style="background-color: rgba(15, 23, 42, 0.8) !important; border-color: rgba(71, 85, 105, 0.3) !important; color: white !important;">
-                        <div class="text-end mt-1">
-                            <a href="{{ url_for('auth.forgot_password') }}" class="text-decoration-none small">
-                                忘记密码？
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                        <label class="form-check-label" for="remember">
-                            记住我
-                        </label>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between gap-2">
-                        <a href="{{ url_for('auth.register') }}" class="btn btn-secondary btn-sm" style="min-width: 160px;">
-                            <i class="fas fa-user-plus"></i> 注册
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-sm" style="min-width: 160px;">
-                            <i class="fas fa-sign-in-alt"></i> 登录
-                        </button>
-                    </div>
-                </form>
-                
-                <hr>
-                
-                <div class="text-center">
-                    <p class="mb-0">还没有账号？点击右侧注册按钮</p>
+
+                    <ul class="auth-login-feature-list">
+                        <li class="auth-login-feature-item">
+                            <span class="auth-login-feature-icon">
+                                <i class="fas fa-pen-nib" aria-hidden="true"></i>
+                            </span>
+                            <div class="auth-login-feature-copy">
+                                <strong>继续你的创作和阅读</strong>
+                                <span>无论是写文章、看评论还是管理互动，都能在登录后无缝继续。</span>
+                            </div>
+                        </li>
+                        <li class="auth-login-feature-item">
+                            <span class="auth-login-feature-icon">
+                                <i class="fas fa-bell" aria-hidden="true"></i>
+                            </span>
+                            <div class="auth-login-feature-copy">
+                                <strong>同步通知和互动记录</strong>
+                                <span>点赞、收藏、评论回复和消息提醒都会跟着你的账户一起保存。</span>
+                            </div>
+                        </li>
+                        <li class="auth-login-feature-item">
+                            <span class="auth-login-feature-icon">
+                                <i class="fas fa-user-circle" aria-hidden="true"></i>
+                            </span>
+                            <div class="auth-login-feature-copy">
+                                <strong>统一你的个人资料</strong>
+                                <span>头像、昵称和账户设置集中管理，整站体验会更完整。</span>
+                            </div>
+                        </li>
+                    </ul>
                 </div>
-            </div>
+
+                <div class="auth-login-panel-foot">
+                    <a href="{{ url_for('main.index') }}" class="auth-login-link-muted">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        返回首页
+                    </a>
+                    <a href="{{ url_for('auth.register') }}" class="auth-login-link-accent">
+                        没有账号？去注册
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+
+            <section class="Box auth-login-card">
+                <div class="Box-body">
+                    <div class="auth-login-card-head">
+                        <h2 class="auth-login-card-title">登录你的账户</h2>
+                        <p class="auth-login-card-copy">使用用户名和密码登录，也可以选择你已经绑定的第三方账户。</p>
+                    </div>
+
+                    <form method="POST" id="login-form" class="auth-login-form">
+                        <div class="auth-login-field">
+                            <label for="username" class="auth-login-label">用户名</label>
+                            <input type="text" id="username" name="username" required
+                                   class="form-control width-full"
+                                   value="{{ request.form.get('username', '') }}"
+                                   placeholder="请输入用户名">
+                        </div>
+
+                        <div class="auth-login-field">
+                            <div class="auth-login-label">
+                                <label for="password">密码</label>
+                                <a href="{{ url_for('auth.forgot_password') }}" class="auth-login-link-accent">忘记密码？</a>
+                            </div>
+                            <div class="auth-login-password">
+                                <input type="password" id="password" name="password" required
+                                       class="form-control width-full"
+                                       placeholder="请输入密码">
+                                <button type="button" onclick="togglePassword()"
+                                        class="auth-login-password-toggle"
+                                        aria-label="显示或隐藏密码">
+                                    <i class="fa fa-eye" id="password-toggle-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="auth-login-row">
+                            <label for="remember" class="auth-login-checkbox">
+                                <input type="checkbox" id="remember" name="remember" class="cursor-pointer">
+                                <span>记住我</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="auth-login-submit">
+                            登录
+                        </button>
+
+                        <div class="auth-login-divider">
+                            <span>其他登录方式</span>
+                        </div>
+
+                        <div class="auth-login-oauth">
+                            {% if config.GOOGLE_CLIENT_ID and config.GOOGLE_CLIENT_ID != 'your-google-client-id' %}
+                            <a href="{{ url_for('auth.login_google') }}"
+                               class="btn btn-secondary width-full d-flex items-center gap-3 no-underline">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span>使用 Google 登录</span>
+                            </a>
+                            {% else %}
+                            <button type="button"
+                                    class="btn btn-secondary width-full d-flex items-center gap-3 cursor-default"
+                                    disabled
+                                    title="Google OAuth 未配置">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span>Google 登录暂不可用</span>
+                            </button>
+                            {% endif %}
+
+                            <a href="{{ url_for('auth.login_github') }}"
+                               class="btn btn-secondary width-full d-flex items-center gap-3 no-underline">
+                                <svg class="w-5 h-5 flex-shrink-0 color-fg-default" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                <span>使用 GitHub 登录</span>
+                            </a>
+
+                            {% if config.WECHAT_APP_ID and config.WECHAT_APP_ID != 'your-wechat-app-id' %}
+                            <a href="{{ url_for('auth.login_wechat') }}"
+                               class="btn btn-secondary width-full d-flex items-center gap-3 no-underline">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#07C160" aria-hidden="true">
+                                    <path d="M8.5 12.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5zm7 0c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5z"/>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                                </svg>
+                                <span>使用微信登录</span>
+                            </a>
+                            {% else %}
+                            <button type="button"
+                                    disabled
+                                    class="btn btn-secondary width-full d-flex items-center gap-3 cursor-default"
+                                    title="微信 OAuth 未配置">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#07C160" aria-hidden="true">
+                                    <path d="M8.5 12.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5zm7 0c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5z"/>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                                </svg>
+                                <span>微信登录暂不可用</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </form>
+
+                    <div class="auth-login-footer">
+                        还没有账号？
+                        <a href="{{ url_for('auth.register') }}">立即注册</a>
+                    </div>
+                </div>
+            </section>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-/* 登录页面输入框样式优化 - 参考注册页面 */
-input.form-control,
-input[type="text"].form-control,
-input[type="password"].form-control {
-    color: white !important;
-    background-color: rgba(15, 23, 42, 0.8) !important;
-    border-color: rgba(71, 85, 105, 0.3) !important;
+{% block extra_js %}
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('password-toggle-icon');
+
+    if (!passwordInput || !toggleIcon) return;
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.className = 'fa fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.className = 'fa fa-eye';
+    }
 }
 
-input.form-control:focus,
-input[type="text"].form-control:focus,
-input[type="password"].form-control:focus {
-    color: white !important;
-    background-color: rgba(15, 23, 42, 0.9) !important;
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
-}
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('login-form');
+    if (!form) return;
 
-/* 处理自动填充 */
-.form-control:-webkit-autofill,
-.form-control:-webkit-autofill:hover,
-.form-control:-webkit-autofill:focus,
-.form-control:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px rgba(15, 23, 42, 0.8) inset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalHtml = submitButton.innerHTML;
+
+        submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i><span>登录中...</span>';
+        submitButton.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                emitToast('登录成功！', 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || data.redirect || '/';
+                }, 900);
+            } else {
+                emitToast(data.message || '登录失败', 'error');
+                submitButton.innerHTML = originalHtml;
+                submitButton.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('登录错误:', error);
+            emitToast('登录失败，请稍后重试', 'error');
+            submitButton.innerHTML = originalHtml;
+            submitButton.disabled = false;
+        });
+    });
+});
+
+function emitToast(message, type = 'info') {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
-</style>
-{% endblock %} 
+</script>
+{% endblock %}

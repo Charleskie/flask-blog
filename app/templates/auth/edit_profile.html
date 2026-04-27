@@ -1,346 +1,1059 @@
 {% extends "base.html" %}
 
-{% block title %}编辑个人资料 - 我的个人网站{% endblock %}
+{% block title %}编辑个人资料 - Kim's Blog{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <h1 class="text-center mb-5">编辑个人资料</h1>
-        
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-user-edit"></i> 基本信息</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" id="edit-profile-form" class="needs-validation" novalidate>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">用户名</label>
-                            <input type="text" class="form-control" id="username" 
-                                   value="{{ current_user.username }}" readonly>
-                            <div class="form-text">用户名不可修改</div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="nickname" class="form-label">昵称</label>
-                            <input type="text" class="form-control" id="nickname" name="nickname" 
-                                   value="{{ current_user.nickname or '' }}" maxlength="20">
-                            <div class="form-text">昵称长度最多20位，可以包含中文、字母、数字等</div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="email" class="form-label">邮箱地址 *</label>
-                            <input type="email" class="form-control" id="email" name="email" 
-                                   value="{{ current_user.email }}" required>
-                            <div class="form-text">用于接收重要通知</div>
-                            <div class="invalid-feedback">
-                                请输入有效的邮箱地址
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="bio" class="form-label">个人简介</label>
-                            <textarea class="form-control" id="bio" name="bio" rows="3" maxlength="200">{{ current_user.bio or '' }}</textarea>
-                            <div class="form-text">个人简介长度最多200字</div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-save"></i> 保存更改
-                        </button>
-                    </div>
-                </form>
+{% set profile_form = profile_form if profile_form is defined else {
+    'nickname': current_user.nickname or '',
+    'bio': current_user.bio or '',
+    'email': current_user.email or '',
+    'website': current_user.website or '',
+    'location': current_user.location or '',
+    'company': current_user.company or '',
+    'job_title': current_user.job_title or '',
+    'phone': current_user.phone or '',
+    'profile_public': current_user.profile_public,
+    'show_email': current_user.show_email,
+    'show_phone': current_user.show_phone
+} %}
+{% set visibility_label = '公开资料' if profile_form.profile_public else '私密资料' %}
+
+<section class="profile-edit-shell">
+    <div class="profile-edit-feedback">
+        {% if error_message %}
+        <div class="flash flash-danger">{{ error_message }}</div>
+        {% endif %}
+    </div>
+
+    <header class="profile-edit-hero">
+        <div class="profile-edit-hero-copy">
+            <div class="profile-edit-eyebrow">账户中心</div>
+            <h1 class="profile-edit-title">编辑个人资料</h1>
+            <div class="profile-edit-meta">
+                <span class="profile-edit-meta-pill profile-edit-meta-pill-accent">{{ visibility_label }}</span>
+                <span class="profile-edit-meta-pill">{{ current_user.username }}</span>
+                <span class="profile-edit-meta-pill">{{ current_user.email }}</span>
             </div>
         </div>
+        <a href="{{ url_for('auth.profile') }}" class="profile-edit-btn profile-edit-btn-secondary">查看资料</a>
+    </header>
 
-        <!-- 修改密码 -->
-        <div class="card mt-4" id="password">
-            <div class="card-header">
-                <h5><i class="fas fa-key"></i> 修改密码</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" id="change-password-form" class="needs-validation" novalidate>
-                    <!-- 隐藏字段，确保邮箱和用户名被传递 -->
-                    <input type="hidden" name="username" value="{{ current_user.username }}">
-                    <input type="hidden" name="email" value="{{ current_user.email }}">
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="current_password" class="form-label">当前密码 *</label>
-                            <div class="input-group" style="display: flex; align-items: stretch;">
-                                <input type="password" class="form-control" id="current_password" 
-                                       name="current_password" required style="flex: 1;">
-                                <button class="btn btn-outline-secondary" type="button" id="toggleCurrentPassword" style="flex-shrink: 0;">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div class="invalid-feedback">
-                                请输入当前密码
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <label for="new_password" class="form-label">新密码 *</label>
-                            <div class="input-group" style="display: flex; align-items: stretch;">
-                                <input type="password" class="form-control" id="new_password" 
-                                       name="new_password" minlength="6" maxlength="50" style="flex: 1;">
-                                <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword" style="flex-shrink: 0;">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div class="form-text">密码长度至少6位</div>
-                            <div class="invalid-feedback">
-                                密码长度至少6位
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="confirm_new_password" class="form-label">确认新密码 *</label>
-                            <div class="input-group" style="display: flex; align-items: stretch;">
-                                <input type="password" class="form-control" id="confirm_new_password" 
-                                       name="confirm_password" minlength="6" maxlength="50" style="flex: 1;">
-                                <button class="btn btn-outline-secondary" type="button" id="toggleConfirmNewPassword" style="flex-shrink: 0;">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <div class="invalid-feedback">
-                                两次输入的密码不一致
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-6 mb-3">
-                            <!-- 空列，用于保持布局平衡 -->
-                        </div>
-                    </div>
-                    
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-key"></i> 修改密码
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    <div class="profile-edit-grid">
+        <aside class="profile-edit-sidebar">
+            <div class="profile-edit-sidebar-card">
+                <div class="profile-edit-avatar-wrap">
+                    <img src="{{ current_user.get_avatar_url() }}"
+                         alt="用户头像"
+                         width="132"
+                         height="132"
+                         class="profile-edit-avatar"
+                         id="profile-edit-sidebar-avatar">
+                </div>
 
-        <!-- 账户安全设置 -->
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5><i class="fas fa-shield-alt"></i> 安全设置</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="emailNotifications" checked>
-                            <label class="form-check-label" for="emailNotifications">
-                                接收邮件通知
-                            </label>
-                        </div>
-                        <small class="text-muted">接收重要账户变更的邮件通知</small>
+                <div class="profile-edit-identity">
+                    <h2>{{ current_user.get_display_name() }}</h2>
+                    <p>@{{ current_user.username }}</p>
+                </div>
+
+                <div class="profile-edit-sidebar-list">
+                    <div class="profile-edit-sidebar-item">
+                        <span>当前邮箱</span>
+                        <strong>{{ current_user.email }}</strong>
                     </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="loginNotifications">
-                            <label class="form-check-label" for="loginNotifications">
-                                登录通知
-                            </label>
-                        </div>
-                        <small class="text-muted">在新设备登录时发送通知</small>
+                    <div class="profile-edit-sidebar-item">
+                        <span>资料状态</span>
+                        <strong>{{ visibility_label }}</strong>
+                    </div>
+                    <div class="profile-edit-sidebar-item">
+                        <span>加入时间</span>
+                        <strong>{{ current_user.created_at.strftime('%Y年%m月') }}</strong>
                     </div>
                 </div>
-                
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="twoFactorAuth">
-                            <label class="form-check-label" for="twoFactorAuth">
-                                两步验证
-                            </label>
-                        </div>
-                        <small class="text-muted">启用两步验证提高账户安全性</small>
-                    </div>
-                    
-                    <div class="col-md-6 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="sessionTimeout">
-                            <label class="form-check-label" for="sessionTimeout">
-                                自动登出
-                            </label>
-                        </div>
-                        <small class="text-muted">长时间无操作时自动登出</small>
-                    </div>
+
+                <p class="profile-edit-sidebar-note">头像、邮箱、简介和展示权限都可以在当前页面直接修改。</p>
+
+                <div class="profile-edit-sidebar-actions">
+                    <a href="{{ url_for('auth.profile') }}" class="profile-edit-btn profile-edit-btn-secondary">返回资料页</a>
+                    <a href="{{ url_for('auth.edit_profile', section='password') }}#password" class="profile-edit-btn profile-edit-btn-ghost">修改密码</a>
                 </div>
             </div>
-        </div>
+        </aside>
 
-        <!-- 操作按钮 -->
-        <div class="card mt-4">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">
-                        <i class="fas fa-arrow-left"></i> 返回个人资料
-                    </a>
+        <div class="profile-edit-main">
+            <section id="avatar-panel" class="profile-edit-panel">
+                <div class="profile-edit-panel-header">
                     <div>
-                        <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-outline-warning me-2">
-                            <i class="fas fa-key"></i> 忘记密码
-                        </a>
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger">
-                            <i class="fas fa-sign-out-alt"></i> 退出登录
-                        </a>
+                        <span class="profile-edit-panel-eyebrow">头像</span>
+                        <h2>头像管理</h2>
                     </div>
                 </div>
-            </div>
+
+                <form method="POST"
+                      action="{{ url_for('settings.upload_avatar') }}"
+                      enctype="multipart/form-data"
+                      class="profile-edit-form">
+                    <div class="profile-edit-avatar-grid">
+                        <div class="profile-edit-avatar-stage">
+                            <div class="profile-edit-avatar-preview-wrap">
+                                <img src="{{ current_user.get_avatar_url() }}"
+                                     alt="头像预览"
+                                     class="profile-edit-avatar-preview"
+                                     id="profile-edit-avatar-preview"
+                                     data-current-src="{{ current_user.get_avatar_url() }}">
+                            </div>
+                            <div class="profile-edit-avatar-summary">
+                                <strong>当前头像</strong>
+                                <span>支持 JPG、PNG、GIF、WebP，文件大小不超过 5MB。</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-edit-avatar-uploader">
+                            <input type="file"
+                                   id="profile-edit-avatar-input"
+                                   name="avatar"
+                                   accept="image/png,image/jpeg,image/gif,image/webp"
+                                   class="profile-edit-avatar-input">
+                            <label for="profile-edit-avatar-input" class="profile-edit-avatar-dropzone" id="profile-edit-avatar-dropzone">
+                                <span class="profile-edit-avatar-dropzone-icon"><i class="fas fa-cloud-upload-alt" aria-hidden="true"></i></span>
+                                <strong>选择新头像</strong>
+                                <span>点击或拖拽文件到这里，替换当前头像。</span>
+                            </label>
+                            <p class="profile-edit-avatar-status" id="avatarFileStatus">暂未选择新文件</p>
+                            <div class="profile-edit-avatar-actions">
+                                <button type="button" class="profile-edit-btn profile-edit-btn-secondary" id="avatarChooseButton">选择图片</button>
+                                <button type="button" class="profile-edit-btn profile-edit-btn-ghost" id="avatarResetButton" disabled>重置预览</button>
+                                <button type="submit" class="profile-edit-btn profile-edit-btn-primary" id="avatarUploadSubmit" disabled>
+                                    <i class="fas fa-upload" aria-hidden="true"></i>
+                                    <span>保存头像</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="profile-edit-panel {{ 'is-active' if active_form != 'password' else '' }}">
+                <div class="profile-edit-panel-header">
+                    <div>
+                        <span class="profile-edit-panel-eyebrow">资料</span>
+                        <h2>基本信息</h2>
+                    </div>
+                </div>
+
+                <form method="POST" id="edit-profile-form" class="profile-edit-form" novalidate>
+                    <input type="hidden" name="form_type" value="profile">
+
+                    <div class="profile-edit-form-grid">
+                        <div class="profile-edit-field">
+                            <label for="username" class="profile-edit-label">用户名</label>
+                            <input type="text" class="profile-edit-input profile-edit-input-readonly" id="username" value="{{ current_user.username }}" readonly>
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="nickname" class="profile-edit-label">昵称</label>
+                            <input type="text" class="profile-edit-input" id="nickname" name="nickname" value="{{ profile_form.nickname }}" maxlength="20" placeholder="填写展示昵称">
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="email" class="profile-edit-label">邮箱地址</label>
+                            <input type="email" class="profile-edit-input" id="email" name="email" value="{{ profile_form.email }}" required placeholder="用于接收通知">
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="website" class="profile-edit-label">个人网站</label>
+                            <input type="url" class="profile-edit-input" id="website" name="website" value="{{ profile_form.website }}" placeholder="https://example.com">
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="company" class="profile-edit-label">公司 / 团队</label>
+                            <input type="text" class="profile-edit-input" id="company" name="company" value="{{ profile_form.company }}" placeholder="可选">
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="job_title" class="profile-edit-label">职位</label>
+                            <input type="text" class="profile-edit-input" id="job_title" name="job_title" value="{{ profile_form.job_title }}" placeholder="可选">
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="location" class="profile-edit-label">所在地</label>
+                            <input type="text" class="profile-edit-input" id="location" name="location" value="{{ profile_form.location }}" placeholder="可选">
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="phone" class="profile-edit-label">电话</label>
+                            <input type="tel" class="profile-edit-input" id="phone" name="phone" value="{{ profile_form.phone }}" placeholder="可选">
+                        </div>
+
+                        <div class="profile-edit-field profile-edit-field-wide">
+                            <label for="bio" class="profile-edit-label">个人简介</label>
+                            <textarea class="profile-edit-input profile-edit-textarea" id="bio" name="bio" rows="4" maxlength="200" placeholder="一句话介绍你自己">{{ profile_form.bio }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="profile-edit-subpanel">
+                        <div class="profile-edit-subpanel-header">
+                            <h3>展示设置</h3>
+                            <span>控制资料页的公开范围</span>
+                        </div>
+
+                        <div class="profile-edit-toggle-grid">
+                            <label class="profile-edit-toggle-card">
+                                <span class="profile-edit-toggle-copy">
+                                    <strong>公开资料</strong>
+                                    <small>允许访客查看你的资料页</small>
+                                </span>
+                                <span class="profile-edit-switch">
+                                    <input type="checkbox" name="profile_public" {% if profile_form.profile_public %}checked{% endif %}>
+                                    <span class="profile-edit-switch-slider" aria-hidden="true"></span>
+                                </span>
+                            </label>
+
+                            <label class="profile-edit-toggle-card">
+                                <span class="profile-edit-toggle-copy">
+                                    <strong>显示邮箱</strong>
+                                    <small>在公开资料中展示邮箱</small>
+                                </span>
+                                <span class="profile-edit-switch">
+                                    <input type="checkbox" name="show_email" {% if profile_form.show_email %}checked{% endif %}>
+                                    <span class="profile-edit-switch-slider" aria-hidden="true"></span>
+                                </span>
+                            </label>
+
+                            <label class="profile-edit-toggle-card">
+                                <span class="profile-edit-toggle-copy">
+                                    <strong>显示电话</strong>
+                                    <small>在公开资料中展示电话</small>
+                                </span>
+                                <span class="profile-edit-switch">
+                                    <input type="checkbox" name="show_phone" {% if profile_form.show_phone %}checked{% endif %}>
+                                    <span class="profile-edit-switch-slider" aria-hidden="true"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="profile-edit-form-footer">
+                        <button type="submit" class="profile-edit-btn profile-edit-btn-primary">
+                            <i class="fas fa-save" aria-hidden="true"></i>
+                            <span>保存资料</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <section id="password" class="profile-edit-panel {{ 'is-active' if active_form == 'password' else '' }}">
+                <div class="profile-edit-panel-header">
+                    <div>
+                        <span class="profile-edit-panel-eyebrow">安全</span>
+                        <h2>修改密码</h2>
+                    </div>
+                </div>
+
+                <form method="POST" id="change-password-form" class="profile-edit-form" novalidate>
+                    <input type="hidden" name="form_type" value="password">
+
+                    <div class="profile-edit-form-grid profile-edit-password-grid">
+                        <div class="profile-edit-field">
+                            <label for="current_password" class="profile-edit-label">当前密码</label>
+                            <div class="profile-edit-input-group">
+                                <input type="password" class="profile-edit-input" id="current_password" name="current_password" required>
+                                <button class="profile-edit-eye" type="button" id="toggleCurrentPassword" aria-label="显示或隐藏当前密码">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="new_password" class="profile-edit-label">新密码</label>
+                            <div class="profile-edit-input-group">
+                                <input type="password" class="profile-edit-input" id="new_password" name="new_password" minlength="6" maxlength="50" required>
+                                <button class="profile-edit-eye" type="button" id="toggleNewPassword" aria-label="显示或隐藏新密码">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="profile-edit-field">
+                            <label for="confirm_new_password" class="profile-edit-label">确认新密码</label>
+                            <div class="profile-edit-input-group">
+                                <input type="password" class="profile-edit-input" id="confirm_new_password" name="confirm_password" minlength="6" maxlength="50" required>
+                                <button class="profile-edit-eye" type="button" id="toggleConfirmNewPassword" aria-label="显示或隐藏确认密码">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="profile-edit-strength" id="password-strength-host"></div>
+
+                    <div class="profile-edit-form-footer">
+                        <button type="submit" class="profile-edit-btn profile-edit-btn-primary">
+                            <i class="fas fa-key" aria-hidden="true"></i>
+                            <span>更新密码</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
         </div>
     </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-/* 输入框文字颜色样式 */
-.form-control {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+.profile-edit-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-bottom: 20px;
 }
 
-.form-control:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+.profile-edit-feedback {
+    margin-bottom: 12px;
 }
 
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
+.profile-edit-hero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
 }
 
-.form-label {
-    color: white !important;
-}
-
-.form-text {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.invalid-feedback {
-    color: #ff6b6b !important;
-}
-
-.valid-feedback {
-    color: #51cf66 !important;
-}
-
-/* 按钮样式调整 */
-.btn-outline-secondary {
-    color: white !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    background-color: transparent !important;
-}
-
-.btn-outline-secondary:hover {
-    color: #000 !important;
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.btn-outline-secondary:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-/* 提交按钮样式 */
-.btn-submit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
+.profile-edit-eyebrow,
+.profile-edit-panel-eyebrow {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    min-height: 28px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
-.btn-submit:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    text-decoration: none;
-    color: white;
+.profile-edit-title {
+    margin: 8px 0 0;
+    font-size: 30px;
+    line-height: 1.1;
+    color: var(--fgColor-default);
 }
 
-.btn-submit:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+.profile-edit-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
 }
 
-.btn-submit:disabled {
-    background: rgba(100, 116, 139, 0.5);
-    cursor: not-allowed;
-    transform: none;
+.profile-edit-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    border: 1px solid var(--borderColor-default);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.profile-edit-meta-pill-accent {
+    background: rgba(9, 105, 218, 0.1);
+    border-color: rgba(9, 105, 218, 0.16);
+    color: var(--fgColor-accent);
+}
+
+.profile-edit-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.profile-edit-sidebar-card,
+.profile-edit-panel {
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(31, 35, 40, 0.04);
+}
+
+.profile-edit-sidebar-card {
+    position: sticky;
+    top: 84px;
+    padding: 16px;
+}
+
+.profile-edit-avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+.profile-edit-avatar {
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 12px 24px rgba(31, 35, 40, 0.08);
+}
+
+.profile-edit-identity {
+    text-align: center;
+}
+
+.profile-edit-identity h2 {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 20px;
+    line-height: 1.2;
+}
+
+.profile-edit-identity p {
+    margin: 6px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+}
+
+.profile-edit-sidebar-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.profile-edit-sidebar-item {
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: var(--bgColor-muted);
+    border: 1px solid var(--borderColor-default);
+}
+
+.profile-edit-sidebar-item span {
+    display: block;
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.profile-edit-sidebar-item strong {
+    display: block;
+    margin-top: 4px;
+    color: var(--fgColor-default);
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.profile-edit-sidebar-note {
+    margin: 12px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.profile-edit-sidebar-actions {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.profile-edit-main {
+    display: grid;
+    gap: 14px;
+}
+
+.profile-edit-panel {
+    padding: 14px;
+}
+
+.profile-edit-panel.is-active {
+    border-color: rgba(9, 105, 218, 0.18);
+    box-shadow: 0 10px 22px rgba(9, 105, 218, 0.06);
+}
+
+.profile-edit-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile-edit-panel-header h2 {
+    margin: 6px 0 0;
+    color: var(--fgColor-default);
+    font-size: 18px;
+    line-height: 1.15;
+}
+
+.profile-edit-form {
+    display: grid;
+    gap: 12px;
+}
+
+.profile-edit-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.profile-edit-password-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profile-edit-avatar-grid {
+    display: grid;
+    grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+    gap: 12px;
+    align-items: stretch;
+}
+
+.profile-edit-avatar-stage,
+.profile-edit-avatar-uploader {
+    padding: 12px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, var(--bgColor-default) 0%, var(--bgColor-muted) 100%);
+}
+
+.profile-edit-avatar-stage {
+    display: grid;
+    gap: 12px;
+    justify-items: center;
+    text-align: center;
+}
+
+.profile-edit-avatar-preview-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 132px;
+    height: 132px;
+    padding: 8px;
+    border-radius: 999px;
+    background: rgba(9, 105, 218, 0.06);
+    border: 1px solid rgba(9, 105, 218, 0.12);
+}
+
+.profile-edit-avatar-preview {
+    width: 116px;
+    height: 116px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 10px 22px rgba(31, 35, 40, 0.1);
+}
+
+.profile-edit-avatar-summary {
+    display: grid;
+    gap: 4px;
+}
+
+.profile-edit-avatar-summary strong {
+    color: var(--fgColor-default);
+    font-size: 14px;
+}
+
+.profile-edit-avatar-summary span,
+.profile-edit-avatar-status {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.profile-edit-avatar-uploader {
+    display: grid;
+    gap: 10px;
+}
+
+.profile-edit-avatar-input {
+    display: none;
+}
+
+.profile-edit-avatar-dropzone {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    min-height: 170px;
+    padding: 20px 16px;
+    border-radius: 16px;
+    border: 1px dashed rgba(9, 105, 218, 0.24);
+    background: rgba(9, 105, 218, 0.03);
+    color: var(--fgColor-default);
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.16s ease, background-color 0.16s ease, transform 0.16s ease;
+}
+
+.profile-edit-avatar-dropzone:hover,
+.profile-edit-avatar-dropzone.is-dragover {
+    border-color: rgba(9, 105, 218, 0.38);
+    background: rgba(9, 105, 218, 0.06);
+    transform: translateY(-1px);
+}
+
+.profile-edit-avatar-dropzone strong {
+    font-size: 15px;
+}
+
+.profile-edit-avatar-dropzone span {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.profile-edit-avatar-dropzone-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 18px;
+}
+
+.profile-edit-avatar-status.is-error {
+    color: var(--fgColor-danger);
+}
+
+.profile-edit-avatar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.profile-edit-field {
+    min-width: 0;
+}
+
+.profile-edit-field-wide {
+    grid-column: 1 / -1;
+}
+
+.profile-edit-label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.profile-edit-input,
+.profile-edit-textarea,
+.profile-edit-input-group {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.profile-edit-input {
+    min-height: 40px;
+    padding: 0 12px;
+    border-radius: 10px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
+    box-shadow: inset 0 1px 2px rgba(31, 35, 40, 0.03);
+    font: inherit;
+}
+
+.profile-edit-textarea {
+    min-height: 92px;
+    padding: 10px 12px;
+    resize: vertical;
+}
+
+.profile-edit-input:focus,
+.profile-edit-textarea:focus {
+    outline: none;
+    border-color: var(--borderColor-accent-emphasis);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.profile-edit-input-readonly {
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+}
+
+.profile-edit-input-group {
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+}
+
+.profile-edit-input-group .profile-edit-input {
+    border: 0;
+    border-radius: 0;
     box-shadow: none;
 }
 
-.btn-submit:disabled:hover {
-    background: rgba(100, 116, 139, 0.5);
-    transform: none;
+.profile-edit-eye {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    padding: 0 10px;
+    border: 0;
+    border-left: 1px solid var(--borderColor-default);
+    border-radius: 0;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+}
+
+.profile-edit-eye:hover {
+    color: var(--fgColor-default);
+    background: var(--bgColor-muted);
+}
+
+.profile-edit-subpanel {
+    padding: 10px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.03), rgba(9, 105, 218, 0.015));
+}
+
+.profile-edit-subpanel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile-edit-subpanel-header h3 {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 14px;
+}
+
+.profile-edit-subpanel-header span {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+}
+
+.profile-edit-toggle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.profile-edit-toggle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: rgba(255, 255, 255, 0.88);
+    cursor: pointer;
+    transition: border-color 0.16s ease, background-color 0.16s ease, box-shadow 0.16s ease;
+}
+
+.profile-edit-toggle-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.profile-edit-toggle-copy strong {
+    color: var(--fgColor-default);
+    font-size: 13px;
+}
+
+.profile-edit-toggle-copy small {
+    color: var(--fgColor-muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.profile-edit-switch {
+    position: relative;
+    display: inline-flex;
+    width: 40px;
+    height: 22px;
+    flex: 0 0 auto;
+}
+
+.profile-edit-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.profile-edit-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: var(--borderColor-default);
+    transition: background-color 0.2s ease;
+}
+
+.profile-edit-switch-slider::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(31, 35, 40, 0.18);
+    transition: transform 0.2s ease;
+}
+
+.profile-edit-switch input:checked + .profile-edit-switch-slider {
+    background: var(--button-primary-bgColor-rest);
+}
+
+.profile-edit-switch input:checked + .profile-edit-switch-slider::before {
+    transform: translateX(18px);
+}
+
+.profile-edit-toggle-card:has(.profile-edit-switch input:checked) {
+    border-color: rgba(9, 105, 218, 0.18);
+    background: rgba(9, 105, 218, 0.05);
+    box-shadow: inset 0 0 0 1px rgba(9, 105, 218, 0.02);
+}
+
+.profile-edit-toggle-card:has(.profile-edit-switch input:checked) .profile-edit-toggle-copy strong {
+    color: var(--fgColor-accent);
+}
+
+.profile-edit-strength {
+    min-height: 0;
+}
+
+.profile-edit-strength-meter {
+    display: grid;
+    gap: 8px;
+}
+
+.profile-edit-strength-track {
+    height: 6px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    overflow: hidden;
+}
+
+.profile-edit-strength-bar {
+    height: 100%;
+    width: 0;
+    transition: width 0.18s ease;
+}
+
+.profile-edit-strength-bar.is-weak {
+    width: 33%;
+    background: linear-gradient(90deg, #d1242f, #ff8182);
+}
+
+.profile-edit-strength-bar.is-medium {
+    width: 66%;
+    background: linear-gradient(90deg, #9a6700, #e3b341);
+}
+
+.profile-edit-strength-bar.is-strong {
+    width: 100%;
+    background: linear-gradient(90deg, #1a7f37, #2da44e);
+}
+
+.profile-edit-strength-text {
+    color: var(--fgColor-muted);
+    font-size: 13px;
+}
+
+.profile-edit-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding-top: 2px;
+}
+
+.profile-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 13px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+}
+
+.profile-edit-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+}
+
+.profile-edit-btn-primary {
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.12), rgba(9, 105, 218, 0.08));
+    border-color: rgba(9, 105, 218, 0.14);
+    color: var(--fgColor-accent);
     box-shadow: none;
 }
 
-/* 卡片样式调整 */
-.card {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: none !important;
+.profile-edit-btn-primary:hover {
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.15), rgba(9, 105, 218, 0.1));
+    border-color: rgba(9, 105, 218, 0.18);
+    color: var(--fgColor-accent);
+    box-shadow: 0 6px 14px rgba(9, 105, 218, 0.08);
 }
 
-.card-header {
-    background: rgba(15, 23, 42, 0.3) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
+.profile-edit-btn-secondary {
+    background: var(--bgColor-default);
+    border-color: var(--borderColor-default);
+    color: var(--fgColor-accent);
 }
 
-.card-body {
-    background: transparent !important;
-    color: #94a3b8 !important;
+.profile-edit-btn-ghost {
+    background: var(--bgColor-default);
+    border-color: var(--borderColor-default);
+    color: var(--fgColor-default);
 }
 
-/* 开关样式调整 */
-.form-check-input {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+.profile-edit-action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
 }
 
-.form-check-input:checked {
-    background-color: #667eea !important;
-    border-color: #667eea !important;
+.profile-edit-action-card {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    min-height: 68px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, var(--bgColor-default) 0%, var(--bgColor-muted) 100%);
+    color: var(--fgColor-default);
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
 }
 
-.form-check-label {
-    color: white !important;
+.profile-edit-action-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(9, 105, 218, 0.16);
+    background: rgba(9, 105, 218, 0.04);
+    text-decoration: none;
 }
 
-/* 进度条样式 */
-.progress {
-    background-color: rgba(255, 255, 255, 0.1) !important;
+.profile-edit-action-card strong {
+    font-size: 14px;
 }
 
-.progress-bar {
-    background: linear-gradient(45deg, #667eea, #764ba2) !important;
+.profile-edit-action-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.profile-edit-action-copy span {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.profile-edit-action-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: 1px solid rgba(9, 105, 218, 0.1);
+    background: rgba(9, 105, 218, 0.06);
+    color: var(--fgColor-accent);
+    flex: 0 0 auto;
+}
+
+.profile-edit-action-arrow {
+    color: var(--fgColor-muted);
+    font-size: 16px;
+    line-height: 1;
+}
+
+.profile-edit-hero .profile-edit-btn {
+    flex: 0 0 auto;
+    align-self: flex-start;
+}
+
+.profile-edit-action-card-danger strong {
+    color: var(--fgColor-danger);
+}
+
+.profile-edit-action-card-danger .profile-edit-action-icon {
+    border-color: rgba(209, 36, 47, 0.12);
+    background: rgba(209, 36, 47, 0.06);
+    color: var(--fgColor-danger);
+}
+
+@media (max-width: 991px) {
+    .profile-edit-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-edit-sidebar-card {
+        position: static;
+    }
+
+    .profile-edit-password-grid,
+    .profile-edit-avatar-grid,
+    .profile-edit-toggle-grid,
+    .profile-edit-action-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .profile-edit-hero,
+    .profile-edit-panel-header,
+    .profile-edit-subpanel-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-edit-title {
+        font-size: 30px;
+    }
+
+    .profile-edit-form-grid,
+    .profile-edit-password-grid,
+    .profile-edit-avatar-grid,
+    .profile-edit-toggle-grid,
+    .profile-edit-action-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-edit-form-footer,
+    .profile-edit-sidebar-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-edit-btn,
+    .profile-edit-hero .profile-edit-btn {
+        width: 100%;
+    }
 }
 </style>
 {% endblock %}
@@ -348,130 +1061,198 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 密码显示/隐藏切换
     const toggleButtons = document.querySelectorAll('[id^="toggle"]');
-    toggleButtons.forEach(button => {
+    const inputMap = {
+        toggleCurrentPassword: 'current_password',
+        toggleNewPassword: 'new_password',
+        toggleConfirmNewPassword: 'confirm_new_password'
+    };
+
+    toggleButtons.forEach(function(button) {
         button.addEventListener('click', function() {
-            const inputId = this.id.replace('toggle', '').toLowerCase();
-            const input = document.getElementById(inputId);
+            const input = document.getElementById(inputMap[this.id]);
+            if (!input) return;
             const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
             input.setAttribute('type', type);
             this.querySelector('i').classList.toggle('fa-eye');
             this.querySelector('i').classList.toggle('fa-eye-slash');
         });
     });
-    
-    // 基本信息表单验证
+
     const editProfileForm = document.getElementById('edit-profile-form');
-    editProfileForm.addEventListener('submit', function(event) {
-        if (!this.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        this.classList.add('was-validated');
-    });
-    
-    // 修改密码表单验证
+    if (editProfileForm) {
+        editProfileForm.addEventListener('submit', function(event) {
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        });
+    }
+
     const changePasswordForm = document.getElementById('change-password-form');
     const newPassword = document.getElementById('new_password');
     const confirmNewPassword = document.getElementById('confirm_new_password');
-    
-    // 密码确认验证
-    confirmNewPassword.addEventListener('input', function() {
-        if (newPassword.value !== this.value) {
-            this.setCustomValidity('两次输入的密码不一致');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
-    
-    newPassword.addEventListener('input', function() {
-        if (confirmNewPassword.value && newPassword.value !== confirmNewPassword.value) {
-            confirmNewPassword.setCustomValidity('两次输入的密码不一致');
-        } else {
-            confirmNewPassword.setCustomValidity('');
-        }
-        
-        // 更新密码强度指示器
-        const strength = checkPasswordStrength(this.value);
-        updatePasswordStrengthIndicator(strength);
-    });
-    
-    changePasswordForm.addEventListener('submit', function(event) {
-        if (!this.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        
-        // 检查密码一致性
-        if (newPassword.value !== confirmNewPassword.value) {
-            event.preventDefault();
-            confirmNewPassword.setCustomValidity('两次输入的密码不一致');
-        }
-        
-        this.classList.add('was-validated');
-    });
-    
-    // 密码强度检测
+    const strengthHost = document.getElementById('password-strength-host');
+
+    if (newPassword && confirmNewPassword) {
+        confirmNewPassword.addEventListener('input', function() {
+            if (newPassword.value !== this.value) {
+                this.setCustomValidity('两次输入的密码不一致');
+            } else {
+                this.setCustomValidity('');
+            }
+        });
+
+        newPassword.addEventListener('input', function() {
+            if (confirmNewPassword.value && newPassword.value !== confirmNewPassword.value) {
+                confirmNewPassword.setCustomValidity('两次输入的密码不一致');
+            } else {
+                confirmNewPassword.setCustomValidity('');
+            }
+
+            updatePasswordStrengthIndicator(checkPasswordStrength(this.value));
+        });
+    }
+
+    if (changePasswordForm && newPassword && confirmNewPassword) {
+        changePasswordForm.addEventListener('submit', function(event) {
+            if (!this.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            if (newPassword.value !== confirmNewPassword.value) {
+                event.preventDefault();
+                confirmNewPassword.setCustomValidity('两次输入的密码不一致');
+            }
+        });
+    }
+
     function checkPasswordStrength(password) {
         let score = 0;
-        
         if (password.length >= 6) score++;
         if (password.length >= 8) score++;
         if (/[a-z]/.test(password)) score++;
         if (/[A-Z]/.test(password)) score++;
         if (/[0-9]/.test(password)) score++;
         if (/[^A-Za-z0-9]/.test(password)) score++;
-        
+
         if (score <= 2) return 'weak';
         if (score <= 4) return 'medium';
         return 'strong';
     }
-    
+
     function updatePasswordStrengthIndicator(strength) {
-        // 移除现有的强度指示器
-        const existingIndicator = document.getElementById('password-strength');
-        if (existingIndicator) {
-            existingIndicator.remove();
+        if (!strengthHost) return;
+        if (!newPassword.value) {
+            strengthHost.innerHTML = '';
+            return;
         }
-        
-        // 创建新的强度指示器
-        const indicator = document.createElement('div');
-        indicator.id = 'password-strength';
-        indicator.className = 'mt-2';
-        
-        let color, text;
-        switch (strength) {
-            case 'weak':
-                color = 'danger';
-                text = '密码强度：弱';
-                break;
-            case 'medium':
-                color = 'warning';
-                text = '密码强度：中等';
-                break;
-            case 'strong':
-                color = 'success';
-                text = '密码强度：强';
-                break;
-        }
-        
-        indicator.innerHTML = `
-            <div class="progress" style="height: 5px;">
-                <div class="progress-bar bg-${color}" style="width: ${strength === 'weak' ? '33%' : strength === 'medium' ? '66%' : '100%'}"></div>
+
+        let text = '密码强度：弱';
+        if (strength === 'medium') text = '密码强度：中';
+        if (strength === 'strong') text = '密码强度：强';
+
+        strengthHost.innerHTML = `
+            <div class="profile-edit-strength-meter">
+                <div class="profile-edit-strength-track">
+                    <div class="profile-edit-strength-bar is-${strength}"></div>
+                </div>
+                <div class="profile-edit-strength-text">${text}</div>
             </div>
-            <small class="text-${color}">${text}</small>
         `;
-        
-        newPassword.parentNode.appendChild(indicator);
     }
-    
-    // 安全设置开关
-    const switches = document.querySelectorAll('.form-check-input');
-    switches.forEach(switchInput => {
-        switchInput.addEventListener('change', function() {
-            // 这里可以添加保存设置的逻辑});
-    });
+
+    const avatarInput = document.getElementById('profile-edit-avatar-input');
+    const avatarPreview = document.getElementById('profile-edit-avatar-preview');
+    const sidebarAvatar = document.getElementById('profile-edit-sidebar-avatar');
+    const avatarDropzone = document.getElementById('profile-edit-avatar-dropzone');
+    const avatarStatus = document.getElementById('avatarFileStatus');
+    const avatarChooseButton = document.getElementById('avatarChooseButton');
+    const avatarResetButton = document.getElementById('avatarResetButton');
+    const avatarUploadSubmit = document.getElementById('avatarUploadSubmit');
+
+    if (avatarInput && avatarPreview && sidebarAvatar && avatarDropzone && avatarStatus && avatarChooseButton && avatarResetButton && avatarUploadSubmit) {
+        const currentAvatarSrc = avatarPreview.dataset.currentSrc;
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
+
+        function setAvatarStatus(message, isError) {
+            avatarStatus.textContent = message;
+            avatarStatus.classList.toggle('is-error', Boolean(isError));
+        }
+
+        function resetAvatarSelection() {
+            avatarInput.value = '';
+            avatarPreview.src = currentAvatarSrc;
+            sidebarAvatar.src = currentAvatarSrc;
+            avatarUploadSubmit.disabled = true;
+            avatarResetButton.disabled = true;
+            setAvatarStatus('暂未选择新文件', false);
+        }
+
+        function updateAvatarPreview(file) {
+            if (!allowedTypes.includes(file.type)) {
+                resetAvatarSelection();
+                setAvatarStatus('文件格式不支持，请选择 JPG、PNG、GIF 或 WebP。', true);
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                resetAvatarSelection();
+                setAvatarStatus('文件大小不能超过 5MB。', true);
+                return;
+            }
+
+            const objectUrl = URL.createObjectURL(file);
+            avatarPreview.src = objectUrl;
+            sidebarAvatar.src = objectUrl;
+            avatarUploadSubmit.disabled = false;
+            avatarResetButton.disabled = false;
+            setAvatarStatus(`已选择：${file.name}`, false);
+        }
+
+        avatarChooseButton.addEventListener('click', function() {
+            avatarInput.click();
+        });
+
+        avatarResetButton.addEventListener('click', function() {
+            resetAvatarSelection();
+        });
+
+        avatarInput.addEventListener('change', function() {
+            const file = this.files && this.files[0];
+            if (!file) {
+                resetAvatarSelection();
+                return;
+            }
+
+            updateAvatarPreview(file);
+        });
+
+        avatarDropzone.addEventListener('dragover', function(event) {
+            event.preventDefault();
+            avatarDropzone.classList.add('is-dragover');
+        });
+
+        avatarDropzone.addEventListener('dragleave', function() {
+            avatarDropzone.classList.remove('is-dragover');
+        });
+
+        avatarDropzone.addEventListener('drop', function(event) {
+            event.preventDefault();
+            avatarDropzone.classList.remove('is-dragover');
+
+            const file = event.dataTransfer.files && event.dataTransfer.files[0];
+            if (!file) {
+                return;
+            }
+
+            const transfer = new DataTransfer();
+            transfer.items.add(file);
+            avatarInput.files = transfer.files;
+            updateAvatarPreview(file);
+        });
+    }
 });
 </script>
-{% endblock %} 
+{% endblock %}

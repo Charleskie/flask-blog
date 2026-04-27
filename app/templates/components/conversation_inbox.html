@@ -1,0 +1,398 @@
+{% macro render_shared_status_badge(status) -%}
+    {% if status == 'unread' %}
+        <span class="message-status-badge is-unread">未读</span>
+    {% elif status == 'read' %}
+        <span class="message-status-badge is-read">已读</span>
+    {% elif status == 'replied' %}
+        <span class="message-status-badge is-replied">已回复</span>
+    {% elif status == 'in_conversation' %}
+        <span class="message-status-badge is-conversation">对话中</span>
+    {% else %}
+        <span class="message-status-badge is-archived">已归档</span>
+    {% endif %}
+{%- endmacro %}
+
+<div class="message-center">
+    <div class="message-center-header">
+        <div>
+            <span class="message-center-kicker">{{ conversation_header_kicker }}</span>
+            <h1 class="message-center-title">{{ conversation_header_title }}</h1>
+            <p class="message-center-subtitle">{{ conversation_header_subtitle }}</p>
+        </div>
+        <div class="message-center-summary">
+            <span class="message-summary-pill">共 {{ conversation_total }} 条消息</span>
+            <span class="message-summary-pill {% if conversation_unread_total %}is-danger{% endif %}">
+                {{ conversation_unread_total }} 条未读
+            </span>
+        </div>
+    </div>
+
+    <div class="message-toolbar">
+        <div class="message-toolbar-copy">
+            <span class="message-toolbar-title">{{ conversation_toolbar_title }}</span>
+            <span class="message-toolbar-meta">{{ conversation_toolbar_meta }}</span>
+        </div>
+        {% if conversation_mode == 'admin' %}
+            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAsRead(this)">
+                <i class="fas fa-envelope-open mr-2"></i>全部标记为已读
+            </button>
+        {% elif conversation_mode == 'user' %}
+            <a href="{{ url_for('main.contact', mode='new') }}" class="btn btn-primary btn-sm no-underline">
+                <i class="fas fa-plus mr-2"></i>新建对话
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="message-inbox">
+        <aside class="message-sidebar">
+            <div class="message-sidebar-head">
+                <h2 class="message-sidebar-title">会话列表</h2>
+                <span class="message-sidebar-meta">{{ conversation_items|length }} / {{ conversation_total }}</span>
+            </div>
+
+            {% if conversation_items %}
+                <div class="message-list">
+                    {% for message in conversation_items %}
+                        {% set latest_reply = message.replies[0] if message.replies else none %}
+                        {% set preview_text = latest_reply.reply_content if latest_reply else message.message %}
+                        {% set last_time = latest_reply.created_at if latest_reply else message.created_at %}
+                        {% if conversation_mode == 'admin' %}
+                            {% set unread_count = 1 if message.has_unread_for_admin() else 0 %}
+                        {% else %}
+                            {% set unread_count = 1 if message.has_unread_for_user() else 0 %}
+                        {% endif %}
+                        {% set unread_badge_label = '99+' if unread_count > 99 else unread_count %}
+                        {% if conversation_mode == 'admin' %}
+                            {% set preview_author = '管理员' if latest_reply and latest_reply.reply_type == 'admin' else (latest_reply.sender_name if latest_reply and latest_reply.sender_name else message.name) %}
+                            {% set primary_label = message.name %}
+                            {% set secondary_label = message.email %}
+                            {% set avatar_label = message.name[:1] | upper %}
+                            {% set item_href = url_for('admin.admin_messages', page=conversation_current_page, message_id=message.id) %}
+                        {% else %}
+                            {% set preview_author = '管理员' if latest_reply and latest_reply.reply_type == 'admin' else '你' %}
+                            {% set primary_label = message.subject %}
+                            {% set secondary_label = none %}
+                            {% set avatar_label = '你' %}
+                            {% set item_href = url_for('main.contact', message_id=message.id) %}
+                        {% endif %}
+
+                        <a href="{{ item_href }}"
+                           class="message-list-item {% if conversation_selected and conversation_selected.id == message.id and not conversation_compose_mode %}is-active{% endif %}">
+                            <div class="message-list-item-top">
+                                <div class="message-list-identity">
+                                    <div class="message-avatar-wrap">
+                                        <div class="message-avatar">
+                                            {{ avatar_label }}
+                                        </div>
+                                    </div>
+                                    <div class="message-list-heading">
+                                        <p class="message-list-name">{{ primary_label }}</p>
+                                        {% if secondary_label %}
+                                            <p class="message-list-email">{{ secondary_label }}</p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="message-list-time">
+                                    <span class="message-list-updated">{{ last_time|localtime('%m-%d %H:%M') }}</span>
+                                    <div class="message-list-badges">
+                                        {% if unread_count > 0 %}
+                                            <span class="message-unread-badge" title="当前会话有未读消息">
+                                                {{ unread_badge_label }}
+                                            </span>
+                                        {% endif %}
+                                        {{ render_shared_status_badge(message.status) }}
+                                    </div>
+                                </div>
+                            </div>
+                            {% if conversation_mode == 'admin' %}
+                                <p class="message-list-subject">{{ message.subject }}</p>
+                            {% endif %}
+                            <p class="message-list-preview">
+                                <span class="message-list-preview-author">{{ preview_author }}：</span>{{ preview_text[:64] }}{% if preview_text|length > 64 %}...{% endif %}
+                            </p>
+                            {% if conversation_mode == 'admin' and message.ip_address %}
+                                <div class="message-list-foot">
+                                    <span class="message-list-ip">{{ message.ip_address }}</span>
+                                </div>
+                            {% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+
+                {% if conversation_mode == 'admin' and conversation_page_obj and conversation_page_obj.pages > 1 %}
+                    <div class="message-pagination">
+                        {% if conversation_page_obj.has_prev %}
+                            <a href="{{ url_for('admin.admin_messages', page=conversation_page_obj.prev_num) }}" class="btn btn-sm btn-outline">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        <span class="message-pagination-info">{{ conversation_page_obj.page }} / {{ conversation_page_obj.pages }}</span>
+                        {% if conversation_page_obj.has_next %}
+                            <a href="{{ url_for('admin.admin_messages', page=conversation_page_obj.next_num) }}" class="btn btn-sm btn-outline">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
+                {% if conversation_mode == 'user' %}
+                    <div class="message-sidebar-actions">
+                        <a href="{{ url_for('main.contact', mode='new') }}" class="btn btn-secondary btn-sm no-underline">
+                            <i class="fas fa-plus mr-2"></i>新建对话
+                        </a>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="message-empty-sidebar">
+                    <div class="message-empty-icon">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <h3>{{ conversation_empty_title }}</h3>
+                    <p>{{ conversation_empty_text }}</p>
+                </div>
+            {% endif %}
+        </aside>
+
+        <section class="message-thread-panel">
+            {% if conversation_mode == 'user' and conversation_compose_mode %}
+                <div class="message-thread-head">
+                    <div class="message-thread-summary">
+                        <div class="message-thread-avatar">你</div>
+                        <div class="message-thread-main">
+                            <div class="message-thread-title-row">
+                                <h2 class="message-thread-title">发起新对话</h2>
+                                <span class="message-status-badge is-read">新话题</span>
+                            </div>
+                            <p class="message-thread-subject">这会创建一条新的会话记录，发送后会自动加入左侧列表。</p>
+                            <div class="message-thread-meta">
+                                <span>{{ current_user.username }}</span>
+                                <span>{{ current_user.email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-thread-actions">
+                        {% if conversation_back_href %}
+                            <a href="{{ conversation_back_href }}" class="btn btn-secondary btn-sm no-underline">
+                                <i class="fas fa-arrow-left mr-2"></i>返回会话
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="message-thread-body" data-scroll-latest>
+                    <div class="message-bubble message-bubble-incoming">
+                        <div class="message-bubble-meta">
+                            <span class="message-bubble-author">系统提示</span>
+                        </div>
+                        <div class="message-bubble-content">在这里开启一个新话题，发送后它会成为左侧会话列表中的一条新记录。</div>
+                    </div>
+                </div>
+
+                <form id="contact-form" class="message-reply-card">
+                    <input type="hidden" name="name" value="{{ current_user.username }}">
+                    <input type="hidden" name="email" value="{{ current_user.email }}">
+
+                    <div class="contact-compose-summary mb-3">
+                        <span class="contact-summary-chip"><i class="fas fa-user"></i>{{ current_user.username }}</span>
+                        <span class="contact-summary-chip"><i class="fas fa-envelope"></i>{{ current_user.email }}</span>
+                    </div>
+
+                    <div class="contact-composer-meta mb-3">
+                        <div class="contact-field contact-field-wide">
+                            <label for="subject" class="contact-label">主题 *</label>
+                            <input type="text" class="form-control" id="subject" name="subject" placeholder="一句话概括这次新话题" required>
+                        </div>
+                    </div>
+
+                    <div class="message-reply-head">
+                        <div>
+                            <h3>新建对话</h3>
+                            <p>发送后会自动加入左侧会话列表，后续可以继续在这里跟进。</p>
+                        </div>
+                        <span class="message-reply-count">新话题</span>
+                    </div>
+                    <div class="message-reply-form">
+                        <textarea
+                            class="form-control message-reply-input"
+                            id="message"
+                            name="message"
+                            rows="5"
+                            placeholder="输入消息内容..."
+                            required
+                        ></textarea>
+                        <div class="message-reply-actions">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="clearContactForm(this)">清空</button>
+                            <button type="submit" class="btn btn-primary btn-sm contact-submit">
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                <span>发送新对话</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            {% elif conversation_selected %}
+                <div class="message-thread-head">
+                    <div class="message-thread-summary">
+                        {% if conversation_mode == 'admin' %}
+                            <div class="message-thread-avatar">{{ conversation_selected.name[:1] | upper }}</div>
+                        {% else %}
+                            <div class="message-thread-avatar">你</div>
+                        {% endif %}
+                        <div class="message-thread-main">
+                            <div class="message-thread-title-row">
+                                <h2 class="message-thread-title">
+                                    {% if conversation_mode == 'admin' %}
+                                        {{ conversation_selected.name }}
+                                    {% else %}
+                                        {{ conversation_selected.subject }}
+                                    {% endif %}
+                                </h2>
+                                {{ render_shared_status_badge(conversation_selected.status) }}
+                            </div>
+                            <p class="message-thread-subject">
+                                {% if conversation_mode == 'admin' %}
+                                    {{ conversation_selected.subject }}
+                                {% else %}
+                                    {{ conversation_selected.created_at|localtime('%Y-%m-%d %H:%M') }} 发起
+                                {% endif %}
+                            </p>
+                            <div class="message-thread-meta">
+                                {% if conversation_mode == 'admin' %}
+                                    <a href="mailto:{{ conversation_selected.email }}">{{ conversation_selected.email }}</a>
+                                {% else %}
+                                    <span>{{ current_user.email }}</span>
+                                {% endif %}
+                                <span>{{ conversation_selected.created_at|localtime('%Y-%m-%d %H:%M') }}</span>
+                                {% if conversation_mode == 'admin' and conversation_selected.ip_address %}
+                                    <span>{{ conversation_selected.ip_address }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-thread-actions">
+                        {% if conversation_mode == 'user' %}
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm color-fg-danger js-delete-conversation"
+                                data-message-id="{{ conversation_selected.id }}"
+                                data-message-subject="{{ conversation_selected.subject|e }}"
+                            >
+                                删除对话
+                            </button>
+                            <a href="{{ url_for('main.contact', mode='new') }}" class="btn btn-secondary btn-sm no-underline">
+                                <i class="fas fa-plus mr-2"></i>新建对话
+                            </a>
+                        {% else %}
+                            <button
+                                type="button"
+                                class="btn btn-outline btn-sm color-fg-danger js-delete-message"
+                                data-message-id="{{ conversation_selected.id }}"
+                                data-message-subject="{{ conversation_selected.subject|e }}"
+                            >
+                                删除
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="message-thread-body" data-scroll-latest>
+                    <div class="message-bubble {% if conversation_mode == 'admin' %}message-bubble-incoming{% else %}message-bubble-outgoing{% endif %}">
+                        <div class="message-bubble-meta">
+                            <span class="message-bubble-author">{% if conversation_mode == 'admin' %}{{ conversation_selected.name }}{% else %}你{% endif %}</span>
+                            <span>{{ conversation_selected.created_at|localtime('%Y-%m-%d %H:%M') }}</span>
+                            <span class="message-bubble-topic">主题：{{ conversation_selected.subject }}</span>
+                        </div>
+                        <div class="message-bubble-content">{{ conversation_selected.message }}</div>
+                    </div>
+
+                    {% for reply in conversation_selected.replies|sort(attribute='created_at') %}
+                        {% if conversation_mode == 'admin' %}
+                            {% set is_outgoing = reply.reply_type == 'admin' %}
+                            {% set bubble_author = reply.sender_name or ('管理员' if reply.reply_type == 'admin' else conversation_selected.name) %}
+                        {% else %}
+                            {% set is_outgoing = reply.reply_type != 'admin' %}
+                            {% set bubble_author = reply.sender_name or ('管理员' if reply.reply_type == 'admin' else '你') %}
+                        {% endif %}
+                        <div class="message-bubble {% if is_outgoing %}message-bubble-outgoing{% else %}message-bubble-incoming{% endif %}">
+                            <div class="message-bubble-meta">
+                                <span class="message-bubble-author">{{ bubble_author }}</span>
+                                <span>{{ reply.created_at|localtime('%Y-%m-%d %H:%M') }}</span>
+                                {% if reply.reply_type == 'admin' and reply.is_sent %}
+                                    <span>邮件已发送</span>
+                                {% elif reply.reply_type == 'admin' and conversation_mode == 'admin' %}
+                                    <span>邮件待发送</span>
+                                {% endif %}
+                            </div>
+                            <div class="message-bubble-content">{{ reply.reply_content }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if conversation_mode == 'admin' %}
+                    <div class="message-reply-card">
+                        <div class="message-reply-head">
+                            <div>
+                                <h3>快速回复</h3>
+                                <p>直接在当前会话下继续回复，对方会收到邮件通知。</p>
+                            </div>
+                            <span class="message-reply-count">共 {{ conversation_selected.replies|length + 1 }} 条消息</span>
+                        </div>
+                        <form id="quick-reply-form" data-message-id="{{ conversation_selected.id }}" class="message-reply-form">
+                            <textarea
+                                class="form-control message-reply-input"
+                                id="quick_reply_content"
+                                name="reply_content"
+                                rows="4"
+                                required
+                                placeholder="输入回复内容..."
+                            ></textarea>
+                            <div class="message-reply-actions">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearQuickReply()">清空</button>
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-paper-plane mr-2"></i>发送回复
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                {% elif conversation_selected_can_follow_up %}
+                    <form id="contact-form" class="message-reply-card">
+                        <input type="hidden" name="conversation_action" value="follow_up">
+                        <input type="hidden" name="message_id" value="{{ conversation_selected.id }}">
+
+                        <div class="message-reply-head">
+                            <div>
+                                <h3>快速回复</h3>
+                                <p>直接在当前会话下继续发送消息，对方会在同一条对话里看到。</p>
+                            </div>
+                            <span class="message-reply-count">共 {{ conversation_selected.replies|length + 1 }} 条消息</span>
+                        </div>
+                        <div class="message-reply-form">
+                            <textarea
+                                class="form-control message-reply-input"
+                                id="message"
+                                name="message"
+                                rows="5"
+                                placeholder="输入回复内容..."
+                                required
+                            ></textarea>
+                            <div class="message-reply-actions">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearContactForm(this)">清空</button>
+                                <button type="submit" class="btn btn-primary btn-sm contact-submit">
+                                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                    <span>发送回复</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                {% endif %}
+            {% else %}
+                <div class="message-thread-empty">
+                    <div class="message-empty-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>{{ conversation_thread_empty_title }}</h3>
+                    <p>{{ conversation_thread_empty_text }}</p>
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</div>

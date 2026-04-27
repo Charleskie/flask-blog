@@ -25,137 +25,53 @@ class InteractionManager {
                 const result = await response.json();
                 this.currentUser = result.user;
                 this.isAdmin = result.user && result.user.is_admin;
-            } else if (response.status === 401) {
-                // 检查当前页面是否是登录或注册页面
-                const currentPath = window.location.pathname;
-                const isAuthPage = currentPath.includes('/login') || currentPath.includes('/register');
+                this.isGuest = result.is_guest || false;
                 
-                // 检查是否为认证页面
-                
-                // 只有在非登录/注册页面才显示登录提示
-                if (!isAuthPage) {
-                    this.showLoginPrompt();
+                // 如果是访客模式，更新UI状态
+                if (this.isGuest) {
+                    this.updateGuestModeUI();
                 }
+            } else if (response.status === 401) {
+                this.isGuest = true;
+                this.updateGuestModeUI();
             }
         } catch (error) {
             // 静默处理错误
         }
     }
 
-    showLoginPrompt() {
-        // 使用和showMessage一致的样式创建登录提示
-        let messageContainer = document.getElementById('message-container');
-        if (!messageContainer) {
-            messageContainer = document.createElement('div');
-            messageContainer.id = 'message-container';
-            messageContainer.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10000;
-                max-width: 400px;
-            `;
-            document.body.appendChild(messageContainer);
-        }
+    updateGuestModeUI() {
+        const likeButtons = document.querySelectorAll('.like-btn');
+        likeButtons.forEach(btn => {
+            btn.title = '登录后可点赞';
+        });
+        
+        const favoriteButtons = document.querySelectorAll('.favorite-btn');
+        favoriteButtons.forEach(btn => {
+            btn.title = '登录后可收藏';
+        });
+    }
 
-        // 创建消息元素
-        const messageEl = document.createElement('div');
-        messageEl.className = 'message-toast message-warning';
-        messageEl.style.cssText = `
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 1rem 1.5rem;
-            margin-bottom: 0.5rem;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideInRight 0.3s ease-out;
-            position: relative;
-            min-width: 300px;
-        `;
-
-        messageEl.innerHTML = `
-            <i class="fas fa-sign-in-alt" style="color: #f59e0b; font-size: 1.25rem;"></i>
-            <div style="color: var(--text-primary); flex: 1;">
-                <div style="font-weight: 600; margin-bottom: 0.5rem;">需要登录</div>
-                <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.75rem;">您需要登录才能使用此功能</div>
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="login-btn" style="
-                        background: var(--primary-color);
-                        color: white;
-                        border: none;
-                        padding: 0.5rem 1rem;
-                        border-radius: var(--border-radius);
-                        font-size: 0.875rem;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                    ">
-                        <i class="fas fa-sign-in-alt"></i> 登录
-                    </button>
-                    <button class="register-btn" style="
-                        background: transparent;
-                        color: var(--primary-color);
-                        border: 1px solid var(--primary-color);
-                        padding: 0.5rem 1rem;
-                        border-radius: var(--border-radius);
-                        font-size: 0.875rem;
-                        cursor: pointer;
-                        transition: all 0.2s ease;
-                    ">
-                        <i class="fas fa-user-plus"></i> 注册
-                    </button>
-                </div>
-            </div>
-            <button class="message-close" style="
-                background: none;
-                border: none;
-                color: var(--text-secondary);
-                cursor: pointer;
-                padding: 0.25rem;
-                border-radius: var(--border-radius);
-                transition: all 0.2s ease;
-            ">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        messageContainer.appendChild(messageEl);
-        
-        // 绑定事件
-        const closeBtn = messageEl.querySelector('.message-close');
-        const loginBtn = messageEl.querySelector('.login-btn');
-        const registerBtn = messageEl.querySelector('.register-btn');
-        
-        closeBtn.addEventListener('click', () => {
-            messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.remove();
-                }
-            }, 300);
-        });
-        
-        loginBtn.addEventListener('click', () => {
-            window.location.href = '/login';
-        });
-        
-        registerBtn.addEventListener('click', () => {
-            window.location.href = '/register';
-        });
-        
-        // 5秒后自动关闭
-        setTimeout(() => {
-            if (messageEl.parentNode) {
-                messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-                setTimeout(() => {
-                    if (messageEl.parentNode) {
-                        messageEl.remove();
-                    }
-                }, 300);
+    showLoginModal(message) {
+        const modal = document.getElementById('loginModal');
+        if (modal) {
+            const msgEl = document.getElementById('loginModalMessage');
+            if (msgEl && message) {
+                msgEl.textContent = message;
             }
-        }, 5000);
+            modal.classList.remove('d-none');
+            modal.classList.add('d-flex');
+            document.body.classList.add('has-site-dialog');
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('d-none');
+                    modal.classList.remove('d-flex');
+                    document.body.classList.remove('has-site-dialog');
+                }
+            };
+        } else {
+            this.showMessage(message || '请先登录后再操作', 'warning');
+        }
     }
 
     bindEvents() {
@@ -206,6 +122,11 @@ class InteractionManager {
     }
 
     async handleLike(button) {
+        if (this.isGuest || !this.currentUser) {
+            this.showLoginModal('登录后即可为内容点赞');
+            return;
+        }
+        
         const contentId = button.dataset.id;
         const contentType = button.dataset.type;
         
@@ -226,17 +147,25 @@ class InteractionManager {
                     id: parseInt(contentId),
                     type: contentType
                 })
-            });if (response.status === 401) {
+            });
+            
+            if (response.status === 401) {
                 this.showMessage('请先登录', 'error');
                 return;
             }
             
-            const result = await response.json();if (result.success) {
+            const result = await response.json();
+            
+            if (result.success) {
                 this.updateLikeUI(button, result.is_liked, result.like_count);
                 this.updateFloatingLikeUI(contentId, contentType, result.is_liked, result.like_count);
                 this.showMessage(result.is_liked ? '点赞成功' : '取消点赞', result.is_liked ? 'success' : 'info');
             } else {
-                this.showMessage(result.message || '操作失败', 'error');
+                if (result.require_login) {
+                    this.showMessage('请先登录后再进行点赞操作', 'warning');
+                } else {
+                    this.showMessage(result.message || '操作失败', 'error');
+                }
             }
         } catch (error) {
             console.error('点赞操作失败:', error);
@@ -247,6 +176,11 @@ class InteractionManager {
     }
 
     async handleFavorite(button) {
+        if (this.isGuest || !this.currentUser) {
+            this.showLoginModal('登录后即可收藏喜欢的内容');
+            return;
+        }
+        
         const contentId = button.dataset.id;
         const contentType = button.dataset.type;
         
@@ -288,15 +222,15 @@ class InteractionManager {
     }
 
     async handleCommentLike(button) {
+        if (this.isGuest || !this.currentUser) {
+            this.showLoginModal('登录后即可为评论点赞');
+            return;
+        }
+        
         const commentId = button.dataset.commentId;
         
         if (!commentId) {
             this.showMessage('参数错误', 'error');
-            return;
-        }
-
-        if (!this.currentUser) {
-            this.showMessage('请先登录', 'error');
             return;
         }
 
@@ -317,9 +251,8 @@ class InteractionManager {
             }
 
             const result = await response.json();if (result.success) {
-                // 更新按钮状态
                 const icon = button.querySelector('i');
-                const countSpan = button.querySelector('.like-count');
+                const countSpan = button.querySelector('.action-text');
                 
                 if (result.liked) {
                     // 已点赞
@@ -349,6 +282,12 @@ class InteractionManager {
     }
 
     handleRatingChange(radio) {
+        if (this.isGuest || !this.currentUser) {
+            radio.checked = false;
+            this.showLoginModal('登录后即可为内容评分');
+            return;
+        }
+        
         const ratingSection = radio.closest('.rating-section') || radio.closest('.floating-rating-section');
         let interactionButtons, likeBtn;
         
@@ -596,7 +535,8 @@ class InteractionManager {
     }
 
     async loadUserStatus() {
-        // 获取所有需要检查状态的内容
+        if (this.isGuest || !this.currentUser) return;
+        
         const contentElements = document.querySelectorAll('[data-id][data-type]');
         
         for (const element of contentElements) {
@@ -605,6 +545,11 @@ class InteractionManager {
             
             try {
                 const response = await fetch(`/api/user-status/${contentId}?type=${contentType}`);
+                const responseType = response.headers.get('content-type') || '';
+                if (!responseType.includes('application/json')) {
+                    continue;
+                }
+
                 const result = await response.json();
                 
                 if (result.success) {
@@ -697,17 +642,6 @@ class InteractionManager {
         let html = '';
         
         if (comments.length === 0) {
-            html = `
-                <div class="no-comments">
-                    <div class="no-comments-icon">
-                        <i class="fas fa-comment-slash"></i>
-                    </div>
-                    <div class="no-comments-text">
-                        <h4>暂无评论</h4>
-                        <p>快来抢沙发，发表你的看法吧！</p>
-                    </div>
-                </div>
-            `;
         } else {
             comments.forEach((comment, index) => {
                 // 使用随机头像作为默认头像
@@ -761,14 +695,9 @@ class InteractionManager {
                                     <i class="${comment.is_liked ? 'fas' : 'far'} fa-heart"></i>
                                     <span class="action-text">${comment.like_count || 0}</span>
                                 </button>
-                                <button class="btn-comment-action btn-reply" data-comment-id="${comment.id}">
+                                <button type="button" class="btn-comment-action btn-reply" data-comment-id="${comment.id}" aria-expanded="false">
                                     <i class="fas fa-reply"></i>
                                     <span class="action-text">回复</span>
-                                </button>
-                            </div>
-                            <div class="comment-actions-right">
-                                <button class="btn-comment-action btn-share" title="分享评论">
-                                    <i class="fas fa-share"></i>
                                 </button>
                             </div>
                         </div>
@@ -776,27 +705,40 @@ class InteractionManager {
                         <div class="comment-replies-section">
                             <div class="replies-container" data-comment-id="${comment.id}">
                                 <div class="replies-list" data-comment-id="${comment.id}">
-                                    ${this.renderReplies(comment.replies || [])}
+                                    ${this.renderReplies(comment.id, comment.replies || [])}
                                 </div>
-                                <div class="reply-form" style="display: none;" data-comment-id="${comment.id}">
+                                <div
+                                    class="reply-form"
+                                    style="display: none;"
+                                    data-comment-id="${comment.id}"
+                                    data-base-reply-to-user-id="${comment.user.id}"
+                                    data-base-reply-to-username="${comment.user.username}"
+                                    data-parent-reply-id=""
+                                    data-reply-to-user-id="${comment.user.id}"
+                                    data-reply-to-username="${comment.user.username}"
+                                >
                                     <div class="reply-form-header">
-                                        <div class="reply-form-avatar">
-                                            <img src="${this.currentUser?.avatar || this.generateRandomAvatar(this.currentUser?.username || 'user')}" alt="当前用户" class="reply-user-avatar">
+                                        <div class="reply-form-meta">
+                                            <div class="reply-form-avatar">
+                                                <img src="${this.currentUser?.avatar || this.generateRandomAvatar(this.currentUser?.username || 'user')}" alt="当前用户" class="reply-user-avatar">
+                                            </div>
+                                            <div class="reply-form-info">
+                                                <div class="reply-form-user">
+                                                    回复给
+                                                    <span class="reply-form-target">@${comment.user.username}</span>
+                                                </div>
+                                                <div class="reply-form-hint">支持表情和图片</div>
+                                            </div>
                                         </div>
-                                        <div class="reply-form-info">
-                                            <div class="reply-form-user">${this.currentUser?.username || '用户'}</div>
-                                            <div class="reply-form-hint">回复 ${comment.user.username}</div>
-                                        </div>
+                                        <button type="button" class="reply-form-close btn-admin-action" data-comment-id="${comment.id}" title="收起回复框">
+                                            <i class="fas fa-times"></i>
+                                        </button>
                                     </div>
                                     <div class="reply-editor-container">
                                         <div class="reply-simple-editor-container"></div>
                                     </div>
                                     <div class="reply-form-actions">
-                                        <button class="btn-reply-action btn-cancel-reply" data-comment-id="${comment.id}">
-                                            <i class="fas fa-times"></i>
-                                            取消
-                                        </button>
-                                        <button class="btn-reply-action btn-submit-reply primary" data-comment-id="${comment.id}">
+                                        <button type="button" class="btn-reply-action btn-submit-reply primary" data-comment-id="${comment.id}">
                                             <i class="fas fa-paper-plane"></i>
                                             发送回复
                                         </button>
@@ -920,7 +862,13 @@ class InteractionManager {
     // 评论编辑功能已移除 - 评论不可修改
 
     async deleteComment(commentId) {
-        if (!confirm('确定要删除这条评论吗？')) {
+        const confirmed = await window.confirmAsync('确定要删除这条评论吗？', {
+            title: '删除评论',
+            confirmText: '确认删除',
+            cancelText: '取消',
+            danger: true
+        });
+        if (!confirmed) {
             return;
         }
 
@@ -950,9 +898,10 @@ class InteractionManager {
                         const contentId = interactionSection.dataset.contentId;
                         const contentType = interactionSection.dataset.contentType;
                         
-                        // 更新评论计数和平均评分
                         this.updateCommentCount(contentId, contentType, result.comment_count);
-                        this.updateRating(contentId, contentType, result.average_rating);
+                        if (result.average_rating !== undefined) {
+                            this.updateRating(contentId, contentType, result.average_rating);
+                        }
                     }
                     
                     // 移除评论元素
@@ -1131,7 +1080,7 @@ class InteractionManager {
             if (response.ok) {
                 const result = await response.json();
                 if (result.success) {
-                    return result.image_url;
+                    return result.url || result.image_url;
                 } else {
                     console.error('图片上传失败:', result.message);
                     return null;
@@ -1146,110 +1095,14 @@ class InteractionManager {
     }
 
     showMessage(message, type = 'info', duration = 3000) {
-        // 创建消息容器（如果不存在）
-        let messageContainer = document.getElementById('message-container');
-        if (!messageContainer) {
-            messageContainer = document.createElement('div');
-            messageContainer.id = 'message-container';
-            messageContainer.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10000;
-                max-width: 400px;
-            `;
-            document.body.appendChild(messageContainer);
+        if (typeof window.showToast === 'function') {
+            return window.showToast(message, type, duration);
         }
-
-        // 创建消息元素
-        const messageEl = document.createElement('div');
-        messageEl.className = `message-toast message-${type}`;
-        messageEl.style.cssText = `
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 1rem 1.5rem;
-            margin-bottom: 0.5rem;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideInRight 0.3s ease-out;
-            position: relative;
-            min-width: 300px;
-        `;
-
-        // 根据类型设置图标和颜色
-        let icon, color;
-        switch (type) {
-            case 'success':
-                icon = 'fas fa-check-circle';
-                color = '#10b981';
-                break;
-            case 'error':
-                icon = 'fas fa-exclamation-circle';
-                color = '#ef4444';
-                break;
-            case 'warning':
-                icon = 'fas fa-exclamation-triangle';
-                color = '#f59e0b';
-                break;
-            case 'info':
-            default:
-                icon = 'fas fa-info-circle';
-                color = '#3b82f6';
-                break;
-        }
-
-        messageEl.innerHTML = `
-            <i class="${icon}" style="color: ${color}; font-size: 1.25rem;"></i>
-            <span style="color: var(--text-primary); flex: 1;">${message}</span>
-            <button class="message-close" style="
-                background: none;
-                border: none;
-                color: var(--text-secondary);
-                cursor: pointer;
-                padding: 0.25rem;
-                border-radius: var(--border-radius);
-                transition: all 0.2s ease;
-            ">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-
-        // 添加关闭按钮事件
-        const closeBtn = messageEl.querySelector('.message-close');
-        closeBtn.addEventListener('click', () => {
-            messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.remove();
-                }
-            }, 300);
-        });
-
-        // 添加到容器
-        messageContainer.appendChild(messageEl);
-
-        // 自动关闭
-        if (duration > 0) {
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-                    setTimeout(() => {
-                        if (messageEl.parentNode) {
-                            messageEl.remove();
-                        }
-                    }, 300);
-                }
-            }, duration);
-        }
-
-        return messageEl;
+        return null;
     }
 
     // 回复相关函数
-    renderReplies(replies) {
+    renderReplies(commentId, replies) {
         if (!replies || replies.length === 0) {
             return '';
         }
@@ -1257,6 +1110,11 @@ class InteractionManager {
         return replies.map(reply => {
             const defaultAvatar = this.generateRandomAvatar(reply.user.username);
             const avatar = reply.user.avatar || defaultAvatar;
+            const replyContext = reply.parent_reply_id && reply.reply_to ? `
+                <div class="reply-target-context">
+                    回复 <span class="reply-target-name">@${reply.reply_to.username}</span>
+                </div>
+            ` : '';
             return `
                 <div class="reply-card" data-reply-id="${reply.id}">
                     <div class="reply-card-header">
@@ -1285,16 +1143,28 @@ class InteractionManager {
                     </div>
                     <div class="reply-card-body">
                         <div class="reply-content-wrapper">
+                            ${replyContext}
                             <div class="reply-content">${reply.content}</div>
                         </div>
                     </div>
                     <div class="reply-card-footer">
                         <div class="reply-actions">
-                            <button class="btn-reply-action reply-like-btn ${reply.is_liked ? 'liked' : ''}" 
+                            <button type="button" class="btn-reply-action reply-like-btn ${reply.is_liked ? 'liked' : ''}" 
                                     data-reply-id="${reply.id}" 
                                     title="${reply.is_liked ? '取消点赞' : '点赞'}">
                                 <i class="${reply.is_liked ? 'fas' : 'far'} fa-heart"></i>
                                 <span class="action-text">${reply.like_count || 0}</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="btn-reply-action btn-reply-to-reply"
+                                data-comment-id="${commentId}"
+                                data-parent-reply-id="${reply.id}"
+                                data-reply-to-user-id="${reply.user.id}"
+                                data-reply-to-username="${reply.user.username}"
+                            >
+                                <i class="fas fa-reply"></i>
+                                <span class="action-text">回复</span>
                             </button>
                         </div>
                     </div>
@@ -1311,9 +1181,30 @@ class InteractionManager {
                 const replyBtn = e.target.closest('.btn-reply');
                 if (replyBtn && replyBtn.dataset.commentId) {
                     const commentId = replyBtn.dataset.commentId;
-                    this.showReplyForm(commentId);
+                    const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
+                    if (replyForm && replyForm.classList.contains('is-open')) {
+                        this.hideReplyForm(commentId);
+                    } else {
+                        this.showReplyForm(commentId);
+                    }
                 } else {
                     console.error('无法找到评论ID');
+                }
+            });
+        });
+
+        container.querySelectorAll('.btn-reply-to-reply').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const replyBtn = e.target.closest('.btn-reply-to-reply');
+                if (replyBtn && replyBtn.dataset.commentId) {
+                    this.showReplyForm(replyBtn.dataset.commentId, {
+                        parentReplyId: replyBtn.dataset.parentReplyId,
+                        replyToUserId: replyBtn.dataset.replyToUserId,
+                        replyToUsername: replyBtn.dataset.replyToUsername
+                    });
+                } else {
+                    console.error('无法找到回复目标');
                 }
             });
         });
@@ -1333,10 +1224,10 @@ class InteractionManager {
         });
 
         // 取消回复按钮事件
-        container.querySelectorAll('.btn-cancel-reply').forEach(btn => {
+        container.querySelectorAll('.reply-form-close').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
-                const cancelBtn = e.target.closest('.btn-cancel-reply');
+                const cancelBtn = e.target.closest('.reply-form-close');
                 if (cancelBtn && cancelBtn.dataset.commentId) {
                     const commentId = cancelBtn.dataset.commentId;
                     this.hideReplyForm(commentId);
@@ -1365,10 +1256,66 @@ class InteractionManager {
         // 回复编辑功能已移除
     }
 
-    showReplyForm(commentId) {
+    setReplyFormTarget(replyForm, options = {}) {
+        const baseReplyToUserId = replyForm.dataset.baseReplyToUserId || '';
+        const baseReplyToUsername = replyForm.dataset.baseReplyToUsername || '用户';
+        const parentReplyId = options.parentReplyId ? String(options.parentReplyId) : '';
+        const replyToUserId = options.replyToUserId ? String(options.replyToUserId) : baseReplyToUserId;
+        const replyToUsername = options.replyToUsername || baseReplyToUsername;
+
+        replyForm.dataset.parentReplyId = parentReplyId;
+        replyForm.dataset.replyToUserId = replyToUserId;
+        replyForm.dataset.replyToUsername = replyToUsername;
+
+        const targetElement = replyForm.querySelector('.reply-form-target');
+        if (targetElement) {
+            targetElement.textContent = `@${replyToUsername}`;
+        }
+
+        const hintElement = replyForm.querySelector('.reply-form-hint');
+        if (hintElement) {
+            hintElement.textContent = parentReplyId ? '正在回复这条回复' : '支持表情和图片';
+        }
+    }
+
+    setReplyButtonState(commentId, isActive) {
+        document.querySelectorAll(`.btn-reply[data-comment-id="${commentId}"]`).forEach(btn => {
+            btn.classList.toggle('active', isActive);
+            btn.setAttribute('aria-expanded', isActive ? 'true' : 'false');
+        });
+    }
+
+    hideAllReplyForms(exceptCommentId = null) {
+        document.querySelectorAll('.reply-form').forEach(form => {
+            const formCommentId = form.dataset.commentId;
+            if (exceptCommentId !== null && String(formCommentId) === String(exceptCommentId)) {
+                return;
+            }
+
+            form.style.display = 'none';
+            form.classList.remove('is-open');
+            this.setReplyFormTarget(form);
+            this.setReplyButtonState(formCommentId, false);
+
+            const editorContainer = form.querySelector('.reply-simple-editor-container');
+            if (editorContainer && editorContainer.simpleCommentEditor) {
+                editorContainer.simpleCommentEditor.clear();
+            }
+        });
+    }
+
+    showReplyForm(commentId, options = {}) {
         const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
         if (replyForm) {
+            this.hideAllReplyForms(commentId);
             replyForm.style.display = 'block';
+            replyForm.classList.add('is-open');
+            this.setReplyFormTarget(replyForm, options);
+            this.setReplyButtonState(commentId, true);
+
+            const replyPlaceholder = replyForm.dataset.replyToUsername
+                ? `回复 @${replyForm.dataset.replyToUsername}...`
+                : '回复评论...';
             
             // 初始化简化版评论编辑器
             const editorContainer = replyForm.querySelector('.reply-simple-editor-container');
@@ -1377,7 +1324,7 @@ class InteractionManager {
                 if (!editorContainer.simpleCommentEditor && (!editorContainer.dataset || editorContainer.dataset.initialized !== 'true')) {
                     try {
                         const editor = new SimpleCommentEditor(editorContainer, {
-                            placeholder: '回复评论...',
+                            placeholder: replyPlaceholder,
                             content: ''
                         });
                         editorContainer.simpleCommentEditor = editor;
@@ -1388,7 +1335,12 @@ class InteractionManager {
                     }
                 } else if (editorContainer.simpleCommentEditor) {
                     // 如果已经初始化，清空内容并聚焦
+                    const editorContent = editorContainer.querySelector('.comment-content');
+                    if (editorContent) {
+                        editorContent.dataset.placeholder = replyPlaceholder;
+                    }
                     editorContainer.simpleCommentEditor.clear();
+                    editorContainer.simpleCommentEditor.updatePlaceholder();
                     editorContainer.simpleCommentEditor.focus();
                 }
             }
@@ -1399,6 +1351,9 @@ class InteractionManager {
         const replyForm = document.querySelector(`.reply-form[data-comment-id="${commentId}"]`);
         if (replyForm) {
             replyForm.style.display = 'none';
+            replyForm.classList.remove('is-open');
+            this.setReplyFormTarget(replyForm);
+            this.setReplyButtonState(commentId, false);
             
             // 清空简化版评论编辑器内容
             const editorContainer = replyForm.querySelector('.reply-simple-editor-container');
@@ -1440,6 +1395,8 @@ class InteractionManager {
         // 处理Base64图片
         content = await this.processBase64Images(content);
 
+        const parentReplyId = replyForm.dataset.parentReplyId || '';
+
         const submitBtn = replyForm.querySelector('.btn-submit-reply');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 回复中...';
@@ -1450,7 +1407,10 @@ class InteractionManager {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ content })
+                body: JSON.stringify({
+                    content,
+                    parent_reply_id: parentReplyId || null
+                })
             });
 
             if (response.status === 401) {
@@ -1469,18 +1429,7 @@ class InteractionManager {
                 }
                 
                 this.hideReplyForm(commentId);
-                // 重新加载评论以显示新回复
-                const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
-                if (commentItem) {
-                    const contentElement = commentItem.closest('[data-id]');
-                    const typeElement = commentItem.closest('[data-type]');
-                    
-                    if (contentElement && typeElement) {
-                        const contentId = contentElement.dataset.id;
-                        const contentType = typeElement.dataset.type;
-                        this.loadCommentsForContent(contentId, contentType);
-                    } else {}
-                }
+                this.reloadCommentsForComment(commentId);
             } else {
                 this.showMessage(result.message || '回复失败', 'error');
             }
@@ -1489,7 +1438,7 @@ class InteractionManager {
             this.showMessage('网络错误，请重试', 'error');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '回复';
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送回复';
         }
     }
 
@@ -1497,10 +1446,35 @@ class InteractionManager {
         return this.currentUser && (this.currentUser.id === userId || this.isAdmin);
     }
 
+    reloadCommentsForComment(commentId) {
+        const commentItem = document.querySelector(`[data-comment-id="${commentId}"]`);
+        if (!commentItem) {
+            return;
+        }
+
+        const commentsList = commentItem.closest('.comments-list');
+        if (!commentsList) {
+            return;
+        }
+
+        const contentId = commentsList.dataset.contentId;
+        const contentType = commentsList.dataset.contentType;
+
+        if (contentId && contentType) {
+            this.loadCommentsForContent(contentId, contentType);
+        }
+    }
+
     // 回复编辑功能已移除 - 回复不可修改
 
     async deleteReply(replyId) {
-        if (!confirm('确定要删除这条回复吗？')) {
+        const confirmed = await window.confirmAsync('确定要删除这条回复吗？', {
+            title: '删除回复',
+            confirmText: '确认删除',
+            cancelText: '取消',
+            danger: true
+        });
+        if (!confirmed) {
             return;
         }
 
@@ -1513,10 +1487,15 @@ class InteractionManager {
 
             if (result.success) {
                 this.showMessage('回复删除成功', 'success');
-                // 移除回复元素
-                const replyItem = document.querySelector(`.reply-item[data-reply-id="${replyId}"]`);
+                const replyItem = document.querySelector(`.reply-card[data-reply-id="${replyId}"]`);
                 if (replyItem) {
-                    replyItem.remove();
+                    const commentItem = replyItem.closest('[data-comment-id]');
+                    const commentId = commentItem?.dataset.commentId;
+                    if (commentId) {
+                        this.reloadCommentsForComment(commentId);
+                    } else {
+                        replyItem.remove();
+                    }
                 }
             } else {
                 this.showMessage(result.message || '删除失败', 'error');

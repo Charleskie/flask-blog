@@ -1,5 +1,11 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
 import markdown
 from markdown.extensions import codehilite, fenced_code, tables, toc
+
+
+LOCAL_TZ = ZoneInfo('Asia/Shanghai')
 
 def nl2br_filter(text):
     """将换行符转换为HTML的<br>标签"""
@@ -49,4 +55,18 @@ def html_filter(text):
     """直接返回HTML内容（用于Tiptap编辑器）"""
     if text is None:
         return ''
-    return text 
+    return text
+
+
+def localtime_filter(value, fmt='%Y-%m-%d %H:%M'):
+    """将数据库里的 UTC 时间统一转换为本地时间字符串。"""
+    if value is None:
+        return ''
+
+    if not isinstance(value, datetime):
+        return value
+
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=ZoneInfo('UTC'))
+
+    return value.astimezone(LOCAL_TZ).strftime(fmt)

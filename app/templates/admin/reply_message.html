@@ -3,182 +3,100 @@
 {% block title %}回复消息 - 管理后台{% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-6 mb-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            回复消息
-        </h1>
-        <p class="text-slate-300">回复来自 {{ message.name }} 的消息</p>
+<div class="container-xl mx-auto px-3">
+    <div class="text-center py-6 mb-6">
+        <h1 class="f2 text-bold color-fg-default m-0 mb-2">回复消息</h1>
+        <p class="f5 color-fg-muted m-0">回复来自 {{ message.name }} 的消息</p>
     </div>
-</div>
 
-<!-- 主要内容 -->
-<div class="max-w-6xl mx-auto px-4">
-    <div class="flex items-center justify-between mb-6">
-        <a href="{{ url_for('admin.view_message', message_id=message.id) }}" class="btn-secondary">
+    <div class="d-flex flex-wrap items-center justify-between gap-3 mb-4">
+        <a href="{{ url_for('admin.view_message', message_id=message.id) }}" class="btn btn-secondary btn-sm">
             <i class="fas fa-arrow-left mr-2"></i> 返回消息详情
         </a>
     </div>
-    
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- 回复表单 -->
-        <div class="glass-card rounded-xl p-8">
-            <div class="flex items-center justify-between mb-6">
-                <div class="flex items-center">
-                    <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-edit text-white text-xl"></i>
+
+    <style>
+    .reply-layout { display: flex; flex-direction: column; gap: 24px; }
+    @media (min-width: 1012px) {
+        .reply-layout { display: grid; grid-template-columns: 1fr 1fr; }
+    }
+    </style>
+    <div class="reply-layout">
+            <div class="Box">
+                <div class="Box-body p-4">
+                    <div class="d-flex flex-wrap items-start justify-between gap-3 mb-4">
+                        <div class="d-flex items-center gap-3">
+                            <div class="color-bg-success-emphasis color-fg-onEmphasis rounded-2 d-flex items-center justify-center" style="width: 48px; height: 48px;">
+                                <i class="fas fa-edit f3"></i>
+                            </div>
+                            <h2 class="f3 text-bold color-fg-default m-0">回复内容</h2>
+                        </div>
+                        <span class="f6 color-fg-muted"><i class="fas fa-info-circle mr-1"></i>支持不限次回复</span>
                     </div>
-                    <h2 class="text-2xl font-bold text-white">回复内容</h2>
-                </div>
-                <div class="text-sm text-slate-400">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    支持不限次回复
+
+                    <form method="POST" id="reply-form" class="d-flex flex-column gap-4">
+                        <div class="d-flex flex-column gap-2">
+                            <label for="reply_content" class="form-label m-0">回复内容 *</label>
+                            <textarea class="form-control width-full" id="reply_content" name="reply_content" rows="10" required placeholder="请输入您的回复内容..."></textarea>
+                            <p class="f6 color-fg-muted m-0">您的回复将发送给 {{ message.name }} ({{ message.email }})</p>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button type="submit" class="btn btn-primary flex-1">
+                                <i class="fas fa-paper-plane mr-2"></i> 发送回复
+                            </button>
+                            <a href="{{ url_for('admin.view_message', message_id=message.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-times mr-2"></i> 取消
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
-            
-            <form method="POST" id="reply-form" class="space-y-6">
-                <div>
-                    <label for="reply_content" class="block text-sm font-medium text-slate-300 mb-2">回复内容 *</label>
-                    <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" 
-                              id="reply_content" name="reply_content" rows="10" required placeholder="请输入您的回复内容..."></textarea>
-                    <p class="text-slate-400 text-sm mt-2">您的回复将发送给 {{ message.name }} ({{ message.email }})</p>
-                </div>
-                
-                <div class="flex gap-4">
-                    <button type="submit" class="btn-primary flex-1">
-                        <i class="fas fa-paper-plane mr-2"></i> 发送回复
-                    </button>
-                    <a href="{{ url_for('admin.view_message', message_id=message.id) }}" class="btn-secondary">
-                        <i class="fas fa-times mr-2"></i> 取消
-                    </a>
-                </div>
-            </form>
-        </div>
-        
-        <!-- 原消息内容 -->
-        <div class="space-y-6">
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-envelope-open text-white"></i>
-                    </div>
-                    <h3 class="text-lg font-semibold text-white">原消息</h3>
-                </div>
-                
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">发送者</label>
-                        <p class="text-white">{{ message.name }} &lt;{{ message.email }}&gt;</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">主题</label>
-                        <p class="text-white">{{ message.subject }}</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">发送时间</label>
-                        <p class="text-slate-400">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">消息内容</label>
-                        <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-4">
-                            <pre class="text-slate-300 whitespace-pre-wrap">{{ message.message }}</pre>
+
+            <div class="d-flex flex-column gap-4">
+                <div class="Box">
+                    <div class="Box-header f5 text-semibold border-bottom"><i class="fas fa-envelope-open mr-2"></i>原消息</div>
+                    <div class="Box-body d-flex flex-column gap-3">
+                        <div>
+                            <p class="form-label m-0 mb-1">发送者</p>
+                            <p class="color-fg-default m-0">{{ message.name }} &lt;{{ message.email }}&gt;</p>
+                        </div>
+                        <div>
+                            <p class="form-label m-0 mb-1">主题</p>
+                            <p class="color-fg-default m-0">{{ message.subject }}</p>
+                        </div>
+                        <div>
+                            <p class="form-label m-0 mb-1">发送时间</p>
+                            <p class="color-fg-muted m-0 f6">{{ message.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        </div>
+                        <div>
+                            <p class="form-label m-0 mb-1">消息内容</p>
+                            <div class="border rounded-2 color-bg-muted p-3">
+                                <pre class="color-fg-default m-0 f6 wb-break-word" style="white-space: pre-wrap; font-family: inherit;">{{ message.message }}</pre>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <!-- 快速回复模板 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-lightbulb text-white"></i>
+
+                <div class="Box">
+                    <div class="Box-header f5 text-semibold border-bottom"><i class="fas fa-lightbulb mr-2"></i>快速回复模板</div>
+                    <div class="Box-body d-flex flex-column gap-2">
+                        <button type="button" class="btn btn-secondary width-full" onclick="insertTemplate('感谢您的来信！我会尽快处理您的问题。')">
+                            <i class="fas fa-heart mr-2"></i> 感谢模板
+                        </button>
+                        <button type="button" class="btn btn-secondary width-full" onclick="insertTemplate('您好！我已经收到您的消息，正在处理中，请稍候。')">
+                            <i class="fas fa-clock mr-2"></i> 处理中模板
+                        </button>
+                        <button type="button" class="btn btn-secondary width-full" onclick="insertTemplate('感谢您的反馈！您的建议对我们很有帮助。')">
+                            <i class="fas fa-thumbs-up mr-2"></i> 反馈模板
+                        </button>
+                        <button type="button" class="btn btn-secondary width-full" onclick="insertTemplate('您好！我已经仔细阅读了您的消息，以下是回复：\n\n')">
+                            <i class="fas fa-reply mr-2"></i> 正式回复模板
+                        </button>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">快速回复模板</h3>
-                </div>
-                
-                <div class="grid grid-cols-1 gap-3">
-                    <button type="button" class="template-btn" 
-                            onclick="insertTemplate('感谢您的来信！我会尽快处理您的问题。')">
-                        <i class="fas fa-heart mr-2"></i> 感谢模板
-                    </button>
-                    <button type="button" class="template-btn" 
-                            onclick="insertTemplate('您好！我已经收到您的消息，正在处理中，请稍候。')">
-                        <i class="fas fa-clock mr-2"></i> 处理中模板
-                    </button>
-                    <button type="button" class="template-btn" 
-                            onclick="insertTemplate('感谢您的反馈！您的建议对我们很有帮助。')">
-                        <i class="fas fa-thumbs-up mr-2"></i> 反馈模板
-                    </button>
-                    <button type="button" class="template-btn" 
-                            onclick="insertTemplate('您好！我已经仔细阅读了您的消息，以下是回复：\n\n')">
-                        <i class="fas fa-reply mr-2"></i> 正式回复模板
-                    </button>
                 </div>
             </div>
-        </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-pre {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.template-btn {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
-    width: 100%;
-}
-
-.template-btn:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-
-.btn-secondary {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.btn-secondary:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
@@ -186,124 +104,70 @@ pre {
 function insertTemplate(template) {
     const textarea = document.getElementById('reply_content');
     const currentValue = textarea.value;
-    
-    if (currentValue) {
-        textarea.value = currentValue + '\n\n' + template;
-    } else {
-        textarea.value = template;
-    }
-    
+    textarea.value = currentValue ? currentValue + '\n\n' + template : template;
     textarea.focus();
     textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-    
-    // 显示插入成功提示
-    showToast('success', '模板已插入');
+    emitToast('success', '模板已插入');
 }
 
-// 显示提示消息
-function showToast(type, message) {
-    const toast = document.createElement('div');
-    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
-    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-    
-    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-    toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas ${icon} mr-2"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // 3秒后移除
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
-    }, 3000);
+function emitToast(type, message) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
-// 表单验证和提交
 document.getElementById('reply-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    
     const replyContent = document.getElementById('reply_content').value.trim();
-    
     if (!replyContent) {
-        showToast('error', '请输入回复内容');
+        emitToast('error', '请输入回复内容');
         document.getElementById('reply_content').focus();
         return;
     }
-    
-    // 显示发送提示
     const submitBtn = this.querySelector('button[type="submit"]');
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
     submitBtn.disabled = true;
-    
-    // 发送AJAX请求
     const formData = new FormData(this);
-    
     fetch(this.action || window.location.href, {
         method: 'POST',
         body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            showToast('success', data.message || '回复发送成功！');
-            // 延迟跳转到消息详情页面
+            emitToast('success', data.message || '回复发送成功！');
             setTimeout(() => {
                 window.location.href = "{{ url_for('admin.view_message', message_id=message.id) }}";
             }, 1500);
         } else {
-            showToast('error', data.message || '发送失败，请稍后重试');
+            emitToast('error', data.message || '发送失败，请稍后重试');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('error', '发送失败，请稍后重试');
+    .catch(() => {
+        emitToast('error', '发送失败，请稍后重试');
     })
     .finally(() => {
-        // 恢复按钮状态
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
     });
 });
 
-// 自动调整文本框高度
 document.getElementById('reply_content').addEventListener('input', function() {
     this.style.height = 'auto';
     this.style.height = Math.min(this.scrollHeight, 300) + 'px';
-});
-
-// 字符计数
-document.getElementById('reply_content').addEventListener('input', function() {
     const charCount = this.value.length;
     const maxLength = 2000;
-    
-    // 创建或更新字符计数显示
     let counter = document.getElementById('char-counter');
     if (!counter) {
         counter = document.createElement('div');
         counter.id = 'char-counter';
-        counter.className = 'text-slate-400 text-sm mt-2';
+        counter.className = 'f6 color-fg-muted mt-2';
         this.parentNode.appendChild(counter);
     }
-    
-    counter.textContent = `${charCount}/${maxLength} 字符`;
-    
-    if (charCount > maxLength * 0.9) {
-        counter.className = 'text-yellow-400 text-sm mt-2';
-    } else if (charCount > maxLength) {
-        counter.className = 'text-red-400 text-sm mt-2';
-    } else {
-        counter.className = 'text-slate-400 text-sm mt-2';
-    }
+    counter.textContent = charCount + '/' + maxLength + ' 字符';
+    counter.className = 'f6 mt-2 ' + (charCount > maxLength ? 'color-fg-danger' : (charCount > maxLength * 0.9 ? 'color-fg-attention' : 'color-fg-muted'));
 });
 </script>
-{% endblock %} 
+{% endblock %}

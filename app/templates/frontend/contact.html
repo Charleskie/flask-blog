@@ -1,790 +1,1519 @@
 {% extends "base.html" %}
 
-{% block title %}联系我 - 我的个人网站{% endblock %}
+{% block title %}联系我 - Kim's Blog{% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-16 mb-12">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            联系我
-        </h1>
-        <p class="text-xl text-slate-300 mb-8">如果你有合作意向或建议和意见？欢迎随时联系我。</p>
-        {% if current_user.is_authenticated %}
-        <div class="flex justify-center">
-            <a href="{{ url_for('main.contact_messages') }}" class="btn-secondary">
-                <i class="fas fa-envelope-open mr-2"></i> 查看我的私信记录
-            </a>
-        </div>
-        {% endif %}
-    </div>
-</div>
+{% set contact_icon_color = {
+    'primary': 'color-fg-accent',
+    'secondary': 'color-fg-muted',
+    'success': 'color-fg-success',
+    'danger': 'color-fg-danger',
+    'warning': 'color-fg-attention',
+    'info': 'color-fg-accent',
+    'light': 'color-fg-subtle',
+    'dark': 'color-fg-default'
+} %}
+{% set primary_office = office_locations[0] %}
 
-<div class="max-w-6xl mx-auto px-4">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <!-- 联系表单 -->
-        <div class="lg:col-span-2">
-            <div class="glass-card rounded-xl p-8">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-indigo-600 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-envelope text-white text-xl"></i>
-                    </div>
-                    <h2 class="text-2xl font-bold text-white">发送消息</h2>
-                </div>
-                
-                <form id="contact-form" class="space-y-6">
-                    {% if current_user.is_authenticated %}
-                    <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-info-circle text-blue-400 mr-2"></i>
-                            <span class="text-blue-400 text-sm">已自动填充您的用户信息，如需修改请直接编辑</span>
-                        </div>
-                    </div>
-                    {% else %}
-                    <div class="bg-slate-600/20 border border-slate-600/30 rounded-lg p-4">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center">
-                                <i class="fas fa-user-plus text-slate-400 mr-2"></i>
-                                <span class="text-slate-400 text-sm">登录后可自动填充您的信息</span>
-                            </div>
-                            <a href="{{ url_for('auth.login') }}" class="text-indigo-400 hover:text-indigo-300 text-sm font-medium transition-colors">
-                                立即登录
-                            </a>
-                        </div>
-                    </div>
-                    {% endif %}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-slate-300 mb-2">姓名 *</label>
-                            <input type="text" 
-                                   class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                                   id="name" name="name" 
-                                   value="{% if current_user.is_authenticated %}{{ current_user.username }}{% endif %}"
-                                   placeholder="请输入您的姓名" required>
-                        </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-slate-300 mb-2">邮箱 *</label>
-                            <input type="email" 
-                                   class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                                   id="email" name="email" 
-                                   value="{% if current_user.is_authenticated %}{{ current_user.email }}{% endif %}"
-                                   placeholder="请输入您的邮箱" required>
-                        </div>
-                    </div>
-                    
-                    <div>
-                        <label for="subject" class="block text-sm font-medium text-slate-300 mb-2">主题 *</label>
-                        <input type="text" 
-                               class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                               id="subject" name="subject" placeholder="请输入消息主题" required>
-                    </div>
-                    
-                    <div>
-                        <label for="message" class="block text-sm font-medium text-slate-300 mb-2">消息内容 *</label>
-                        <textarea class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none" 
-                                  id="message" name="message" rows="6" placeholder="请输入您的消息内容..." required></textarea>
-                    </div>
-                    
-                    <div class="flex items-center justify-between">
-                        <div class="text-sm text-slate-400">
-                            <i class="fas fa-shield-alt mr-1"></i> 您的信息将被安全保护
-                        </div>
-                        <button type="submit" class="btn-primary-send">
-                            <i class="fas fa-paper-plane mr-2"></i> 发送消息
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+<div class="contact-page py-4">
+    <div class="container-xl width-full">
+        {% if show_conversation_inbox %}
+        {% set conversation_mode = 'user' %}
+        {% set conversation_items = user_messages %}
+        {% set conversation_selected = selected_message %}
+        {% set conversation_total = user_messages|length %}
+        {% set conversation_unread_total = user_unread_total %}
+        {% set conversation_current_page = 1 %}
+        {% set conversation_page_obj = none %}
+        {% set conversation_header_kicker = '我的会话' %}
+        {% set conversation_header_title = '联系记录' %}
+        {% set conversation_header_subtitle = '把历史私信和往来回复放到同一个对话页里查看。' %}
+        {% set conversation_toolbar_title = '全部会话' %}
+        {% set conversation_toolbar_meta = '可以继续回复已有会话，也可以直接发起一个新话题。' %}
+        {% set conversation_empty_title = '当前无私信' %}
+        {% set conversation_empty_text = '发送第一条消息后，会在这里形成对话记录。' %}
+        {% set conversation_thread_empty_title = '请选择一条会话' %}
+        {% set conversation_thread_empty_text = '从左侧打开一个会话后，就能在右边继续查看和回复。' %}
+        {% set conversation_compose_mode = compose_mode %}
+        {% set conversation_selected_can_follow_up = selected_message_can_follow_up %}
+        {% set conversation_back_href = url_for('main.contact', message_id=(selected_message.id if selected_message else user_messages[0].id)) if user_messages else none %}
+        {% include "components/conversation_inbox.html" %}
+        {% else %}
+        <section class="contact-dialog-layout">
+            <aside class="contact-dialog-sidebar">
+                <div class="contact-sidebar-card">
+                    <span class="contact-kicker">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                        开始新对话
+                    </span>
+                    <h1 class="contact-title">联系我</h1>
+                    <p class="contact-subtitle">合作邀请、内容建议、问题反馈，或者只是想打个招呼，都可以直接留言。</p>
 
-        <!-- 联系信息 -->
-        <div class="space-y-6">
-            <!-- 联系信息卡片 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-address-card text-white"></i>
+                    <div class="contact-stat-row">
+                        <span class="contact-stat-pill"><strong>24h</strong>工作日常规回复</span>
+                        <span class="contact-stat-pill"><strong>{{ contact_channels|length }}</strong>可用联系渠道</span>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">联系信息</h3>
-                </div>
-                <div class="space-y-4">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-envelope text-white text-sm"></i>
-                        </div>
-                        <a href="mailto:wdws851421092@gmail.com" class="text-indigo-400 hover:text-indigo-300 transition-colors">
-                            wdws851421092@gmail.com
+
+                    <div class="contact-sidebar-actions">
+                        {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('main.contact', mode='new') }}" class="contact-chip-action no-underline">
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                            发送第一条消息
+                        </a>
+                        {% else %}
+                        <a href="{{ url_for('auth.login') }}" class="contact-chip-action no-underline">
+                            <i class="fas fa-right-to-bracket" aria-hidden="true"></i>
+                            登录后查看消息记录
+                        </a>
+                        {% endif %}
+                        <a href="{{ url_for('main.index') }}" class="contact-chip-action contact-chip-action-muted no-underline">
+                            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                            返回首页
                         </a>
                     </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-phone text-white text-sm"></i>
-                        </div>
-                        <span class="text-slate-300">+86 135 **** ****</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
-                        </div>
-                        <span class="text-slate-300">深圳，中国</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-clock text-white text-sm"></i>
-                        </div>
-                        <span class="text-slate-300">周一至周五 9:00-18:00</span>
-                    </div>
                 </div>
-            </div>
 
-            <!-- 社交媒体 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-share-alt text-white"></i>
+                <div class="contact-sidebar-card">
+                    <div class="contact-card-head">
+                        <span class="contact-card-eyebrow">联系渠道</span>
+                        <h2>你也可以从这些入口找到我</h2>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">社交媒体</h3>
+                    <div class="contact-channel-list">
+                        {% for channel in contact_channels %}
+                        {% set channel_url = channel.url or '' %}
+                        <div class="contact-channel-item">
+                            <span class="contact-channel-icon {{ contact_icon_color.get(channel.color, 'color-fg-accent') }}">
+                                <i class="{{ channel.icon }}" aria-hidden="true"></i>
+                            </span>
+                            <div class="contact-channel-copy">
+                                <span class="contact-channel-label">{{ channel.platform }}</span>
+                                {% if channel_url %}
+                                <a href="{{ channel_url }}"
+                                   class="contact-channel-link no-underline"
+                                   {% if not channel_url.startswith('mailto:') and not channel_url.startswith('tel:') %}target="_blank" rel="noopener noreferrer"{% endif %}>
+                                    {{ channel.text }}
+                                </a>
+                                {% else %}
+                                <span class="contact-channel-text">{{ channel.text }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="https://github.com/Charleskie" class="social-btn bg-slate-800 hover:bg-slate-700" target="_blank">
-                        <i class="fab fa-github"></i>
-                        <span>GitHub</span>
-                    </a>
-                    <a href="#" class="social-btn bg-blue-600 hover:bg-blue-500" target="_blank">
-                        <i class="fab fa-linkedin"></i>
-                        <span>LinkedIn</span>
-                    </a>
-                    <a href="#" class="social-btn bg-sky-500 hover:bg-sky-400" target="_blank">
-                        <i class="fab fa-twitter"></i>
-                        <span>Twitter</span>
-                    </a>
-                    <a href="#" class="social-btn bg-red-600 hover:bg-red-500" target="_blank">
-                        <i class="fab fa-weibo"></i>
-                        <span>微博</span>
-                    </a>
-                </div>
-            </div>
 
-            <!-- 常见问题 -->
-            <div class="glass-card rounded-xl p-6">
-                <div class="flex items-center mb-4">
-                    <div class="w-10 h-10 bg-orange-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-comments text-white"></i>
+                <div class="contact-sidebar-card">
+                    <div class="contact-card-head">
+                        <span class="contact-card-eyebrow">发送前先看</span>
+                        <h2>为了更快回复</h2>
                     </div>
-                    <h3 class="text-lg font-semibold text-white">常见问题</h3>
-                </div>
-                <div class="space-y-3">
-                    <div class="faq-item">
-                        <button class="faq-button" onclick="toggleFaq('faq1')">
-                            <span>如何开始合作项目？</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </button>
-                        <div id="faq1" class="faq-content hidden">
-                            <p class="text-slate-300 text-sm">请通过联系表单发送详细的项目需求，我会在24小时内回复您。</p>
+                    <div class="contact-hint-list">
+                        <div class="contact-hint-item">
+                            <span class="contact-hint-index">01</span>
+                            <div>
+                                <strong>说明背景和目标</strong>
+                                <p>简单说明你当前的背景、问题和想达成的结果。</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <button class="faq-button" onclick="toggleFaq('faq2')">
-                            <span>提供哪些技术服务？</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </button>
-                        <div id="faq2" class="faq-content hidden">
-                            <p class="text-slate-300 text-sm">包括Web开发、移动应用开发、API设计、数据库设计、系统架构等。</p>
+                        <div class="contact-hint-item">
+                            <span class="contact-hint-index">02</span>
+                            <div>
+                                <strong>补充时间信息</strong>
+                                <p>如果有截止时间或排期要求，可以一开始就说明。</p>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="faq-item">
-                        <button class="faq-button" onclick="toggleFaq('faq3')">
-                            <span>项目周期大概多久？</span>
-                            <i class="fas fa-chevron-down faq-icon"></i>
-                        </button>
-                        <div id="faq3" class="faq-content hidden">
-                            <p class="text-slate-300 text-sm">根据项目复杂度，通常2-8周不等，具体时间会在项目开始前确定。</p>
+                        <div class="contact-hint-item">
+                            <span class="contact-hint-index">03</span>
+                            <div>
+                                <strong>登录后更方便追踪</strong>
+                                <p>登录后可以直接在站内回看历史消息和后续回复。</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
+            </aside>
 
-<!-- 地图区域 -->
-<div class="max-w-6xl mx-auto px-4 mt-12">
-    <div class="glass-card rounded-xl p-8">
-        <div class="flex items-center mb-6">
-            <div class="w-12 h-12 bg-green-600 rounded-lg flex items-center justify-center mr-4">
-                <i class="fas fa-map-marker-alt text-white text-xl"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-white">位置信息</h2>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="space-y-6">
-                <div>
-                    <label for="office-select" class="block text-sm font-medium text-slate-300 mb-2">选择办公地点</label>
-                    <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                            id="office-select" onchange="changeOffice()">
-                        <option value="0">深圳 - 南山高新园</option>
-                    </select>
-                </div>
-                
-                <div id="office-info" class="space-y-4">
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-red-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-map-marker-alt text-white text-sm"></i>
+            <section class="contact-dialog-main">
+                <div class="contact-thread-card">
+                    <div class="contact-thread-head">
+                        <div>
+                            <span class="contact-card-eyebrow">对话窗口</span>
+                            <h2>直接在这里发起一段新对话</h2>
+                            <p>把你的问题、合作意向或建议发过来即可。</p>
                         </div>
-                        <span id="office-address" class="text-slate-300">深圳市南山区高新南一道</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-phone text-white text-sm"></i>
-                        </div>
-                        <span id="office-phone" class="text-slate-300">+86 135 **** 8704</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-envelope text-white text-sm"></i>
-                        </div>
-                        <span id="office-email" class="text-slate-300">wdws851421092@gmail.com</span>
-                    </div>
-                    <div class="flex items-center">
-                        <div class="w-8 h-8 bg-yellow-600 rounded-lg flex items-center justify-center mr-3">
-                            <i class="fas fa-clock text-white text-sm"></i>
-                        </div>
-                        <span id="office-hours" class="text-slate-300">工作时间：周一至周五 9:00-18:00</span>
-                    </div>
-                </div>
-                
-                <div class="flex gap-3">
-                    <button class="btn-secondary flex-1" onclick="getCurrentLocation()">
-                        <i class="fas fa-location-arrow mr-2"></i> 获取我的位置
-                    </button>
-                    <button class="btn-secondary flex-1" onclick="openInMaps()">
-                        <i class="fas fa-external-link-alt mr-2"></i> 在导航中打开
-                    </button>
-                </div>
-                
-                <div id="location-status" class="hidden">
-                    <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-spinner fa-spin text-blue-400 mr-2"></i>
-                            <span class="text-blue-400">正在获取位置...</span>
+                        <div class="contact-thread-tags">
+                            <span class="contact-thread-tag">合作</span>
+                            <span class="contact-thread-tag">反馈</span>
+                            <span class="contact-thread-tag">建议</span>
                         </div>
                     </div>
-                </div>
-            </div>
-            
-            <div class="map-container">
-                <div id="map" class="w-full h-80 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center">
-                    <div class="text-center">
-                        <i class="fas fa-map fa-3x text-slate-400 mb-3"></i>
-                        <p class="text-slate-400">点击上方按钮加载地图</p>
+
+                    <div class="contact-thread-body">
+                        <div class="contact-bubble contact-bubble-system">
+                            <div class="contact-bubble-meta">
+                                <span class="contact-bubble-author">系统提示</span>
+                                <span>现在</span>
+                            </div>
+                            <div class="contact-bubble-content">你好，可以直接在这里留言。我会尽量在一个工作日内回复。</div>
+                        </div>
+
+                        <div class="contact-bubble contact-bubble-user">
+                            <div class="contact-bubble-meta">
+                                <span class="contact-bubble-author">你可以发来</span>
+                            </div>
+                            <div class="contact-bubble-content">合作需求、功能建议、内容反馈，或者简单聊聊你正在做的事情。</div>
+                        </div>
+
+                        <div class="contact-bubble contact-bubble-system">
+                            <div class="contact-bubble-meta">
+                                <span class="contact-bubble-author">会话说明</span>
+                            </div>
+                            <div class="contact-bubble-content">
+                                {% if current_user.is_authenticated %}
+                                已自动带入你的账户资料。发送后，这条消息会自动关联到当前账号。
+                                {% else %}
+                                登录后会更方便追踪后续回复，也能在站内直接查看历史消息。
+                                {% endif %}
+                            </div>
+                        </div>
                     </div>
+
+                    <form id="contact-form" class="contact-composer-card">
+                        <div class="contact-composer-meta">
+                            <div class="contact-field">
+                                <label for="name" class="contact-label">姓名 *</label>
+                                <input type="text" class="form-control" id="name" name="name"
+                                       value="{% if current_user.is_authenticated %}{{ current_user.username }}{% endif %}"
+                                       placeholder="你的姓名" required>
+                            </div>
+                            <div class="contact-field">
+                                <label for="email" class="contact-label">邮箱 *</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                       value="{% if current_user.is_authenticated %}{{ current_user.email }}{% endif %}"
+                                       placeholder="常用邮箱" required>
+                            </div>
+                            <div class="contact-field contact-field-wide">
+                                <label for="subject" class="contact-label">主题 *</label>
+                                <input type="text" class="form-control" id="subject" name="subject" placeholder="一句话概括你想聊的内容" required>
+                            </div>
+                        </div>
+
+                        <div class="contact-reply-card">
+                            <div class="contact-reply-head">
+                                <div>
+                                    <h3>发起对话</h3>
+                                    <p>把背景、问题或合作意向写下来，我会尽量在一个工作日内回复。</p>
+                                </div>
+                                <span class="contact-reply-count">新会话</span>
+                            </div>
+                            <div class="contact-reply-form">
+                                <textarea
+                                    class="form-control contact-reply-input"
+                                    id="message"
+                                    name="message"
+                                    rows="5"
+                                    placeholder="输入消息内容..."
+                                    required
+                                ></textarea>
+                                <div class="contact-reply-actions">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="clearContactForm(this)">清空</button>
+                                    <button type="submit" class="contact-submit">
+                                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                        <span>发送消息</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </div>
-        </div>
+
+                <div class="contact-support-grid">
+                    {% if link_contacts %}
+                    <section class="Box contact-panel-card">
+                        <div class="Box-body">
+                            <div class="contact-card-head">
+                                <span class="contact-card-eyebrow">快捷入口</span>
+                                <h3>一键直达常用渠道</h3>
+                            </div>
+                            <div class="contact-link-grid">
+                                {% for channel in link_contacts %}
+                                {% set channel_url = channel.url or '' %}
+                                <a href="{{ channel_url }}"
+                                   class="contact-link-card no-underline"
+                                   {% if not channel_url.startswith('mailto:') and not channel_url.startswith('tel:') %}target="_blank" rel="noopener noreferrer"{% endif %}>
+                                    <span class="contact-link-icon {{ contact_icon_color.get(channel.color, 'color-fg-accent') }}">
+                                        <i class="{{ channel.icon }}" aria-hidden="true"></i>
+                                    </span>
+                                    <div class="contact-link-copy">
+                                        <strong>{{ channel.platform }}</strong>
+                                        <span>{{ channel.text }}</span>
+                                    </div>
+                                    <i class="fas fa-arrow-up-right-from-square contact-link-arrow" aria-hidden="true"></i>
+                                </a>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </section>
+                    {% endif %}
+
+                    <section class="Box contact-panel-card">
+                        <div class="Box-body">
+                            <div class="contact-card-head">
+                                <span class="contact-card-eyebrow">常见问题</span>
+                                <h3>发消息前先看看这个</h3>
+                            </div>
+                            <div class="contact-faq-list">
+                                {% for item in faq_items %}
+                                <div class="contact-faq-item">
+                                    <button type="button" class="contact-faq-button" onclick="toggleFaq('{{ item.id }}')">
+                                        <span>{{ item.question }}</span>
+                                        <i class="fas fa-chevron-down contact-faq-icon" aria-hidden="true"></i>
+                                    </button>
+                                    <div id="{{ item.id }}" class="contact-faq-content d-none">
+                                        <p>{{ item.answer }}</p>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </section>
+        </section>
+        {% endif %}
     </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.social-btn {
+.contact-page {
+    color: var(--fgColor-default);
+}
+
+.contact-dialog-layout,
+.contact-inbox-layout {
+    display: grid;
+    gap: 16px;
+    align-items: start;
+}
+
+.contact-dialog-layout {
+    grid-template-columns: 310px minmax(0, 1fr);
+}
+
+.contact-inbox-layout {
+    grid-template-columns: 320px minmax(0, 1fr);
+}
+
+.contact-dialog-sidebar,
+.contact-dialog-main,
+.contact-inbox-sidebar,
+.contact-inbox-main {
+    min-width: 0;
+}
+
+.contact-dialog-sidebar,
+.contact-inbox-sidebar {
     display: flex;
     flex-direction: column;
+    gap: 12px;
+}
+
+.contact-sidebar-card,
+.contact-thread-card,
+.contact-panel-card,
+.contact-office-card {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 20px;
+    background: var(--bgColor-default);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.05);
+}
+
+.contact-sidebar-card,
+.contact-thread-card,
+.contact-panel-card .Box-body,
+.contact-office-card .Box-body {
+    padding: 18px;
+}
+
+.contact-kicker,
+.contact-card-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    align-self: flex-start;
+    min-height: 28px;
+    padding: 0 11px;
+    border-radius: 999px;
+    background: rgba(9, 105, 218, 0.08);
+    border: 1px solid rgba(9, 105, 218, 0.14);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.contact-title {
+    margin: 10px 0 4px;
+    font-size: 2rem;
+    line-height: 1.06;
+    font-weight: 700;
+    color: var(--fgColor-default);
+    letter-spacing: -0.03em;
+}
+
+.contact-title-compact {
+    font-size: 1.7rem;
+}
+
+.contact-subtitle,
+.contact-card-head p,
+.contact-channel-text,
+.contact-link-copy span,
+.contact-faq-content p,
+.contact-bubble-content,
+.contact-office-row span,
+.contact-map-card p,
+.contact-map-meta span,
+.contact-thread-footer p {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+.contact-stat-row,
+.contact-sidebar-actions,
+.contact-thread-tags,
+.contact-office-actions,
+.contact-map-links,
+.contact-thread-toolbar,
+.contact-compose-summary,
+.contact-composer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.contact-stat-pill,
+.contact-thread-tag,
+.contact-map-pill,
+.contact-summary-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.contact-stat-pill strong {
+    color: var(--fgColor-default);
+    font-size: 12px;
+}
+
+.contact-chip-action {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    color: white;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 13px;
+    border-radius: 999px;
+    border: 1px solid rgba(9, 105, 218, 0.22);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.14), rgba(9, 105, 218, 0.1));
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+    transition: border-color 0.18s ease, background-color 0.18s ease, transform 0.18s ease;
+}
+
+.contact-chip-action:hover {
+    transform: translateY(-1px);
     text-decoration: none;
-    transition: all 0.3s ease;
-    min-height: 80px;
+    border-color: rgba(9, 105, 218, 0.28);
+    color: var(--fgColor-accent);
 }
 
-.social-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+.contact-chip-action-muted {
+    background: var(--bgColor-default);
+    border-color: rgba(31, 35, 40, 0.12);
+    color: var(--fgColor-default);
+}
+
+.contact-chip-action-muted:hover {
+    border-color: rgba(9, 105, 218, 0.18);
+    background: rgba(9, 105, 218, 0.04);
+    color: var(--fgColor-accent);
+}
+
+.contact-chip-action-danger {
+    background: rgba(218, 54, 51, 0.06);
+    border-color: rgba(218, 54, 51, 0.14);
+    color: var(--fgColor-danger);
+}
+
+.contact-chip-action-danger:hover {
+    border-color: rgba(218, 54, 51, 0.22);
+    background: rgba(218, 54, 51, 0.1);
+    color: var(--fgColor-danger);
+}
+
+.contact-card-head,
+.contact-channel-copy,
+.contact-link-copy {
+    min-width: 0;
+}
+
+.contact-card-head h2,
+.contact-card-head h3,
+.contact-thread-head h2,
+.contact-thread-footer h3 {
+    margin: 10px 0 4px;
+    color: var(--fgColor-default);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+}
+
+.contact-card-head h2,
+.contact-thread-head h2 {
+    font-size: 1.35rem;
+    line-height: 1.15;
+}
+
+.contact-card-head h3,
+.contact-thread-footer h3 {
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.contact-hint-list,
+.contact-channel-list,
+.contact-faq-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.contact-hint-item,
+.contact-channel-item,
+.contact-link-card,
+.contact-office-row,
+.contact-map-card {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    background: var(--bgColor-default);
+}
+
+.contact-hint-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    padding: 12px;
+}
+
+.contact-hint-index {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-accent-muted);
+    color: var(--fgColor-accent);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.contact-hint-item strong,
+.contact-channel-link,
+.contact-link-copy strong,
+.contact-label {
+    color: var(--fgColor-default);
+    font-weight: 600;
+}
+
+.contact-hint-item p {
+    margin: 4px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.contact-channel-item,
+.contact-link-card,
+.contact-office-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 12px;
+}
+
+.contact-link-card {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    color: var(--fgColor-default);
+    transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.contact-link-card:hover {
+    transform: translateY(-1px);
+    border-color: rgba(9, 105, 218, 0.22);
     text-decoration: none;
-    color: white;
 }
 
-.social-btn i {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
+.contact-channel-icon,
+.contact-link-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-muted);
+    border: 1px solid rgba(209, 217, 224, 0.75);
+    flex-shrink: 0;
 }
 
-.social-btn span {
-    font-size: 0.875rem;
-    font-weight: 500;
+.contact-channel-label {
+    display: block;
+    margin-bottom: 2px;
+    color: var(--fgColor-subtle);
+    font-size: 11px;
+    line-height: 1.4;
 }
 
-.faq-item {
-    border: 1px solid rgba(71, 85, 105, 0.3);
-    border-radius: 0.5rem;
+.contact-channel-link,
+.contact-channel-text {
+    font-size: 13px;
+    line-height: 1.6;
+    word-break: break-word;
+}
+
+.contact-channel-link:hover {
+    color: var(--fgColor-accent);
+    text-decoration: none;
+}
+
+.contact-link-copy strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13px;
+    line-height: 1.45;
+}
+
+.contact-link-copy span {
+    display: block;
+    font-size: 11px;
+}
+
+.contact-link-arrow {
+    color: var(--fgColor-subtle);
+    align-self: center;
+}
+
+.contact-message-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
+.contact-message-item {
+    display: block;
+    padding: 11px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    background: var(--bgColor-default);
+    color: inherit;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.contact-message-item:hover {
+    text-decoration: none;
+    border-color: rgba(9, 105, 218, 0.24);
+    box-shadow: 0 10px 24px rgba(9, 105, 218, 0.08);
+    transform: translateY(-1px);
+}
+
+.contact-message-item.is-active {
+    border-color: rgba(9, 105, 218, 0.36);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.04), rgba(9, 105, 218, 0.02));
+}
+
+.contact-message-item-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.contact-message-identity {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.contact-message-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.contact-message-heading {
+    min-width: 0;
+}
+
+.contact-message-name {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--fgColor-default);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.contact-message-email {
+    margin: 2px 0 0;
+    font-size: 11px;
+    color: var(--fgColor-muted);
+}
+
+.contact-message-time {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    flex-shrink: 0;
+    font-size: 11px;
+    color: var(--fgColor-muted);
+}
+
+.contact-status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.contact-status-badge.is-unread {
+    background: rgba(207, 34, 46, 0.08);
+    color: #cf222e;
+}
+
+.contact-status-badge.is-read {
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+}
+
+.contact-status-badge.is-replied {
+    background: rgba(26, 127, 55, 0.1);
+    color: #1a7f37;
+}
+
+.contact-status-badge.is-conversation {
+    background: rgba(101, 109, 118, 0.12);
+    color: var(--fgColor-muted);
+}
+
+.contact-status-badge.is-archived {
+    background: rgba(139, 148, 158, 0.14);
+    color: var(--fgColor-muted);
+}
+
+.contact-message-preview {
+    margin: 9px 0 0;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--fgColor-muted);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
     overflow: hidden;
 }
 
-.faq-button {
-    width: 100%;
+.contact-message-preview-author {
+    color: var(--fgColor-default);
+}
+
+.contact-message-foot {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 1rem;
-    background: rgba(30, 41, 59, 0.5);
-    border: none;
-    color: white;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: left;
+    gap: 10px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: var(--fgColor-muted);
 }
 
-.faq-button:hover {
-    background: rgba(30, 41, 59, 0.8);
-}
-
-.faq-icon {
-    transition: transform 0.3s ease;
-}
-
-.faq-button.active .faq-icon {
-    transform: rotate(180deg);
-}
-
-.faq-content {
-    padding: 0 1rem;
-    max-height: 0;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    background: rgba(30, 41, 59, 0.3);
-}
-
-.faq-content:not(.hidden) {
-    padding: 1rem;
-    max-height: 200px;
-}
-
-.faq-content.hidden {
-    padding: 0 1rem;
-    max-height: 0;
-}
-
-.map-container {
-    position: relative;
-}
-
-.map-container img {
-    transition: transform 0.3s ease;
-}
-
-.map-container img:hover {
-    transform: scale(1.02);
-}
-
-.btn-secondary {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-}
-
-.btn-secondary:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-
-/* 发送消息按钮样式 */
-.btn-primary-send {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.875rem 2rem;
-    border-radius: 0.75rem;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-    position: relative;
+.contact-thread-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
     overflow: hidden;
 }
 
-.btn-primary-send::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
+.contact-thread-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--borderColor-default);
+    flex-wrap: wrap;
+}
+
+.contact-thread-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 0;
+    background: linear-gradient(180deg, rgba(246, 248, 250, 0.55), rgba(255, 255, 255, 0.98));
+    min-height: 240px;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.contact-bubble {
+    max-width: min(74%, 520px);
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+}
+
+.contact-bubble-system {
+    align-self: flex-start;
+    background: var(--bgColor-default);
+    border-top-left-radius: 8px;
+}
+
+.contact-bubble-user {
+    align-self: flex-end;
+    background: rgba(9, 105, 218, 0.08);
+    border-color: rgba(9, 105, 218, 0.16);
+    border-top-right-radius: 8px;
+}
+
+.contact-bubble-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+    font-size: 11px;
+    color: var(--fgColor-muted);
+}
+
+.contact-bubble-author {
+    color: var(--fgColor-default);
+    font-weight: 700;
+}
+
+.contact-composer-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.contact-composer-meta,
+.contact-link-grid,
+.contact-support-grid,
+.contact-office-grid {
+    display: grid;
+    gap: 12px;
+}
+
+.contact-composer-meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.contact-support-grid {
+    margin-top: 14px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.contact-office-grid {
+    grid-template-columns: minmax(0, 0.92fr) minmax(340px, 1.08fr);
+    gap: 14px;
+    margin-top: 10px;
+    align-items: start;
+}
+
+.contact-link-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.contact-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.contact-field-wide {
+    grid-column: 1 / -1;
+}
+
+.contact-label {
+    font-size: 12px;
+}
+
+.contact-field .form-control,
+.contact-field .form-select,
+.contact-composer-box .form-control,
+.contact-office-copy .form-select {
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 12px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    box-sizing: border-box;
+    box-shadow: inset 0 1px 2px rgba(31, 35, 40, 0.03);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.btn-primary-send:hover::before {
-    left: 100%;
+.contact-field .form-control:focus,
+.contact-field .form-select:focus,
+.contact-composer-box .form-control:focus,
+.contact-office-copy .form-select:focus {
+    border-color: rgba(9, 105, 218, 0.32);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
 }
 
-.btn-primary-send:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+.contact-composer-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    background: var(--bgColor-muted);
+}
+
+.contact-reply-card {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    background: var(--bgColor-default);
+    overflow: hidden;
+}
+
+.contact-reply-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 14px 10px;
+    border-bottom: 1px solid var(--borderColor-default);
+    flex-wrap: wrap;
+}
+
+.contact-reply-head h3 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--fgColor-default);
+}
+
+.contact-reply-head p {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--fgColor-muted);
+    line-height: 1.55;
+}
+
+.contact-reply-count {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.contact-reply-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.contact-reply-input {
+    min-height: 144px;
+    padding: 14px !important;
+    resize: vertical;
+    border: none !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+.contact-reply-input:focus {
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.contact-reply-actions,
+.contact-thread-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 12px 14px 14px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.contact-submit,
+.contact-page .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex: 0 0 auto;
+    height: 38px;
+    min-height: 38px;
+    max-height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    box-shadow: none;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
     text-decoration: none;
-    color: white;
+    user-select: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    white-space: nowrap;
+    transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
 }
 
-.btn-primary-send:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+.contact-submit {
+    width: 132px;
+    min-width: 132px;
+    max-width: 132px;
 }
 
-.btn-primary-send:disabled {
-    background: rgba(100, 116, 139, 0.5);
+.contact-submit > i,
+.contact-submit > span {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+.contact-submit > i {
+    font-size: 12px;
+}
+
+.contact-submit,
+.contact-page .btn.btn-primary {
+    border: 1px solid rgba(9, 105, 218, 0.22);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.14), rgba(9, 105, 218, 0.1));
+    color: var(--fgColor-accent);
+}
+
+.contact-submit:hover,
+.contact-page .btn:hover {
+    transform: translateY(-1px);
+}
+
+.contact-submit:hover,
+.contact-page .btn.btn-primary:hover {
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.18), rgba(9, 105, 218, 0.14));
+    border-color: rgba(9, 105, 218, 0.28);
+    color: var(--fgColor-accent);
+}
+
+.contact-page .btn.btn-secondary,
+.contact-page .btn.btn-outline {
+    background: var(--bgColor-default);
+    border-color: rgba(31, 35, 40, 0.12);
+    color: var(--fgColor-default);
+}
+
+.contact-page .btn.btn-secondary:hover,
+.contact-page .btn.btn-outline:hover {
+    background: rgba(9, 105, 218, 0.04);
+    border-color: rgba(9, 105, 218, 0.18);
+    color: var(--fgColor-accent);
+}
+
+.contact-submit.is-loading {
+    transform: none !important;
+}
+
+.contact-submit:disabled {
+    opacity: 0.72;
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
-.btn-primary-send:disabled:hover {
-    background: rgba(100, 116, 139, 0.5);
-    transform: none;
-    box-shadow: none;
+.contact-faq-item {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--bgColor-default);
+}
+
+.contact-faq-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+    border: none;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.contact-faq-button:hover {
+    background: var(--bgColor-inset);
+}
+
+.contact-faq-icon {
+    color: var(--fgColor-subtle);
+    transition: transform 0.2s ease;
+}
+
+.contact-faq-button.active .contact-faq-icon {
+    transform: rotate(180deg);
+}
+
+.contact-faq-content {
+    padding: 0 14px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.2s ease, padding 0.2s ease;
+    border-top: 1px solid transparent;
+}
+
+.contact-faq-content:not(.d-none) {
+    padding: 12px 14px;
+    max-height: 220px;
+    border-top-color: var(--borderColor-default);
+}
+
+.contact-faq-content.d-none {
+    padding: 0 14px;
+}
+
+.contact-office-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.contact-office-info,
+.contact-map-meta {
+    display: grid;
+    gap: 8px;
+}
+
+.contact-office-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    background: var(--bgColor-muted);
+    padding: 10px 12px;
+    border-radius: 14px;
+}
+
+.contact-map-shell {
+    min-width: 0;
+    align-self: start;
+}
+
+.contact-map-card {
+    height: 100%;
+    min-height: 214px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    background:
+        radial-gradient(circle at top right, rgba(9, 105, 218, 0.08), transparent 28%),
+        linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
+}
+
+.contact-map-card h3 {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 1rem;
+    line-height: 1.3;
+}
+
+.contact-map-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0 11px;
+    border-radius: 999px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.contact-map-links a:hover {
+    border-color: rgba(9, 105, 218, 0.22);
+    text-decoration: none;
+}
+
+@media (max-width: 1200px) {
+    .contact-dialog-layout,
+    .contact-inbox-layout,
+    .contact-support-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 980px) {
+    .contact-office-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767px) {
+    .contact-sidebar-card,
+    .contact-thread-card,
+    .contact-panel-card .Box-body,
+    .contact-office-card .Box-body {
+        padding: 16px;
+    }
+
+    .contact-title,
+    .contact-title-compact {
+        font-size: 1.85rem;
+    }
+
+    .contact-composer-meta,
+    .contact-link-grid,
+    .contact-office-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .contact-thread-footer,
+    .contact-office-actions,
+    .contact-map-links,
+    .contact-thread-toolbar,
+    .contact-reply-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .contact-chip-action,
+    .contact-submit,
+    .contact-page .btn {
+        width: 100%;
+    }
+
+    .contact-bubble {
+        max-width: 100%;
+    }
 }
 </style>
+{% include "components/conversation_inbox_styles.html" %}
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// 办公地址配置
-const OFFICE_LOCATIONS = [
-    {
-        name: '深圳 - 南山高新园',
-        address: '深圳市南山区高新南一道',
-        lat: 22.5405,
-        lng: 113.9344,
-        phone: '+86 135 **** 8704',
-        email: 'wdws851421092@gmail.com',
-        workingHours: '工作时间：周一至周五 9:00-18:00'
-    }
-];
+const OFFICE_LOCATIONS = {{ office_locations | tojson }};
+let currentOfficeIndex = 0;
 
-let currentOfficeIndex = 0; // 默认选择深圳南山高新园
-
-let map = null;
-let userMarker = null;
-let officeMarker = null;
-
-// FAQ切换功能
 function toggleFaq(faqId) {
     const content = document.getElementById(faqId);
+    if (!content) return;
     const button = content.previousElementSibling;
-    const icon = button.querySelector('.faq-icon');
-    
-    if (content.classList.contains('hidden')) {
-        // 展开
-        content.classList.remove('hidden');
-        button.classList.add('active');
-    } else {
-        // 折叠
-        content.classList.add('hidden');
-        button.classList.remove('active');
-    }
+    const isHidden = content.classList.contains('d-none');
+    content.classList.toggle('d-none', !isHidden);
+    if (button) button.classList.toggle('active', isHidden);
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const contactForm = document.getElementById('contact-form');
-    
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        // 获取表单数据
-        const formData = new FormData(contactForm);
-        
-        // 显示加载状态
-        const submitBtn = contactForm.querySelector('button[type="submit"]');
-        const originalText = submitBtn.innerHTML;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> 发送中...';
-        submitBtn.disabled = true;
-        
-        // 发送AJAX请求
-        fetch('/contact', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 显示成功提示
-                showToast('success', data.message || '消息发送成功！我们会尽快回复您。');
-                contactForm.reset();
-            } else {
-                // 显示错误提示
-                showToast('error', data.message || '发送失败，请稍后重试');
-            }
-        })
-        .catch(error => {
-            showToast('error', '发送失败，请稍后重试');
-        })
-        .finally(() => {
-            // 恢复按钮状态
-            submitBtn.innerHTML = originalText;
-            submitBtn.disabled = false;
-        });
-    });
-});
-
-// 显示提示消息
-function showToast(type, message) {
-    const toast = document.createElement('div');
-    const bgColor = type === 'success' ? 'bg-green-600' : 'bg-red-600';
-    const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
-    
-    toast.className = `fixed top-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-    toast.innerHTML = `
-        <div class="flex items-center">
-            <i class="fas ${icon} mr-2"></i>
-            <span>${message}</span>
-        </div>
-    `;
-    
-    document.body.appendChild(toast);
-    
-    // 3秒后移除
-    setTimeout(() => {
-        if (toast.parentNode) {
-            toast.remove();
-        }
-    }, 3000);
+function emitToast(type, message) {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
 }
 
-// 获取用户当前位置
-function getCurrentLocation() {
-    const statusDiv = document.getElementById('location-status');
-    statusDiv.classList.remove('hidden');
-    statusDiv.innerHTML = '<div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4"><div class="flex items-center"><i class="fas fa-spinner fa-spin text-blue-400 mr-2"></i><span class="text-blue-400">正在获取位置...</span></div></div>';
-    
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                const userLat = position.coords.latitude;
-                const userLng = position.coords.longitude;
-                const accuracy = position.coords.accuracy;
-                
-                // 显示位置信息
-                statusDiv.innerHTML = `
-                    <div class="bg-green-600/20 border border-green-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-check-circle text-green-400 mr-2"></i>
-                            <span class="text-green-400">位置获取成功！</span>
-                        </div>
-                        <div class="text-green-300 text-sm mt-1">精度: ${Math.round(accuracy)}米</div>
-                    </div>
-                `;
-                
-                // 初始化地图并显示位置
-                initMap(userLat, userLng);
-                
-                // 计算距离
-                const office = OFFICE_LOCATIONS[currentOfficeIndex];
-                const distance = calculateDistance(userLat, userLng, office.lat, office.lng);
-                showDistanceInfo(distance, office.name);
-                
-            },
-            function(error) {
-                let errorMessage = '无法获取位置信息';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = '用户拒绝了位置请求';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = '位置信息不可用';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = '获取位置超时';
-                        break;
-                }
-                
-                statusDiv.innerHTML = `
-                    <div class="bg-yellow-600/20 border border-yellow-600/30 rounded-lg p-4">
-                        <div class="flex items-center">
-                            <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
-                            <span class="text-yellow-400">${errorMessage}</span>
-                        </div>
-                        <div class="text-yellow-300 text-sm mt-1">将显示默认办公地址</div>
-                    </div>
-                `;
-                
-                // 显示默认办公地址
-                const office = OFFICE_LOCATIONS[currentOfficeIndex];
-                initMap(office.lat, office.lng);
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 60000
-            }
-        );
-    } else {
-        statusDiv.innerHTML = `
-            <div class="bg-yellow-600/20 border border-yellow-600/30 rounded-lg p-4">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-triangle text-yellow-400 mr-2"></i>
-                    <span class="text-yellow-400">浏览器不支持地理定位</span>
-                </div>
-                <div class="text-yellow-300 text-sm mt-1">将显示默认办公地址</div>
-            </div>
-        `;
-        const office = OFFICE_LOCATIONS[currentOfficeIndex];
-        initMap(office.lat, office.lng);
-    }
+function officeMapLinks(office) {
+    const lat = office.lat;
+    const lng = office.lng;
+    return {
+        amap: 'https://uri.amap.com/marker?position=' + lng + ',' + lat + '&name=' + encodeURIComponent(office.name),
+        google: 'https://maps.google.com/?q=' + lat + ',' + lng,
+        apple: 'https://maps.apple.com/?q=' + encodeURIComponent(office.name) + '&ll=' + lat + ',' + lng,
+    };
 }
 
-// 初始化地图
-function initMap(userLat, userLng) {
+function renderOfficeMap(office, distanceText) {
     const mapDiv = document.getElementById('map');
-    
-    // 清除现有内容
-    mapDiv.innerHTML = '';
-    
-    // 创建地图容器
-    const mapContainer = document.createElement('div');
-    mapContainer.style.width = '100%';
-    mapContainer.style.height = '100%';
-    mapContainer.style.position = 'relative';
-    mapDiv.appendChild(mapContainer);
-    
-    // 使用高德地图静态图片API（无需密钥）
-    const mapUrl = `https://restapi.amap.com/v3/staticmap?location=${userLng},${userLat}&zoom=15&size=400*300&markers=mid,red,A:${userLng},${userLat}&key=`;
-    
-    const img = document.createElement('img');
-    img.src = mapUrl;
-    img.style.width = '100%';
-    img.style.height = '100%';
-    img.style.objectFit = 'cover';
-    img.style.borderRadius = '8px';
-    
-    // 如果图片加载失败，显示备用方案
-    img.onerror = function() {
-        mapContainer.innerHTML = `
-            <div class="flex items-center justify-center h-full bg-slate-800 rounded-lg">
-                <div class="text-center">
-                    <i class="fas fa-map-marker-alt fa-3x text-indigo-400 mb-3"></i>
-                    <h6 class="text-white font-semibold mb-2">位置信息</h6>
-                    <p class="text-slate-300 text-sm">纬度: ${userLat.toFixed(6)}</p>
-                    <p class="text-slate-300 text-sm">经度: ${userLng.toFixed(6)}</p>
-                    <div class="flex gap-2 mt-4">
-                        <a href="https://www.amap.com/place/${userLng},${userLat}" target="_blank" class="btn-secondary text-sm">
-                            <i class="fas fa-external-link-alt mr-1"></i> 高德地图
-                        </a>
-                        <a href="https://maps.google.com/?q=${userLat},${userLng}" target="_blank" class="btn-secondary text-sm">
-                            <i class="fas fa-external-link-alt mr-1"></i> Google地图
-                        </a>
-                    </div>
-                </div>
-            </div>
-        `;
-    };
-    
-    // 添加点击事件，点击图片可以打开地图
-    img.style.cursor = 'pointer';
-    img.onclick = function() {
-        window.open(`https://www.amap.com/place/${userLng},${userLat}`, '_blank');
-    };
-    
-    // 添加提示文字
-    const overlay = document.createElement('div');
-    overlay.style.position = 'absolute';
-    overlay.style.top = '10px';
-    overlay.style.left = '10px';
-    overlay.style.background = 'rgba(0,0,0,0.7)';
-    overlay.style.color = 'white';
-    overlay.style.padding = '5px 10px';
-    overlay.style.borderRadius = '4px';
-    overlay.style.fontSize = '12px';
-    overlay.innerHTML = '点击查看详细地图';
-    
-    mapContainer.appendChild(img);
-    mapContainer.appendChild(overlay);
+    if (!mapDiv || !office) return;
+    const links = officeMapLinks(office);
+    const distanceBlock = distanceText
+        ? '<span class="contact-map-pill"><i class="fas fa-route" aria-hidden="true"></i>' + distanceText + '</span>'
+        : '<span class="contact-map-pill"><i class="fas fa-location-dot" aria-hidden="true"></i>默认办公地点</span>';
+
+    mapDiv.innerHTML =
+        '<div class="contact-map-card">' +
+            distanceBlock +
+            '<div>' +
+                '<h3>' + office.name + '</h3>' +
+                '<p>' + office.address + '</p>' +
+            '</div>' +
+            '<div class="contact-map-meta">' +
+                '<span><i class="fas fa-compass mr-1" aria-hidden="true"></i>纬度 ' + office.lat.toFixed(4) + ' / 经度 ' + office.lng.toFixed(4) + '</span>' +
+                '<span><i class="fas fa-envelope mr-1" aria-hidden="true"></i>' + office.email + '</span>' +
+                '<span><i class="fas fa-phone mr-1" aria-hidden="true"></i>' + office.phone + '</span>' +
+            '</div>' +
+            '<div class="contact-map-links">' +
+                '<a href="' + links.amap + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-map-location-dot" aria-hidden="true"></i> 高德地图</a>' +
+                '<a href="' + links.google + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-earth-asia" aria-hidden="true"></i> Google 地图</a>' +
+                '<a href="' + links.apple + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-location-arrow" aria-hidden="true"></i> Apple 地图</a>' +
+            '</div>' +
+        '</div>';
 }
 
-// 计算两点间距离（使用Haversine公式）
 function calculateDistance(lat1, lng1, lat2, lng2) {
-    const R = 6371; // 地球半径（公里）
+    const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLng = (lng2 - lng1) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-              Math.sin(dLng/2) * Math.sin(dLng/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
 }
 
-// 显示距离信息
-function showDistanceInfo(distance, officeName) {
-    const statusDiv = document.getElementById('location-status');
-    const currentContent = statusDiv.innerHTML;
-    
-    statusDiv.innerHTML = currentContent + `
-        <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-4 mt-2">
-            <div class="flex items-center">
-                <i class="fas fa-route text-blue-400 mr-2"></i>
-                <span class="text-blue-400">距离${officeName}: ${distance.toFixed(1)} 公里</span>
-            </div>
-        </div>
-    `;
-}
-
-// 切换办公地址
-function changeOffice() {
-    const select = document.getElementById('office-select');
-    currentOfficeIndex = parseInt(select.value);
+function updateOfficeInfo() {
     const office = OFFICE_LOCATIONS[currentOfficeIndex];
-    
-    // 更新显示信息
+    if (!office) return;
     document.getElementById('office-address').textContent = office.address;
     document.getElementById('office-phone').textContent = office.phone;
     document.getElementById('office-email').textContent = office.email;
     document.getElementById('office-hours').textContent = office.workingHours;
-    
-    // 更新地图
-    initMap(office.lat, office.lng);
-    
-    // 清除位置状态
-    const statusDiv = document.getElementById('location-status');
-    statusDiv.classList.add('hidden');
+    renderOfficeMap(office, '默认办公地点');
 }
 
-// 在导航中打开
+function changeOffice() {
+    const select = document.getElementById('office-select');
+    currentOfficeIndex = parseInt(select.value, 10) || 0;
+    updateOfficeInfo();
+}
+
 function openInMaps() {
     const office = OFFICE_LOCATIONS[currentOfficeIndex];
-    const url = `https://uri.amap.com/navigation?to=${office.lng},${office.lat},${encodeURIComponent(office.address)}&mode=car&policy=1&src=mypage&coordinate=gaode&callnative=0`;
-    window.open(url, '_blank');
+    if (!office) return;
+    window.open(officeMapLinks(office).amap, '_blank', 'noopener');
 }
 
-// 页面加载时显示默认位置
+function clearContactForm(trigger) {
+    const form = trigger && trigger.closest('form');
+    if (!form) return;
+    form.reset();
+    const textarea = form.querySelector('textarea');
+    if (textarea) textarea.focus();
+}
+
+function setContactSubmitLoading(submitBtn, loadingText) {
+    if (!submitBtn) return null;
+
+    const originalHtml = submitBtn.innerHTML;
+    const originalWidth = submitBtn.offsetWidth;
+
+    submitBtn.style.width = originalWidth + 'px';
+    submitBtn.style.minWidth = originalWidth + 'px';
+    submitBtn.style.maxWidth = originalWidth + 'px';
+    submitBtn.style.height = '38px';
+    submitBtn.style.minHeight = '38px';
+    submitBtn.style.maxHeight = '38px';
+    submitBtn.classList.add('is-loading');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>' + loadingText + '</span>';
+    submitBtn.disabled = true;
+
+    return function restoreSubmitButton() {
+        submitBtn.innerHTML = originalHtml;
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('is-loading');
+        submitBtn.style.width = '';
+        submitBtn.style.minWidth = '';
+        submitBtn.style.maxWidth = '';
+        submitBtn.style.height = '';
+        submitBtn.style.minHeight = '';
+        submitBtn.style.maxHeight = '';
+    };
+}
+
+async function deleteConversation(messageId, subject) {
+    const confirmed = await window.confirmAsync(`确定要删除对话「${subject}」吗？删除后它只会从你的会话列表中移除。`, {
+        title: '删除对话',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+
+    if (!confirmed) {
+        return;
+    }
+
+    fetch(`/contact/messages/${messageId}/delete`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then((response) => response.json())
+    .then((data) => {
+        if (data.success) {
+            emitToast('success', data.message || '对话已删除');
+            setTimeout(() => {
+                window.location.href = data.redirect_url || '/contact';
+            }, 320);
+        } else {
+            emitToast('error', data.message || '删除失败，请稍后重试');
+        }
+    })
+    .catch(() => {
+        emitToast('error', '删除失败，请稍后重试');
+    });
+}
+
+function scrollConversationToLatest(container) {
+    if (!container) return;
+
+    const scrollToBottom = () => {
+        container.scrollTop = container.scrollHeight;
+    };
+
+    scrollToBottom();
+    requestAnimationFrame(scrollToBottom);
+    setTimeout(scrollToBottom, 80);
+}
+
+function getCurrentLocation() {
+    const statusDiv = document.getElementById('location-status');
+    const office = OFFICE_LOCATIONS[currentOfficeIndex];
+    if (!statusDiv || !office) return;
+
+    statusDiv.classList.remove('d-none');
+    statusDiv.innerHTML = '<div class="flash p-3 mt-2"><div class="d-flex items-center gap-2"><i class="fas fa-spinner fa-spin color-fg-accent"></i><span class="f5 color-fg-default">正在获取位置...</span></div></div>';
+
+    if (!navigator.geolocation) {
+        statusDiv.innerHTML = '<div class="flash flash-warning p-3 mt-2"><div class="d-flex items-center gap-2"><i class="fas fa-triangle-exclamation color-fg-attention"></i><span class="f5 color-fg-attention">当前浏览器不支持地理定位</span></div></div>';
+        renderOfficeMap(office, '默认办公地点');
+        return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const distance = calculateDistance(userLat, userLng, office.lat, office.lng);
+            const distanceText = '距离 ' + office.name + ' 约 ' + distance.toFixed(1) + ' 公里';
+            statusDiv.innerHTML = '<div class="flash flash-success p-3 mt-2"><div class="d-flex items-center gap-2"><i class="fas fa-circle-check color-fg-success"></i><span class="f5 color-fg-success">位置获取成功</span></div><div class="f6 color-fg-muted mt-1">' + distanceText + '</div></div>';
+            renderOfficeMap(office, distanceText);
+        },
+        function(error) {
+            let errorMessage = '无法获取当前位置';
+            if (error.code === error.PERMISSION_DENIED) errorMessage = '你拒绝了位置请求';
+            if (error.code === error.POSITION_UNAVAILABLE) errorMessage = '定位信息暂时不可用';
+            if (error.code === error.TIMEOUT) errorMessage = '获取位置超时';
+            statusDiv.innerHTML = '<div class="flash flash-warning p-3 mt-2"><div class="d-flex items-center gap-2"><i class="fas fa-triangle-exclamation color-fg-attention"></i><span class="f5 color-fg-attention">' + errorMessage + '</span></div><div class="f6 color-fg-muted mt-1">已继续显示默认办公地点</div></div>';
+            renderOfficeMap(office, '默认办公地点');
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+    );
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // 延迟加载，避免影响页面性能
-    setTimeout(() => {
-        const office = OFFICE_LOCATIONS[currentOfficeIndex];
-        initMap(office.lat, office.lng);
-    }, 1000);
+    document.querySelectorAll('[data-scroll-latest]').forEach(scrollConversationToLatest);
+
+    document.querySelectorAll('.js-delete-conversation').forEach(function(button) {
+        button.addEventListener('click', function() {
+            deleteConversation(button.dataset.messageId, button.dataset.messageSubject || '');
+        });
+    });
+
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(contactForm);
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const restoreSubmitButton = setContactSubmitLoading(submitBtn, '发送中...');
+
+            fetch('/contact' + window.location.search, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    emitToast('success', data.message || '消息发送成功！我们会尽快回复你。');
+                    if (data.redirect_url) {
+                        setTimeout(function() {
+                            window.location.href = data.redirect_url;
+                        }, 500);
+                    } else {
+                        contactForm.reset();
+                    }
+                } else {
+                    emitToast('error', data.message || '发送失败，请稍后重试');
+                }
+            })
+            .catch(function() {
+                emitToast('error', '发送失败，请稍后重试');
+            })
+            .finally(function() {
+                if (restoreSubmitButton) {
+                    restoreSubmitButton();
+                }
+            });
+        });
+    }
+
+    updateOfficeInfo();
 });
 </script>
-{% endblock %} 
+{% endblock %}

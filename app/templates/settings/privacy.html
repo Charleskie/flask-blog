@@ -3,231 +3,147 @@
 {% block title %}隐私设置 - 我的个人网站{% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-6 mb-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            隐私设置
-        </h1>
-        <p class="text-slate-300">控制您的个人信息可见性和数据管理</p>
-    </div>
-</div>
+<style>
+.toggle-switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; inset: 0; background: var(--bgColor-emphasis); border-radius: 11px; transition: background 0.2s; }
+.toggle-slider::before { content: ''; position: absolute; height: 18px; width: 18px; left: 2px; bottom: 2px; background: white; border-radius: 50%; transition: transform 0.2s; }
+.toggle-switch input:checked + .toggle-slider { background: var(--bgColor-accent-emphasis); }
+.toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); }
+</style>
 
-<!-- 设置内容 -->
-<div class="max-w-4xl mx-auto px-4">
+<div class="container-xl py-4">
+    <a href="{{ url_for('settings.settings') }}" class="d-flex items-center gap-2 mb-3 color-fg-default no-underline">
+        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+        <span>返回设置</span>
+    </a>
+
+    <h2 class="f3 text-bold color-fg-default mb-2">隐私设置</h2>
+    <p class="f5 color-fg-muted mb-4">控制您的个人信息可见性和数据管理</p>
+
     <form method="POST">
-        <div class="glass-card rounded-xl p-8">
-            <!-- 个人资料可见性 -->
-            <div class="mb-8">
-                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
-                    <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-user text-white text-sm"></i>
+        <div class="Box mb-4">
+            <div class="Box-header">
+                <h3 class="f5 text-bold m-0 color-fg-default">个人资料可见性</h3>
+            </div>
+            <div class="Box-body">
+                <div class="d-flex justify-between items-center gap-3 flex-wrap">
+                    <div>
+                        <p class="f5 text-bold color-fg-default mb-2">公开个人资料</p>
+                        <p class="f6 color-fg-muted mb-0">允许其他用户查看您的个人资料页面</p>
                     </div>
-                    个人资料可见性
-                </h2>
-                <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h3 class="text-white font-medium mb-2">公开个人资料</h3>
-                            <p class="text-slate-300 text-sm">允许其他用户查看您的个人资料页面</p>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" 
-                                   class="sr-only peer" 
-                                   id="profile_public" 
-                                   name="profile_public" 
-                                   {% if current_user.profile_public %}checked{% endif %}>
-                            <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                        </label>
-                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="profile_public" name="profile_public"
+                               {% if current_user.profile_public %}checked{% endif %}>
+                        <span class="toggle-slider" aria-hidden="true"></span>
+                    </label>
                 </div>
             </div>
-            
-            <!-- 联系信息可见性 -->
-            <div class="border-t border-slate-700 pt-8 mb-8">
-                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
-                    <div class="w-8 h-8 bg-green-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-address-book text-white text-sm"></i>
-                    </div>
-                    联系信息可见性
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
-                        <div class="flex items-center justify-between">
+        </div>
+
+        <div class="Box mb-4">
+            <div class="Box-header">
+                <h3 class="f5 text-bold m-0 color-fg-default">联系信息可见性</h3>
+            </div>
+            <div class="Box-body">
+                <div class="d-grid grid-cols-1 gap-3 grid-regular-cols-2">
+                    <div class="border rounded-2 p-3">
+                        <div class="d-flex justify-between items-center gap-3 flex-wrap">
                             <div>
-                                <h3 class="text-white font-medium mb-2">显示邮箱地址</h3>
-                                <p class="text-slate-300 text-sm">在个人资料中显示您的邮箱地址</p>
+                                <p class="f5 text-bold color-fg-default mb-2">显示邮箱地址</p>
+                                <p class="f6 color-fg-muted mb-0">在个人资料中显示您的邮箱地址</p>
                             </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" 
-                                       class="sr-only peer" 
-                                       id="show_email" 
-                                       name="show_email" 
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="show_email" name="show_email"
                                        {% if current_user.show_email %}checked{% endif %}>
-                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                <span class="toggle-slider" aria-hidden="true"></span>
                             </label>
                         </div>
                     </div>
-                    
-                    <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
-                        <div class="flex items-center justify-between">
+                    <div class="border rounded-2 p-3">
+                        <div class="d-flex justify-between items-center gap-3 flex-wrap">
                             <div>
-                                <h3 class="text-white font-medium mb-2">显示电话号码</h3>
-                                <p class="text-slate-300 text-sm">在个人资料中显示您的电话号码</p>
+                                <p class="f5 text-bold color-fg-default mb-2">显示电话号码</p>
+                                <p class="f6 color-fg-muted mb-0">在个人资料中显示您的电话号码</p>
                             </div>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" 
-                                       class="sr-only peer" 
-                                       id="show_phone" 
-                                       name="show_phone" 
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="show_phone" name="show_phone"
                                        {% if current_user.show_phone %}checked{% endif %}>
-                                <div class="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                <span class="toggle-slider" aria-hidden="true"></span>
                             </label>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 数据保护承诺 -->
-            <div class="border-t border-slate-700 pt-8 mb-8">
-                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
-                    <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-shield-alt text-white text-sm"></i>
-                    </div>
-                    数据保护承诺
-                </h2>
-                <div class="bg-blue-600/20 border border-blue-600/30 rounded-lg p-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="flex items-center">
-                            <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                            <span class="text-white text-sm">我们不会出售您的个人信息</span>
+        </div>
+
+        <div class="Box mb-4">
+            <div class="Box-header">
+                <h3 class="f5 text-bold m-0 color-fg-default">数据保护承诺</h3>
+            </div>
+            <div class="Box-body">
+                <div class="flash">
+                    <div class="d-grid grid-cols-1 gap-3 grid-regular-cols-2">
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-check color-fg-success mt-1" style="flex-shrink: 0;" aria-hidden="true"></i>
+                            <span class="f6 color-fg-default">我们不会出售您的个人信息</span>
                         </div>
-                        <div class="flex items-center">
-                            <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                            <span class="text-white text-sm">我们不会与第三方共享您的数据</span>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-check color-fg-success mt-1" style="flex-shrink: 0;" aria-hidden="true"></i>
+                            <span class="f6 color-fg-default">我们不会与第三方共享您的数据</span>
                         </div>
-                        <div class="flex items-center">
-                            <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                            <span class="text-white text-sm">您可以随时删除您的账户和数据</span>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-check color-fg-success mt-1" style="flex-shrink: 0;" aria-hidden="true"></i>
+                            <span class="f6 color-fg-default">您可以随时删除您的账户和数据</span>
                         </div>
-                        <div class="flex items-center">
-                            <div class="w-6 h-6 bg-green-600 rounded-full flex items-center justify-center mr-3">
-                                <i class="fas fa-check text-white text-xs"></i>
-                            </div>
-                            <span class="text-white text-sm">我们使用加密技术保护您的数据</span>
+                        <div class="d-flex items-start gap-2">
+                            <i class="fas fa-check color-fg-success mt-1" style="flex-shrink: 0;" aria-hidden="true"></i>
+                            <span class="f6 color-fg-default">我们使用加密技术保护您的数据</span>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 数据管理 -->
-            <div class="border-t border-slate-700 pt-8 mb-8">
-                <h2 class="text-xl font-semibold mb-6 text-white flex items-center">
-                    <div class="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center mr-3">
-                        <i class="fas fa-database text-white text-sm"></i>
-                    </div>
-                    数据管理
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
-                        <div class="flex items-start">
-                            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center mr-4">
-                                <i class="fas fa-download text-white"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="text-white font-medium mb-2">导出数据</h3>
-                                <p class="text-slate-300 text-sm mb-4">导出您的个人数据，包括文章、项目、设置等信息</p>
-                                <button type="button" class="btn-secondary" disabled>
-                                    <i class="fas fa-download"></i> 导出数据
+        </div>
+
+        <div class="Box mb-4">
+            <div class="Box-header">
+                <h3 class="f5 text-bold m-0 color-fg-default">数据管理</h3>
+            </div>
+            <div class="Box-body">
+                <div class="d-grid grid-cols-1 gap-3 grid-regular-cols-2">
+                    <div class="border rounded-2 p-3">
+                        <div class="d-flex items-start gap-3">
+                            <i class="fas fa-download color-fg-accent f4" aria-hidden="true"></i>
+                            <div class="width-full">
+                                <p class="f5 text-bold color-fg-default mb-2">导出数据</p>
+                                <p class="f6 color-fg-muted mb-3">导出您的个人数据，包括文章、设置等信息</p>
+                                <button type="button" class="btn btn-secondary btn-sm" disabled>
+                                    <i class="fas fa-download" aria-hidden="true"></i> 导出数据
                                 </button>
                             </div>
                         </div>
                     </div>
-                    
-                    <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-6">
-                        <div class="flex items-start">
-                            <div class="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center mr-4">
-                                <i class="fas fa-trash text-white"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="text-white font-medium mb-2">删除数据</h3>
-                                <p class="text-slate-300 text-sm mb-4">删除您的所有个人数据，此操作不可恢复</p>
-                                <button type="button" class="btn-secondary" disabled>
-                                    <i class="fas fa-trash"></i> 删除数据
+                    <div class="border rounded-2 p-3">
+                        <div class="d-flex items-start gap-3">
+                            <i class="fas fa-trash color-fg-danger f4" aria-hidden="true"></i>
+                            <div class="width-full">
+                                <p class="f5 text-bold color-fg-default mb-2">删除数据</p>
+                                <p class="f6 color-fg-muted mb-3">删除您的所有个人数据，此操作不可恢复</p>
+                                <button type="button" class="btn btn-danger btn-sm" disabled>
+                                    <i class="fas fa-trash" aria-hidden="true"></i> 删除数据
                                 </button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 操作按钮 -->
-            <div class="flex justify-between items-center pt-6 border-t border-slate-700">
-                <a href="{{ url_for('settings.settings') }}" class="btn-secondary">
-                    <i class="fas fa-arrow-left"></i> 返回设置
-                </a>
-                <button type="submit" class="btn-primary">
-                    <i class="fas fa-save"></i> 保存设置
-                </button>
-            </div>
+        </div>
+
+        <div class="d-flex justify-end border-top pt-3 mt-4">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save" aria-hidden="true"></i> 保存设置
+            </button>
         </div>
     </form>
 </div>
-
-<style>
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-}
-
-.btn-secondary {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.btn-secondary:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-}
-
-.btn-secondary:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.btn-secondary:disabled:hover {
-    transform: none;
-    background: rgba(100, 116, 139, 0.8);
-}
-</style>
-{% endblock %} 
+{% endblock %}

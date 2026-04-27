@@ -1,517 +1,915 @@
 {% extends "base.html" %}
 
-{% block title %}个人资料 - 我的个人网站{% endblock %}
+{% block title %}个人资料 - Kim's Blog{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-lg-8 mx-auto">
-        <h1 class="text-center mb-5">个人资料</h1>
-        
-        <!-- 用户信息卡片 -->
-        <div class="card mb-4" style="background: transparent !important; background-color: transparent !important;">
-            <div class="card-header d-flex justify-content-between align-items-center" style="background: rgba(15, 23, 42, 0.1) !important; background-color: rgba(15, 23, 42, 0.1) !important;">
-                <h5><i class="fas fa-user"></i> 基本信息</h5>
-                <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-edit"></i> 编辑资料
-                </a>
+{% set last_login_text = current_user.last_login.strftime('%Y年%m月%d日 %H:%M') if current_user.last_login else '还没有登录记录' %}
+{% set website_href = '' %}
+{% if current_user.website %}
+    {% if current_user.website.startswith('http://') or current_user.website.startswith('https://') %}
+        {% set website_href = current_user.website %}
+    {% else %}
+        {% set website_href = 'https://' ~ current_user.website %}
+    {% endif %}
+{% endif %}
+{% set profile_intro = current_user.bio or '' %}
+
+<section class="profile-page-shell">
+    <div id="profile-message-anchor" class="mb-3"></div>
+
+    <header class="profile-page-hero">
+        <div class="profile-page-hero-copy">
+            <div class="profile-page-eyebrow">账户中心</div>
+            <h1 class="profile-page-title">个人资料</h1>
+            <div class="profile-page-meta">
+                <span class="profile-page-meta-pill profile-page-meta-pill-accent">
+                    {{ '公开资料' if current_user.profile_public else '私密资料' }}
+                </span>
+                <span class="profile-page-meta-pill">加入于 {{ current_user.created_at.strftime('%Y年%m月') }}</span>
+                {% if profile_stats.draft_posts %}
+                <span class="profile-page-meta-pill">{{ profile_stats.draft_posts }} 篇草稿</span>
+                {% endif %}
             </div>
-            <div class="card-body" style="background: transparent !important; background-color: transparent !important;">
-                <div class="row">
-                    <div class="col-md-4 text-center">
-                        <div class="avatar-display-section">
-                            <div class="avatar-container">
-                                <img src="{{ current_user.get_avatar_url() }}" alt="用户头像" 
-                                     class="img-fluid rounded-circle mb-3 user-avatar" 
-                                     id="current-avatar"
-                                     style="width: 180px; height: 180px; object-fit: cover;">
-                                <div class="avatar-overlay">
-                                    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#avatarModal">
-                                        <i class="fas fa-camera"></i> 更换头像
-                                    </button>
+        </div>
+        <a href="{{ url_for('auth.edit_profile') }}" class="profile-action-link profile-action-link-secondary">编辑资料</a>
+    </header>
+
+    <div class="profile-page-grid">
+        <aside class="profile-summary-card">
+            <div class="profile-summary-avatar-wrap">
+                <img src="{{ current_user.get_avatar_url() }}"
+                     alt="用户头像"
+                     width="220"
+                     height="220"
+                     class="profile-summary-avatar"
+                     id="current-avatar">
+            </div>
+
+            <div class="profile-summary-identity">
+                <h2>{{ current_user.get_display_name() }}</h2>
+                <p>@{{ current_user.username }}</p>
+            </div>
+
+            {% if profile_intro %}
+            <p class="profile-summary-intro">{{ profile_intro }}</p>
+            {% endif %}
+
+            <div class="profile-summary-tags">
+                {% if current_user.company %}
+                <span class="profile-summary-tag"><i class="fas fa-building" aria-hidden="true"></i>{{ current_user.company }}</span>
+                {% endif %}
+                {% if current_user.job_title %}
+                <span class="profile-summary-tag"><i class="fas fa-briefcase" aria-hidden="true"></i>{{ current_user.job_title }}</span>
+                {% endif %}
+                {% if current_user.location %}
+                <span class="profile-summary-tag"><i class="fas fa-map-marker-alt" aria-hidden="true"></i>{{ current_user.location }}</span>
+                {% endif %}
+                {% if current_user.website %}
+                <a href="{{ website_href }}" target="_blank" rel="noopener noreferrer" class="profile-summary-tag profile-summary-tag-link">
+                    <i class="fas fa-link" aria-hidden="true"></i>{{ current_user.website }}
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="profile-summary-facts">
+                <div class="profile-summary-fact">
+                    <span class="profile-summary-fact-label">登录邮箱</span>
+                    <strong class="profile-summary-fact-value">{{ current_user.email }}</strong>
+                </div>
+                <div class="profile-summary-fact">
+                    <span class="profile-summary-fact-label">最近登录</span>
+                    <strong class="profile-summary-fact-value">{{ last_login_text }}</strong>
+                </div>
+            </div>
+
+            <div class="profile-summary-actions">
+                <button type="button" class="profile-action-link profile-action-link-secondary" id="openAvatarModal" aria-haspopup="dialog" aria-controls="avatarModal">
+                    更换头像
+                </button>
+                <a href="{{ url_for('auth.edit_profile') }}" class="profile-action-link profile-action-link-ghost">完善资料</a>
+            </div>
+        </aside>
+
+        <div class="profile-content-stack">
+            <section class="profile-panel">
+                <div class="profile-panel-header">
+                    <div>
+                        <span class="profile-panel-eyebrow">统计</span>
+                        <h2>内容概览</h2>
+                    </div>
+                </div>
+                <div class="profile-stat-grid">
+                    <article class="profile-stat-card">
+                        <div class="profile-stat-icon"><i class="fas fa-blog" aria-hidden="true"></i></div>
+                        <strong class="profile-stat-value">{{ profile_stats.published_posts }}</strong>
+                        <span class="profile-stat-label">已发布文章</span>
+                    </article>
+                    <article class="profile-stat-card">
+                        <div class="profile-stat-icon"><i class="fas fa-eye" aria-hidden="true"></i></div>
+                        <strong class="profile-stat-value">{{ profile_stats.content_views }}</strong>
+                        <span class="profile-stat-label">内容浏览</span>
+                    </article>
+                    <article class="profile-stat-card">
+                        <div class="profile-stat-icon"><i class="fas fa-file-alt" aria-hidden="true"></i></div>
+                        <strong class="profile-stat-value">{{ profile_stats.draft_posts }}</strong>
+                        <span class="profile-stat-label">草稿篇数</span>
+                    </article>
+                </div>
+            </section>
+
+            <section class="profile-panel">
+                <div class="profile-panel-header">
+                    <div>
+                        <span class="profile-panel-eyebrow">资料</span>
+                        <h2>基础信息</h2>
+                    </div>
+                </div>
+                <div class="profile-info-grid">
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">用户名</span>
+                        <strong class="profile-info-value">{{ current_user.username }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">昵称</span>
+                        <strong class="profile-info-value">{{ current_user.get_display_name() }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">邮箱</span>
+                        <strong class="profile-info-value">{{ current_user.email }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">资料可见性</span>
+                        <strong class="profile-info-value">{{ '公开资料' if current_user.profile_public else '私密资料' }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">个人网站</span>
+                        {% if current_user.website %}
+                        <a href="{{ website_href }}" target="_blank" rel="noopener noreferrer" class="profile-info-link">{{ current_user.website }}</a>
+                        {% else %}
+                        <strong class="profile-info-value profile-info-value-empty">未设置</strong>
+                        {% endif %}
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">所在地</span>
+                        <strong class="profile-info-value {{ 'profile-info-value-empty' if not current_user.location else '' }}">{{ current_user.location or '未设置' }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">公司 / 团队</span>
+                        <strong class="profile-info-value {{ 'profile-info-value-empty' if not current_user.company else '' }}">{{ current_user.company or '未设置' }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">职位</span>
+                        <strong class="profile-info-value {{ 'profile-info-value-empty' if not current_user.job_title else '' }}">{{ current_user.job_title or '未设置' }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">注册时间</span>
+                        <strong class="profile-info-value">{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</strong>
+                    </article>
+                    <article class="profile-info-card">
+                        <span class="profile-info-label">最后登录</span>
+                        <strong class="profile-info-value">{{ last_login_text }}</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section class="profile-panel">
+                <div class="profile-panel-header">
+                    <div>
+                        <span class="profile-panel-eyebrow">安全</span>
+                        <h2>账户安全</h2>
+                    </div>
+                </div>
+                <div class="profile-security-grid">
+                    <article class="profile-security-card">
+                        <div class="profile-security-copy">
+                            <h3>密码与登录</h3>
+                            <p>修改密码</p>
+                        </div>
+                        <a href="{{ url_for('auth.edit_profile', section='password') }}#password" class="profile-inline-action">修改密码</a>
+                    </article>
+                    <article class="profile-security-card">
+                        <div class="profile-security-copy">
+                            <h3>邮箱找回</h3>
+                            <p>发送重置链接</p>
+                        </div>
+                        <a href="{{ url_for('auth.forgot_password') }}" class="profile-inline-action">发送重置链接</a>
+                    </article>
+                    <article class="profile-security-card">
+                        <div class="profile-security-copy">
+                            <h3>公开资料状态</h3>
+                            <p>{{ '当前对外公开' if current_user.profile_public else '当前保持私密' }}</p>
+                        </div>
+                        <a href="{{ url_for('auth.edit_profile') }}" class="profile-inline-action">调整展示设置</a>
+                    </article>
+                    <article class="profile-security-card">
+                        <div class="profile-security-copy">
+                            <h3>登录记录</h3>
+                            <p>最近登录时间：{{ last_login_text }}{% if current_user.last_login_ip %}，登录 IP：{{ current_user.last_login_ip }}{% endif %}</p>
+                        </div>
+                        <span class="profile-status-chip">{{ '已记录' if current_user.last_login else '暂无记录' }}</span>
+                    </article>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <div class="profile-modal-overlay" id="avatarModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
+        <div class="profile-modal-dialog">
+            <div class="profile-modal-card">
+                <div class="profile-modal-header">
+                    <div>
+                        <span class="profile-panel-eyebrow">头像管理</span>
+                        <h3 class="profile-modal-title" id="avatarModalTitle">更换头像</h3>
+                    </div>
+                    <button type="button" class="profile-modal-close" id="closeAvatarModal" aria-label="关闭">&times;</button>
+                </div>
+
+                <div class="profile-modal-body">
+                    <div class="profile-modal-grid">
+                        <div class="profile-modal-panel text-center">
+                            <div class="profile-modal-panel-title">当前头像</div>
+                            <img src="{{ current_user.get_avatar_url() }}"
+                                 alt="当前头像"
+                                 width="120"
+                                 height="120"
+                                 class="profile-modal-thumb"
+                                 id="modal-current-avatar">
+                        </div>
+
+                        <div class="profile-modal-panel text-center">
+                            <div class="profile-modal-panel-title">上传新头像</div>
+                            <div id="avatar-upload-zone">
+                                <input type="file" class="d-none" id="avatar" name="avatar" accept="image/*" aria-label="选择头像图片">
+                                <div class="profile-upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="点击或拖拽上传头像">
+                                    <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                                    <p>点击或拖拽上传</p>
+                                    <span>支持 PNG、JPG、JPEG、GIF、WebP，大小不超过 5MB</span>
                                 </div>
                             </div>
-                            <div class="avatar-info">
-                                <h5 class="mb-1">{{ current_user.get_display_name() }}</h5>
-                                <small class="text-muted">@{{ current_user.username }}</small>
-                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-8">
-                        <table class="table table-borderless" style="background: transparent !important; background-color: transparent !important;">
-                            <tr style="background: transparent !important; background-color: transparent !important;">
-                                <td class="fw-bold" style="width: 120px; background: transparent !important; background-color: transparent !important;">用户名：</td>
-                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.username }}</td>
-                            </tr>
-                            <tr style="background: transparent !important; background-color: transparent !important;">
-                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">昵称：</td>
-                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.get_display_name() }}</td>
-                            </tr>
-                            <tr style="background: transparent !important; background-color: transparent !important;">
-                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">邮箱：</td>
-                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.email }}</td>
-                            </tr>
-                            <tr style="background: transparent !important; background-color: transparent !important;">
-                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">注册时间：</td>
-                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</td>
-                            </tr>
-                            <tr style="background: transparent !important; background-color: transparent !important;">
-                                <td class="fw-bold" style="background: transparent !important; background-color: transparent !important;">最后登录：</td>
-                                <td style="background: transparent !important; background-color: transparent !important;">{{ current_user.last_login.strftime('%Y年%m月%d日 %H:%M') if current_user.last_login else '从未登录' }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 账户安全 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-shield-alt"></i> 账户安全</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6>密码</h6>
-                                <small class="text-muted">上次更新：{{ current_user.created_at.strftime('%Y年%m月%d日') }}</small>
-                            </div>
-                            <a href="{{ url_for('auth.edit_profile') }}#password" class="btn btn-outline-warning btn-sm">
-                                <i class="fas fa-key"></i> 修改密码
-                            </a>
+                        <div class="profile-modal-panel text-center">
+                            <div class="profile-modal-panel-title">预览效果</div>
+                            <img id="avatar-preview"
+                                 src="{{ current_user.get_avatar_url() }}"
+                                 alt="头像预览"
+                                 width="120"
+                                 height="120"
+                                 class="profile-modal-thumb">
+                            <p class="profile-preview-status" id="preview-status">选择文件后显示预览</p>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6>邮箱验证</h6>
-                                <small class="text-muted">状态：已验证</small>
-                            </div>
-                            <span class="badge bg-success">已验证</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- 活动记录 -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5><i class="fas fa-history"></i> 最近活动</h5>
-            </div>
-            <div class="card-body">
-                <div class="timeline">
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-sign-in-alt text-success"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6>登录成功</h6>
-                                <p class="text-muted mb-0">从 {{ request.remote_addr }} 登录</p>
-                                <small class="text-muted">{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</small>
-                            </div>
+                    <div class="d-none mt-3" id="upload-progress">
+                        <div class="profile-progress-track">
+                            <div class="profile-progress-bar" id="upload-progress-bar"></div>
                         </div>
-                    </div>
-                    
-                    <div class="timeline-item mb-3">
-                        <div class="d-flex">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-user-plus text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6>账户注册</h6>
-                                <p class="text-muted mb-0">成功创建账户</p>
-                                <small class="text-muted">{{ current_user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</small>
-                            </div>
-                        </div>
+                        <p class="profile-progress-text">正在上传头像…</p>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- 统计信息 -->
-        <div class="row">
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fas fa-blog fa-2x text-primary mb-2"></i>
-                        <h5>0</h5>
-                        <p class="text-muted mb-0">发布文章</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fas fa-code fa-2x text-success mb-2"></i>
-                        <h5>0</h5>
-                        <p class="text-muted mb-0">项目数量</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-3">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <i class="fas fa-eye fa-2x text-info mb-2"></i>
-                        <h5>0</h5>
-                        <p class="text-muted mb-0">访问次数</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 快速操作 -->
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-tools"></i> 快速操作</h5>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 mb-2">
-                        <a href="{{ url_for('admin.admin') }}" class="btn btn-outline-primary w-100">
-                            <i class="fas fa-cog"></i> 管理后台
-                        </a>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-outline-secondary w-100">
-                            <i class="fas fa-user-edit"></i> 编辑资料
-                        </a>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <a href="{{ url_for('auth.forgot_password') }}" class="btn btn-outline-warning w-100">
-                            <i class="fas fa-key"></i> 重置密码
-                        </a>
-                    </div>
-                    <div class="col-md-6 mb-2">
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger w-100">
-                            <i class="fas fa-sign-out-alt"></i> 退出登录
-                        </a>
-                    </div>
+                <div class="profile-modal-footer">
+                    <button type="button" class="profile-action-link profile-action-link-ghost" id="cancelAvatarModal">取消</button>
+                    <button type="button" class="profile-action-link profile-action-link-primary" id="upload-avatar" disabled>确认上传</button>
                 </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- 头像上传模态框 -->
-<div class="modal fade" id="avatarModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-camera me-2"></i>更换头像
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="row">
-                    <!-- 左侧：当前头像 -->
-                    <div class="col-md-4 text-center">
-                        <h6 class="text-muted mb-3">当前头像</h6>
-                        <img src="{{ current_user.get_avatar_url() }}" 
-                             alt="当前头像" class="img-fluid rounded-circle current-avatar-preview" 
-                             style="width: 120px; height: 120px; object-fit: cover;">
-                    </div>
-                    
-                    <!-- 中间：上传区域 -->
-                    <div class="col-md-4 text-center">
-                        <h6 class="text-muted mb-3">上传新头像</h6>
-                        <div class="avatar-upload-zone" id="avatar-upload-zone">
-                            <input type="file" class="d-none" id="avatar" name="avatar" accept="image/*" required>
-                            <div class="upload-zone" style="cursor: pointer;">
-                                <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
-                                <p class="mb-2">点击或拖拽上传</p>
-                                <small class="text-muted">支持 PNG、JPG、JPEG、GIF、WebP</small>
-                                <br>
-                                <small class="text-muted">文件大小不超过 5MB</small>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 右侧：预览区域 -->
-                    <div class="col-md-4 text-center">
-                        <h6 class="text-muted mb-3">预览效果</h6>
-                        <img id="avatar-preview" src="{{ current_user.get_avatar_url() }}" 
-                             alt="头像预览" class="img-fluid rounded-circle preview-avatar" 
-                             style="width: 120px; height: 120px; object-fit: cover;">
-                        <div class="mt-2">
-                            <small class="text-success" id="preview-status">选择文件后显示预览</small>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 进度条 -->
-                <div class="mt-4" id="upload-progress" style="display: none;">
-                    <div class="progress">
-                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                             role="progressbar" style="width: 0%"></div>
-                    </div>
-                    <small class="text-muted mt-1 d-block text-center">正在上传头像...</small>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>取消
-                </button>
-                <button type="button" class="btn btn-primary" id="upload-avatar" disabled>
-                    <i class="fas fa-upload me-1"></i>确认上传
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+</section>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-/* 卡片背景样式调整 */
-.card {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: none !important;
+.profile-page-shell {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-bottom: 20px;
 }
 
-/* 覆盖CSS变量 */
-.card {
-    --bg-glass: transparent !important;
-}
-
-.card-header {
-    background: rgba(15, 23, 42, 0.3) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
-}
-
-.card-body {
-    background: transparent !important;
-    color: #94a3b8 !important;
-}
-
-/* 确保基本信息模块完全透明 */
-.card:first-child {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-shadow: none !important;
-}
-
-.card:first-child .card-header {
-    background: rgba(15, 23, 42, 0.1) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
-}
-
-.card:first-child .card-body {
-    background: transparent !important;
-    color: #94a3b8 !important;
-}
-
-/* 强制移除所有可能的白色背景 */
-.card:first-child,
-.card:first-child *,
-.card:first-child .card-body,
-.card:first-child .card-header,
-.card:first-child .table,
-.card:first-child .table td,
-.card:first-child .table tr {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 确保表格单元格透明 */
-.card:first-child .table td {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-}
-
-.card:first-child .table tr {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 表格文字颜色调整 */
-.table td {
-    color: #94a3b8 !important;
-}
-
-.table .fw-bold {
-    color: #94a3b8 !important;
-}
-
-/* 强制覆盖Bootstrap默认样式 */
-.card:first-child .table-borderless td,
-.card:first-child .table-borderless th,
-.card:first-child .table-borderless tr {
-    background: transparent !important;
-    background-color: transparent !important;
-    border: none !important;
-}
-
-/* 确保所有可能的白色背景都被移除 */
-.card:first-child .row,
-.card:first-child .col-md-4,
-.card:first-child .col-md-8,
-.card:first-child .text-center,
-.card:first-child .avatar-display-section,
-.card:first-child .avatar-container,
-.card:first-child .avatar-info {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 最终强制透明化 - 覆盖所有可能的样式 */
-.card:first-child,
-.card:first-child *:not(.btn):not(.badge):not(.modal):not(.modal *),
-.card:first-child .card-body *,
-.card:first-child .table *,
-.card:first-child .row *,
-.card:first-child .col-* {
-    background: transparent !important;
-    background-color: transparent !important;
-    background-image: none !important;
-}
-
-/* 特别处理表格 */
-.card:first-child .table {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-.card:first-child .table tbody,
-.card:first-child .table thead,
-.card:first-child .table tfoot {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 账户安全部分文字颜色 */
-.card-body h6 {
-    color: #94a3b8 !important;
-}
-
-.card-body small {
-    color: #94a3b8 !important;
-}
-
-/* 头像显示区域样式 */
-.avatar-display-section {
-    position: relative;
-}
-
-.avatar-container {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 1rem;
-}
-
-.user-avatar {
-    border: 4px solid #e9ecef;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.user-avatar:hover {
-    border-color: #007bff;
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0,123,255,0.2);
-}
-
-.avatar-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.5);
-    border-radius: 50%;
+.profile-page-hero {
     display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 14px;
+}
+
+.profile-page-hero-copy {
+    max-width: 720px;
+}
+
+.profile-page-eyebrow,
+.profile-panel-eyebrow {
+    display: inline-flex;
     align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: all 0.3s ease;
+    min-height: 28px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
 }
 
-.avatar-container:hover .avatar-overlay {
-    opacity: 1;
+.profile-page-title {
+    margin: 8px 0 0;
+    font-size: 30px;
+    line-height: 1.1;
+    color: var(--fgColor-default);
 }
 
-.avatar-info h5 {
-    color: #94a3b8;
+.profile-page-description {
+    margin: 0;
+    max-width: 680px;
+    color: var(--fgColor-muted);
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.profile-page-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.profile-page-meta-pill {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    border: 1px solid var(--borderColor-default);
+    color: var(--fgColor-muted);
+    font-size: 12px;
     font-weight: 600;
 }
 
-.avatar-info small {
-    color: #94a3b8;
+.profile-page-meta-pill-accent {
+    background: rgba(9, 105, 218, 0.1);
+    border-color: rgba(9, 105, 218, 0.16);
+    color: var(--fgColor-accent);
 }
 
-/* 模态框样式 */
-.upload-zone {
-    border: 2px dashed #dee2e6;
-    border-radius: 12px;
-    padding: 2rem 1rem;
-    transition: all 0.3s ease;
-    background: #f8f9fa;
-    min-height: 200px;
+.profile-page-grid {
+    display: grid;
+    grid-template-columns: minmax(230px, 260px) minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+}
+
+.profile-summary-card,
+.profile-panel,
+.profile-modal-card {
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(31, 35, 40, 0.04);
+}
+
+.profile-summary-card {
+    position: sticky;
+    top: 84px;
+    padding: 16px;
+}
+
+.profile-summary-avatar-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+.profile-summary-avatar {
+    display: block;
+    width: 136px;
+    height: 136px;
+    max-width: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 12px 24px rgba(31, 35, 40, 0.08);
+    background: linear-gradient(135deg, rgba(9, 105, 218, 0.12), rgba(84, 174, 255, 0.08));
+}
+
+.profile-summary-identity {
+    text-align: center;
+}
+
+.profile-summary-identity h2 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.15;
+    color: var(--fgColor-default);
+}
+
+.profile-summary-identity p {
+    margin: 6px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+}
+
+.profile-summary-intro {
+    margin: 14px 0 0;
+    color: var(--fgColor-muted);
+    line-height: 1.6;
+    text-align: center;
+    font-size: 14px;
+}
+
+.profile-summary-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+.profile-summary-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    border: 1px solid var(--borderColor-default);
+    font-size: 12px;
+    line-height: 1;
+}
+
+.profile-summary-tag i {
+    color: var(--fgColor-accent);
+}
+
+.profile-summary-tag-link {
+    text-decoration: none;
+}
+
+.profile-summary-facts {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.profile-summary-fact {
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: var(--bgColor-muted);
+    border: 1px solid var(--borderColor-default);
+}
+
+.profile-summary-fact-label {
+    display: block;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.profile-summary-fact-value {
+    display: block;
+    margin-top: 4px;
+    color: var(--fgColor-default);
+    font-size: 13px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.profile-summary-actions,
+.profile-modal-footer {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.profile-action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 13px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease, background-color 0.16s ease, color 0.16s ease;
+    cursor: pointer;
+    appearance: none;
+    font: inherit;
+}
+
+.profile-action-link:hover {
+    transform: translateY(-1px);
+}
+
+.profile-action-link-primary {
+    background: rgba(9, 105, 218, 0.92);
+    border-color: rgba(9, 105, 218, 0.2);
+    color: var(--button-primary-fgColor-rest);
+    box-shadow: 0 8px 18px rgba(9, 105, 218, 0.12);
+}
+
+.profile-action-link-primary:hover {
+    background: rgba(9, 105, 218, 1);
+    border-color: rgba(9, 105, 218, 0.24);
+    color: var(--button-primary-fgColor-rest);
+    box-shadow: 0 10px 20px rgba(9, 105, 218, 0.14);
+}
+
+.profile-action-link-secondary {
+    background: rgba(9, 105, 218, 0.06);
+    border-color: rgba(9, 105, 218, 0.12);
+    color: var(--fgColor-accent);
+    flex: 1 1 0;
+}
+
+.profile-action-link-ghost {
+    background: var(--bgColor-default);
+    border-color: var(--borderColor-default);
+    color: var(--fgColor-default);
+    flex: 1 1 0;
+}
+
+.profile-content-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.profile-panel {
+    padding: 14px;
+}
+
+.profile-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.profile-panel-header h2 {
+    margin: 6px 0 0;
+    font-size: 18px;
+    line-height: 1.15;
+    color: var(--fgColor-default);
+}
+
+.profile-panel-header p {
+    margin: 0;
+    max-width: 360px;
+    color: var(--fgColor-muted);
+    line-height: 1.6;
+    display: none;
+}
+
+.profile-stat-grid,
+.profile-info-grid,
+.profile-security-grid {
+    display: grid;
+    gap: 10px;
+}
+
+.profile-stat-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.profile-stat-card,
+.profile-info-card,
+.profile-security-card,
+.profile-modal-panel {
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-muted);
+}
+
+.profile-stat-card {
+    padding: 12px 10px;
+    text-align: center;
+}
+
+.profile-stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 15px;
+}
+
+.profile-stat-value {
+    display: block;
+    margin-top: 10px;
+    color: var(--fgColor-default);
+    font-size: 22px;
+    line-height: 1;
+}
+
+.profile-stat-label {
+    display: block;
+    margin-top: 6px;
+    color: var(--fgColor-muted);
+    font-size: 12px;
+}
+
+.profile-info-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.profile-info-card {
+    padding: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    gap: 4px;
+    min-width: 0;
+}
+
+.profile-info-label {
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.profile-info-value,
+.profile-info-link {
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.profile-info-link {
+    text-decoration: none;
+    color: var(--fgColor-accent);
+}
+
+.profile-info-value-empty {
+    color: var(--fgColor-muted);
+    font-weight: 500;
+}
+
+.profile-info-hint {
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    display: none;
+}
+
+.profile-security-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.profile-security-card {
+    display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 12px;
 }
 
-.upload-zone:hover {
-    border-color: #007bff;
-    background: #e3f2fd;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,123,255,0.1);
+.profile-security-copy h3 {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 14px;
 }
 
-.upload-zone.dragover {
-    border-color: #007bff;
-    background: #e3f2fd;
-    transform: scale(1.02);
+.profile-security-copy p {
+    margin: 4px 0 0;
+    color: var(--fgColor-muted);
+    line-height: 1.5;
+    font-size: 12px;
 }
 
-.current-avatar-preview,
-.preview-avatar {
-    border: 3px solid #e9ecef;
-    transition: all 0.3s ease;
+.profile-inline-action,
+.profile-status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(9, 105, 218, 0.16);
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
-.preview-avatar {
-    border-color: #28a745;
-    box-shadow: 0 2px 8px rgba(40,167,69,0.2);
+.profile-page-hero .profile-action-link {
+    flex: 0 0 auto;
+    align-self: flex-start;
 }
 
-/* 进度条样式 */
-.progress {
+.profile-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(15, 23, 42, 0.42);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+}
+
+.profile-modal-dialog {
+    width: min(920px, 100%);
+}
+
+.profile-modal-card {
+    overflow: hidden;
+}
+
+.profile-modal-header,
+.profile-modal-body,
+.profile-modal-footer {
+    padding: 22px 24px;
+}
+
+.profile-modal-header,
+.profile-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.profile-modal-header {
+    border-bottom: 1px solid var(--borderColor-default);
+    background: var(--bgColor-muted);
+}
+
+.profile-modal-title {
+    margin: 10px 0 0;
+    color: var(--fgColor-default);
+    font-size: 26px;
+}
+
+.profile-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-muted);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+}
+
+.profile-modal-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.profile-modal-panel {
+    padding: 18px;
+}
+
+.profile-modal-panel-title {
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 14px;
+}
+
+.profile-modal-thumb {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255, 255, 255, 0.9);
+    box-shadow: 0 14px 28px rgba(31, 35, 40, 0.12);
+    object-fit: cover;
+}
+
+.profile-upload-zone {
+    min-height: 210px;
+    padding: 20px;
+    border-radius: 18px;
+    border: 2px dashed var(--borderColor-default);
+    background: var(--bgColor-default);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+}
+
+.profile-upload-zone i {
+    color: var(--fgColor-accent);
+    font-size: 28px;
+}
+
+.profile-upload-zone p,
+.profile-upload-zone span,
+.profile-preview-status,
+.profile-progress-text {
+    margin: 0;
+    color: var(--fgColor-muted);
+    line-height: 1.6;
+}
+
+.profile-upload-zone p {
+    color: var(--fgColor-default);
+    font-weight: 600;
+}
+
+.profile-upload-zone:hover,
+.profile-upload-zone.is-dragover {
+    border-color: var(--borderColor-accent-emphasis);
+    background: rgba(9, 105, 218, 0.04);
+    transform: translateY(-1px);
+}
+
+.profile-preview-status {
+    margin-top: 12px;
+}
+
+.profile-progress-track {
     height: 8px;
-    border-radius: 4px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    overflow: hidden;
 }
 
-.progress-bar {
-    background: linear-gradient(45deg, #007bff, #0056b3);
+.profile-progress-bar {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, var(--button-primary-bgColor-rest), var(--button-primary-bgColor-hover));
+    transition: width 0.2s ease;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .user-avatar {
-        width: 120px !important;
-        height: 120px !important;
+.profile-progress-text {
+    text-align: center;
+    margin-top: 10px;
+}
+
+@media (max-width: 991px) {
+    .profile-page-grid {
+        grid-template-columns: 1fr;
     }
-    
-    .current-avatar-preview,
-    .preview-avatar {
-        width: 80px !important;
-        height: 80px !important;
+
+    .profile-summary-card {
+        position: static;
     }
-    
-    .upload-zone {
-        min-height: 150px;
-        padding: 1rem;
+
+    .profile-stat-grid,
+    .profile-info-grid,
+    .profile-security-grid,
+    .profile-modal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .profile-page-hero,
+    .profile-panel-header,
+    .profile-security-card,
+    .profile-modal-header,
+    .profile-modal-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .profile-page-title {
+        font-size: 30px;
+    }
+
+    .profile-summary-card,
+    .profile-panel,
+    .profile-modal-header,
+    .profile-modal-body,
+    .profile-modal-footer {
+        padding-left: 18px;
+        padding-right: 18px;
+    }
+
+    .profile-stat-grid,
+    .profile-info-grid,
+    .profile-security-grid,
+    .profile-modal-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .profile-summary-actions .profile-action-link,
+    .profile-modal-footer .profile-action-link,
+    .profile-page-hero .profile-action-link {
+        width: 100%;
     }
 }
 </style>
@@ -520,179 +918,197 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('avatarModal');
+    const openBtn = document.getElementById('openAvatarModal');
+    const closeBtn = document.getElementById('closeAvatarModal');
+    const cancelBtn = document.getElementById('cancelAvatarModal');
     const avatarInput = document.getElementById('avatar');
     const avatarPreview = document.getElementById('avatar-preview');
     const uploadBtn = document.getElementById('upload-avatar');
-    const uploadZone = document.querySelector('.upload-zone');
+    const uploadZone = document.getElementById('upload-zone');
     const previewStatus = document.getElementById('preview-status');
     const uploadProgress = document.getElementById('upload-progress');
-    const progressBar = uploadProgress.querySelector('.progress-bar');
-    
-    // 点击上传区域触发文件选择
-    uploadZone.addEventListener('click', function() {
+    const progressBar = document.getElementById('upload-progress-bar');
+    const flashHost = document.getElementById('profile-message-anchor');
+    const modalCurrentAvatar = document.getElementById('modal-current-avatar');
+
+    if (!modal || !avatarInput || !uploadBtn || !uploadProgress || !progressBar || !avatarPreview || !previewStatus) {
+        return;
+    }
+
+    function openModal() {
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'flex') closeModal();
+    });
+
+    function showFlash(type, message) {
+        if (!flashHost) return;
+        var div = document.createElement('div');
+        var cls = 'flash';
+        if (type === 'success') cls += ' flash-success';
+        else if (type === 'danger' || type === 'error') cls += ' flash-danger';
+        else if (type === 'warning') cls += ' flash-warning';
+        div.className = cls;
+        div.setAttribute('role', 'status');
+        div.textContent = message;
+        flashHost.appendChild(div);
+        setTimeout(function() {
+            if (div.parentNode) div.remove();
+        }, 5000);
+    }
+
+    function triggerFilePick() {
         avatarInput.click();
-    });
-    
-    // 拖拽上传功能
-    uploadZone.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        this.classList.add('dragover');
-    });
-    
-    uploadZone.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-    });
-    
-    uploadZone.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.classList.remove('dragover');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            const file = files[0];
-            if (file.type.startsWith('image/')) {
-                // 创建FileList对象
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                avatarInput.files = dataTransfer.files;
-                
-                // 触发change事件
-                avatarInput.dispatchEvent(new Event('change'));
-            } else {
-                showAlert('danger', '请选择图片文件');
+    }
+
+    if (uploadZone && avatarInput) {
+        uploadZone.addEventListener('click', triggerFilePick);
+        uploadZone.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                triggerFilePick();
             }
-        }
-    });
-    
-    // 头像预览
+        });
+
+        uploadZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadZone.classList.add('is-dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('is-dragover');
+        });
+
+        uploadZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadZone.classList.remove('is-dragover');
+            var files = e.dataTransfer.files;
+            if (files.length > 0) {
+                var file = files[0];
+                if (file.type.indexOf('image/') === 0) {
+                    var dt = new DataTransfer();
+                    dt.items.add(file);
+                    avatarInput.files = dt.files;
+                    avatarInput.dispatchEvent(new Event('change', { bubbles: true }));
+                } else {
+                    showFlash('danger', '请选择图片文件');
+                }
+            }
+        });
+    }
+
     avatarInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
+        var file = e.target.files[0];
         if (file) {
-            // 验证文件类型
-            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                showAlert('danger', '不支持的文件类型，请选择 PNG、JPG、JPEG、GIF 或 WebP 格式的图片');
+            var allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+            if (allowedTypes.indexOf(file.type) === -1) {
+                showFlash('danger', '不支持的文件类型，请选择 PNG、JPG、JPEG、GIF 或 WebP 格式的图片');
                 this.value = '';
                 return;
             }
-            
-            // 验证文件大小 (5MB)
             if (file.size > 5 * 1024 * 1024) {
-                showAlert('danger', '文件大小不能超过 5MB');
+                showFlash('danger', '文件大小不能超过 5MB');
                 this.value = '';
                 return;
             }
-            
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarPreview.src = e.target.result;
+            var reader = new FileReader();
+            reader.onload = function(ev) {
+                avatarPreview.src = ev.target.result;
                 previewStatus.textContent = '预览已更新';
-                previewStatus.className = 'text-success';
+                previewStatus.className = 'profile-preview-status';
                 uploadBtn.disabled = false;
             };
             reader.readAsDataURL(file);
         } else {
             uploadBtn.disabled = true;
             previewStatus.textContent = '选择文件后显示预览';
-            previewStatus.className = 'text-muted';
+            previewStatus.className = 'profile-preview-status';
         }
     });
-    
-    // 上传头像
+
     uploadBtn.addEventListener('click', function() {
-        const formData = new FormData();
-        const file = avatarInput.files[0];
-        
+        var file = avatarInput.files[0];
         if (!file) {
-            showAlert('warning', '请选择头像文件');
+            showFlash('warning', '请选择头像文件');
             return;
         }
-        
+
+        var formData = new FormData();
         formData.append('avatar', file);
-        
-        // 显示进度条
-        uploadProgress.style.display = 'block';
+
+        uploadProgress.classList.remove('d-none');
         progressBar.style.width = '0%';
-        
         uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 上传中...';
-        
-        // 模拟进度条
-        let progress = 0;
-        const progressInterval = setInterval(() => {
-            progress += Math.random() * 15;
-            if (progress > 90) progress = 90;
-            progressBar.style.width = progress + '%';
+        var originalLabel = uploadBtn.textContent;
+        uploadBtn.textContent = '上传中…';
+
+        var progressTimer = setInterval(function() {
+            var w = parseFloat(progressBar.style.width) || 0;
+            w += Math.random() * 12;
+            if (w > 88) w = 88;
+            progressBar.style.width = w + '%';
         }, 200);
-        
+
         fetch('{{ url_for("settings.upload_avatar") }}', {
             method: 'POST',
             body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         })
-        .then(response => response.json())
-        .then(data => {
-            clearInterval(progressInterval);
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            clearInterval(progressTimer);
             progressBar.style.width = '100%';
-            
-            setTimeout(() => {
-                if (data.success) {
-                    // 更新页面上的头像
-                    document.getElementById('current-avatar').src = data.avatar_url;
-                    document.querySelector('.current-avatar-preview').src = data.avatar_url;
-                    
-                    // 关闭模态框
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('avatarModal'));
-                    modal.hide();
-                    
-                    // 显示成功消息
-                    showAlert('success', data.message);
-                } else {
-                    showAlert('danger', data.message);
-                }
-                
-                // 重置状态
-                uploadProgress.style.display = 'none';
+            setTimeout(function() {
+                uploadProgress.classList.add('d-none');
+                progressBar.style.width = '0%';
                 uploadBtn.disabled = false;
-                uploadBtn.innerHTML = '<i class="fas fa-upload me-1"></i>确认上传';
+                uploadBtn.textContent = originalLabel;
+
+                if (data.success) {
+                    var url = data.avatar_url;
+                    document.getElementById('current-avatar').src = url;
+                    if (modalCurrentAvatar) modalCurrentAvatar.src = url;
+                    avatarPreview.src = url;
+                    closeModal();
+                    showFlash('success', data.message || '头像上传成功');
+                } else {
+                    showFlash('danger', data.message || '上传失败');
+                }
+
                 avatarInput.value = '';
                 previewStatus.textContent = '选择文件后显示预览';
-                previewStatus.className = 'text-muted';
-            }, 500);
+                previewStatus.className = 'profile-preview-status';
+                uploadBtn.disabled = true;
+            }, 400);
         })
-        .catch(error => {
-            clearInterval(progressInterval);
-            console.error('Error:', error);
-            showAlert('danger', '上传失败，请稍后重试');
-            
-            // 重置状态
-            uploadProgress.style.display = 'none';
+        .catch(function(err) {
+            clearInterval(progressTimer);
+            console.error(err);
+            uploadProgress.classList.add('d-none');
+            progressBar.style.width = '0%';
             uploadBtn.disabled = false;
-            uploadBtn.innerHTML = '<i class="fas fa-upload me-1"></i>确认上传';
+            uploadBtn.textContent = originalLabel;
+            showFlash('danger', '上传失败，请稍后重试');
         });
     });
-    
-    function showAlert(type, message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        
-        const container = document.querySelector('.container');
-        container.insertBefore(alertDiv, container.firstChild);
-        
-        // 3秒后自动消失
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 3000);
-    }
 });
 </script>
-{% endblock %} 
+{% endblock %}

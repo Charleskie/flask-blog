@@ -1,25 +1,24 @@
 /**
  * Tiptap 编辑器样式
- * 现代化的富文本编辑器样式
+ * Primer Design System — light theme
  */
 
 .tiptap-editor {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    position: relative;
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    background: var(--bgColor-default);
+    box-shadow: var(--shadow-resting-small);
     overflow: hidden;
-    transition: all 0.2s ease;
-    height: 500px; /* 固定高度 */
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    height: 500px;
     display: flex;
     flex-direction: column;
 }
 
 .tiptap-editor:focus-within {
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1), 0 8px 32px rgba(0, 0, 0, 0.15);
+    border-color: var(--focus-outlineColor);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3), var(--shadow-resting-small);
 }
 
 /* 工具栏样式 */
@@ -27,17 +26,15 @@
     display: flex;
     align-items: center;
     padding: 12px 16px;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    background: var(--bgColor-muted);
+    border-bottom: 1px solid var(--borderColor-default);
     flex-wrap: wrap;
     gap: 4px;
     position: sticky;
     top: 0;
     z-index: 10;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: var(--shadow-resting-xsmall);
 }
 
 .toolbar-group {
@@ -49,7 +46,7 @@
 .toolbar-separator {
     width: 1px;
     height: 24px;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--borderColor-default);
     margin: 0 8px;
 }
 
@@ -61,21 +58,21 @@
     height: 32px;
     border: none;
     background: transparent;
-    border-radius: 6px;
-    color: rgba(255, 255, 255, 0.8);
+    border-radius: var(--borderRadius-medium);
+    color: var(--fgColor-muted);
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
     font-size: 14px;
 }
 
 .toolbar-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 1);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
 }
 
 .toolbar-btn.active {
-    background: var(--primary-color, #3b82f6);
-    color: white;
+    background: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .toolbar-btn:disabled {
@@ -85,32 +82,32 @@
 
 .toolbar-btn:disabled:hover {
     background: transparent;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fgColor-subtle);
 }
 
 .toolbar-select {
     padding: 6px 8px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 6px;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
     font-size: 14px;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
     min-width: 80px;
 }
 
 .toolbar-select:focus {
     outline: none;
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    border-color: var(--focus-outlineColor);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
 .color-picker {
     width: 32px;
     height: 32px;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
     cursor: pointer;
     background: transparent;
     padding: 0;
@@ -123,7 +120,7 @@
 
 .color-picker::-webkit-color-swatch {
     border: none;
-    border-radius: 4px;
+    border-radius: var(--borderRadius-small);
 }
 
 /* 高亮颜色选择器样式 */
@@ -136,12 +133,10 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    background: var(--bgColor-default);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    box-shadow: var(--shadow-floating-small);
     padding: 8px;
     z-index: 1000;
     display: none;
@@ -157,20 +152,19 @@
 .highlight-color {
     width: 24px;
     height: 24px;
-    border-radius: 4px;
+    border-radius: var(--borderRadius-small);
     cursor: pointer;
     border: 2px solid transparent;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease;
     position: relative;
 }
 
 .highlight-color:hover {
-    border-color: rgba(255, 255, 255, 0.8);
-    transform: scale(1.1);
+    border-color: var(--borderColor-accent-emphasis);
 }
 
 .highlight-color:active {
-    transform: scale(0.95);
+    opacity: 0.85;
 }
 
 .highlight-color::after {
@@ -181,7 +175,7 @@
     transform: translate(-50%, -50%);
     width: 8px;
     height: 8px;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--fgColor-onEmphasis);
     border-radius: 50%;
     opacity: 0;
     transition: opacity 0.2s ease;
@@ -199,8 +193,8 @@
     font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
     font-size: 16px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
-    background: transparent;
+    color: var(--fgColor-default);
+    background: var(--bgColor-default);
     position: relative;
     overflow-y: auto;
     overflow-x: hidden;
@@ -208,7 +202,7 @@
 
 .tiptap-content.is-empty::before {
     content: attr(data-placeholder);
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--fgColor-subtle);
     pointer-events: none;
     position: absolute;
     top: 20px;
@@ -221,7 +215,7 @@
     font-weight: 700;
     line-height: 1.2;
     margin: 1.5rem 0 1rem 0;
-    color: var(--text-primary, #1e293b);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content h2 {
@@ -229,7 +223,7 @@
     font-weight: 600;
     line-height: 1.3;
     margin: 1.25rem 0 0.75rem 0;
-    color: var(--text-primary, #1e293b);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content h3 {
@@ -237,7 +231,7 @@
     font-weight: 600;
     line-height: 1.4;
     margin: 1rem 0 0.5rem 0;
-    color: var(--text-primary, #1e293b);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content h4 {
@@ -245,7 +239,7 @@
     font-weight: 600;
     line-height: 1.4;
     margin: 0.75rem 0 0.5rem 0;
-    color: var(--text-primary, #1e293b);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content h5 {
@@ -253,7 +247,7 @@
     font-weight: 600;
     line-height: 1.4;
     margin: 0.5rem 0 0.25rem 0;
-    color: var(--text-primary, #1e293b);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content h6 {
@@ -261,7 +255,7 @@
     font-weight: 600;
     line-height: 1.4;
     margin: 0.5rem 0 0.25rem 0;
-    color: var(--text-primary, #1e293b);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content p {
@@ -290,19 +284,19 @@
 }
 
 .tiptap-content code {
-    background: #f1f5f9;
-    color: #dc2626;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-danger);
     padding: 0.125rem 0.25rem;
-    border-radius: 4px;
+    border-radius: var(--borderRadius-small);
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
     font-size: 0.875em;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--borderColor-default);
 }
 
 .tiptap-content pre {
-    background: #0f172a;
-    border: 1px solid #334155;
-    border-radius: 8px;
+    background: var(--bgColor-muted);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
     padding: 1rem;
     margin: 1rem 0;
     overflow-x: auto;
@@ -310,50 +304,51 @@
     font-size: 0.875rem;
     line-height: 1.6;
     position: relative;
+    color: var(--fgColor-default);
 }
 
 .tiptap-content pre code {
     background: none;
-    color: #f8fafc;
+    color: inherit;
     padding: 0;
     border-radius: 0;
     font-size: inherit;
     border: none;
 }
 
-/* 代码块语法高亮 */
+/* 代码块语法高亮（浅色背景可读配色） */
 .tiptap-content pre code .keyword {
-    color: #c792ea;
+    color: var(--fgColor-accent);
     font-weight: 500;
 }
 
 .tiptap-content pre code .string {
-    color: #c3e88d;
+    color: var(--fgColor-success);
 }
 
 .tiptap-content pre code .number {
-    color: #f78c6c;
+    color: var(--fgColor-attention);
 }
 
 .tiptap-content pre code .comment {
-    color: #676e95;
+    color: var(--fgColor-muted);
     font-style: italic;
 }
 
 .tiptap-content pre code .function {
-    color: #82aaff;
+    color: var(--fgColor-accent);
 }
 
 .tiptap-content pre code .variable {
-    color: #f07178;
+    color: var(--fgColor-danger);
 }
 
 .tiptap-content pre code .class {
-    color: #ffcb6b;
+    color: var(--fgColor-attention);
 }
 
 .tiptap-content pre code .operator {
-    color: #89ddff;
+    color: var(--fgColor-subtle);
 }
 
 /* 代码块语言标识 */
@@ -362,24 +357,25 @@
     position: absolute;
     top: 0.5rem;
     right: 1rem;
-    background: #334155;
-    color: #94a3b8;
+    background: var(--bgColor-default);
+    color: var(--fgColor-muted);
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: var(--borderRadius-small);
     font-size: 0.75rem;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    border: 1px solid var(--borderColor-default);
 }
 
 .tiptap-content blockquote {
-    border-left: 4px solid var(--primary-color, #3b82f6);
-    background: var(--bg-secondary, #f8fafc);
+    border-left: 4px solid var(--borderColor-accent-emphasis);
+    background: var(--bgColor-muted);
     margin: 1rem 0;
     padding: 1rem 1.5rem;
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 var(--borderRadius-large) var(--borderRadius-large) 0;
     font-style: italic;
-    color: var(--text-secondary, #64748b);
+    color: var(--fgColor-muted);
 }
 
 .tiptap-content ul,
@@ -429,35 +425,33 @@
 
 .tiptap-content hr {
     border: none;
-    border-top: 2px solid var(--border-color, #e1e5e9);
+    border-top: 2px solid var(--borderColor-default);
     margin: 2rem 0;
     border-radius: 1px;
 }
 
 .tiptap-content a {
-    color: var(--primary-color, #3b82f6);
+    color: var(--fgColor-accent);
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    transition: all 0.15s ease;
+    transition: border-color 0.15s ease, color 0.15s ease;
 }
 
 .tiptap-content a:hover {
-    border-bottom-color: var(--primary-color, #3b82f6);
+    border-bottom-color: var(--fgColor-accent);
 }
 
 /* 编辑器中的链接样式 */
 .tiptap-link {
-    color: var(--primary-color, #3b82f6);
+    color: var(--fgColor-accent);
     text-decoration: underline;
-    transition: all 0.15s ease;
+    transition: color 0.15s ease;
 }
 
 .tiptap-link:hover {
-    color: var(--primary-hover-color, #2563eb);
+    color: var(--fgColor-link, var(--fgColor-accent));
     text-decoration: underline;
 }
-
-
 
 /* 对齐选项样式 */
 .align-options {
@@ -479,10 +473,8 @@
 }
 
 .align-option:hover {
-    color: var(--primary-color, #3b82f6);
+    color: var(--fgColor-accent);
 }
-
-
 
 /* 链接模态框样式 */
 .link-modal {
@@ -494,7 +486,7 @@
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .link-modal.show {
@@ -508,7 +500,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -516,54 +509,60 @@
 }
 
 .link-modal-content {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.96)),
+        var(--bgColor-default);
+    border-radius: 24px;
+    border: 1px solid rgba(208, 215, 222, 0.82);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
     max-width: 500px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    transform: scale(0.8);
-    transition: transform 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .link-modal.show .link-modal-content {
-    transform: scale(1);
+    opacity: 1;
 }
 
 .link-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.04), rgba(9, 105, 218, 0));
 }
 
 .link-modal-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--fgColor-default);
 }
 
 .link-modal-close {
-    background: none;
-    border: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
     font-size: 18px;
-    color: #6b7280;
+    color: var(--fgColor-muted);
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    padding: 0;
+    border-radius: 10px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .link-modal-close:hover {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
 }
 
 .link-modal-body {
-    padding: 24px;
+    padding: 20px 24px 24px;
 }
 
 .link-modal-body .form-group {
@@ -578,59 +577,65 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #374151;
+    color: var(--fgColor-default);
 }
 
 .link-modal-body input {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
     font-size: 14px;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
 }
 
 .link-modal-body input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--focus-outlineColor);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
 .link-modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 20px 24px;
-    border-top: 1px solid #e5e7eb;
+    padding: 14px 24px 22px;
+    border-top: 1px solid var(--borderColor-default);
 }
 
 .link-modal-footer .btn {
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
 }
 
 .link-modal-footer .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+    border-color: var(--borderColor-default);
 }
 
 .link-modal-footer .btn-secondary:hover {
-    background: #e5e7eb;
+    background: var(--bgColor-default);
+    border-color: var(--borderColor-emphasis);
 }
 
 .link-modal-footer .btn-primary {
-    background: #3b82f6;
-    color: white;
+    background: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
+    border-color: var(--bgColor-accent-emphasis);
 }
 
 .link-modal-footer .btn-primary:hover {
-    background: #2563eb;
+    background: var(--fgColor-accent);
+    border-color: var(--fgColor-accent);
 }
 
 /* 代码块模态框样式 */
@@ -643,7 +648,7 @@
     z-index: 9999;
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .code-modal.show {
@@ -657,7 +662,8 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(15, 23, 42, 0.34);
+    backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -665,54 +671,60 @@
 }
 
 .code-modal-content {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.96)),
+        var(--bgColor-default);
+    border-radius: 24px;
+    border: 1px solid rgba(208, 215, 222, 0.82);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
     max-width: 600px;
     width: 100%;
     max-height: 90vh;
     overflow-y: auto;
-    transform: scale(0.8);
-    transition: transform 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
 .code-modal.show .code-modal-content {
-    transform: scale(1);
+    opacity: 1;
 }
 
 .code-modal-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e5e7eb;
+    padding: 22px 24px 16px;
+    border-bottom: 1px solid var(--borderColor-default);
+    background: linear-gradient(180deg, rgba(9, 105, 218, 0.04), rgba(9, 105, 218, 0));
 }
 
 .code-modal-header h3 {
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1f2937;
+    color: var(--fgColor-default);
 }
 
 .code-modal-close {
-    background: none;
-    border: none;
+    width: 32px;
+    height: 32px;
+    border: 1px solid transparent;
+    background: transparent;
     font-size: 18px;
-    color: #6b7280;
+    color: var(--fgColor-muted);
     cursor: pointer;
-    padding: 4px;
-    border-radius: 4px;
-    transition: all 0.2s ease;
+    padding: 0;
+    border-radius: 10px;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .code-modal-close:hover {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
 }
 
 .code-modal-body {
-    padding: 24px;
+    padding: 20px 24px 24px;
 }
 
 .code-modal-body .form-group {
@@ -727,112 +739,118 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #374151;
+    color: var(--fgColor-default);
 }
 
 .code-modal-body select {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
     font-size: 14px;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
-    background: white;
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
 }
 
 .code-modal-body select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--focus-outlineColor);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
 .code-modal-body textarea {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
     font-size: 14px;
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Consolas', monospace;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
     box-sizing: border-box;
     resize: vertical;
     min-height: 200px;
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
 }
 
 .code-modal-body textarea:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: var(--focus-outlineColor);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
 .code-modal-footer {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    padding: 20px 24px;
-    border-top: 1px solid #e5e7eb;
+    padding: 14px 24px 22px;
+    border-top: 1px solid var(--borderColor-default);
 }
 
 .code-modal-footer .btn {
     padding: 10px 20px;
-    border-radius: 6px;
+    border-radius: var(--borderRadius-medium);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    border: 1px solid transparent;
 }
 
 .code-modal-footer .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+    border-color: var(--borderColor-default);
 }
 
 .code-modal-footer .btn-secondary:hover {
-    background: #e5e7eb;
+    background: var(--bgColor-default);
+    border-color: var(--borderColor-emphasis);
 }
 
 .code-modal-footer .btn-primary {
-    background: #3b82f6;
-    color: white;
+    background: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
+    border-color: var(--bgColor-accent-emphasis);
 }
 
 .code-modal-footer .btn-primary:hover {
-    background: #2563eb;
+    background: var(--fgColor-accent);
+    border-color: var(--fgColor-accent);
 }
-
 
 .tiptap-content table {
     border-collapse: collapse;
     width: 100%;
     margin: 1rem 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bgColor-default);
 }
 
 .tiptap-content th,
 .tiptap-content td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--borderColor-default);
     padding: 0.75rem;
     text-align: left;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content th {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bgColor-muted);
     font-weight: 600;
-    color: rgba(255, 255, 255, 1);
+    color: var(--fgColor-default);
 }
 
 .tiptap-content tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bgColor-muted);
 }
 
 .tiptap-content tr:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bgColor-accent-muted);
 }
 
 /* 编辑器中的表格样式 */
@@ -840,62 +858,62 @@
     border-collapse: collapse;
     width: 100%;
     margin: 10px 0;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bgColor-default);
 }
 
 .tiptap-table th,
 .tiptap-table td {
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid var(--borderColor-default);
     padding: 8px 12px;
     text-align: left;
-    color: rgba(255, 255, 255, 0.9);
+    color: var(--fgColor-default);
     transition: background-color 0.2s ease;
 }
 
 .tiptap-table th {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--bgColor-muted);
     font-weight: 600;
-    color: rgba(255, 255, 255, 1);
+    color: var(--fgColor-default);
 }
 
 .tiptap-table tr:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--bgColor-accent-muted);
 }
 
 .tiptap-table tr:nth-child(even) {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--bgColor-muted);
 }
 
 /* 图片样式 */
 .tiptap-content img {
     max-width: 100%;
     height: auto;
-    border-radius: 8px;
+    border-radius: var(--borderRadius-large);
     margin: 10px 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease;
+    box-shadow: var(--shadow-resting-small);
+    transition: box-shadow 0.2s ease;
 }
 
 .tiptap-content img:hover {
-    transform: scale(1.02);
+    box-shadow: var(--shadow-floating-small);
 }
 
 /* 图片上传模块样式 */
 .image-upload-module {
     margin: 15px 0;
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05);
+    border: 2px dashed var(--borderColor-default);
+    border-radius: var(--borderRadius-large);
+    background: var(--bgColor-muted);
     padding: 15px;
-    transition: all 0.3s ease;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .image-upload-module:hover {
-    border-color: rgba(59, 130, 246, 0.5);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--borderColor-accent-emphasis);
+    background: var(--bgColor-accent-muted);
 }
 
 .image-upload-container {
@@ -905,26 +923,26 @@
 }
 
 .image-upload-area {
-    border: 2px dashed rgba(255, 255, 255, 0.3);
-    border-radius: 6px;
+    border: 2px dashed var(--borderColor-default);
+    border-radius: var(--borderRadius-medium);
     padding: 20px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    background: rgba(255, 255, 255, 0.05);
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+    background: var(--bgColor-default);
 }
 
 .image-upload-area:hover {
-    border-color: rgba(59, 130, 246, 0.5);
-    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--borderColor-accent-emphasis);
+    background: var(--bgColor-accent-muted);
 }
 
 .upload-placeholder {
-    color: rgba(255, 255, 255, 0.7);
+    color: var(--fgColor-muted);
 }
 
 .upload-placeholder i {
-    color: rgba(59, 130, 246, 0.8);
+    color: var(--fgColor-accent);
     margin-bottom: 10px;
 }
 
@@ -935,7 +953,7 @@
 
 .upload-hint {
     font-size: 12px !important;
-    color: rgba(255, 255, 255, 0.5) !important;
+    color: var(--fgColor-subtle) !important;
 }
 
 .image-url-input {
@@ -946,48 +964,47 @@
 }
 
 .image-url-input label {
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--fgColor-default);
     font-size: 13px;
     font-weight: 500;
 }
 
 .image-url-input input {
     padding: 8px 10px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    background: transparent !important;
-    color: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-small);
+    background: var(--bgColor-default) !important;
+    color: var(--fgColor-default) !important;
     font-size: 13px;
-    transition: all 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .image-url-input input:focus {
     outline: none;
-    border-color: rgba(59, 130, 246, 0.5);
-    background: transparent !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    border-color: var(--focus-outlineColor);
+    background: var(--bgColor-default) !important;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
 }
 
 .image-url-input input::placeholder {
-    color: rgba(255, 255, 255, 0.5) !important;
+    color: var(--fgColor-subtle) !important;
 }
 
 .image-url-input button {
     padding: 6px 12px;
-    background: rgba(59, 130, 246, 0.8);
-    color: white;
+    background: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--borderRadius-small);
     font-size: 12px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
     align-self: flex-start;
 }
 
 .image-url-input button:hover {
-    background: rgba(59, 130, 246, 1);
-    transform: translateY(-1px);
+    opacity: 0.92;
 }
 
 .image-upload-actions {
@@ -998,19 +1015,19 @@
 
 .image-upload-actions button {
     padding: 6px 12px;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 4px;
-    background: transparent;
-    color: rgba(255, 255, 255, 0.8);
+    border: 1px solid var(--borderColor-default);
+    border-radius: var(--borderRadius-small);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
     font-size: 12px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
 .image-upload-actions button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: rgba(255, 255, 255, 1);
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-default);
 }
 
 /* 表格操作按钮图标组合样式 */
@@ -1024,36 +1041,6 @@
     margin-left: 2px;
     font-size: 0.8em;
     opacity: 0.8;
-}
-
-/* 代码块样式 */
-.tiptap-content code {
-    background: rgba(255, 255, 255, 0.1);
-    color: #6a6969 !important;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-}
-
-.tiptap-content pre {
-    background: rgba(255, 255, 255, 0.05);
-    color: #888888 !important;
-    padding: 15px;
-    border-radius: 8px;
-    overflow-x: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.9em;
-    line-height: 1.4;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.tiptap-content pre code {
-    background: transparent;
-    color: #888888 !important;
-    padding: 0;
-    border-radius: 0;
-    font-size: inherit;
 }
 
 /* 文本对齐 */
@@ -1071,18 +1058,18 @@
 
 /* 高亮样式 */
 .tiptap-content mark {
-    background: #fef3c7;
-    color: #92400e;
+    background: var(--bgColor-attention-muted);
+    color: var(--fgColor-attention);
     padding: 0.125rem 0.25rem;
-    border-radius: 3px;
+    border-radius: var(--borderRadius-small);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
     .tiptap-editor {
-        height: 400px; /* 移动端稍微降低高度 */
+        height: 400px;
     }
-    
+
     .tiptap-toolbar {
         padding: 8px 12px;
         gap: 2px;
@@ -1090,35 +1077,34 @@
         top: 0;
         z-index: 10;
     }
-    
+
     .toolbar-btn {
         width: 28px;
         height: 28px;
         font-size: 12px;
     }
-    
+
     .toolbar-separator {
         margin: 0 4px;
     }
-    
+
     .tiptap-content {
         padding: 16px;
         font-size: 16px;
     }
-    
+
     .tiptap-content h1 {
         font-size: 1.875rem;
     }
-    
+
     .tiptap-content h2 {
         font-size: 1.5rem;
     }
-    
+
     .tiptap-content h3 {
         font-size: 1.25rem;
     }
-    
-    /* 移动端图片尺寸优化 */
+
     .tiptap-image-container[data-align="left"],
     .tiptap-image-container[data-align="right"] {
         max-width: 150px;
@@ -1127,18 +1113,17 @@
         display: block;
         margin: 1rem auto;
     }
-    
+
     .tiptap-image-container[data-align="center"] {
         max-width: 300px;
     }
-    
+
     .tiptap-image {
         max-height: 150px;
     }
 }
 
 @media (max-width: 480px) {
-    /* 小屏幕设备进一步优化 */
     .tiptap-image-container[data-align="left"],
     .tiptap-image-container[data-align="right"],
     .tiptap-image-container[data-align="center"] {
@@ -1148,25 +1133,9 @@
         float: none;
         display: block;
     }
-    
+
     .tiptap-image {
         max-height: 120px;
-    }
-}
-
-/* 暗色主题支持 */
-@media (prefers-color-scheme: dark) {
-    .tiptap-editor {
-        --bg-primary: #1e293b;
-        --bg-secondary: #334155;
-        --bg-hover: #475569;
-        --bg-code: #0f172a;
-        --text-primary: #f1f5f9;
-        --text-secondary: #cbd5e1;
-        --text-muted: #64748b;
-        --text-code: #fbbf24;
-        --border-color: #475569;
-        --primary-color: #60a5fa;
     }
 }
 
@@ -1177,7 +1146,7 @@
 
 /* 选择状态 */
 .tiptap-content ::selection {
-    background: rgba(59, 130, 246, 0.2);
+    background: var(--bgColor-accent-muted);
 }
 
 /* 加载状态 */
@@ -1194,13 +1163,13 @@
     width: 20px;
     height: 20px;
     margin: -10px 0 0 -10px;
-    border: 2px solid var(--primary-color, #3b82f6);
-    border-top: 2px solid transparent;
+    border: 2px solid var(--borderColor-default);
+    border-top: 2px solid var(--fgColor-accent);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: tiptap-spin 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes tiptap-spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }

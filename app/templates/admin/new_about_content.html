@@ -3,280 +3,84 @@
 {% block title %}新建关于页面内容 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-plus"></i> 新建关于页面内容</h1>
-                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> 返回管理
-                </a>
-            </div>
-            
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST" id="content-form">
-                        <div class="row">
+<div class="container-xl mx-auto px-3 py-4">
+    <div class="d-flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 class="f3 text-bold color-fg-default m-0"><i class="fas fa-plus mr-2"></i>新建关于页面内容</h1>
+        <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline btn-sm">
+            <i class="fas fa-arrow-left"></i> 返回管理
+        </a>
+    </div>
 
-                            <div class="col-md-6">
-                                <!-- 内容预览 -->
-                                <div class="mb-3">
-                                    <label class="form-label">内容预览</label>
-                                    <div class="border rounded p-3" style="min-height: 200px; background-color: #f8f9fa;">
-                                        <div id="content-preview">
-                                            <p class="text-muted">输入内容后将在此处显示预览</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    <div class="Box">
+        <div class="Box-body p-4">
+            <form method="POST" id="content-form" class="d-flex flex-column gap-4">
+                <div class="d-flex flex-column gap-2">
+                    <label class="form-label m-0">内容预览</label>
+                    <div class="border rounded-2 color-bg-muted p-3 overflow-y-auto f6" style="min-height: 200px;">
+                        <div id="content-preview">
+                            <p class="color-fg-muted m-0">输入内容后将在此处显示预览</p>
                         </div>
-                        
-                        <!-- 内容编辑 -->
-                        <div class="mb-3">
-                            <label for="content" class="form-label">内容 *</label>
-                            <div id="tiptap-container"></div>
-                            <textarea id="content" name="content" style="display:none;" required></textarea>
-                            <div class="form-text">
-                                <i class="fas fa-info-circle"></i> 使用富文本编辑器，支持格式化文本、链接、图片等
-                            </div>
-                        </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> 取消
-                            </a>
-                            <button type="submit" class="btn-submit">
-                                <i class="fas fa-save"></i> 保存内容
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <div class="d-flex flex-column gap-2">
+                    <label for="content" class="form-label m-0">内容 *</label>
+                    <div id="tiptap-container"></div>
+                    <textarea id="content" name="content" class="d-none" required></textarea>
+                    <p class="f6 color-fg-muted m-0"><i class="fas fa-info-circle mr-1"></i>使用富文本编辑器，支持格式化文本、链接、图片等</p>
+                </div>
+
+                <div class="d-flex flex-wrap justify-end gap-2">
+                    <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存内容
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_css %}
-<!-- 简化版 Tiptap 编辑器样式 -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
-<!-- Tiptap 编辑器样式 -->
 <link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
-
-<style>
-/* 输入框文字颜色样式 */
-.form-control {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-control:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.form-label {
-    color: white !important;
-}
-
-.form-text {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.invalid-feedback {
-    color: #ff6b6b !important;
-}
-
-.valid-feedback {
-    color: #51cf66 !important;
-}
-
-/* 按钮样式调整 */
-.btn-outline-secondary {
-    color: white !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    background-color: transparent !important;
-}
-
-.btn-outline-secondary:hover {
-    color: #000 !important;
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.btn-outline-secondary:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-/* 提交按钮样式 */
-.btn-submit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-submit:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    text-decoration: none;
-    color: white;
-}
-
-.btn-submit:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-}
-
-.btn-submit:disabled {
-    background: rgba(100, 116, 139, 0.5);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-submit:disabled:hover {
-    background: rgba(100, 116, 139, 0.5);
-    transform: none;
-    box-shadow: none;
-}
-
-/* 卡片样式调整 */
-.card {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: none !important;
-}
-
-.card-header {
-    background: rgba(15, 23, 42, 0.3) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
-}
-
-.card-body {
-    background: transparent !important;
-    color: #94a3b8 !important;
-}
-
-/* 开关样式调整 */
-.form-check-input {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-check-input:checked {
-    background-color: #667eea !important;
-    border-color: #667eea !important;
-}
-
-.form-check-label {
-    color: white !important;
-}
-
-/* 富文本编辑器样式 */
-.ql-editor {
-    color: white !important;
-    background: rgba(255, 255, 255, 0.1) !important;
-}
-
-.ql-toolbar {
-    background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.ql-container {
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.ql-toolbar .ql-stroke {
-    stroke: white !important;
-}
-
-.ql-toolbar .ql-fill {
-    fill: white !important;
-}
-
-.ql-toolbar button:hover {
-    background: rgba(255, 255, 255, 0.1) !important;
-}
-</style>
 {% endblock %}
 
 {% block extra_js %}
-<!-- 简化版 Tiptap 编辑器 JavaScript -->
 <script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
-
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // 初始化简化版 Tiptap 编辑器
     const tiptapContainer = document.getElementById('tiptap-container');
     const contentTextarea = document.getElementById('content');
     const previewDiv = document.getElementById('content-preview');
-    
+
     const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
         placeholder: '开始编辑内容...',
         content: ''
     });
-    
-    // 统一的内容变化处理函数
+
     tiptapEditor.onContentChange = function(htmlContent) {
-        // 确保内容不为空或undefined
         if (htmlContent === undefined || htmlContent === null) {
             htmlContent = '';
         }
-        
-        // 同步到隐藏的 textarea
         contentTextarea.value = htmlContent;
-        
-        // 更新预览
         if (previewDiv) {
             if (htmlContent.trim()) {
                 previewDiv.innerHTML = htmlContent;
             } else {
-                previewDiv.innerHTML = '<p class="text-muted">输入内容后将在此处显示预览</p>';
+                previewDiv.innerHTML = '<p class="color-fg-muted m-0">输入内容后将在此处显示预览</p>';
             }
         }
     };
-    
-    // 表单验证
-    const form = document.getElementById('content-form');
-    form.addEventListener('submit', function(e) {
-        const section = document.getElementById('section').value.trim();
-        const title = document.getElementById('title').value.trim();
+
+    document.getElementById('content-form').addEventListener('submit', function(e) {
         const content = contentTextarea.value.trim();
-        
-        if (!section || !title || !content) {
+        if (!content) {
             e.preventDefault();
-            alert('请填写所有必填字段');
-            return;
-        }
-        
-        // 检查区块标识格式
-        if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(section)) {
-            e.preventDefault();
-            alert('区块标识只能包含字母、数字和下划线，且必须以字母开头');
+            alert('请填写内容');
             return;
         }
     });

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}友链管理 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-xl py-6">
+    <div class="d-flex flex-wrap justify-between items-start gap-3 mb-6">
+        <div>
+            <h1 class="f2 text-bold color-fg-default m-0 mb-2">友链管理</h1>
+            <p class="f4 color-fg-muted m-0">管理友情链接的申请、审批和编辑</p>
+        </div>
+        <a href="{{ url_for('admin.new_link') }}" class="btn btn-primary no-underline">
+            <i class="fas fa-plus"></i> 新增友链
+        </a>
+    </div>
+
+    <div class="d-grid grid-cols-1 d-regular-grid grid-regular-cols-4 gap-3 mb-6">
+        <div class="Box p-3">
+            <div class="d-flex items-center gap-3">
+                <div class="color-bg-accent-muted rounded-2 p-2"><i class="fas fa-link color-fg-accent f3"></i></div>
+                <div>
+                    <p class="f6 color-fg-muted m-0">总友链数</p>
+                    <p class="f2 text-bold color-fg-default m-0">{{ total_links }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="Box p-3">
+            <div class="d-flex items-center gap-3">
+                <div class="color-bg-success-muted rounded-2 p-2"><i class="fas fa-check-circle color-fg-success f3"></i></div>
+                <div>
+                    <p class="f6 color-fg-muted m-0">活跃友链</p>
+                    <p class="f2 text-bold color-fg-default m-0">{{ active_links }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="Box p-3">
+            <div class="d-flex items-center gap-3">
+                <div class="color-bg-muted rounded-2 p-2"><i class="fas fa-clock color-fg-attention f3"></i></div>
+                <div>
+                    <p class="f6 color-fg-muted m-0">待审核</p>
+                    <p class="f2 text-bold color-fg-default m-0">{{ pending_links }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="Box p-3">
+            <div class="d-flex items-center gap-3">
+                <div class="color-bg-muted rounded-2 p-2"><i class="fas fa-star color-fg-accent f3"></i></div>
+                <div>
+                    <p class="f6 color-fg-muted m-0">推荐友链</p>
+                    <p class="f2 text-bold color-fg-default m-0">{{ featured_links }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="Box mb-4">
+        <div class="Box-body">
+            <form method="GET" class="d-flex flex-wrap gap-2 items-end">
+                <div class="flex-1 width-full" style="min-width:200px">
+                    <input type="text" name="search" placeholder="搜索名称、链接或描述…"
+                           value="{{ search_query }}"
+                           class="form-control width-full">
+                </div>
+                <div class="width-full" style="max-width:200px">
+                    <select name="status" class="form-select width-full">
+                        <option value="">所有状态</option>
+                        <option value="active" {% if current_status == 'active' %}selected{% endif %}>活跃</option>
+                        <option value="pending" {% if current_status == 'pending' %}selected{% endif %}>待审核</option>
+                        <option value="inactive" {% if current_status == 'inactive' %}selected{% endif %}>已拒绝</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> 搜索
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="Box overflow-hidden">
+        {% if links %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>友链信息</th>
+                        <th>状态</th>
+                        <th>推荐</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for link in links %}
+                    <tr>
+                        <td>
+                            <div class="d-flex items-center gap-3">
+                                <div class="flex-shrink-0">
+                                    {% if link.avatar_url %}
+                                    <img class="circle" src="{{ link.avatar_url }}" alt="" width="40" height="40" style="object-fit:cover;">
+                                    {% else %}
+                                    <div class="circle color-bg-muted d-flex items-center justify-center text-semibold color-fg-default"
+                                         style="width:40px;height:40px;">{{ link.name[0].upper() }}</div>
+                                    {% endif %}
+                                </div>
+                                <div style="min-width:0">
+                                    <div class="text-semibold color-fg-default f5">{{ link.name }}</div>
+                                    <div class="f6 color-fg-muted truncate">{{ link.url }}</div>
+                                    {% if link.description %}
+                                    <div class="f6 color-fg-muted mt-1">{{ link.description[:50] }}{% if link.description|length > 50 %}…{% endif %}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            {% if link.status == 'active' %}
+                            <span class="Label Label--success">活跃</span>
+                            {% elif link.status == 'pending' %}
+                            <span class="Label Label--secondary">待审核</span>
+                            {% else %}
+                            <span class="Label Label--danger">已拒绝</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if link.featured %}
+                            <i class="fas fa-star color-fg-attention"></i>
+                            {% else %}
+                            <i class="far fa-star color-fg-subtle"></i>
+                            {% endif %}
+                        </td>
+                        <td class="f6 no-wrap">{{ link.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% if link.status == 'pending' %}
+                                <button type="button" onclick="approveLink({{ link.id }})" class="btn btn-success btn-sm">通过</button>
+                                <button type="button" onclick="rejectLink({{ link.id }})" class="btn btn-danger btn-sm">拒绝</button>
+                                {% endif %}
+                                <a href="{{ url_for('admin.edit_link', link_id=link.id) }}" class="btn btn-outline btn-sm no-underline">编辑</a>
+                                <button type="button" onclick="deleteLink({{ link.id }})" class="btn btn-danger btn-sm">删除</button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="Box-body text-center py-6">
+            <i class="fas fa-link color-fg-subtle f1 mb-3"></i>
+            <h3 class="f4 text-semibold color-fg-default m-0 mb-2">暂无友链</h3>
+            <p class="color-fg-muted m-0">点击上方按钮添加第一个友链</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function approveLink(linkId) {
+    const confirmed = await window.confirmAsync('确定要通过这个友链申请吗？', {
+        title: '通过友链申请',
+        confirmText: '确认通过',
+        cancelText: '取消'
+    });
+    if (!confirmed) return;
+    try {
+        const response = await fetch('/admin/links/' + linkId + '/approve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        if (result.success) {
+            window.showToast('友链审批通过', 'success');
+            location.reload();
+        } else {
+            window.showToast('操作失败：' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        window.showToast('网络错误，请稍后重试', 'error');
+    }
+}
+
+async function rejectLink(linkId) {
+    const confirmed = await window.confirmAsync('确定要拒绝这个友链申请吗？', {
+        title: '拒绝友链申请',
+        confirmText: '确认拒绝',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) return;
+    try {
+        const response = await fetch('/admin/links/' + linkId + '/reject', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        if (result.success) {
+            window.showToast('友链申请已拒绝', 'success');
+            location.reload();
+        } else {
+            window.showToast('操作失败：' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        window.showToast('网络错误，请稍后重试', 'error');
+    }
+}
+
+async function deleteLink(linkId) {
+    const confirmed = await window.confirmAsync('确定要删除这个友链吗？此操作不可恢复！', {
+        title: '删除友链',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
+    });
+    if (!confirmed) return;
+    try {
+        const response = await fetch('/admin/links/' + linkId + '/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const result = await response.json();
+        if (result.success) {
+            window.showToast('友链删除成功', 'success');
+            location.reload();
+        } else {
+            window.showToast('删除失败：' + result.message, 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        window.showToast('网络错误，请稍后重试', 'error');
+    }
+}
+</script>
+{% endblock %}

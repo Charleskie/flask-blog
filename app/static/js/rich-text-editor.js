@@ -596,106 +596,10 @@ class RichTextEditor {
     }
 
     showMessage(message, type = 'info', duration = 3000) {
-        // 创建消息容器（如果不存在）
-        let messageContainer = document.getElementById('message-container');
-        if (!messageContainer) {
-            messageContainer = document.createElement('div');
-            messageContainer.id = 'message-container';
-            messageContainer.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                z-index: 10000;
-                max-width: 400px;
-            `;
-            document.body.appendChild(messageContainer);
+        if (typeof window.showToast === 'function') {
+            return window.showToast(message, type, duration);
         }
-
-        // 创建消息元素
-        const messageEl = document.createElement('div');
-        messageEl.className = `message-toast message-${type}`;
-        messageEl.style.cssText = `
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--border-radius);
-            padding: 1rem 1.5rem;
-            margin-bottom: 0.5rem;
-            box-shadow: var(--shadow-lg);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            animation: slideInRight 0.3s ease-out;
-            position: relative;
-            min-width: 300px;
-        `;
-
-        // 根据类型设置图标和颜色
-        let icon, color;
-        switch (type) {
-            case 'success':
-                icon = 'fas fa-check-circle';
-                color = '#10b981';
-                break;
-            case 'error':
-                icon = 'fas fa-exclamation-circle';
-                color = '#ef4444';
-                break;
-            case 'warning':
-                icon = 'fas fa-exclamation-triangle';
-                color = '#f59e0b';
-                break;
-            case 'info':
-            default:
-                icon = 'fas fa-info-circle';
-                color = '#3b82f6';
-                break;
-        }
-
-        messageEl.innerHTML = `
-            <i class="${icon}" style="color: ${color}; font-size: 1.25rem;"></i>
-            <span style="color: var(--text-primary); flex: 1;">${message}</span>
-            <button class="message-close" style="
-                background: none;
-                border: none;
-                color: var(--text-secondary);
-                cursor: pointer;
-                padding: 0.25rem;
-                border-radius: var(--border-radius);
-                transition: all 0.2s ease;
-            ">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-
-        // 添加关闭按钮事件
-        const closeBtn = messageEl.querySelector('.message-close');
-        closeBtn.addEventListener('click', () => {
-            messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.remove();
-                }
-            }, 300);
-        });
-
-        // 添加到容器
-        messageContainer.appendChild(messageEl);
-
-        // 自动关闭
-        if (duration > 0) {
-            setTimeout(() => {
-                if (messageEl.parentNode) {
-                    messageEl.style.animation = 'slideOutRight 0.3s ease-in';
-                    setTimeout(() => {
-                        if (messageEl.parentNode) {
-                            messageEl.remove();
-                        }
-                    }, 300);
-                }
-            }, duration);
-        }
-
-        return messageEl;
+        return null;
     }
 }
 

@@ -1,24 +1,213 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, make_response
 from flask_login import login_required, current_user
-from app.models import Post, Project, Message, AboutContent, AboutContact, Version, Skill
+from app.models import Post, Message, MessageReply, AboutContent, AboutContact, Version, Skill, Link, VisitorStats
 from app.models.user import db
 from app.utils.pdf_generator import generate_about_pdf
 import re
 import urllib.parse
 from datetime import datetime
 
+
 main_bp = Blueprint('main', __name__)
+
+
+def _get_contact_page_context():
+    """Build a consistent contact page context with admin-managed channels first."""
+    managed_channels = [
+        item.to_dict()
+        for item in AboutContact.query.filter_by(is_active=True)
+        .order_by(AboutContact.order.asc(), AboutContact.id.asc())
+        .all()
+    ]
+
+    default_channels = [
+        {
+            'platform': '邮箱',
+            'icon': 'fas fa-envelope',
+            'url': 'mailto:wdws851421092@gmail.com',
+            'text': 'wdws851421092@gmail.com',
+            'color': 'primary',
+        },
+        {
+            'platform': 'GitHub',
+            'icon': 'fab fa-github',
+            'url': 'https://github.com/Charleskie',
+            'text': 'Charleskie',
+            'color': 'dark',
+        },
+        {
+            'platform': '办公地点',
+            'icon': 'fas fa-location-dot',
+            'url': '',
+            'text': '深圳，中国',
+            'color': 'secondary',
+        },
+        {
+            'platform': '在线时间',
+            'icon': 'fas fa-clock',
+            'url': '',
+            'text': '周一至周五 9:00-18:00',
+            'color': 'secondary',
+        },
+    ]
+
+    contact_channels = managed_channels or default_channels
+
+    def _match_channel(keywords):
+        for item in contact_channels:
+            haystack = ' '.join(
+                str(item.get(part, '') or '')
+                for part in ('platform', 'icon', 'text', 'url')
+            ).lower()
+            if any(keyword in haystack for keyword in keywords):
+                return item
+        return None
+
+    email_contact = _match_channel(['mail', '邮箱', 'email']) or default_channels[0]
+    phone_contact = _match_channel(['phone', '电话', 'mobile', '热线'])
+    location_contact = _match_channel(['location', 'map', '地址', '地点', '城市'])
+
+    office_locations = [
+        {
+            'name': '深圳 - 南山高新园',
+            'address': (location_contact or {}).get('text') or '深圳市南山区高新南一道',
+            'lat': 22.5405,
+            'lng': 113.9344,
+            'phone': (phone_contact or {}).get('text') or '+86 135 **** 8704',
+            'email': (email_contact or {}).get('text') or 'wdws851421092@gmail.com',
+            'workingHours': '工作时间：周一至周五 9:00-18:00',
+        }
+    ]
+
+    faq_items = [
+        {
+            'id': 'faq-reply',
+            'question': '消息多久能收到回复？',
+            'answer': '工作日通常会在 24 小时内回复；如果是账号或内容相关的问题，登录后留言也更方便我回溯上下文。',
+        },
+        {
+            'id': 'faq-scope',
+            'question': '这页适合提交哪些内容？',
+            'answer': '合作邀约、网站建议、内容纠错、功能反馈都可以直接发；如果你想申请友链，建议在友链页面提交会更高效。',
+        },
+    ]
+
+    link_contacts = [item for item in contact_channels if item.get('url')]
+
+    return {
+        'contact_channels': contact_channels,
+        'link_contacts': link_contacts[:4],
+        'office_locations': office_locations,
+        'faq_items': faq_items,
+    }
+
+
+def _get_contact_view_context(selected_message_id=None, compose_mode=False):
+    """Build contact page context with per-user conversation state."""
+    context = _get_contact_page_context()
+    user_messages = []
+    selected_message = None
+    show_conversation_inbox = False
+    selected_message_has_admin_reply = False
+    user_unread_total = 0
+
+    if current_user.is_authenticated:
+        user_messages = Message.visible_to_user_query(current_user.email).order_by(Message.created_at.desc()).all()
+        show_conversation_inbox = len(user_messages) > 0
+
+        if show_conversation_inbox and not compose_mode:
+            if selected_message_id:
+                selected_message = next(
+                    (message for message in user_messages if message.id == selected_message_id),
+                    None
+                )
+            if selected_message is None:
+                selected_message = user_messages[0]
+            if selected_message is not None:
+                if selected_message.has_unread_for_user():
+                    selected_message.mark_as_read_by_user()
+                    db.session.commit()
+                selected_message_has_admin_reply = any(
+                    reply.reply_type == 'admin' for reply in selected_message.replies
+                )
+
+        user_unread_total = sum(
+            1
+            for message in user_messages
+            if message.has_unread_for_user()
+        )
+
+    context.update({
+        'user_messages': user_messages,
+        'selected_message': selected_message,
+        'show_conversation_inbox': show_conversation_inbox,
+        'compose_mode': compose_mode,
+        'selected_message_has_admin_reply': selected_message_has_admin_reply,
+        'selected_message_can_follow_up': selected_message is not None,
+        'user_unread_total': user_unread_total,
+    })
+    return context
 
 @main_bp.route('/')
 def index():
     """首页"""
-    # 获取最新的版本更新记录
     versions = Version.query.filter_by(is_active=True).order_by(Version.release_date.desc()).limit(5).all()
-    
-    # 获取技能数据
+    latest_version = versions[0] if versions else None
+
     skills = Skill.get_active_skills()
-    
-    return render_template('frontend/index.html', versions=versions, skills=skills)
+    skill_groups = {}
+    for skill in skills:
+        category = skill.category or '其他'
+        skill_groups.setdefault(category, []).append(skill)
+    skill_groups = list(skill_groups.items())[:4]
+
+    recent_posts = Post.query.filter_by(status='published').order_by(Post.created_at.desc()).limit(6).all()
+    popular_posts = Post.query.filter_by(status='published').order_by(
+        Post.view_count.desc(), Post.created_at.desc()
+    ).limit(4).all()
+
+    featured_links = Link.get_featured_links()[:4]
+    if not featured_links:
+        featured_links = Link.get_active_links()[:4]
+
+    about_content = AboutContent.query.filter_by(section='main_content', is_active=True).first()
+    about_excerpt = ''
+    if about_content and about_content.content:
+        about_excerpt = re.sub(r'<[^>]+>', ' ', about_content.content)
+        about_excerpt = re.sub(r'\s+', ' ', about_excerpt).strip()
+        about_excerpt = about_excerpt[:140] + ('...' if len(about_excerpt) > 140 else '')
+
+    top_categories = db.session.query(
+        Post.category,
+        db.func.count(Post.id).label('count')
+    ).filter(
+        Post.status == 'published',
+        Post.category.isnot(None)
+    ).group_by(Post.category).order_by(
+        db.func.count(Post.id).desc(),
+        Post.category.asc()
+    ).limit(5).all()
+
+    stats = {
+        'post_count': Post.query.filter_by(status='published').count(),
+        'skill_count': len(skills),
+        'link_count': Link.query.filter_by(status='active').count(),
+        'version_count': Version.query.filter_by(is_active=True).count()
+    }
+
+    return render_template(
+        'frontend/index.html',
+        versions=versions,
+        latest_version=latest_version,
+        skills=skills,
+        skill_groups=skill_groups,
+        recent_posts=recent_posts,
+        popular_posts=popular_posts,
+        featured_links=featured_links,
+        about_excerpt=about_excerpt,
+        top_categories=top_categories,
+        stats=stats
+    )
 
 @main_bp.route('/about')
 def about():
@@ -74,57 +263,139 @@ def about_pdf():
         print(f"生成PDF错误: {e}")
         return jsonify({'error': 'PDF生成失败，请稍后重试'}), 500
 
-@main_bp.route('/projects')
-def projects():
-    """项目展示页面"""
-    # 获取筛选参数
-    category = request.args.get('category', '')
-    search = request.args.get('search', '')
-    
-    # 构建查询
-    query = Project.query.filter_by(status='active')
-    
-    if category:
-        query = query.filter_by(category=category)
-    
-    if search:
-        query = query.filter(
-            db.or_(
-                Project.title.contains(search),
-                Project.description.contains(search),
-                Project.short_description.contains(search)
-            )
+@main_bp.route('/api/apply-link', methods=['POST'])
+def apply_link():
+    """申请友链API"""
+    try:
+        data = request.get_json()
+        
+        # 验证必填字段
+        if not data.get('name') or not data.get('url'):
+            return jsonify({'success': False, 'message': '网站名称和链接为必填项'}), 400
+        
+        # 验证URL格式
+        import re
+        url_pattern = r'^https?://.+'
+        if not re.match(url_pattern, data.get('url', '')):
+            return jsonify({'success': False, 'message': '请输入有效的网站链接'}), 400
+        
+        # 检查是否已存在相同的友链申请
+        existing_link = Link.query.filter_by(
+            name=data.get('name'),
+            url=data.get('url')
+        ).first()
+        
+        if existing_link:
+            return jsonify({'success': False, 'message': '该友链已存在，请勿重复申请'}), 400
+        
+        # 创建友链申请
+        link = Link(
+            name=data.get('name'),
+            url=data.get('url'),
+            description=data.get('description', ''),
+            email=data.get('email', ''),
+            status='pending'  # 待审核状态
         )
-    
-    projects = query.order_by(Project.created_at.desc()).all()
-    
-    # 获取所有分类
-    categories = db.session.query(Project.category).filter(
-        Project.category.isnot(None), 
-        Project.status == 'active'
-    ).distinct().all()
-    categories = [cat[0] for cat in categories]
-    
-    return render_template('frontend/projects.html', projects=projects, categories=categories, 
-                         current_category=category, search=search)
+        
+        db.session.add(link)
+        db.session.flush()  # 获取ID
+        
+        # 创建消息通知给管理员
+        from app.models import Message, Notification
+        message = Message(
+            name=data.get('name', '友链申请'),
+            email=data.get('email', ''),
+            subject=f'友链申请：{data.get("name")}',
+            message=f'网站名称：{data.get("name")}\n网站链接：{data.get("url")}\n网站描述：{data.get("description", "无")}\n联系邮箱：{data.get("email", "无")}',
+            ip_address=request.remote_addr,
+            user_agent=request.headers.get('User-Agent')
+        )
+        
+        db.session.add(message)
+        db.session.flush()
+        
+        # 创建通知
+        notification = Message.create_message_notification(message)
+        if notification:
+            db.session.add(notification)
+        
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': '申请提交成功，我们会尽快审核'})
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"申请友链失败: {e}")
+        return jsonify({'success': False, 'message': '申请提交失败，请稍后重试'}), 500
 
-@main_bp.route('/projects/<int:project_id>')
-def project_detail(project_id):
-    """项目详情页面"""
-    project = Project.query.get_or_404(project_id)
+@main_bp.route('/api/visitor-stats', methods=['GET'])
+def get_visitor_stats():
+    """获取访问量统计API"""
+    try:
+        # 获取总统计数据
+        total_stats = VisitorStats.get_total_stats()
+        
+        # 获取今日统计数据
+        today_stats = VisitorStats.get_today_stats()
+        
+        # 获取最近7天统计数据
+        recent_stats = VisitorStats.get_recent_stats(7)
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'total_views': total_stats['total_views'],
+                'total_visitors': total_stats['total_visitors'],
+                'today_views': today_stats.page_views,
+                'today_visitors': today_stats.unique_visitors,
+                'recent_stats': [
+                    {
+                        'date': stat.date.isoformat(),
+                        'page_views': stat.page_views,
+                        'unique_visitors': stat.unique_visitors
+                    } for stat in recent_stats
+                ]
+            }
+        })
+    except Exception as e:
+        print(f"获取访问量统计失败: {e}")
+        return jsonify({'success': False, 'message': '获取统计数据失败'}), 500
+
+@main_bp.route('/api/track-visit', methods=['POST'])
+def track_visit():
+    """记录访问API"""
+    try:
+        data = request.get_json() or {}
+        is_unique = data.get('unique', False)
+        
+        # 增加页面浏览量
+        stats = VisitorStats.increment_page_view()
+        
+        # 如果是独立访客，增加独立访客数
+        if is_unique:
+            stats = VisitorStats.increment_unique_visitor()
+        
+        return jsonify({
+            'success': True,
+            'data': {
+                'today_views': stats.page_views,
+                'today_visitors': stats.unique_visitors
+            }
+        })
+    except Exception as e:
+        print(f"记录访问失败: {e}")
+        return jsonify({'success': False, 'message': '记录访问失败'}), 500
+
+@main_bp.route('/links')
+def links():
+    """友链页面"""
+    # 获取所有活跃的友链
+    links = Link.get_active_links()
     
-    # 增加浏览次数
-    project.view_count += 1
-    db.session.commit()
+    # 获取推荐的友链
+    featured_links = Link.get_featured_links()
     
-    # 获取相关项目
-    related_projects = Project.query.filter(
-        Project.category == project.category,
-        Project.id != project.id,
-        Project.status == 'active'
-    ).order_by(Project.created_at.desc()).limit(3).all()
-    
-    return render_template('frontend/project_detail.html', project=project, related_projects=related_projects)
+    return render_template('frontend/links.html', links=links, featured_links=featured_links)
 
 @main_bp.route('/blog')
 def blog():
@@ -204,18 +475,123 @@ def post_detail(slug):
 @main_bp.route('/contact', methods=['GET', 'POST'])
 def contact():
     """联系页面"""
+    selected_message_id = request.args.get('message_id', type=int)
+    compose_mode = request.args.get('mode') == 'new'
+
     if request.method == 'POST':
+        selected_message_id = request.form.get('message_id', type=int) or selected_message_id
+        conversation_action = (request.form.get('conversation_action') or '').strip()
+        follow_up_mode = conversation_action == 'follow_up'
         name = request.form.get('name')
         email = request.form.get('email')
         subject = request.form.get('subject')
         message_text = request.form.get('message')
+
+        if follow_up_mode:
+            if not current_user.is_authenticated or not selected_message_id:
+                error_message = '当前会话不可用，请刷新后重试'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_message})
+
+                return render_template(
+                    'frontend/contact.html',
+                    **_get_contact_view_context(selected_message_id=selected_message_id, compose_mode=False)
+                )
+
+            parent_message = Message.visible_to_user_query(current_user.email).filter_by(
+                id=selected_message_id
+            ).first()
+
+            if not parent_message:
+                error_message = '没有找到这段对话'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_message})
+
+                return render_template(
+                    'frontend/contact.html',
+                    **_get_contact_view_context(selected_message_id=selected_message_id, compose_mode=False)
+                )
+
+            if not message_text:
+                error_message = '请输入要补充的消息内容'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': error_message})
+
+                return render_template(
+                    'frontend/contact.html',
+                    **_get_contact_view_context(selected_message_id=parent_message.id, compose_mode=False)
+                )
+
+            try:
+                reply_record = MessageReply.create_reply(
+                    message_id=parent_message.id,
+                    reply_content=message_text,
+                    reply_type='user',
+                    sender_name=current_user.get_display_name(),
+                    sender_email=current_user.email
+                )
+
+                db.session.add(reply_record)
+
+                has_admin_reply = any(
+                    reply.reply_type == 'admin' for reply in parent_message.replies
+                )
+                parent_message.restore_for_admin()
+                if has_admin_reply:
+                    parent_message.status = 'in_conversation'
+                else:
+                    parent_message.status = 'unread'
+                    parent_message.read_at = None
+
+                from app.models import Notification, User
+                admin_user = User.query.filter_by(is_admin=True).order_by(User.id.asc()).first()
+                if admin_user:
+                    notification = Notification(
+                        user_id=admin_user.id,
+                        type='message',
+                        title=f'{current_user.get_display_name()} 补充了私信',
+                        content=f'"{message_text[:100]}{"..." if len(message_text) > 100 else ""}"',
+                        related_id=parent_message.id,
+                        related_type='message',
+                        related_url=f'/admin/messages?message_id={parent_message.id}',
+                        sender_id=current_user.id,
+                        sender_name=current_user.get_display_name()
+                    )
+                    db.session.add(notification)
+
+                db.session.commit()
+
+                redirect_url = url_for('main.contact', message_id=parent_message.id)
+                success_message = '补充消息已发送，已加入当前对话。'
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({
+                        'success': True,
+                        'message': success_message,
+                        'redirect_url': redirect_url
+                    })
+
+                return redirect(redirect_url)
+
+            except Exception as e:
+                db.session.rollback()
+                print(f"追加消息错误: {e}")
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return jsonify({'success': False, 'message': '发送失败，请稍后重试'})
+
+                return render_template(
+                    'frontend/contact.html',
+                    **_get_contact_view_context(selected_message_id=parent_message.id, compose_mode=False)
+                )
         
         # 验证输入
         if not name or not email or not subject or not message_text:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '请填写所有必填字段'})
 
-            return render_template('frontend/contact.html')
+            return render_template(
+                'frontend/contact.html',
+                **_get_contact_view_context(selected_message_id=selected_message_id, compose_mode=True)
+            )
         
         # 验证邮箱格式
         email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -223,7 +599,10 @@ def contact():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '请输入有效的邮箱地址'})
 
-            return render_template('frontend/contact.html')
+            return render_template(
+                'frontend/contact.html',
+                **_get_contact_view_context(selected_message_id=selected_message_id, compose_mode=True)
+            )
         
         try:
             # 创建新消息
@@ -247,7 +626,15 @@ def contact():
             db.session.commit()
             
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-                return jsonify({'success': True, 'message': '消息发送成功！我们会尽快回复您。'})
+                redirect_url = url_for('main.contact', message_id=message.id) if current_user.is_authenticated else url_for('main.contact')
+                return jsonify({
+                    'success': True,
+                    'message': '消息发送成功！我们会尽快回复您。',
+                    'redirect_url': redirect_url
+                })
+
+            if current_user.is_authenticated:
+                return redirect(url_for('main.contact', message_id=message.id))
 
             return redirect(url_for('main.contact'))
             
@@ -258,24 +645,56 @@ def contact():
 
             print(f"保存消息错误: {e}")
     
-    return render_template('frontend/contact.html')
+    return render_template(
+        'frontend/contact.html',
+        **_get_contact_view_context(selected_message_id=selected_message_id, compose_mode=compose_mode)
+    )
 
 @main_bp.route('/contact/messages')
 @login_required
 def contact_messages():
     """用户查看私信记录"""
-    # 获取当前用户的所有私信
-    messages = Message.query.filter_by(email=current_user.email).order_by(Message.created_at.desc()).all()
-    
-    return render_template('frontend/contact_messages.html', messages=messages)
+    return redirect(url_for('main.contact'))
 
 @main_bp.route('/contact/messages/<int:message_id>')
 @login_required
 def contact_message_detail(message_id):
     """用户查看私信详情"""
-    message = Message.query.filter_by(id=message_id, email=current_user.email).first_or_404()
-    
-    return render_template('frontend/contact_message_detail.html', message=message)
+    Message.visible_to_user_query(current_user.email).filter_by(id=message_id).first_or_404()
+    return redirect(url_for('main.contact', message_id=message_id))
+
+@main_bp.route('/contact/messages/<int:message_id>/delete', methods=['POST'])
+@login_required
+def delete_contact_message(message_id):
+    """用户侧单方删除会话。"""
+    message = Message.visible_to_user_query(current_user.email).filter_by(id=message_id).first_or_404()
+
+    try:
+        message.hide_for_user()
+
+        purged = False
+        if message.can_purge():
+            message.purge_related_records()
+            purged = True
+
+        db.session.commit()
+
+        redirect_url = url_for('main.contact')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({
+                'success': True,
+                'message': '对话已从你的会话列表移除',
+                'redirect_url': redirect_url,
+                'purged': purged
+            })
+
+        return redirect(redirect_url)
+    except Exception as e:
+        db.session.rollback()
+        print(f"用户删除会话失败: {e}")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'success': False, 'message': '删除失败，请稍后重试'})
+        return redirect(url_for('main.contact', message_id=message_id))
 
 @main_bp.route('/search')
 def search():
@@ -285,7 +704,6 @@ def search():
     
     results = {
         'posts': [],
-        'projects': [],
         'total_count': 0
     }
     
@@ -305,21 +723,8 @@ def search():
         )
         results['posts'] = posts
         
-        # 搜索项目
-        projects_query = Project.query.filter(
-            db.or_(
-                Project.title.contains(query),
-                Project.description.contains(query),
-                Project.short_description.contains(query)
-            ),
-            Project.status == 'active'
-        )
-        
-        projects = projects_query.order_by(Project.created_at.desc()).limit(5).all()
-        results['projects'] = projects
-        
         # 计算总结果数
-        results['total_count'] = posts.total + len(projects)
+        results['total_count'] = posts.total
     
     return render_template('frontend/search.html', 
                          query=query, 

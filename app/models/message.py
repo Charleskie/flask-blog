@@ -13,15 +13,27 @@ class Message(db.Model):
     user_agent = db.Column(db.Text, nullable=True)  # 存储用户代理
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     read_at = db.Column(db.DateTime, nullable=True)  # 阅读时间
+    user_read_at = db.Column(db.DateTime, nullable=True)  # 用户侧最近阅读时间
     replied_at = db.Column(db.DateTime, nullable=True)  # 回复时间
+    user_deleted_at = db.Column(db.DateTime, nullable=True)  # 用户侧删除时间
+    admin_deleted_at = db.Column(db.DateTime, nullable=True)  # 管理员侧删除时间
 
     def __repr__(self):
         return f'<Message {self.subject}>'
     
     def mark_as_read(self):
         """标记为已读"""
-        self.status = 'read'
+        self.mark_as_read_by_admin()
+
+    def mark_as_read_by_admin(self):
+        """标记管理员侧已读。"""
         self.read_at = datetime.utcnow()
+        if self.status == 'unread':
+            self.status = 'read'
+
+    def mark_as_read_by_user(self):
+        """标记用户侧已读。"""
+        self.user_read_at = datetime.utcnow()
     
     def mark_as_replied(self):
         """标记为已回复"""
@@ -38,6 +50,84 @@ class Message(db.Model):
     def is_replied(self):
         """检查是否已回复"""
         return self.status == 'replied'
+
+    @property
+    def latest_reply(self):
+        """按当前关系排序返回最新回复。"""
+        return self.replies[0] if self.replies else None
+
+    def latest_incoming_for_admin_at(self):
+        """返回管理员侧最近一条需要关注的来信时间。"""
+        latest_reply = self.latest_reply
+        if latest_reply and latest_reply.reply_type == 'user':
+            return latest_reply.created_at
+        if latest_reply is None:
+            return self.created_at
+        return None
+
+    def latest_incoming_for_user_at(self):
+        """返回用户侧最近一条需要关注的管理员回复时间。"""
+        latest_reply = self.latest_reply
+        if latest_reply and latest_reply.reply_type == 'admin':
+            return latest_reply.created_at
+        return None
+
+    def has_unread_for_admin(self):
+        """管理员侧是否存在未读消息。"""
+        latest_incoming = self.latest_incoming_for_admin_at()
+        if latest_incoming is None:
+            return False
+        return self.read_at is None or self.read_at < latest_incoming
+
+    def has_unread_for_user(self):
+        """用户侧是否存在未读管理员回复。"""
+        latest_incoming = self.latest_incoming_for_user_at()
+        if latest_incoming is None:
+            return False
+        return self.user_read_at is None or self.user_read_at < latest_incoming
+
+    @classmethod
+    def visible_to_user_query(cls, email):
+        """返回用户侧仍可见的会话查询。"""
+        return cls.query.filter(
+            cls.email == email,
+            cls.user_deleted_at.is_(None)
+        )
+
+    @classmethod
+    def visible_to_admin_query(cls):
+        """返回管理员侧仍可见的会话查询。"""
+        return cls.query.filter(cls.admin_deleted_at.is_(None))
+
+    def hide_for_user(self):
+        """仅在用户侧隐藏会话。"""
+        self.user_deleted_at = datetime.utcnow()
+
+    def hide_for_admin(self):
+        """仅在管理员侧隐藏会话。"""
+        self.admin_deleted_at = datetime.utcnow()
+
+    def restore_for_user(self):
+        """恢复用户侧可见性。"""
+        self.user_deleted_at = None
+
+    def restore_for_admin(self):
+        """恢复管理员侧可见性。"""
+        self.admin_deleted_at = None
+
+    def can_purge(self):
+        """双方都删除后，允许真正清理会话。"""
+        return self.user_deleted_at is not None and self.admin_deleted_at is not None
+
+    def purge_related_records(self):
+        """彻底清理会话及其关联通知。"""
+        from .notification import Notification
+
+        Notification.query.filter_by(
+            related_type='message',
+            related_id=self.id
+        ).delete(synchronize_session=False)
+        db.session.delete(self)
     
     @classmethod
     def create_message_notification(cls, message):
@@ -59,4 +149,30 @@ class Message(db.Model):
             related_url=f'/admin/messages/{message.id}',
             sender_name=message.name
         )
-        return notification 
+        return notification
+
+
+def ensure_message_schema():
+    """兼容现有数据库，为消息表补齐单方删除所需字段。"""
+    inspector = db.inspect(db.engine)
+    if 'message' not in inspector.get_table_names():
+        return
+
+    existing_columns = {column['name'] for column in inspector.get_columns('message')}
+    alter_statements = []
+
+    if 'user_deleted_at' not in existing_columns:
+        alter_statements.append('ALTER TABLE message ADD COLUMN user_deleted_at DATETIME')
+
+    if 'admin_deleted_at' not in existing_columns:
+        alter_statements.append('ALTER TABLE message ADD COLUMN admin_deleted_at DATETIME')
+
+    if 'user_read_at' not in existing_columns:
+        alter_statements.append('ALTER TABLE message ADD COLUMN user_read_at DATETIME')
+
+    if not alter_statements:
+        return
+
+    with db.engine.begin() as conn:
+        for statement in alter_statements:
+            conn.execute(db.text(statement))

@@ -1,38 +1,56 @@
 # 个人网站系统
 
-一个功能完整的现代化个人网站，基于Flask开发，集成了博客、项目展示、联系表单、用户管理、PDF导出等多项功能。
+一个基于 Flask 的个人网站，当前代码已经覆盖公开内容展示、账户中心、站内互动、通知、联系会话和后台内容管理。
 
-## ✨ 核心功能
+## 网站内容总览
 
-### 📝 内容管理
-- **博客系统** - 文章发布、编辑、分类、标签管理
-- **项目展示** - 项目介绍、技术栈展示、分类筛选
-- **关于页面** - 个人简介、技能展示、联系方式
-- **版本记录** - 网站更新日志、功能发布记录
+### 公开前台
+- **首页 `/`**：展示最新版本、技能分组、最近文章、热门文章、精选友链、站点统计。
+- **博客 `/blog`**：支持分页、分类筛选、站内搜索、热门标签和热门文章。
+- **文章详情 `/blog/post/<slug>`**：展示正文、相关文章，并接入点赞、收藏、评分、评论和评论回复。
+- **关于 `/about`**：展示后台维护的关于内容。
+- **关于 PDF `/about/pdf`**：将关于页内容导出为 PDF。
+- **友链 `/links`**：展示活跃友链和精选友链，并支持友链申请。
+- **联系 `/contact`**：既是公开联系页，也是登录用户的会话中心；支持发起消息、查看管理员回复、继续跟进、删除个人侧会话。
+- **全站搜索 `/search`**：按关键词搜索已发布文章。
 
-### 👥 用户系统
-- **用户注册/登录** - 完整的用户认证系统
-- **权限管理** - 管理员、普通用户权限控制
-- **个人资料** - 用户信息管理、头像上传
-- **消息系统** - 站内消息、通知提醒
+### 账户中心
+- **登录 `/login`**、**注册 `/register`**、**忘记密码 `/forgot-password`**、**重置密码 `/reset-password/<token>`**。
+- **个人资料 `/profile`**：展示用户资料、内容统计、公开状态和最近登录信息。
+- **编辑资料 `/profile/edit`**：支持修改除用户名外的全部资料项，包括头像、邮箱、昵称、简介、网站、公司、职位、所在地、电话、资料公开状态、展示设置和密码。
+- **设置首页 `/settings`**：作为账户相关入口聚合页。
+- **隐私设置 `/settings/privacy`**：控制资料公开、邮箱显示、电话显示。
+- **头像上传 `/settings/avatar`**：为资料页和编辑资料页提供头像上传接口。
 
-### 💬 互动功能
-- **联系表单** - 访客留言、消息管理
-- **评论系统** - 文章评论、回复功能
-- **点赞收藏** - 内容互动、用户反馈
-- **搜索功能** - 全站内容搜索
+### 通知与互动
+- **通知中心 `/notifications`**：查看评论、回复、点赞、收藏、评分、私信回复等通知。
+- **互动 API `/api/...`**：
+  点赞、收藏、评分、评论、评论回复、评论点赞、用户互动状态、富文本图片上传。
+- **访问统计 API**：
+  `/api/visitor-stats`、`/api/track-visit`。
 
-### 📄 特色功能
-- **PDF导出** - 关于页面内容导出为PDF格式
-- **富文本编辑** - 支持Markdown和富文本编辑
-- **响应式设计** - 完美适配桌面和移动设备
-- **SEO优化** - 搜索引擎友好的URL结构
+### 管理后台
+- **后台首页 `/admin`**：统计数据、最近文章、最近会话、快速入口。
+- **文章管理**：新建、编辑、删除、状态切换、分类建议。
+- **消息管理**：查看联系消息、管理员回复、删除回复、批量删除、状态更新、未读统计。
+- **关于页管理**：维护关于内容区块和联系方式区块。
+- **技能管理**：维护技能名称、图标、分类、熟练度和排序。
+- **版本管理**：维护版本号、标题、描述和发布日期。
+- **友链管理**：审核申请、手动新增、编辑、删除、推荐排序。
 
-## 🚀 快速开始
+## 当前实现状态
+
+- 当前主资料流是 `/profile` 和 `/profile/edit`。
+- `/settings/profile` 仍保留，但 `GET` 会重定向到 `/profile`，主要用于兼容旧入口。
+- 独立的 **安全设置页面已移除**；旧地址 `/settings/security` 会自动跳转回 `/settings`。
+- 仓库中存在 Google / GitHub / 微信 OAuth 登录路由，但实际是否可用取决于 `.env` 中是否配置了对应凭证。
+- 管理后台访问依赖数据库中存在 `is_admin=True` 的用户；代码里**没有**自动创建默认管理员账户的逻辑。
+
+## 快速开始
 
 ### 环境要求
 - Python 3.8+
-- SQLite 数据库
+- SQLite
 - 现代浏览器
 
 ### 本地开发
@@ -45,281 +63,242 @@ cd my_web
 # 2. 安装依赖
 pip install -r requirements.txt
 
-# 3. 初始化数据库
+# 3. 初始化数据库并启动开发服务
 python run.py
 
-# 4. 启动开发服务器
+# 或使用脚本启动
 ./start_dev.sh
-# 或
-python run.py
 ```
 
-访问 http://localhost:8000 查看网站
+默认访问地址：
+- 前台：`http://localhost:8000`
+- 后台：`http://localhost:8000/admin`
 
-### 生产部署
+### 生产启动
 
 ```bash
-# 一键部署到服务器
-./deploy.sh [服务器IP] [用户名] [是否启用HTTPS] [SSH密码]
-
-# 示例
-./deploy.sh 47.112.96.87 root true your_password
+./start_prod.sh
 ```
 
-## 📋 默认账户
+### 部署脚本
 
-### 管理员账户
-- **用户名**: `admin`
-- **密码**: `admin123`
-- **访问地址**: http://localhost:8000/admin
-
-### 功能权限
-- 内容管理（文章、项目、关于页面）
-- 用户管理
-- 消息管理
-- 系统设置
-
-## 🏗️ 项目架构
-
-### 目录结构
+```bash
+./deploy.sh
+./deploy_simple.sh
 ```
+
+## 核心路由
+
+### 前台页面
+- `/`
+- `/about`
+- `/about/pdf`
+- `/links`
+- `/blog`
+- `/blog/post/<slug>`
+- `/contact`
+- `/search`
+
+### 账户与设置
+- `/login`
+- `/register`
+- `/forgot-password`
+- `/reset-password/<token>`
+- `/profile`
+- `/profile/edit`
+- `/settings`
+- `/settings/privacy`
+
+### 通知
+- `/notifications`
+- `/notifications/<int:notification_id>`
+
+### 管理后台
+- `/admin`
+- `/admin/posts`
+- `/admin/messages`
+- `/admin/about`
+- `/admin/skills`
+- `/admin/links`
+- `/admin/versions`
+
+## 主要功能模块
+
+### 内容系统
+- 文章支持 `HTML` 和 `Markdown` 两种正文格式。
+- 文章包含摘要、分类、标签、特色图片、浏览量、点赞数、收藏数、评论数和平均评分。
+- 首页和博客页都围绕已发布文章组织内容。
+
+### 联系与会话系统
+- 访客可通过联系页提交消息。
+- 管理员可在后台继续回复，形成消息对话。
+- 登录用户可在前台查看自己的对话记录、接收管理员回复、继续跟进消息。
+- 会话支持用户侧和管理员侧单独删除，双方都删除后才彻底清理。
+
+### 评论与互动系统
+- 登录用户可点赞、收藏、评分、评论文章。
+- 评论支持回复和二级回复。
+- 评论支持单独点赞。
+- 对内容作者会自动生成通知。
+
+### 通知系统
+- 支持评论、回复、点赞、收藏、评分、私信回复等通知类型。
+- 支持筛选、标记已读、全部已读、删除通知。
+
+### 账户中心
+- 资料页提供统计信息、公开状态、最近登录时间等概览。
+- 编辑页整合头像、资料、公开范围和密码修改。
+- 隐私页控制资料是否公开，以及邮箱/电话是否对外展示。
+
+## 项目结构
+
+```text
 my_web/
-├── app/                          # 主应用代码
-│   ├── __init__.py              # 应用工厂
-│   ├── models/                  # 数据模型
-│   │   ├── user.py             # 用户模型
-│   │   ├── post.py             # 文章模型
-│   │   ├── project.py          # 项目模型
-│   │   ├── message.py          # 消息模型
-│   │   ├── about.py            # 关于页面模型
-│   │   ├── skill.py            # 技能模型
-│   │   ├── version.py          # 版本记录模型
-│   │   ├── interaction.py      # 互动模型
-│   │   └── notification.py     # 通知模型
-│   ├── routes/                  # 路由控制器
-│   │   ├── main.py             # 前台路由
-│   │   ├── admin.py            # 管理后台路由
-│   │   ├── auth.py             # 认证路由
-│   │   ├── settings.py         # 设置路由
-│   │   └── notifications.py    # 通知路由
-│   ├── templates/               # 模板文件
-│   │   ├── frontend/           # 前台模板
-│   │   ├── admin/              # 管理后台模板
-│   │   ├── auth/               # 认证模板
-│   │   └── errors/             # 错误页面模板
-│   ├── static/                  # 静态资源
-│   │   ├── css/                # 样式文件
-│   │   ├── js/                 # JavaScript文件
-│   │   ├── images/             # 图片资源
-│   │   └── uploads/            # 上传文件
-│   └── utils/                   # 工具函数
-│       ├── pdf_generator.py    # PDF生成器
-│       ├── email_sender.py     # 邮件发送
-│       ├── filters.py          # 模板过滤器
-│       └── logger.py           # 日志管理
-├── config.py                    # 配置文件
-├── run.py                       # 开发服务器启动
-├── app.py                       # 生产环境启动
-├── requirements.txt             # Python依赖
-├── deploy.sh                    # 一键部署脚本
-└── README.md                    # 项目说明
+├── app/
+│   ├── __init__.py
+│   ├── config/
+│   │   └── oauth.py
+│   ├── models/
+│   │   ├── about.py
+│   │   ├── interaction.py
+│   │   ├── link.py
+│   │   ├── message.py
+│   │   ├── message_reply.py
+│   │   ├── notification.py
+│   │   ├── post.py
+│   │   ├── skill.py
+│   │   ├── user.py
+│   │   ├── version.py
+│   │   └── visitor_stats.py
+│   ├── routes/
+│   │   ├── admin.py
+│   │   ├── auth.py
+│   │   ├── interaction.py
+│   │   ├── main.py
+│   │   ├── notifications.py
+│   │   ├── settings.py
+│   │   └── version.py
+│   ├── templates/
+│   │   ├── admin/
+│   │   ├── auth/
+│   │   ├── components/
+│   │   ├── errors/
+│   │   ├── frontend/
+│   │   ├── notifications/
+│   │   └── settings/
+│   └── utils/
+│       ├── email_sender.py
+│       ├── filters.py
+│       ├── logger.py
+│       ├── pdf_generator.py
+│       └── post_content.py
+├── app.py
+├── run.py
+├── config.py
+├── db_manager.py
+├── db_tools.py
+├── deploy.sh
+├── deploy_simple.sh
+├── restart_website.sh
+├── setup_log_cleanup.sh
+├── start_dev.sh
+├── start_prod.sh
+├── EMAIL_SETUP_GUIDE.md
+├── MAIL_SETUP.md
+└── SCHEMA_CHANGES.sql
 ```
 
-### 技术栈
-
-#### 后端技术
-- **Flask 3.1.1** - Web框架
-- **SQLAlchemy 3.1.1** - ORM数据库操作
-- **Flask-Login 0.6.3** - 用户认证
-- **ReportLab 4.0.9** - PDF生成
-- **Pillow 10.4.0** - 图像处理
-- **Markdown 3.5.1** - 文本处理
-
-#### 前端技术
-- **Bootstrap 5** - UI框架
-- **Font Awesome 6** - 图标库
-- **jQuery** - JavaScript库
-- **TipTap** - 富文本编辑器
-
-#### 部署技术
-- **Gunicorn** - WSGI服务器
-- **Nginx** - 反向代理
-- **SQLite** - 数据库
-- **Systemd** - 服务管理
-
-## 🛠️ 管理工具
-
-### 数据库管理
-```bash
-# 数据库管理工具
-python db_manager.py
-
-# 功能包括：
-# - 用户管理
-# - 内容管理
-# - 数据库备份/恢复
-# - 表结构管理
-```
-
-### 维护脚本
-```bash
-# 网站状态检查
-./check_website.sh
-
-# 网站重启
-./restart_website.sh
-
-# 网站备份
-./backup_website.sh [备份目录]
-```
-
-### 日志管理
-```bash
-# 查看应用日志
-tail -f logs/app.log
-
-# 查看服务器日志
-sudo journalctl -u website -f
-
-# 清理日志
-./setup_log_cleanup.sh
-```
-
-## 📊 数据模型
+## 数据模型
 
 ### 核心模型
-- **User** - 用户信息、权限管理
-- **Post** - 文章内容、分类标签
-- **Project** - 项目展示、技术栈
-- **Message** - 联系消息、回复
-- **AboutContent** - 关于页面内容
-- **Skill** - 技能展示、熟练度
-- **Version** - 版本记录、更新日志
-- **Notification** - 系统通知
+- **User**：登录账号、个人资料、隐私设置、OAuth 标识、密码重置令牌。
+- **Post**：文章内容、格式、标签、统计数据。
+- **Message**：联系消息和会话主表。
+- **MessageReply**：管理员或用户对消息的回复记录。
+- **Notification**：站内通知。
+- **Comment / CommentReply / CommentLike / UserInteraction**：文章互动体系。
+- **AboutContent / AboutContact**：关于页内容和联系方式。
+- **Skill**：技能卡片内容。
+- **Version**：版本更新记录。
+- **Link**：友链和友链申请。
+- **VisitorStats**：访问量统计。
 
-### 关系设计
+### 关系概览
 - 用户与文章：一对多
-- 用户与项目：一对多
+- 用户与评论：一对多
 - 文章与评论：一对多
+- 评论与回复：一对多
 - 消息与回复：一对多
+- 用户与通知：一对多
 
-## 🔧 配置说明
+## 配置说明
 
-### 环境变量
+### 基础环境变量
+
 ```bash
-# 基础配置
 SECRET_KEY=your-secret-key
 DATABASE_URL=sqlite:///personal_website.db
+```
 
-# 邮件配置
+### 邮件配置
+
+```bash
 MAIL_SERVER=smtp.gmail.com
 MAIL_PORT=587
 MAIL_USERNAME=your-email@gmail.com
 MAIL_PASSWORD=your-app-password
+```
 
-# 文件上传
-MAX_CONTENT_LENGTH=16777216  # 16MB
+### OAuth 配置（可选）
+
+```bash
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GITHUB_CLIENT_ID=
+GITHUB_CLIENT_SECRET=
+WECHAT_APP_ID=
+WECHAT_APP_SECRET=
+```
+
+### 文件上传
+
+```bash
+MAX_CONTENT_LENGTH=16777216
 UPLOAD_FOLDER=app/static/uploads
 ```
 
-### 功能配置
-- **PDF导出** - 支持中文字体、自定义样式
-- **邮件通知** - 支持SMTP邮件发送
-- **文件上传** - 支持图片、文档上传
-- **日志记录** - 完整的操作日志
+## 维护脚本
 
-## 🚀 部署指南
+### 数据库与数据
 
-### 开发环境
 ```bash
-# 启动开发服务器
-./start_dev.sh
-
-# 访问地址
-http://localhost:8000
+python db_manager.py
+python db_tools.py
 ```
 
-### 生产环境
+### 服务与日志
+
 ```bash
-# 一键部署
-./deploy.sh
-
-# 手动部署
-./start_prod.sh
-```
-
-### 服务管理
-```bash
-# 查看服务状态
-sudo systemctl status website
-
-# 重启服务
-sudo systemctl restart website
-
-# 查看日志
-sudo journalctl -u website -f
-```
-
-## 📱 功能演示
-
-### 前台功能
-- **首页** - 最新文章、推荐项目
-- **博客** - 文章列表、分类筛选、搜索
-- **项目** - 项目展示、技术栈、详情页
-- **关于** - 个人简介、技能展示、PDF下载
-- **联系** - 留言表单、消息管理
-
-### 管理后台
-- **仪表板** - 数据统计、快速操作
-- **内容管理** - 文章、项目、关于页面
-- **用户管理** - 用户列表、权限设置
-- **消息管理** - 联系消息、回复处理
-- **系统设置** - 网站配置、邮件设置
-
-## 🔍 故障排查
-
-### 常见问题
-1. **服务无法启动** - 检查端口占用、依赖安装
-2. **数据库错误** - 检查数据库文件权限
-3. **邮件发送失败** - 检查SMTP配置
-4. **文件上传失败** - 检查上传目录权限
-
-### 日志分析
-```bash
-# 应用日志
+./restart_website.sh
+./setup_log_cleanup.sh
+python cleanup_logs.py
 tail -f logs/app.log
-
-# 错误日志
-grep "ERROR" logs/app.log
-
-# 访问日志
-sudo tail -f /var/log/nginx/access.log
 ```
 
-## 📄 相关文档
+## 文档与辅助文件
 
-- [PDF功能说明](PDF_FEATURE_README.md) - PDF导出功能详细说明
-- [邮件设置指南](EMAIL_SETUP_GUIDE.md) - 邮件服务配置
-- [部署故障排查](DEPLOYMENT_TROUBLESHOOTING.md) - 部署问题解决
+- [EMAIL_SETUP_GUIDE.md](EMAIL_SETUP_GUIDE.md)：邮件服务配置说明
+- [MAIL_SETUP.md](MAIL_SETUP.md)：邮件相关补充说明
+- [SCHEMA_CHANGES.sql](SCHEMA_CHANGES.sql)：数据库结构变更记录
+- [app/templates/README.md](app/templates/README.md)：模板结构说明
 
-## 🤝 贡献指南
+## 开发注意事项
 
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
+- `interaction` 蓝图注册在 `/api` 前缀下，因此互动接口实际路径形如 `/api/comment`、`/api/like`。
+- 应用启动时会自动执行部分数据库兼容修复：
+  为文章补齐 `content_format`，为消息补齐删除/已读字段，为评论回复补齐二级回复字段。
+- 如果启用了 `FORCE_HTTPS`，应用会在生产环境中接入 HTTPS 重定向。
 
-## 📄 许可证
+## 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
-
-## 📞 联系方式
-
-- **项目地址**: [GitHub Repository]
-- **问题反馈**: [Issues]
-- **邮箱**: your-email@example.com
-
----
-
-⭐ 如果这个项目对你有帮助，请给一个星标！
+本项目采用 MIT License，详见 [LICENSE](LICENSE)。

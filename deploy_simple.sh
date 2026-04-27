@@ -1,14 +1,16 @@
 #!/bin/bash
 
 # 部署脚本（支持HTTP和HTTPS）
-# 使用方法: ./deploy_simple.sh [服务器IP] [用户名] [是否启用HTTPS]
-# 示例: ./deploy_simple.sh 47.112.96.87 root true
+# 使用方法: ./deploy_simple.sh [服务器IP] [用户名] [是否启用HTTPS] [SSH密钥路径] [SSH端口]
+# 示例: ./deploy_simple.sh 47.112.96.87 root true ~/.ssh/id_rsa 22
 
 set -e
 
 SERVER_IP=${1:-"47.112.96.87"}
 SERVER_USER=${2:-"root"}
 ENABLE_HTTPS=${3:-"false"}
+SSH_KEY_PATH=${4:-${SSH_KEY_PATH:-""}}
+SSH_PORT=${5:-${SSH_PORT:-"22"}}
 DOMAIN="www.shiheng.info"
 
 # 设置生产环境变量
@@ -24,12 +26,47 @@ export FORCE_WWW=true
 echo "🚀 开始部署个人网站到 $SERVER_USER@$SERVER_IP"
 echo "🌐 域名: $DOMAIN"
 echo "🔐 HTTPS: $ENABLE_HTTPS"
+echo "🔌 SSH端口: $SSH_PORT"
 echo ""
 echo "📋 使用说明:"
-echo "  HTTP部署:  ./deploy_simple.sh [IP] [用户] false"
-echo "  HTTPS部署: ./deploy_simple.sh [IP] [用户] true"
-echo "  示例:      ./deploy_simple.sh 47.112.96.87 root true"
+echo "  HTTP部署:  ./deploy_simple.sh [IP] [用户] false [密钥路径] [端口]"
+echo "  HTTPS部署: ./deploy_simple.sh [IP] [用户] true [密钥路径] [端口]"
+echo "  示例:      ./deploy_simple.sh 47.112.96.87 root true ~/.ssh/id_rsa 22"
 echo ""
+
+SSH_OPTS=(-o ConnectTimeout=10 -o StrictHostKeyChecking=no -p "$SSH_PORT")
+SCP_OPTS=(-o ConnectTimeout=10 -o StrictHostKeyChecking=no -P "$SSH_PORT")
+
+if [ -n "$SSH_KEY_PATH" ]; then
+    if [ ! -f "$SSH_KEY_PATH" ]; then
+        echo "❌ 指定的SSH密钥不存在: $SSH_KEY_PATH"
+        exit 1
+    fi
+    SSH_OPTS+=(-i "$SSH_KEY_PATH")
+    SCP_OPTS+=(-i "$SSH_KEY_PATH")
+    echo "🔑 使用SSH密钥: $SSH_KEY_PATH"
+else
+    echo "🔑 使用系统默认SSH身份（ssh-agent 或 ~/.ssh/id_*）"
+fi
+
+echo "🔍 步骤0: 测试SSH连接..."
+if ssh "${SSH_OPTS[@]}" "$SERVER_USER@$SERVER_IP" "echo 'SSH连接成功'" 2>/dev/null; then
+    echo "✅ SSH连接成功"
+else
+    echo "❌ SSH连接失败"
+    echo ""
+    echo "如果报错是 Permission denied (publickey)，真正的问题不是上面的 post-quantum 警告，而是服务器没有接受你的SSH身份。"
+    echo "请检查："
+    echo "1. 用户名是否正确：当前是 $SERVER_USER"
+    echo "2. 如果服务器禁用 root 直登，请改用有 sudo 权限的用户"
+    echo "3. 私钥是否与服务器 ~/.ssh/authorized_keys 中的公钥匹配"
+    echo "4. 如果不是默认密钥，请显式传入第4个参数"
+    echo "5. 如果SSH不是22端口，请显式传入第5个参数"
+    echo ""
+    echo "示例："
+    echo "  ./deploy_simple.sh $SERVER_IP $SERVER_USER $ENABLE_HTTPS ~/.ssh/id_rsa $SSH_PORT"
+    exit 1
+fi
 
 # 步骤1: 打包项目
 echo "📦 步骤1: 打包项目..."
@@ -52,7 +89,6 @@ cp db_tools.py $TEMP_DIR/
 cp cleanup_logs.py $TEMP_DIR/
 cp setup_log_cleanup.sh $TEMP_DIR/
 cp ssl_redirect.py $TEMP_DIR/
-cp HTTPS_SETUP.md $TEMP_DIR/
 
 
 
@@ -67,11 +103,11 @@ echo "✅ 项目打包完成: $PACKAGE_NAME"
 
 # 步骤2: 上传到服务器
 echo "📤 步骤2: 上传到服务器..."
-scp $PACKAGE_NAME $SERVER_USER@$SERVER_IP:/tmp/
+scp "${SCP_OPTS[@]}" $PACKAGE_NAME $SERVER_USER@$SERVER_IP:/tmp/
 
 # 步骤3: 在服务器上部署
 echo "🔧 步骤3: 在服务器上部署..."
-ssh $SERVER_USER@$SERVER_IP << EOF
+ssh "${SSH_OPTS[@]}" $SERVER_USER@$SERVER_IP << EOF
 set -e
 
 echo "📁 创建项目目录..."

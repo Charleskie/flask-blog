@@ -1,309 +1,779 @@
 {% extends "base.html" %}
 
-{% block title %}消息通知 - 我的个人网站{% endblock %}
+{% block title %}通知管理 - 我的个人网站{% endblock %}
 
 {% block content %}
-<div class="container">
+{% set type_labels = {
+    'comment': '评论',
+    'reply': '回复',
+    'like': '点赞',
+    'favorite': '收藏',
+    'rating': '评分'
+} %}
+{% set type_icons = {
+    'comment': 'fa-comment-dots',
+    'reply': 'fa-reply',
+    'like': 'fa-heart',
+    'favorite': 'fa-star',
+    'rating': 'fa-star-half-stroke'
+} %}
 
-    <!-- 消息导航按钮 -->
-    <div class="admin-content">
-        <div class="content-card">
-            <div class="card-body">
-                <div class="notification-nav">
-                    <a href="{{ url_for('notification.notifications') }}" class="nav-btn {% if not type_filter %}active{% endif %}">
-                        全部
-                    </a>
-                    <a href="{{ url_for('notification.notifications', type='comment') }}" class="nav-btn {% if type_filter == 'comment' %}active{% endif %}">
-                        评论
-                    </a>
-                    <a href="{{ url_for('notification.notifications', type='reply') }}" class="nav-btn {% if type_filter == 'reply' %}active{% endif %}">
-                        回复
-                    </a>
-                    <a href="{{ url_for('notification.notifications', type='like,favorite') }}" class="nav-btn {% if type_filter in ['like,favorite'] %}active{% endif %}">
-                        赞和收藏
-                    </a>
-                    <a href="{{ url_for('notification.notifications', type='message') }}" class="nav-btn {% if type_filter == 'message' %}active{% endif %}">
-                        私信
-                    </a>
-                </div>
+<div class="container-xl width-full py-6 notifications-manage-page" data-unread-total="{{ unread_total }}">
+    <header class="notifications-page-head mb-3">
+        <div>
+            <h1 class="notifications-page-title">通知管理</h1>
+        </div>
+    </header>
+
+    <section class="Box mb-3 notifications-toolbar-box">
+        <div class="Box-body">
+            <div class="notifications-toolbar">
+                <button
+                    type="button"
+                    class="btn btn-primary btn-sm notifications-page-btn"
+                    onclick="markAllRead()"
+                    data-bulk-read-btn
+                    {% if unread_total == 0 %}style="display: none;"{% endif %}>
+                    <i class="fas fa-check-double"></i>
+                    <span>全部标记已读</span>
+                </button>
+            </div>
+
+            <div class="notifications-filter-tabs">
+                {% for option in filter_options %}
+                <a href="{{ option.href }}" class="notifications-filter-tab {% if option.active %}is-active{% endif %}">
+                    <span>{{ option.label }}</span>
+                    <span class="notifications-filter-tab-count" data-filter-count="{{ option.key }}">{{ option.count }}</span>
+                </a>
+                {% endfor %}
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- 消息列表 -->
-    <div class="admin-content">
-        <div class="content-card">
-            <div class="card-header">
-                <h2>消息列表 (共 {{ notifications.total }} 条)</h2>
+    {% if notifications.items %}
+    <section class="Box overflow-hidden notifications-list-box">
+        <div class="notifications-list-head">
+            <span>内容</span>
+            <span>时间</span>
+            <span>状态</span>
+            <span class="text-right">操作</span>
+        </div>
+
+        {% for notification in notifications.items %}
+        <article class="Box-row notification-row {% if not notification.is_read %}is-unread{% endif %}"
+                 data-notification-id="{{ notification.id }}"
+                 data-notification-type="{{ notification.type }}"
+                 data-notification-read="{{ 1 if notification.is_read else 0 }}">
+            <div class="notification-row-main">
+                <div class="notification-row-title-line">
+                    <span class="notification-type-pill">
+                        <i class="fas {{ type_icons.get(notification.type, 'fa-bell') }}"></i>
+                        <span>{{ type_labels.get(notification.type, '提醒') }}</span>
+                    </span>
+                    <a href="{{ url_for('notification.view_notification', notification_id=notification.id) }}" class="notification-row-title no-underline">
+                        {{ notification.title }}
+                    </a>
+                    {% if not notification.is_read %}
+                    <span class="notification-unread-dot" aria-hidden="true"></span>
+                    {% endif %}
+                </div>
+
+                <p class="notification-row-text">{{ notification.content }}</p>
+
+                <div class="notification-row-meta">
+                    {% if notification.sender_name %}
+                    <span class="notification-row-meta-item">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ notification.sender_name }}</span>
+                    </span>
+                    {% endif %}
+                    <span class="notification-row-meta-item notification-row-meta-time-mobile">
+                        <i class="fas fa-clock"></i>
+                        <time datetime="{{ notification.created_at.isoformat() if notification.created_at else '' }}">
+                            {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                        </time>
+                    </span>
+                </div>
             </div>
-            <div class="card-body">
-                {% if notifications.items %}
-                <div class="notification-list">
-                    {% for notification in notifications.items %}
-                    <div class="notification-item {% if not notification.is_read %}unread{% endif %}" 
-                         data-notification-id="{{ notification.id }}">
-                        <div class="notification-icon">
-                            {% if notification.type == 'comment' %}
-                                <i class="fas fa-comment text-primary"></i>
-                            {% elif notification.type == 'reply' %}
-                                <i class="fas fa-reply text-success"></i>
-                            {% elif notification.type == 'like' %}
-                                <i class="fas fa-heart text-danger"></i>
-                            {% elif notification.type == 'favorite' %}
-                                <i class="fas fa-star text-warning"></i>
-                            {% elif notification.type == 'rating' %}
-                                <i class="fas fa-star text-info"></i>
-                            {% elif notification.type == 'message_reply' %}
-                                <i class="fas fa-envelope text-primary"></i>
-                            {% else %}
-                                <i class="fas fa-bell text-secondary"></i>
-                            {% endif %}
-                        </div>
-                        <div class="notification-content">
-                            <div class="notification-header">
-                                <h5 class="notification-title" onclick="viewNotification({{ notification.id }})" style="cursor: pointer;">{{ notification.title }}</h5>
-                                <span class="notification-time">{{ notification.created_at.strftime('%m-%d %H:%M') }}</span>
-                            </div>
-                            <div class="notification-body">
-                                <p class="notification-text">{{ notification.content }}</p>
-                                {% if notification.sender_name %}
-                                <small class="notification-sender">来自: {{ notification.sender_name }}</small>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="notification-actions">
-                            {% if notification.related_url %}
-                            <a href="{{ url_for('notification.view_notification', notification_id=notification.id) }}" 
-                               class="btn btn-sm btn-primary" title="查看详情">
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                            {% endif %}
-                            {% if not notification.is_read %}
-                            <button class="btn btn-sm btn-success" 
-                                    onclick="markAsRead({{ notification.id }})" 
-                                    title="标记已读">
-                                <i class="fas fa-check"></i>
-                            </button>
-                            {% endif %}
-                            <button class="btn btn-sm btn-danger" 
-                                    onclick="deleteNotification({{ notification.id }})" 
-                                    title="删除">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
 
-                <!-- 分页 -->
-                {% if notifications.pages > 1 %}
-                <div class="pagination-wrapper">
-                    <nav class="pagination">
-                        {% if notifications.has_prev %}
-                            <a href="{{ url_for('notification.notifications', page=notifications.prev_num, type=type_filter) }}" class="page-link">
-                                <i class="fas fa-chevron-left"></i> 上一页
-                            </a>
-                        {% endif %}
-                        
-                        {% for page_num in notifications.iter_pages() %}
-                            {% if page_num %}
-                                {% if page_num != notifications.page %}
-                                    <a href="{{ url_for('notification.notifications', page=page_num, type=type_filter) }}" class="page-link">{{ page_num }}</a>
-                                {% else %}
-                                    <span class="page-link current">{{ page_num }}</span>
-                                {% endif %}
-                            {% else %}
-                                <span class="page-link disabled">...</span>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        {% if notifications.has_next %}
-                            <a href="{{ url_for('notification.notifications', page=notifications.next_num, type=type_filter) }}" class="page-link">
-                                下一页 <i class="fas fa-chevron-right"></i>
-                            </a>
-                        {% endif %}
-                    </nav>
-                </div>
+            <div class="notification-row-time">
+                <time datetime="{{ notification.created_at.isoformat() if notification.created_at else '' }}">
+                    {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}
+                </time>
+            </div>
+
+            <div class="notification-row-status">
+                <span class="Label {% if not notification.is_read %}Label--accent{% else %}Label--secondary{% endif %} notification-read-flag">
+                    {% if not notification.is_read %}未读{% else %}已读{% endif %}
+                </span>
+            </div>
+
+            <div class="notification-row-actions">
+                {% if notification.related_url %}
+                <a href="{{ url_for('notification.view_notification', notification_id=notification.id) }}" class="notification-action-btn notification-action-view">
+                    <i class="fas fa-arrow-up-right-from-square"></i>
+                    <span>查看</span>
+                </a>
                 {% endif %}
+                {% if not notification.is_read %}
+                <button type="button" class="notification-action-btn notification-action-read" data-action="mark-read" onclick="markAsRead({{ notification.id }})">
+                    <i class="fas fa-check"></i>
+                    <span>已读</span>
+                </button>
+                {% endif %}
+                <button type="button" class="notification-action-btn notification-action-delete" onclick="deleteNotification({{ notification.id }})">
+                    <i class="fas fa-trash"></i>
+                    <span>删除</span>
+                </button>
+            </div>
+        </article>
+        {% endfor %}
+    </section>
 
+    {% if notifications.pages > 1 %}
+    <nav class="notifications-pagination" aria-label="通知分页">
+        <div class="d-flex flex-wrap justify-center gap-2">
+            {% if notifications.has_prev %}
+            <a href="{{ url_for('notification.notifications', page=notifications.prev_num, type=type_filter) if type_filter else url_for('notification.notifications', page=notifications.prev_num) }}"
+               class="btn btn-secondary btn-sm no-underline notifications-page-btn">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            {% endif %}
+
+            {% for page_num in notifications.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num != notifications.page %}
+                    <a href="{{ url_for('notification.notifications', page=page_num, type=type_filter) if type_filter else url_for('notification.notifications', page=page_num) }}"
+                       class="btn btn-secondary btn-sm no-underline notifications-page-btn">
+                        {{ page_num }}
+                    </a>
+                    {% else %}
+                    <span class="btn btn-primary btn-sm notifications-page-btn" aria-current="page">{{ page_num }}</span>
+                    {% endif %}
                 {% else %}
-                <div class="empty-state">
-                    <i class="fas fa-bell-slash fa-3x"></i>
-                    <h3>暂无消息</h3>
-                    <p>当有人评论、点赞或收藏你的内容时，消息会显示在这里。</p>
-                </div>
+                <span class="btn btn-secondary btn-sm notifications-pagination-gap notifications-page-btn" aria-hidden="true">…</span>
+                {% endif %}
+            {% endfor %}
+
+            {% if notifications.has_next %}
+            <a href="{{ url_for('notification.notifications', page=notifications.next_num, type=type_filter) if type_filter else url_for('notification.notifications', page=notifications.next_num) }}"
+               class="btn btn-secondary btn-sm no-underline notifications-page-btn">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+    </nav>
+    {% endif %}
+    {% else %}
+    <section class="Box notifications-empty-box">
+        <div class="Box-body text-center">
+            <div class="notifications-empty-icon">
+                <i class="fas fa-bell-slash"></i>
+            </div>
+            <h2 class="notifications-empty-title">{{ active_filter.label }}里还没有消息</h2>
+            <div class="notifications-empty-actions">
+                {% if active_filter.key != 'all' %}
+                <a href="{{ url_for('notification.notifications') }}" class="btn btn-primary btn-sm no-underline notifications-page-btn">
+                    <i class="fas fa-bell"></i>
+                    <span>查看全部提醒</span>
+                </a>
                 {% endif %}
             </div>
         </div>
-    </div>
+    </section>
+    {% endif %}
 </div>
+{% endblock %}
 
+{% block extra_css %}
 <style>
-/* 消息导航按钮样式 */
-.notification-nav {
+.notifications-manage-page {
+    max-width: 1120px;
+}
+
+.notifications-toolbar-box,
+.notifications-list-box,
+.notifications-empty-box {
+    border-radius: 14px;
+    box-shadow: 0 8px 22px rgba(31, 35, 40, 0.04);
+}
+
+.notifications-toolbar-box .Box-body {
+    padding: 12px 14px;
+}
+
+.notifications-page-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.notifications-page-title {
+    margin: 0 0 6px;
+    color: var(--fgColor-default);
+    font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+    line-height: 1.15;
+}
+
+.notifications-page-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.notifications-page-link {
+    color: var(--fgColor-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.notifications-page-link:hover {
+    text-decoration: underline;
+}
+
+.notifications-toolbar {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.notification-nav .nav-btn {
-    padding: 8px 16px;
-    border-radius: 10px;
-    background-color: var(--bg-secondary);
-    color: var(--text-primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    display: flex;
     align-items: center;
-    gap: 6px;
-    font-weight: 400;
-    font-size: 0.8rem;
-}
-
-.notification-nav .nav-btn:hover {
-    background-color: var(--bg-tertiary);
-    transform: translateY(-2px);
-}
-
-.notification-nav .nav-btn.active {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.notification-list {
-    display: flex;
-    flex-direction: column;
+    justify-content: space-between;
     gap: 12px;
 }
 
-.notification-item {
+.notifications-summary {
     display: flex;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 16px;
-    background: transparent !important;
-    background-color: transparent !important;
-    border: 1px solid var(--bg-tertiary);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    position: relative;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
-.notification-item:hover {
-    background: var(--bg-tertiary);
-    border-color: var(--primary-color);
-}
-
-.notification-item.unread {
-    background: rgba(13, 110, 253, 0.1);
-    border-left: 4px solid var(--primary-color);
-}
-
-.notification-item.unread::before {
-    content: '';
-    position: absolute;
-    top: 16px;
-    right: 16px;
-    width: 8px;
-    height: 8px;
-    background: var(--primary-color);
-    border-radius: 50%;
-}
-
-.notification-icon {
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+.notifications-summary-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: var(--bg-primary);
-    border-radius: 50%;
-    font-size: 18px;
+    gap: 8px;
+    min-width: 0;
+    padding: 7px 10px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(246, 248, 250, 0.88), rgba(255, 255, 255, 0.96));
 }
 
-.notification-content {
-    flex: 1;
+.notifications-summary-label {
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notifications-summary-value {
+    color: var(--fgColor-default);
+    font-size: 13px;
+    line-height: 1;
+}
+
+.notifications-summary-meta {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+}
+
+.notifications-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.notifications-page-btn {
+    min-height: 30px;
+    padding: 0 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    line-height: 1;
+    box-shadow: none;
+}
+
+.notifications-page-btn:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.notifications-manage-page .btn-secondary.notifications-page-btn {
+    --btn-bg: rgba(246, 248, 250, 0.84);
+    --btn-bg-hover: var(--bgColor-muted);
+    --btn-border: var(--borderColor-default);
+    --btn-color: var(--fgColor-muted);
+}
+
+.notifications-conversation-btn,
+.notification-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 11px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.84);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.notifications-conversation-btn {
+    background: rgba(221, 244, 255, 0.72);
+    border-color: rgba(9, 105, 218, 0.18);
+    color: var(--fgColor-accent);
+    font-weight: 650;
+}
+
+.notifications-conversation-btn:hover,
+.notifications-conversation-btn:focus-visible {
+    background: rgba(221, 244, 255, 0.95);
+    border-color: rgba(9, 105, 218, 0.32);
+    color: var(--fgColor-accent);
+    text-decoration: none;
+}
+
+.notification-action-view {
+    background: transparent;
+    border-color: rgba(9, 105, 218, 0.18);
+    color: var(--fgColor-accent);
+}
+
+.notification-action-view:hover,
+.notification-action-view:focus-visible {
+    background: var(--bgColor-accent-muted);
+    border-color: rgba(9, 105, 218, 0.32);
+    color: var(--fgColor-accent);
+    text-decoration: none;
+}
+
+.notification-action-read {
+    background: rgba(221, 244, 255, 0.5);
+    border-color: rgba(9, 105, 218, 0.16);
+    color: var(--fgColor-accent);
+}
+
+.notification-action-read:hover,
+.notification-action-read:focus-visible {
+    background: var(--bgColor-accent-muted);
+    border-color: rgba(9, 105, 218, 0.28);
+}
+
+.notification-action-delete {
+    background: rgba(255, 245, 245, 0.8);
+    border-color: rgba(209, 36, 47, 0.18);
+    color: var(--fgColor-danger);
+}
+
+.notification-action-delete:hover,
+.notification-action-delete:focus-visible {
+    background: var(--bgColor-danger-muted);
+    border-color: rgba(209, 36, 47, 0.32);
+    color: var(--fgColor-danger);
+}
+
+.notifications-manage-page .btn-danger.notifications-page-btn {
+    --btn-bg: rgba(255, 245, 245, 0.78);
+    --btn-bg-hover: var(--bgColor-danger-muted);
+    --btn-border: rgba(209, 36, 47, 0.22);
+    --btn-color: var(--fgColor-danger);
+}
+
+.notifications-manage-page .btn-danger.notifications-page-btn:hover {
+    color: var(--fgColor-danger);
+    border-color: rgba(209, 36, 47, 0.32);
+}
+
+.notifications-filter-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.notifications-filter-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: var(--bgColor-default);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.notifications-filter-tab:hover {
+    color: var(--fgColor-default);
+    background: var(--bgColor-muted);
+    text-decoration: none;
+}
+
+.notifications-filter-tab.is-active {
+    color: var(--fgColor-accent);
+    border-color: rgba(9, 105, 218, 0.18);
+    background: var(--bgColor-accent-muted);
+}
+
+.notifications-filter-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: rgba(89, 99, 110, 0.12);
+    color: inherit;
+    font-size: 12px;
+}
+
+.notifications-list-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 126px 68px 160px;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--borderColor-default);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.notification-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 126px 68px 160px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 14px;
+    transition: background-color 0.15s ease;
+}
+
+.notification-row:hover {
+    background: rgba(246, 248, 250, 0.65);
+}
+
+.notification-row.is-unread {
+    background: rgba(9, 105, 218, 0.035);
+    box-shadow: inset 3px 0 0 var(--bgColor-accent-emphasis);
+}
+
+.notification-row-main {
     min-width: 0;
 }
 
-.notification-header {
+.notification-row-title-line {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 6px;
 }
 
-.notification-title {
-    margin: 0;
-    font-size: 1rem;
+.notification-type-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 12px;
     font-weight: 600;
-    color: var(--text-primary);
-    transition: color 0.3s ease;
-}
-
-.notification-title:hover {
-    color: var(--primary-color);
-}
-
-.notification-time {
-    font-size: 0.8rem;
-    color: var(--text-muted);
     white-space: nowrap;
 }
 
-.notification-body {
-    margin-bottom: 8px;
+.notification-row-title {
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1.35;
 }
 
-.notification-text {
-    margin: 0 0 4px 0;
-    color: var(--text-secondary);
-    line-height: 1.4;
+.notification-row-title:hover {
+    color: var(--fgColor-accent);
+    text-decoration: none;
 }
 
-.notification-sender {
-    color: var(--text-muted);
-    font-style: italic;
-}
-
-.notification-actions {
-    display: flex;
-    gap: 4px;
+.notification-unread-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bgColor-accent-emphasis);
     flex-shrink: 0;
 }
 
-.notification-actions .btn {
-    padding: 4px 8px;
-    font-size: 0.8rem;
+.notification-row-text {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.notification-row-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 7px;
+}
+
+.notification-row-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--fgColor-subtle);
+    font-size: 13px;
+}
+
+.notification-row-meta-time-mobile {
+    display: none;
+}
+
+.notification-row-time,
+.notification-row-status {
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+.notification-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.notification-row-actions .notification-action-btn {
+    min-width: 62px;
+    justify-content: center;
+}
+
+.notifications-pagination {
+    margin-top: 16px;
+}
+
+.notifications-pagination-gap {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.notifications-empty-box .Box-body {
+    padding: 28px 20px;
+}
+
+.notifications-empty-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 10px;
+    border-radius: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
+    font-size: 1.2rem;
+}
+
+.notifications-empty-title {
+    margin: 0 0 8px;
+    color: var(--fgColor-default);
+    font-size: 1.15rem;
+}
+
+.notifications-empty-copy {
+    max-width: 52ch;
+    margin: 0 auto;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.notifications-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+@media (max-width: 1012px) {
+    .notifications-list-head,
+    .notification-row {
+        grid-template-columns: minmax(0, 1fr) 112px 64px 142px;
+    }
 }
 
 @media (max-width: 768px) {
-    .notification-item {
-        flex-direction: column;
-        gap: 12px;
+    .notifications-summary,
+    .notifications-toolbar-actions,
+    .notifications-empty-actions {
+        width: 100%;
     }
-    
-    .notification-header {
-        flex-direction: column;
-        gap: 4px;
+
+    .notifications-toolbar-actions .btn,
+    .notifications-empty-actions .btn {
+        width: 100%;
+        justify-content: center;
     }
-    
-    .notification-actions {
-        align-self: flex-end;
+
+    .notifications-list-head {
+        display: none;
+    }
+
+    .notification-row {
+        grid-template-columns: 1fr;
+    }
+
+    .notification-row-time,
+    .notification-row-status {
+        display: none;
+    }
+
+    .notification-row-meta-time-mobile {
+        display: inline-flex;
+    }
+
+    .notification-row-actions {
+        justify-content: flex-start;
+        margin-top: 4px;
+    }
+
+    .notification-row-actions .notification-action-btn {
+        min-width: unset;
     }
 }
 </style>
+{% endblock %}
 
+{% block extra_js %}
 <script>
-// 查看通知详情
-function viewNotification(notificationId) {
-    try {
-        window.location.href = `/notifications/${notificationId}`;
-    } catch (error) {
-        // 备用跳转方式
-        window.open(`/notifications/${notificationId}`, '_self');
+const NOTIFICATION_FILTER_KEY_BY_TYPE = {
+    comment: 'comment',
+    reply: 'reply',
+    like: 'interaction',
+    favorite: 'interaction',
+    rating: 'interaction'
+};
+
+const ACTIVE_NOTIFICATION_FILTER = '{{ active_filter.key }}';
+
+function readSummaryCount(name) {
+    const element = document.querySelector(`[data-summary="${name}"]`);
+    if (!element && name === 'unread') {
+        const page = document.querySelector('.notifications-manage-page');
+        return page ? Number(page.dataset.unreadTotal) || 0 : 0;
+    }
+    return element ? Number(element.textContent) || 0 : 0;
+}
+
+function writeSummaryCount(name, value) {
+    const element = document.querySelector(`[data-summary="${name}"]`);
+    const normalizedValue = Math.max(0, value);
+    if (name === 'unread') {
+        const page = document.querySelector('.notifications-manage-page');
+        if (page) {
+            page.dataset.unreadTotal = normalizedValue;
+        }
+    }
+    if (element) {
+        element.textContent = normalizedValue;
+    }
+}
+
+function adjustSummaryCount(name, delta) {
+    writeSummaryCount(name, readSummaryCount(name) + delta);
+}
+
+function adjustFilterCount(key, delta) {
+    const element = document.querySelector(`[data-filter-count="${key}"]`);
+    if (!element) {
+        return;
+    }
+
+    const currentValue = Number(element.textContent) || 0;
+    element.textContent = Math.max(0, currentValue + delta);
+}
+
+function syncNotificationBadge() {
+    if (typeof updateNotificationCount === 'function') {
+        updateNotificationCount();
+    }
+}
+
+function syncBulkReadButton() {
+    const button = document.querySelector('[data-bulk-read-btn]');
+    if (!button) {
+        return;
+    }
+
+    button.style.display = readSummaryCount('unread') > 0 ? '' : 'none';
+}
+
+function setCardReadState(card) {
+    if (!card || !card.classList.contains('is-unread')) {
+        return;
+    }
+
+    card.classList.remove('is-unread');
+    card.dataset.notificationRead = '1';
+
+    const unreadDot = card.querySelector('.notification-unread-dot');
+    if (unreadDot) {
+        unreadDot.remove();
+    }
+
+    const markReadButton = card.querySelector('[data-action="mark-read"]');
+    if (markReadButton) {
+        markReadButton.remove();
+    }
+
+    const readFlag = card.querySelector('.notification-read-flag');
+    if (readFlag) {
+        readFlag.textContent = '已读';
+        readFlag.classList.remove('Label--accent');
+        readFlag.classList.add('Label--secondary');
+    }
+}
+
+function refreshAfterDelete(card, wasUnread) {
+    const type = card.dataset.notificationType;
+    const wasRead = card.dataset.notificationRead === '1';
+
+    card.remove();
+    adjustSummaryCount('total', -1);
+    adjustSummaryCount('current', -1);
+    adjustFilterCount('all', -1);
+
+    const filterKey = NOTIFICATION_FILTER_KEY_BY_TYPE[type];
+    if (filterKey) {
+        adjustFilterCount(filterKey, -1);
+    }
+
+    if (wasUnread) {
+        adjustSummaryCount('unread', -1);
+    }
+    if (wasRead) {
+        adjustFilterCount('read', -1);
+    }
+
+    syncNotificationBadge();
+    syncBulkReadButton();
+
+    if (!document.querySelector('.notification-row')) {
+        window.location.reload();
     }
 }
 
@@ -317,108 +787,91 @@ function markAsRead(notificationId) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data.success) {
-            const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
-            if (item) {
-                item.classList.remove('unread');
-                const markBtn = item.querySelector('button[onclick*="markAsRead"]');
-                if (markBtn) {
-                    markBtn.remove();
-                }
-            }
-            updateUnreadCount();
+        if (!data.success) {
+            return;
         }
+
+        const card = document.querySelector(`[data-notification-id="${notificationId}"]`);
+        if (!card || !card.classList.contains('is-unread')) {
+            return;
+        }
+
+        setCardReadState(card);
+        adjustSummaryCount('unread', -1);
+        adjustFilterCount('read', 1);
+        syncNotificationBadge();
+        syncBulkReadButton();
     })
-    .catch(error => {
-        // 静默处理错误
+    .catch(() => {});
+}
+
+async function deleteNotification(notificationId) {
+    const confirmed = await window.confirmAsync('确定要删除这条提醒吗？', {
+        title: '删除提醒',
+        confirmText: '确认删除',
+        cancelText: '取消',
+        danger: true
     });
-}
 
-function deleteNotification(notificationId) {
-    if (confirm('确定要删除这条消息吗？')) {
-        fetch(`/api/notifications/${notificationId}/delete`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const item = document.querySelector(`[data-notification-id="${notificationId}"]`);
-                if (item) {
-                    item.remove();
-                }
-                updateUnreadCount();
-            }
-        })
-        .catch(error => {
-            // 静默处理错误
-        });
+    if (!confirmed) {
+        return;
     }
-}
 
-function markAllRead() {
-    if (confirm('确定要标记所有消息为已读吗？')) {
-        fetch('/api/notifications/mark-all-read', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 移除所有未读标记
-                document.querySelectorAll('.notification-item.unread').forEach(item => {
-                    item.classList.remove('unread');
-                    const markBtn = item.querySelector('button[onclick*="markAsRead"]');
-                    if (markBtn) {
-                        markBtn.remove();
-                    }
-                });
-                updateUnreadCount();
-            }
-        })
-        .catch(error => {
-            // 静默处理错误
-        });
-    }
-}
-
-function updateUnreadCount() {
-    fetch('/api/notifications/unread-count')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    fetch(`/api/notifications/${notificationId}/delete`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
         }
-        return response.json();
     })
+    .then(response => response.json())
     .then(data => {
-        const badge = document.querySelector('.notification-badge');
-        if (badge) {
-            if (data.count > 0) {
-                badge.textContent = data.count;
-                badge.style.display = 'inline';
-            } else {
-                badge.style.display = 'none';
-            }
+        if (!data.success) {
+            return;
         }
+
+        const card = document.querySelector(`[data-notification-id="${notificationId}"]`);
+        if (!card) {
+            window.location.reload();
+            return;
+        }
+
+        refreshAfterDelete(card, card.classList.contains('is-unread'));
     })
-    .catch(error => {
-        // 如果服务器未运行，隐藏通知徽章
-        const badge = document.querySelector('.notification-badge');
-        if (badge) {
-            badge.style.display = 'none';
-        }
-    });
+    .catch(() => {});
 }
 
-// 自动提交筛选表单
-document.getElementById('type').addEventListener('change', function() {
-    this.form.submit();
-});
+async function markAllRead() {
+    const confirmed = await window.confirmAsync('确定要把当前通知全部标记为已读吗？', {
+        title: '全部标记已读',
+        confirmText: '确认标记',
+        cancelText: '取消'
+    });
+
+    if (!confirmed) {
+        return;
+    }
+
+    fetch('/api/notifications/mark-all-read', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            return;
+        }
+
+        document.querySelectorAll('.notification-row.is-unread').forEach(setCardReadState);
+        adjustFilterCount('read', data.count || 0);
+        writeSummaryCount('unread', 0);
+        syncNotificationBadge();
+        syncBulkReadButton();
+    })
+    .catch(() => {});
+}
 </script>
 {% endblock %}

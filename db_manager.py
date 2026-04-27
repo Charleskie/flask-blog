@@ -6,7 +6,6 @@
 from app import create_app
 from app.models.user import User, db
 from app.models.post import Post
-from app.models.project import Project
 from app.models.message import Message
 from app.models.message_reply import MessageReply
 from app.models.about import AboutContent, AboutContact
@@ -34,40 +33,37 @@ def print_menu():
     print("  5. 查看所有文章")
     print("  6. 创建新文章")
     print("  7. 删除文章")
-    print("  8. 查看所有项目")
-    print("  9. 创建新项目")
-    print("  10. 删除项目")
-    print("  11. 查看所有消息")
-    print("  12. 删除消息")
+    print("  8. 查看所有消息")
+    print("  9. 删除消息")
     print("\n📋 扩展数据管理:")
-    print("  13. 查看消息回复")
-    print("  14. 查看关于页面内容")
-    print("  15. 查看用户交互")
-    print("  16. 查看评论")
-    print("  17. 查看版本信息")
-    print("  18. 查看技能")
-    print("  19. 查看通知")
+    print("  10. 查看消息回复")
+    print("  11. 查看关于页面内容")
+    print("  12. 查看用户交互")
+    print("  13. 查看评论")
+    print("  14. 查看版本信息")
+    print("  15. 查看技能")
+    print("  16. 查看通知")
     print("\n🔧 批量操作:")
-    print("  20. 批量添加字段")
-    print("  21. 批量更新字段")
-    print("  22. 批量删除数据")
-    print("  23. 数据导入/导出")
-    print("  24. 执行自定义SQL")
+    print("  17. 批量添加字段")
+    print("  18. 批量更新字段")
+    print("  19. 批量删除数据")
+    print("  20. 数据导入/导出")
+    print("  21. 执行自定义SQL")
     print("\n🏗️  数据库结构管理:")
-    print("  25. 查看所有表")
-    print("  26. 查看表结构")
-    print("  27. 创建新表")
-    print("  28. 给表添加字段")
-    print("  29. 修改字段信息")
-    print("  30. 删除表")
-    print("  31. 数据库迁移")
-    print("  32. 备份数据库")
-    print("  33. 恢复数据库")
+    print("  22. 查看所有表")
+    print("  23. 查看表结构")
+    print("  24. 创建新表")
+    print("  25. 给表添加字段")
+    print("  26. 修改字段信息")
+    print("  27. 删除表")
+    print("  28. 数据库迁移")
+    print("  29. 备份数据库")
+    print("  30. 恢复数据库")
     print("\n🔧 系统工具:")
-    print("  34. 初始化数据库")
-    print("  35. 重置数据库")
-    print("  36. 查看数据库信息")
-    print("  37. 数据库优化")
+    print("  31. 初始化数据库")
+    print("  32. 重置数据库")
+    print("  33. 查看数据库信息")
+    print("  34. 数据库优化")
     print("  0. 退出")
     print("="*70)
 
@@ -234,71 +230,6 @@ def delete_post():
         print(f"❌ 删除失败: {e}")
         db.session.rollback()
 
-def list_projects():
-    """查看所有项目"""
-    projects = Project.query.all()
-    print(f"\n🚀 项目列表 (共{len(projects)}个):")
-    print("-" * 80)
-    print(f"{'ID':<5} {'名称':<25} {'技术栈':<20} {'状态':<8} {'创建时间'}")
-    print("-" * 80)
-    for project in projects:
-        status = "已完成" if project.is_completed else "进行中"
-        print(f"{project.id:<5} {project.name[:23]:<25} {project.tech_stack[:18]:<20} {status:<8} {project.created_at.strftime('%Y-%m-%d')}")
-
-def create_project():
-    """创建新项目"""
-    print("\n➕ 创建新项目")
-    name = input("项目名称: ").strip()
-    description = input("项目描述: ").strip()
-    tech_stack = input("技术栈: ").strip()
-    github_url = input("GitHub链接: ").strip()
-    is_completed = input("是否已完成? (y/n): ").strip().lower() == 'y'
-    
-    if not name or not description:
-        print("❌ 项目名称和描述都是必填的！")
-        return
-    
-    try:
-        project = Project(
-            name=name,
-            description=description,
-            tech_stack=tech_stack,
-            github_url=github_url,
-            is_completed=is_completed
-        )
-        db.session.add(project)
-        db.session.commit()
-        print(f"✅ 项目 '{name}' 创建成功！")
-    except Exception as e:
-        print(f"❌ 创建项目失败: {e}")
-        db.session.rollback()
-
-def delete_project():
-    """删除项目"""
-    list_projects()
-    project_id = input("\n请输入要删除的项目ID: ").strip()
-    
-    try:
-        project_id = int(project_id)
-        project = Project.query.get(project_id)
-        if not project:
-            print("❌ 项目不存在！")
-            return
-        
-        confirm = input(f"确定要删除项目 '{project.name}' 吗? (y/n): ").strip().lower()
-        if confirm == 'y':
-            db.session.delete(project)
-            db.session.commit()
-            print(f"✅ 项目 '{project.name}' 已删除！")
-        else:
-            print("❌ 取消删除")
-            
-    except ValueError:
-        print("❌ 请输入有效的项目ID！")
-    except Exception as e:
-        print(f"❌ 删除失败: {e}")
-        db.session.rollback()
-
 def list_messages():
     """查看所有消息"""
     messages = Message.query.all()
@@ -367,7 +298,7 @@ def list_user_interactions():
     print(f"{'ID':<5} {'用户ID':<8} {'内容ID':<8} {'类型':<8} {'点赞':<4} {'收藏':<4} {'评分':<4} {'创建时间'}")
     print("-" * 80)
     for interaction in interactions:
-        type_name = "文章" if interaction.type == 1 else "项目" if interaction.type == 2 else "未知"
+        type_name = "文章" if interaction.type == 1 else "未知"
         like_status = "✓" if interaction.like else "-"
         favorite_status = "✓" if interaction.favorite else "-"
         rating = str(interaction.rating) if interaction.rating > 0 else "-"
@@ -378,13 +309,12 @@ def list_comments():
     comments = Comment.query.all()
     print(f"\n💭 评论列表 (共{len(comments)}条):")
     print("-" * 100)
-    print(f"{'ID':<5} {'用户ID':<8} {'文章ID':<8} {'项目ID':<8} {'内容':<30} {'创建时间'}")
+    print(f"{'ID':<5} {'用户ID':<8} {'文章ID':<8} {'内容':<30} {'创建时间'}")
     print("-" * 100)
     for comment in comments:
         content = comment.content[:27] + "..." if len(comment.content) > 30 else comment.content
         post_id = str(comment.post_id) if comment.post_id else "-"
-        project_id = str(comment.project_id) if comment.project_id else "-"
-        print(f"{comment.id:<5} {comment.user_id:<8} {post_id:<8} {project_id:<8} {content:<30} {comment.created_at.strftime('%Y-%m-%d %H:%M')}")
+        print(f"{comment.id:<5} {comment.user_id:<8} {post_id:<8} {content:<30} {comment.created_at.strftime('%Y-%m-%d %H:%M')}")
 
 def list_versions():
     """查看版本信息"""
@@ -425,7 +355,6 @@ def database_stats():
     """数据库统计"""
     users_count = User.query.count()
     posts_count = Post.query.count()
-    projects_count = Project.query.count()
     messages_count = Message.query.count()
     replies_count = MessageReply.query.count()
     about_count = AboutContent.query.count()
@@ -437,7 +366,6 @@ def database_stats():
     
     admin_count = User.query.filter_by(is_admin=True).count()
     published_posts = Post.query.filter_by(is_published=True).count()
-    completed_projects = Project.query.filter_by(is_completed=True).count()
     replied_messages = Message.query.filter_by(is_replied=True).count()
     read_notifications = Notification.query.filter_by(is_read=True).count()
     
@@ -445,7 +373,6 @@ def database_stats():
     print("=" * 50)
     print(f"👥 用户总数: {users_count} (管理员: {admin_count})")
     print(f"📝 文章总数: {posts_count} (已发布: {published_posts})")
-    print(f"🚀 项目总数: {projects_count} (已完成: {completed_projects})")
     print(f"💬 消息总数: {messages_count} (已回复: {replied_messages})")
     print(f"💭 消息回复: {replies_count}")
     print(f"📄 关于内容: {about_count}")
@@ -1568,7 +1495,7 @@ def main():
         
         while True:
             print_menu()
-            choice = input("\n请选择操作 (0-37): ").strip()
+            choice = input("\n请选择操作 (0-34): ").strip()
             
             if choice == '0':
                 print("👋 再见！")
@@ -1589,68 +1516,62 @@ def main():
             elif choice == '7':
                 delete_post()
             elif choice == '8':
-                list_projects()
-            elif choice == '9':
-                create_project()
-            elif choice == '10':
-                delete_project()
-            elif choice == '11':
                 list_messages()
-            elif choice == '12':
+            elif choice == '9':
                 delete_message()
             # 扩展数据管理
-            elif choice == '13':
+            elif choice == '10':
                 list_message_replies()
-            elif choice == '14':
+            elif choice == '11':
                 list_about_content()
-            elif choice == '15':
+            elif choice == '12':
                 list_user_interactions()
-            elif choice == '16':
+            elif choice == '13':
                 list_comments()
-            elif choice == '17':
+            elif choice == '14':
                 list_versions()
-            elif choice == '18':
+            elif choice == '15':
                 list_skills()
-            elif choice == '19':
+            elif choice == '16':
                 list_notifications()
             # 批量操作
-            elif choice == '20':
+            elif choice == '17':
                 batch_add_columns()
-            elif choice == '21':
+            elif choice == '18':
                 batch_update_fields()
-            elif choice == '22':
+            elif choice == '19':
                 batch_delete_data()
-            elif choice == '23':
+            elif choice == '20':
                 data_import_export()
-            elif choice == '24':
+            elif choice == '21':
                 execute_custom_sql()
             # 数据库结构管理
-            elif choice == '25':
+            elif choice == '22':
                 list_tables()
-            elif choice == '26':
+            elif choice == '23':
                 show_table_structure()
-            elif choice == '27':
+            elif choice == '24':
                 create_table()
-            elif choice == '28':
+            elif choice == '25':
                 add_column()
-            elif choice == '29':
+            elif choice == '26':
                 alter_column()
-            elif choice == '30':
+            elif choice == '27':
                 drop_table()
-            elif choice == '31':
+            elif choice == '28':
                 database_migration()
-            elif choice == '32':
+            elif choice == '29':
                 backup_database()
-            elif choice == '33':
+            elif choice == '30':
                 restore_database()
             # 系统工具
-            elif choice == '34':
+            elif choice == '31':
                 init_database()
-            elif choice == '35':
+            elif choice == '32':
                 reset_database()
-            elif choice == '36':
+            elif choice == '33':
                 database_info()
-            elif choice == '37':
+            elif choice == '34':
                 optimize_database()
             else:
                 print("❌ 无效选择，请重新输入！")

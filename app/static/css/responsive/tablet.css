@@ -31,10 +31,6 @@
         padding: 1.75rem;
     }
     
-    .project-card {
-        padding: 1.25rem;
-    }
-    
     .blog-card {
         padding: 1.75rem;
     }
@@ -176,10 +172,6 @@
     /* 卡片大平板端样式 */
     .card {
         padding: 2rem;
-    }
-    
-    .project-card {
-        padding: 1.5rem;
     }
     
     .blog-card {

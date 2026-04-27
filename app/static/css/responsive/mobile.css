@@ -59,14 +59,6 @@
         font-size: 1.25rem;
     }
     
-    .project-card {
-        padding: 1rem;
-    }
-    
-    .project-title {
-        font-size: 1.125rem;
-    }
-    
     .blog-card {
         padding: 1.5rem;
     }
@@ -223,12 +215,12 @@
     }
     
     .modal-content {
-        border-radius: var(--radius-lg);
+        border-radius: var(--borderRadius-large);
     }
     
     /* 表格移动端样式 */
     .table-responsive {
-        border-radius: var(--radius-md);
+        border-radius: var(--borderRadius-medium);
     }
     
     .table {

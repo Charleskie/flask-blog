@@ -16,8 +16,8 @@ class Notification(db.Model):
     read_at = db.Column(db.DateTime, nullable=True)
     
     # 关联数据 - 用于跳转
-    related_id = db.Column(db.Integer, nullable=True)  # 关联的评论/文章/项目ID
-    related_type = db.Column(db.String(20), nullable=True)  # post, project, comment
+    related_id = db.Column(db.Integer, nullable=True)  # 关联的评论/文章/消息ID
+    related_type = db.Column(db.String(20), nullable=True)  # post, comment, message
     related_url = db.Column(db.String(500), nullable=True)  # 跳转URL
     
     # 发送者信息
@@ -68,12 +68,12 @@ class Notification(db.Model):
         return notification
     
     @classmethod
-    def create_reply_notification(cls, comment_author_id, replier_name, reply_content, comment_id, post_id, post_title):
+    def create_reply_notification(cls, target_user_id, replier_name, reply_content, comment_id, post_id, post_title, target_label='评论'):
         """创建回复通知"""
         notification = cls(
-            user_id=comment_author_id,
+            user_id=target_user_id,
             type='reply',
-            title=f'{replier_name} 回复了你的评论',
+            title=f'{replier_name} 回复了你的{target_label}',
             content=f'"{reply_content[:100]}{"..." if len(reply_content) > 100 else ""}"',
             related_id=comment_id,
             related_type='comment',
@@ -88,11 +88,11 @@ class Notification(db.Model):
         notification = cls(
             user_id=content_author_id,
             type='like',
-            title=f'{liker_name} 点赞了你的{content_type}',
+            title=f'{liker_name} 点赞了你的文章',
             content=f'"{content_title}"',
             related_id=content_id,
-            related_type=content_type,
-            related_url=f'/blog/post/{content_id}' if content_type == 'post' else f'/projects/{content_id}',
+            related_type='post',
+            related_url=f'/blog/post/{content_id}',
             sender_name=liker_name
         )
         return notification
@@ -103,11 +103,11 @@ class Notification(db.Model):
         notification = cls(
             user_id=content_author_id,
             type='favorite',
-            title=f'{favoriter_name} 收藏了你的{content_type}',
+            title=f'{favoriter_name} 收藏了你的文章',
             content=f'"{content_title}"',
             related_id=content_id,
-            related_type=content_type,
-            related_url=f'/blog/post/{content_id}' if content_type == 'post' else f'/projects/{content_id}',
+            related_type='post',
+            related_url=f'/blog/post/{content_id}',
             sender_name=favoriter_name
         )
         return notification
@@ -118,11 +118,11 @@ class Notification(db.Model):
         notification = cls(
             user_id=content_author_id,
             type='rating',
-            title=f'{rater_name} 给你的{content_type}打了{rating}分',
+            title=f'{rater_name} 给你的文章打了{rating}分',
             content=f'"{content_title}"',
             related_id=content_id,
-            related_type=content_type,
-            related_url=f'/blog/post/{content_id}' if content_type == 'post' else f'/projects/{content_id}',
+            related_type='post',
+            related_url=f'/blog/post/{content_id}',
             sender_name=rater_name
         )
         return notification

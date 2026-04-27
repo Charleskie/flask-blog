@@ -5,593 +5,893 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}我的个人网站{% endblock %}</title>
     
-    <!-- 网站图标 - Kim 图标 -->
+    <!-- Favicons -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="any" href="/favicon.svg">
     <link rel="shortcut icon" href="/favicon.ico">
-    <link rel="icon" href="/favicon.ico">
-    
-    <!-- Apple Touch Icon -->
     <link rel="apple-touch-icon" sizes="180x180" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="152x152" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="144x144" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="120x120" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="114x114" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="76x76" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="72x72" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="60x60" href="/favicon.svg">
-    <link rel="apple-touch-icon" sizes="57x57" href="/favicon.svg">
     
-    <!-- Android Chrome Icons -->
-    <link rel="icon" type="image/svg+xml" sizes="192x192" href="/favicon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="96x96" href="/favicon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="48x48" href="/favicon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/favicon.svg">
-    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/favicon.svg">
-    
-    <!-- Web App Manifest -->
-<!--    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">-->
-    
-    <!-- Microsoft Tiles -->
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/favicon.svg">
-    <meta name="msapplication-config" content="{{ url_for('static', filename='browserconfig.xml') }}">
     
-    <!-- 网站元信息 -->
     <meta name="description" content="王胜的个人小站">
     <meta name="keywords" content="王胜的个人小站">
     <meta name="author" content="王胜">
     
-    <!-- Open Graph 标签 -->
     <meta property="og:title" content="{% block og_title %}王胜的个人小站{% endblock %}">
     <meta property="og:description" content="王胜的个人小站">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:image" content="http://47.112.96.87/favicon.svg">
     
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com/3.3.3"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactions/comments.css') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Primer-aligned CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css', v='20260424-toast-fix') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/primer-utilities.css', v='20260424-toast-fix') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/interactions/comments.css', v='20260424-toast-fix') }}">
 
     {% block extra_css %}{% endblock %}
     
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #192144;
-            color: #e2e8f0;
-            transition: all 0.3s ease;
-        }
-        
-        .glass-card {
-            background: rgba(25, 33, 68, 0.7);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-        
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2);
-            border-color: rgba(99, 102, 241, 0.3);
-        }
-        
-        .nav-link {
+        /* Nav link underline indicator */
+        .nav-link-item {
             position: relative;
+            color: var(--fgColor-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: var(--borderRadius-medium);
+            transition: color 0.15s ease, background-color 0.15s ease;
         }
-        
-        .nav-link::after {
+        .nav-link-item:hover {
+            color: var(--fgColor-default);
+            background: var(--bgColor-muted);
+            text-decoration: none;
+        }
+        .nav-link-item.active {
+            color: var(--fgColor-default);
+            font-weight: 600;
+        }
+        .nav-link-item.active::after {
             content: '';
             position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 0;
+            bottom: -12px;
+            left: 8px;
+            right: 8px;
             height: 2px;
-            background: #818cf8;
-            transition: width 0.3s ease;
+            background: #fd8c73;
+            border-radius: 6px;
         }
-        
-        .nav-link:hover::after {
-            width: 100%;
+
+        .nav-auth-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
-        
-        .nav-link.active::after {
-            width: 100%;
+
+        .nav-auth-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+            text-decoration: none;
+            transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-            transition: all 0.3s ease;
+
+        .nav-auth-link:hover {
+            text-decoration: none;
         }
-        
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+
+        .nav-auth-link-login {
+            color: var(--fgColor-muted);
         }
-        
+
+        .nav-auth-link-login:hover {
+            color: var(--fgColor-default);
+            background: var(--bgColor-muted);
+        }
+
+        .nav-auth-link-register {
+            color: var(--fgColor-accent);
+            background: rgba(9, 105, 218, 0.06);
+            border-color: rgba(9, 105, 218, 0.12);
+        }
+
+        .nav-auth-link-register:hover {
+            color: var(--fgColor-accent);
+            background: rgba(9, 105, 218, 0.1);
+            border-color: rgba(9, 105, 218, 0.2);
+        }
+
+        /* Mobile menu */
         .mobile-menu {
             transform: translateX(100%);
-            transition: transform 0.3s ease;
+            transition: transform 0.2s ease;
         }
-        
         .mobile-menu.open {
             transform: translateX(0);
         }
-        
-        .theme-switch {
-            width: 40px;
-            height: 20px;
-            background: #1e293b;
-            border-radius: 10px;
+
+        /* Notification badge pulse */
+        .badge-notification {
+            animation: badge-pulse 2s infinite;
+        }
+        @keyframes badge-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(207, 34, 46, 0.5); }
+            70% { box-shadow: 0 0 0 6px rgba(207, 34, 46, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(207, 34, 46, 0); }
+        }
+
+        /* Dropdown */
+        .dropdown-panel {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(4px);
+            transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+        }
+        .dropdown-panel.open {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-utility-btn {
             position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            color: var(--fgColor-muted);
+            background: transparent;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+        }
+
+        .nav-utility-btn:hover {
+            color: var(--fgColor-default);
+            background: var(--bgColor-muted);
+            border-color: rgba(208, 215, 222, 0.78);
+            text-decoration: none;
+            transform: translateY(-1px);
+        }
+
+        .nav-utility-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            min-width: 18px;
+            height: 18px;
+            padding: 0 5px;
+            border-radius: 999px;
+            background: var(--bgColor-danger-emphasis);
+            color: var(--fgColor-onEmphasis);
+            font-size: 10px;
+            font-weight: 700;
+            border: 2px solid var(--bgColor-default);
+            line-height: 1;
+        }
+
+        .user-menu-trigger {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 38px;
+            padding: 4px 10px 4px 4px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--fgColor-default);
+            font: inherit;
+            cursor: pointer;
+            transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .user-menu-trigger:hover,
+        .user-menu-trigger.open {
+            background: var(--bgColor-muted);
+            border-color: rgba(208, 215, 222, 0.78);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+        }
+
+        .user-menu-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 0 1px rgba(208, 215, 222, 0.9);
+        }
+
+        .user-menu-name {
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .user-menu-chevron {
+            font-size: 10px;
+            color: var(--fgColor-subtle);
+            transition: transform 0.15s ease, color 0.15s ease;
+        }
+
+        .user-menu-trigger.open .user-menu-chevron {
+            transform: rotate(180deg);
+            color: var(--fgColor-muted);
+        }
+
+        .user-dropdown-panel {
+            right: 0;
+            margin-top: 8px;
+            width: 224px;
+            padding: 8px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.98));
+            border: 1px solid rgba(208, 215, 222, 0.9);
+            border-radius: 18px;
+            box-shadow: 0 22px 44px rgba(15, 23, 42, 0.12);
+            z-index: 100;
+        }
+
+        .user-dropdown-section {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .user-dropdown-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 42px;
+            padding: 0 12px;
+            border-radius: 12px;
+            color: var(--fgColor-default);
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+        }
+
+        .user-dropdown-item:hover {
+            background: rgba(9, 105, 218, 0.05);
+            color: var(--fgColor-default);
+            text-decoration: none;
+        }
+
+        .user-dropdown-item-icon {
+            width: 16px;
+            color: var(--fgColor-subtle);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .user-dropdown-divider {
+            height: 1px;
+            margin: 6px 4px;
+            background: var(--borderColor-default);
+        }
+
+        .user-dropdown-item-danger {
+            color: var(--fgColor-danger);
+        }
+
+        .user-dropdown-item-danger .user-dropdown-item-icon {
+            color: currentColor;
+        }
+
+        .user-dropdown-item-danger:hover {
+            background: rgba(218, 54, 51, 0.08);
+            color: var(--fgColor-danger);
+        }
+
+        /* Guest mode */
+        .guest-mode {
+            opacity: 0.7;
             cursor: pointer;
         }
-        
-        .theme-switch::after {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 16px;
-            height: 16px;
-            background: #6366f1;
-            border-radius: 50%;
-            transition: all 0.3s ease;
+        .guest-mode:hover {
+            opacity: 1;
         }
-        
-        .theme-switch.dark::after {
-            transform: translateX(20px);
+
+        /* Footer */
+        .site-footer {
+            margin-top: 32px;
+            border-top: 1px solid var(--borderColor-default);
+            background: linear-gradient(180deg, var(--bgColor-muted) 0%, var(--bgColor-default) 100%);
         }
-        
-        /* 消息徽章样式 */
-        #message-badge, #notification-badge {
-            animation: pulse 2s infinite;
-            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        .site-footer-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-top: 18px;
+            padding-bottom: 20px;
         }
-        
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        .site-footer-top {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 16px;
+            align-items: center;
+        }
+        .site-footer-brand-block {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .site-footer-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--fgColor-default);
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .site-footer-brand:hover {
+            color: var(--fgColor-default);
+            text-decoration: none;
+        }
+        .site-footer-copy,
+        .site-footer-note {
+            margin: 0;
+            color: var(--fgColor-muted);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .site-footer-nav,
+        .site-footer-social,
+        .site-footer-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+        .site-footer-link {
+            color: var(--fgColor-muted);
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: color 0.15s ease;
+        }
+        .site-footer-link:hover {
+            color: var(--fgColor-default);
+            text-decoration: none;
+        }
+        .site-footer-social-link {
+            width: 36px;
+            height: 36px;
+            border: 1px solid var(--borderColor-default);
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--fgColor-muted);
+            background: var(--bgColor-default);
+            transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+        }
+        .site-footer-social-link:hover {
+            color: var(--fgColor-default);
+            border-color: var(--borderColor-emphasis);
+            background: var(--bgColor-muted);
+            text-decoration: none;
+        }
+        .site-footer-bottom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 14px;
+            border-top: 1px solid var(--borderColor-default);
+        }
+        .site-footer-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--bgColor-default);
+            border: 1px solid var(--borderColor-default);
+            color: var(--fgColor-muted);
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 767px) {
+            .sidebar { display: none; }
+            .site-footer-top,
+            .site-footer-bottom {
+                grid-template-columns: minmax(0, 1fr);
+                flex-direction: column;
+                align-items: flex-start;
             }
-            70% {
-                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-            }
-        }
-        
-        /* 消息图标悬停效果 */
-        .relative a:hover i {
-            transform: scale(1.1);
-            transition: transform 0.2s ease;
-        }
-        .form-control {
-          display: block;
-          background-color: transparent !important; /* 背景透明 */
-          width: 100% !important;  /* 这一行会强制让输入框占满整行 */
-          color: #fff;                               /* 输入内容白色 */
-        }
-        .card {
-          box-shadow: none; /* 可选：去掉阴影 */
-          background-color: rgba(255, 255, 255, 0.1);
-          color: #fff !important;            /* 白色文字 */
-        }
-        .card .form-control::placeholder {
-            color: rgba(255,255,255,0.6);  /* 占位符淡白色 */
-        }
-        .card-header {
-            color: #fff !important;            /* 白色文字 */
-        }
-        .card-input {
-            color: #fff !important;            /* 白色文字 */
-        }
-        
-        @media (max-width: 768px) {
-            .sidebar {
-                display: none;
+            .site-footer-nav,
+            .site-footer-social,
+            .site-footer-stats {
+                gap: 8px;
             }
         }
     </style>
 </head>
-<body class="min-h-screen">
-    <!-- 顶部导航栏 -->
-    <header class="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-slate-800">
-        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
-            <div class="flex items-center space-x-8">
-                <a href="{{ url_for('main.index') }}" class="text-2xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-                    <i class="fas fa-blog mr-2"></i>Kim's Blog
+<body style="min-height: 100vh;">
+    <!-- Header -->
+    <header style="position: sticky; top: 0; z-index: 50; background: var(--bgColor-default); border-bottom: 1px solid var(--borderColor-default);">
+        <div class="container-xl d-flex items-center justify-between" style="padding-top: 10px; padding-bottom: 10px;">
+            <div class="d-flex items-center" style="gap: 24px;">
+                <a href="{{ url_for('main.index') }}" class="f2 text-bold no-underline color-fg-default" style="transition: color 0.15s ease;">
+                    <i class="fas fa-blog" style="margin-right: 8px;"></i>Kim's Blog
                 </a>
                 
-                <nav class="hidden md:flex space-x-6">
-                    <a href="{{ url_for('main.index') }}" class="nav-link {% if request.endpoint == 'main.index' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">首页</a>
-                    <a href="{{ url_for('main.about') }}" class="nav-link {% if request.endpoint == 'main.about' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">关于</a>
-                    <a href="{{ url_for('main.projects') }}" class="nav-link {% if request.endpoint == 'main.projects' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">项目</a>
-                    <a href="{{ url_for('main.blog') }}" class="nav-link {% if request.endpoint == 'main.blog' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">博客</a>
-                    <a href="{{ url_for('main.contact') }}" class="nav-link {% if request.endpoint == 'main.contact' %}active text-indigo-300{% else %}hover:text-indigo-300{% endif %}">联系</a>
+                <nav class="d-none d-regular-flex" style="gap: 4px;">
+                    <a href="{{ url_for('main.index') }}" class="nav-link-item {% if request.endpoint == 'main.index' %}active{% endif %}">首页</a>
+                    <a href="{{ url_for('main.about') }}" class="nav-link-item {% if request.endpoint == 'main.about' %}active{% endif %}">关于</a>
+                    <a href="{{ url_for('main.blog') }}" class="nav-link-item {% if request.endpoint == 'main.blog' %}active{% endif %}">博客</a>
+                    <a href="{{ url_for('main.links') }}" class="nav-link-item {% if request.endpoint == 'main.links' %}active{% endif %}">友链</a>
                 </nav>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <div class="relative hidden md:block">
+            <div class="d-flex items-center" style="gap: 16px;">
+                <div class="position-relative d-none d-regular-block">
                     <form method="GET" action="{{ url_for('main.search') }}">
-                        <input type="text" name="q" placeholder="搜索..." 
+                        <input type="text" name="q" placeholder="搜索..."
                                value="{{ request.args.get('q', '') }}"
-                               class="bg-slate-800/50 border border-slate-700 rounded-full py-2 px-4 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-48">
-                        <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                               class="form-control" style="width: 176px; padding-left: 32px; font-size: 14px;">
+                        <i class="fas fa-search position-absolute" style="left: 10px; top: 50%; transform: translateY(-50%); color: var(--fgColor-subtle); font-size: 14px;"></i>
                     </form>
                 </div>
                 
-                <div class="flex items-center space-x-2">
-
+                <div class="d-flex items-center" style="gap: 8px;">
                     {% if current_user.is_authenticated %}
-                        <!-- 消息通知图标 -->
                         {% if current_user.is_admin %}
-                        <div class="relative">
-                            <a href="{{ url_for('admin.admin_messages') }}" class="relative p-2 text-slate-300 hover:text-indigo-300 transition-colors">
-                                <i class="fas fa-envelope text-lg"></i>
-                                <span id="message-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium hidden">0</span>
+                        <div class="position-relative">
+                            <a href="{{ url_for('admin.admin_messages') }}" class="nav-utility-btn" aria-label="管理员消息">
+                                <i class="fas fa-envelope" style="font-size: 16px;"></i>
+                                <span id="message-badge" class="nav-utility-badge position-absolute d-none items-center justify-center badge-notification">0</span>
                             </a>
                         </div>
                         {% endif %}
                         
-                        <!-- 系统通知图标 -->
-                        <div class="relative">
-                            <a href="{{ url_for('notification.notifications') }}" class="relative p-2 text-slate-300 hover:text-indigo-300 transition-colors">
-                                <i class="fas fa-bell text-lg"></i>
-                                <span id="notification-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium hidden">0</span>
+                        <div class="position-relative">
+                            <a href="{{ url_for('notification.notifications') }}" class="nav-utility-btn" aria-label="通知">
+                                <i class="fas fa-bell" style="font-size: 16px;"></i>
+                                <span id="notification-badge" class="nav-utility-badge position-absolute d-none items-center justify-center badge-notification">0</span>
                             </a>
                         </div>
                         
-                        <div class="relative" id="userDropdown">
-                            <button id="userDropdownButton" class="flex items-center space-x-2 text-slate-300 hover:text-indigo-300">
+                        <div class="position-relative" id="userDropdown">
+                            <button id="userDropdownButton" class="user-menu-trigger">
                                 {% if current_user.avatar %}
-                                    <img src="{{ current_user.avatar }}" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                                    <img src="{{ current_user.avatar }}" alt="头像" class="user-menu-avatar">
                                 {% else %}
-                                    <img src="{{ url_for('static', filename='avatar/avatar' + (current_user.id % 4 + 1)|string + '.png') }}" alt="用户头像" class="w-8 h-8 rounded-full object-cover">
+                                    <img src="{{ url_for('static', filename='avatar/avatar' + (current_user.id % 4 + 1)|string + '.png') }}" alt="头像" class="user-menu-avatar">
                                 {% endif %}
-                                <span>{{ current_user.get_display_name() }}</span>
-                                <i class="fas fa-chevron-down text-xs"></i>
+                                <span class="user-menu-name">{{ current_user.get_display_name() }}</span>
+                                <i class="fas fa-chevron-down user-menu-chevron"></i>
                             </button>
                             
-                            <!-- 用户下拉菜单 -->
-                            <div id="userDropdownMenu" class="absolute right-0 mt-2 w-48 bg-slate-800/95 backdrop-blur-lg border border-slate-700 rounded-lg shadow-lg opacity-0 invisible transition-all duration-200 transform translate-y-2">
-                                <div class="py-2">
-                                    <a href="{{ url_for('auth.profile') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-indigo-300">
-                                        <i class="fas fa-user mr-3"></i>
+                            <div id="userDropdownMenu" class="dropdown-panel user-dropdown-panel position-absolute">
+                                <div class="user-dropdown-section">
+                                    <a href="{{ url_for('auth.profile') }}" class="user-dropdown-item no-underline">
+                                        <i class="fas fa-user user-dropdown-item-icon"></i>
                                         个人资料
                                     </a>
-                                    <a href="{{ url_for('settings.settings') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-indigo-300">
-                                        <i class="fas fa-cog mr-3"></i>
+                                    <a href="{{ url_for('settings.settings') }}" class="user-dropdown-item no-underline">
+                                        <i class="fas fa-cog user-dropdown-item-icon"></i>
                                         设置
                                     </a>
                                     {% if current_user.is_admin %}
-                                    <a href="{{ url_for('admin.admin') }}" class="flex items-center px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-indigo-300">
-                                        <i class="fas fa-tools mr-3"></i>
+                                    <a href="{{ url_for('admin.admin') }}" class="user-dropdown-item no-underline">
+                                        <i class="fas fa-tools user-dropdown-item-icon"></i>
                                         管理后台
                                     </a>
                                     {% endif %}
-                                    <hr class="my-2 border-slate-700">
-                                    <a href="{{ url_for('auth.logout') }}" class="flex items-center px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300">
-                                        <i class="fas fa-sign-out-alt mr-3"></i>
+                                    <div class="user-dropdown-divider"></div>
+                                    <a href="{{ url_for('auth.logout') }}" class="user-dropdown-item user-dropdown-item-danger no-underline">
+                                        <i class="fas fa-sign-out-alt user-dropdown-item-icon"></i>
                                         退出登录
                                     </a>
                                 </div>
                             </div>
                         </div>
                     {% else %}
-                        <a href="{{ url_for('auth.login') }}" class="btn-secondary text-slate-300 hover:text-white px-4 py-2 rounded-lg text-sm font-medium border border-slate-600 hover:border-indigo-500 hover:bg-indigo-600 transition-all duration-300">
-                            登录
-                        </a>
-                        <a href="{{ url_for('auth.register') }}" class="btn-primary text-white px-4 py-2 rounded-lg text-sm font-medium">
-                            注册
-                        </a>
+                        <div class="nav-auth-actions">
+                            <a href="{{ url_for('auth.login') }}" class="no-underline nav-auth-link nav-auth-link-login">登录</a>
+                            <a href="{{ url_for('auth.register') }}" class="no-underline nav-auth-link nav-auth-link-register">注册</a>
+                        </div>
                     {% endif %}
                 </div>
                 
-                <button id="mobileMenuButton" class="md:hidden text-slate-300 hover:text-indigo-300">
-                    <i class="fas fa-bars text-xl"></i>
+                <button id="mobileMenuButton" class="d-regular-none" style="background: none; border: none; color: var(--fgColor-muted); cursor: pointer; padding: 4px;">
+                    <i class="fas fa-bars" style="font-size: 20px;"></i>
                 </button>
             </div>
         </div>
     </header>
     
-    <!-- 移动端菜单 -->
-    <div id="mobileMenu" class="mobile-menu fixed inset-0 bg-slate-900/95 z-40 pt-20 px-6">
-        <div class="flex flex-col space-y-6">
-            <a href="{{ url_for('main.index') }}" class="text-xl {% if request.endpoint == 'main.index' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">首页</a>
-            <a href="{{ url_for('main.about') }}" class="text-xl {% if request.endpoint == 'main.about' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">关于</a>
-            <a href="{{ url_for('main.projects') }}" class="text-xl {% if request.endpoint == 'main.projects' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">项目</a>
-            <a href="{{ url_for('main.blog') }}" class="text-xl {% if request.endpoint == 'main.blog' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">博客</a>
-            <a href="{{ url_for('main.contact') }}" class="text-xl {% if request.endpoint == 'main.contact' %}text-indigo-300 font-medium{% else %}text-slate-300 hover:text-indigo-300{% endif %}">联系</a>
-            
-            <div class="relative mt-6">
+    <!-- Mobile menu -->
+    <div id="mobileMenu" class="mobile-menu position-fixed inset-0 z-40" style="background: var(--bgColor-default); padding-top: 72px; padding-left: 20px; padding-right: 20px;">
+        <div class="d-flex flex-column" style="gap: 20px;">
+            <a href="{{ url_for('main.index') }}" class="no-underline f2 {% if request.endpoint == 'main.index' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">首页</a>
+            <a href="{{ url_for('main.about') }}" class="no-underline f2 {% if request.endpoint == 'main.about' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">关于</a>
+            <a href="{{ url_for('main.blog') }}" class="no-underline f2 {% if request.endpoint == 'main.blog' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">博客</a>
+            <a href="{{ url_for('main.links') }}" class="no-underline f2 {% if request.endpoint == 'main.links' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">友链</a>
+            <div class="position-relative mt-3">
                 <form method="GET" action="{{ url_for('main.search') }}">
                     <input type="text" name="q" placeholder="搜索..." 
                            value="{{ request.args.get('q', '') }}"
-                           class="bg-slate-800/50 border border-slate-700 rounded-full py-3 px-4 pl-12 text-base focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent w-full">
-                    <i class="fas fa-search absolute left-5 top-4 text-slate-400"></i>
+                           class="form-control width-full" style="padding-left: 40px;">
+                    <i class="fas fa-search position-absolute" style="left: 14px; top: 50%; transform: translateY(-50%); color: var(--fgColor-subtle);"></i>
                 </form>
             </div>
         </div>
         
-        <button class="absolute top-6 right-6 text-slate-300 hover:text-indigo-300">
-            <i class="fas fa-times text-2xl"></i>
+        <button class="position-absolute" style="top: 24px; right: 24px; background: none; border: none; color: var(--fgColor-muted); cursor: pointer;">
+            <i class="fas fa-times" style="font-size: 24px;"></i>
         </button>
     </div>
 
-    <!-- 主内容区 -->
-    <main class="container mx-auto px-4 py-8">
+    <!-- Main content -->
+    <main class="container-xl" style="padding-top: 24px; padding-bottom: 24px;">
         {% block content %}{% endblock %}
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-slate-900/80 border-t border-slate-800 mt-12 py-8">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <a href="{{ url_for('main.index') }}" class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-                        <i class="fas fa-blog mr-2"></i>Kim's Blog
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container-xl site-footer-inner">
+            <div class="site-footer-top">
+                <div class="site-footer-brand-block">
+                    <a href="{{ url_for('main.index') }}" class="site-footer-brand no-underline">
+                        <i class="fas fa-blog" aria-hidden="true"></i>
+                        <span>Kim's Blog</span>
                     </a>
-                    <p class="text-sm text-slate-400 mt-2">分享技术与设计思考</p>
+                    <p class="site-footer-copy">记录写作、技术和站点本身的持续迭代。</p>
                 </div>
-                
-                <div class="flex space-x-6">
-                    <a href="https://github.com/Charleskie" class="text-slate-400 hover:text-indigo-300">
-                        <i class="fab fa-github"></i>
+
+                <nav class="site-footer-nav" aria-label="页脚导航">
+                    <a href="{{ url_for('main.about') }}" class="site-footer-link">关于</a>
+                    <a href="{{ url_for('main.blog') }}" class="site-footer-link">博客</a>
+                    <a href="{{ url_for('main.links') }}" class="site-footer-link">友链</a>
+                </nav>
+
+                <div class="site-footer-social" aria-label="社交链接">
+                    <a href="https://github.com/Charleskie" class="site-footer-social-link no-underline" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+                        <i class="fab fa-github" aria-hidden="true"></i>
                     </a>
-                    <a href="mailto:wdws851421092@gmail.com" class="text-slate-400 hover:text-indigo-300">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                    <a href="#" class="text-slate-400 hover:text-indigo-300">
-                        <i class="fab fa-linkedin"></i>
-                    </a>
-                    <a href="#" class="text-slate-400 hover:text-indigo-300">
-                        <i class="fab fa-twitter"></i>
+                    <a href="mailto:wdws851421092@gmail.com" class="site-footer-social-link no-underline" aria-label="邮箱">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
                     </a>
                 </div>
             </div>
-            
-            <div class="border-t border-slate-800 mt-6 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm text-slate-400 mb-4 md:mb-0">© 2025 Kim's Blog. 保留所有权利.</p>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-sm text-slate-400 hover:text-indigo-300">隐私政策</a>
-                    <a href="#" class="text-sm text-slate-400 hover:text-indigo-300">服务条款</a>
-                    <a href="{{ url_for('main.contact') }}" class="text-sm text-slate-400 hover:text-indigo-300">联系我们</a>
+
+            <div class="site-footer-bottom">
+                <div class="site-footer-stats" aria-label="站点统计">
+                    <span class="site-footer-stat"><i class="fas fa-eye" aria-hidden="true"></i><span id="total-views">-</span> 浏览</span>
+                    <span class="site-footer-stat"><i class="fas fa-users" aria-hidden="true"></i><span id="total-visitors">-</span> 访客</span>
+                    <span class="site-footer-stat"><i class="fas fa-calendar-day" aria-hidden="true"></i><span id="today-views">-</span> 今日</span>
                 </div>
+                <p class="site-footer-note">Kim's Blog · 持续更新中</p>
             </div>
         </div>
     </footer>
 
-    <!-- jQuery (Editor.md依赖) -->
+    <!-- jQuery (Editor.md dependency) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/interaction.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js', v='20260424-toast-fix') }}"></script>
+    <script src="{{ url_for('static', filename='js/interaction.js', v='20260424-toast-fix') }}"></script>
+    <script>
+    (function() {
+        function ensureFallbackToastContainer() {
+            let container = document.getElementById('site-toast-stack');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'site-toast-stack';
+                container.style.position = 'fixed';
+                container.style.top = '16px';
+                container.style.right = '16px';
+                container.style.zIndex = '10010';
+                container.style.display = 'flex';
+                container.style.alignItems = 'flex-end';
+                container.style.flexDirection = 'column';
+                container.style.gap = '8px';
+                container.style.width = 'min(320px, calc(100vw - 24px))';
+                container.style.pointerEvents = 'none';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        function fallbackToast(message, type = 'info', duration = 3000) {
+            const container = ensureFallbackToastContainer();
+            const toast = document.createElement('div');
+            const accentMap = {
+                success: ['#1a7f37', '#dafbe1'],
+                error: ['#d1242f', '#ffebe9'],
+                warning: ['#9a6700', '#fff8c5'],
+                info: ['#0969da', '#ddf4ff']
+            };
+            const [accent, tint] = accentMap[type] || accentMap.info;
+
+            toast.style.pointerEvents = 'auto';
+            toast.style.display = 'flex';
+            toast.style.alignItems = 'flex-start';
+            toast.style.gap = '10px';
+            toast.style.width = 'auto';
+            toast.style.minWidth = '220px';
+            toast.style.maxWidth = '100%';
+            toast.style.padding = '12px 14px';
+            toast.style.borderRadius = '16px';
+            toast.style.border = '1px solid rgba(208, 215, 222, 0.82)';
+            toast.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,248,250,0.96))';
+            toast.style.boxShadow = '0 20px 40px rgba(15, 23, 42, 0.12)';
+            toast.style.color = '#1f2328';
+
+            const icon = document.createElement('span');
+            icon.style.display = 'inline-flex';
+            icon.style.alignItems = 'center';
+            icon.style.justifyContent = 'center';
+            icon.style.width = '30px';
+            icon.style.height = '30px';
+            icon.style.borderRadius = '10px';
+            icon.style.flexShrink = '0';
+            icon.style.background = tint;
+            icon.style.color = accent;
+            icon.innerHTML = '<i class="fas fa-bell"></i>';
+
+            const content = document.createElement('div');
+            content.style.flex = '1';
+            content.style.minWidth = '0';
+            content.style.fontSize = '13px';
+            content.style.fontWeight = '600';
+            content.style.lineHeight = '1.45';
+            content.style.wordBreak = 'break-word';
+            content.textContent = String(message ?? '');
+
+            const close = document.createElement('button');
+            close.type = 'button';
+            close.setAttribute('aria-label', '关闭提醒');
+            close.style.display = 'inline-flex';
+            close.style.alignItems = 'center';
+            close.style.justifyContent = 'center';
+            close.style.width = '28px';
+            close.style.height = '28px';
+            close.style.border = '0';
+            close.style.borderRadius = '8px';
+            close.style.background = 'transparent';
+            close.style.color = '#59636e';
+            close.style.cursor = 'pointer';
+            close.innerHTML = '<i class="fas fa-times"></i>';
+
+            const removeToast = () => {
+                if (toast.parentNode) {
+                    toast.remove();
+                }
+            };
+
+            close.addEventListener('click', removeToast);
+            toast.append(icon, content, close);
+            container.appendChild(toast);
+
+            if (duration > 0) {
+                setTimeout(removeToast, duration);
+            }
+
+            return toast;
+        }
+
+        window.siteUI = window.siteUI || {};
+        window.siteUI.showToast = fallbackToast;
+        window.showToast = fallbackToast;
+        window.showMessage = function(message, type = 'info', duration = 3000) {
+            return fallbackToast(message, type, duration);
+        };
+    })();
+    </script>
     
     <script>
-        // 移动端菜单切换
+        // Mobile menu toggle
         const mobileMenuButton = document.getElementById('mobileMenuButton');
         const mobileMenu = document.getElementById('mobileMenu');
         
         if (mobileMenuButton && mobileMenu) {
             mobileMenuButton.addEventListener('click', function() {
-                try {
-                    if (mobileMenu && mobileMenu.classList) {
-                        mobileMenu.classList.toggle('open');
-                        
-                        // 切换图标
-                        const icon = this.querySelector('i');
-                        if (icon && icon.classList && mobileMenu.classList.contains('open')) {
-                            icon.classList.remove('fa-bars');
-                            icon.classList.add('fa-times');
-                        } else if (icon && icon.classList) {
-                            icon.classList.remove('fa-times');
-                            icon.classList.add('fa-bars');
-                        }
-                    }
-                } catch (error) {
-                    console.error('移动端菜单切换错误:', error);
-                }
-            });
-        }
-        
-        // 用户下拉菜单切换
-        const userDropdownButton = document.getElementById('userDropdownButton');
-        const userDropdownMenu = document.getElementById('userDropdownMenu');
-        
-        if (userDropdownButton && userDropdownMenu) {
-            userDropdownButton.addEventListener('click', function(e) {
-                try {
-                    e.stopPropagation();
-                    if (userDropdownMenu && userDropdownMenu.classList) {
-                        userDropdownMenu.classList.toggle('opacity-0');
-                        userDropdownMenu.classList.toggle('invisible');
-                        userDropdownMenu.classList.toggle('translate-y-2');
-                    }
-                } catch (error) {
-                    console.error('用户下拉菜单切换错误:', error);
+                mobileMenu.classList.toggle('open');
+                const icon = this.querySelector('i');
+                if (icon && mobileMenu.classList.contains('open')) {
+                    icon.classList.replace('fa-bars', 'fa-times');
+                } else if (icon) {
+                    icon.classList.replace('fa-times', 'fa-bars');
                 }
             });
             
-            // 点击其他地方关闭下拉菜单
-            document.addEventListener('click', function(e) {
-                try {
-                    if (userDropdownButton && userDropdownMenu && userDropdownMenu.classList &&
-                        !userDropdownButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
-                        userDropdownMenu.classList.add('opacity-0', 'invisible', 'translate-y-2');
-                    }
-                } catch (error) {
-                    console.error('用户下拉菜单关闭错误:', error);
-                }
-            });
-            
-            // 点击关闭按钮关闭菜单
             const closeButton = mobileMenu.querySelector('.fa-times');
             if (closeButton && closeButton.parentElement) {
                 closeButton.parentElement.addEventListener('click', function() {
                     mobileMenu.classList.remove('open');
                     const icon = mobileMenuButton.querySelector('i');
                     if (icon) {
-                        icon.classList.remove('fa-times');
-                        icon.classList.add('fa-bars');
+                        icon.classList.replace('fa-times', 'fa-bars');
                     }
                 });
             }
         }
         
-        // 主题切换
-        const themeSwitch = document.querySelector('.theme-switch');
+        // User dropdown
+        const userDropdownButton = document.getElementById('userDropdownButton');
+        const userDropdownMenu = document.getElementById('userDropdownMenu');
         
-        if (themeSwitch) {
-            themeSwitch.addEventListener('click', function() {
-                try {
-                    if (this.classList) {
-                        this.classList.toggle('dark');
-                        
-                        // 这里可以添加主题切换的逻辑
-                        if (this.classList.contains('dark') && document.body && document.body.classList) {
-                            document.body.classList.remove('bg-slate-900');
-                            document.body.classList.add('bg-white');
-                            document.body.classList.remove('text-slate-200');
-                            document.body.classList.add('text-slate-800');
-                        } else if (document.body && document.body.classList) {
-                            document.body.classList.add('bg-slate-900');
-                            document.body.classList.remove('bg-white');
-                            document.body.classList.add('text-slate-200');
-                            document.body.classList.remove('text-slate-800');
-                        }
-                    }
-                } catch (error) {
-                    console.error('主题切换错误:', error);
+        if (userDropdownButton && userDropdownMenu) {
+            userDropdownButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdownMenu.classList.toggle('open');
+                userDropdownButton.classList.toggle('open', userDropdownMenu.classList.contains('open'));
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (userDropdownButton && userDropdownMenu &&
+                    !userDropdownButton.contains(e.target) && !userDropdownMenu.contains(e.target)) {
+                    userDropdownMenu.classList.remove('open');
+                    userDropdownButton.classList.remove('open');
                 }
             });
         }
-        
-        // 导航链接高亮
-        const navLinks = document.querySelectorAll('.nav-link');
-        
-        navLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                try {
-                    navLinks.forEach(l => {
-                        if (l && l.classList) {
-                            l.classList.remove('active', 'text-indigo-300');
-                        }
-                    });
-                    if (this.classList) {
-                        this.classList.add('active', 'text-indigo-300');
-                    }
-                } catch (error) {
-                    console.error('导航链接高亮错误:', error);
-                }
-            });
-        });
+
     </script>
     
-    <!-- 错误处理脚本 -->
+    <!-- Visitor stats -->
     <script>
-    // 捕获JavaScript错误并显示友好的错误信息
-    window.addEventListener('error', function(e) {
-        console.error('JavaScript错误:', e.error);
-        // 不显示错误弹窗，只在控制台记录
-        e.preventDefault();
-    });
+    function initVisitorStats() {
+        const visitKey = 'visitor_tracked_' + new Date().toDateString();
+        const hasVisited = localStorage.getItem(visitKey);
+        trackVisit(!hasVisited);
+        loadVisitorStats();
+        setInterval(loadVisitorStats, 30000);
+    }
     
-    // 捕获未处理的Promise拒绝
-    window.addEventListener('unhandledrejection', function(e) {
-        console.error('未处理的Promise拒绝:', e.reason);
-        e.preventDefault();
-    });
+    async function trackVisit(isUnique) {
+        try {
+            const response = await fetch('/api/track-visit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ unique: isUnique })
+            });
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success && isUnique) {
+                    localStorage.setItem('visitor_tracked_' + new Date().toDateString(), 'true');
+                }
+            }
+        } catch (e) {}
+    }
+    
+    async function loadVisitorStats() {
+        try {
+            const response = await fetch('/api/visitor-stats');
+            if (response.ok) {
+                const result = await response.json();
+                if (result.success) updateStatsDisplay(result.data);
+            }
+        } catch (e) {}
+    }
+    
+    function updateStatsDisplay(data) {
+        const el = (id) => document.getElementById(id);
+        if (el('total-views')) el('total-views').textContent = formatNumber(data.total_views);
+        if (el('total-visitors')) el('total-visitors').textContent = formatNumber(data.total_visitors);
+        if (el('today-views')) el('today-views').textContent = formatNumber(data.today_views);
+    }
+    
+    function formatNumber(num) {
+        if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+        if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+        return num.toString();
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initVisitorStats);
+    } else {
+        initVisitorStats();
+    }
     </script>
     
-    <!-- 消息通知脚本 -->
+    <!-- Error handling -->
+    <script>
+    window.addEventListener('error', function(e) { e.preventDefault(); });
+    window.addEventListener('unhandledrejection', function(e) { e.preventDefault(); });
+    </script>
+    
+    <!-- Notification counts -->
     {% if current_user.is_authenticated %}
     <script>
-    // 更新未读消息数量
     function updateMessageCount() {
         {% if current_user.is_admin %}
         fetch('/api/messages/unread-count')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
+        .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => {
             const badge = document.getElementById('message-badge');
             if (badge) {
                 if (data.success && data.count > 0) {
                     badge.textContent = data.count > 99 ? '99+' : data.count;
-                    badge.classList.remove('hidden');
+                    badge.classList.remove('d-none');
+                    badge.classList.add('d-flex');
                 } else {
-                    badge.classList.add('hidden');
+                    badge.classList.add('d-none');
+                    badge.classList.remove('d-flex');
                 }
             }
         })
-        .catch(error => {// 如果服务器未运行，隐藏消息徽章
+        .catch(() => {
             const badge = document.getElementById('message-badge');
-            if (badge) {
-                badge.classList.add('hidden');
-            }
+            if (badge) { badge.classList.add('d-none'); badge.classList.remove('d-flex'); }
         });
         {% endif %}
     }
     
-    // 更新系统通知数量
     function updateNotificationCount() {
         fetch('/api/notifications/unread-count')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            return response.json();
-        })
+        .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => {
             const badge = document.getElementById('notification-badge');
             if (badge) {
                 if (data.count > 0) {
                     badge.textContent = data.count > 99 ? '99+' : data.count;
-                    badge.classList.remove('hidden');
+                    badge.classList.remove('d-none');
+                    badge.classList.add('d-flex');
                 } else {
-                    badge.classList.add('hidden');
+                    badge.classList.add('d-none');
+                    badge.classList.remove('d-flex');
                 }
             }
         })
-        .catch(error => {// 如果服务器未运行，隐藏通知徽章
+        .catch(() => {
             const badge = document.getElementById('notification-badge');
-            if (badge) {
-                badge.classList.add('hidden');
-            }
+            if (badge) { badge.classList.add('d-none'); badge.classList.remove('d-flex'); }
         });
     }
     
-    // 页面加载时更新消息数量
     document.addEventListener('DOMContentLoaded', function() {
         updateMessageCount();
         updateNotificationCount();
-        
-        // 每30秒更新一次消息数量
-        setInterval(function() {
-            updateMessageCount();
-            updateNotificationCount();
-        }, 30000);
+        setInterval(function() { updateMessageCount(); updateNotificationCount(); }, 30000);
     });
     </script>
     {% endif %}
     
+    <!-- Login Prompt Modal -->
+    <div id="loginModal" class="login-prompt-modal d-none" role="dialog" aria-modal="true" aria-labelledby="loginModalTitle">
+        <div class="login-prompt-content">
+            <div class="site-dialog-head">
+                <div class="site-dialog-head-main">
+                    <span class="site-dialog-icon" aria-hidden="true">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <h3 id="loginModalTitle" class="site-dialog-title">登录后继续操作</h3>
+                </div>
+                <button type="button" class="btn-close" aria-label="关闭"
+                        onclick="document.getElementById('loginModal').classList.add('d-none');document.getElementById('loginModal').classList.remove('d-flex');document.body.classList.remove('has-site-dialog');"></button>
+            </div>
+            <div class="login-prompt-body">
+                <span class="site-dialog-badge">需要登录</span>
+                <p class="site-dialog-message" id="loginModalMessage">登录后即可使用点赞、收藏、评论等功能</p>
+                <div class="login-prompt-actions">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary no-underline text-center">登录</a>
+                    <a href="{{ url_for('auth.register') }}" class="btn btn-secondary no-underline text-center">注册</a>
+                </div>
+                <button type="button" class="login-prompt-note"
+                        onclick="document.getElementById('loginModal').classList.add('d-none');document.getElementById('loginModal').classList.remove('d-flex');document.body.classList.remove('has-site-dialog');">
+                    继续浏览
+                </button>
+            </div>
+        </div>
+    </div>
+
     {% block extra_js %}{% endblock %}
 </body>
-</html> 
+</html>

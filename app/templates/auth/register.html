@@ -1,649 +1,829 @@
 {% extends "base.html" %}
 
-{% block title %}注册 - 我的个人网站{% endblock %}
-
-{% block content %}
-<div class="row">
-    <div class="col-md-6 mx-auto">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4><i class="fas fa-user-plus"></i> 用户注册</h4>
-            </div>
-            <div class="card-body">
-                <form method="POST" id="register-form" class="needs-validation" novalidate data-ajax-form enctype="multipart/form-data">
-                    <!-- 头像上传区域 - 放在最上面并居中 -->
-                    <div class="mb-4 text-center">
-                        <h5 class="mb-3">设置头像</h5>
-                        <div class="d-flex justify-content-center">
-                            <div class="avatar-section">
-                                <!-- 头像预览区域 -->
-                                <div class="mb-3">
-                                    <img id="avatar-preview" src="/static/avatar/avatar1.png" alt="头像预览" 
-                                         class="img-fluid rounded-circle mb-2" 
-                                         style="width: 150px; height: 150px; object-fit: cover;">
-                                    <div>
-                                        <small class="text-muted" id="avatar-preview-text">请选择头像文件</small>
-                                    </div>
-                                </div>
-                                
-                                <!-- 头像上传区域 -->
-                                <div class="avatar-upload-area" id="avatar-upload-area" style="max-width: 300px;">
-                                    <input type="file" class="form-control d-none" id="avatar" name="avatar" 
-                                           accept="image/*" required>
-                                    <div class="upload-placeholder text-center p-3 border rounded" style="cursor: pointer;">
-                                        <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                        <p class="mb-0 text-muted">点击选择头像或拖拽文件到此处</p>
-                                        <small class="text-muted">支持 PNG、JPG、JPEG、GIF、WebP 格式，文件大小不超过 5MB</small>
-                                    </div>
-                                </div>
-                                <div class="invalid-feedback">
-                                    请选择头像文件
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <hr class="my-4">
-                    
-                    <!-- 基本信息 -->
-                    <h5 class="mb-3">基本信息</h5>
-                    
-                    <div class="mb-3">
-                        <label for="username" class="form-label">用户名 *</label>
-                        <input type="text" class="form-control" id="username" name="username" required 
-                               minlength="3" maxlength="20" pattern="[a-zA-Z0-9_]+">
-                        <div class="form-text">
-                            用户名长度3-20位，只能包含字母、数字和下划线
-                        </div>
-                        <div class="invalid-feedback">
-                            请输入有效的用户名
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="nickname" class="form-label">昵称</label>
-                        <input type="text" class="form-control" id="nickname" name="nickname" 
-                               maxlength="20" placeholder="如果不填写，将使用用户名作为昵称">
-                        <div class="form-text">
-                            昵称长度最多20位，可以包含中文、字母、数字等
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="email" class="form-label">邮箱地址 *</label>
-                        <input type="email" class="form-control" id="email" name="email" required>
-                        <div class="form-text">
-                            请输入有效的邮箱地址
-                        </div>
-                        <div class="invalid-feedback">
-                            请输入有效的邮箱地址
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="password" class="form-label">密码 *</label>
-                        <div class="input-group password-input-group">
-                            <input type="password" class="form-control" id="password" name="password" 
-                                   required minlength="6" maxlength="50">
-                            <button class="btn btn-outline-secondary" type="button" id="togglePassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="form-text">
-                            密码长度至少6位，建议包含字母、数字和特殊字符
-                        </div>
-                        <div class="invalid-feedback">
-                            密码长度至少6位
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="confirm_password" class="form-label">确认密码 *</label>
-                        <div class="input-group password-input-group">
-                            <input type="password" class="form-control" id="confirm_password" 
-                                   name="confirm_password" required minlength="6" maxlength="50">
-                            <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="invalid-feedback">
-                            两次输入的密码不一致
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="agree_terms" required>
-                        <label class="form-check-label" for="agree_terms">
-                            我同意 <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">服务条款</a> 和 
-                            <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">隐私政策</a>
-                        </label>
-                        <div class="invalid-feedback">
-                            请同意服务条款和隐私政策
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between gap-2">
-                        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm" style="min-width: 160px;">
-                            <i class="fas fa-sign-in-alt"></i> 登录
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-sm" style="min-width: 160px;">
-                            <i class="fas fa-user-plus"></i> 注册
-                        </button>
-                    </div>
-                </form>
-                
-                <hr>
-                
-                <div class="text-center">
-                    <p class="mb-0">已有账号？点击左侧登录按钮</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 服务条款模态框 -->
-<div class="modal fade" id="termsModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">服务条款</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>1. 服务说明</h6>
-                <p>本网站提供个人展示、博客发布、项目展示等服务。</p>
-                
-                <h6>2. 用户责任</h6>
-                <p>用户应遵守相关法律法规，不得发布违法、有害、威胁、辱骂、骚扰、诽谤、粗俗、淫秽或其他不当内容。</p>
-                
-                <h6>3. 知识产权</h6>
-                <p>用户发布的内容应确保拥有相应的知识产权，不得侵犯他人权益。</p>
-                
-                <h6>4. 服务变更</h6>
-                <p>我们保留随时修改或终止服务的权利。</p>
-                
-                <h6>5. 免责声明</h6>
-                <p>我们不对用户发布的内容承担责任，用户应自行承担相关风险。</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 隐私政策模态框 -->
-<div class="modal fade" id="privacyModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">隐私政策</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6>1. 信息收集</h6>
-                <p>我们收集您提供的注册信息，包括用户名、邮箱地址等。</p>
-                
-                <h6>2. 信息使用</h6>
-                <p>收集的信息仅用于提供网站服务，不会用于其他商业目的。</p>
-                
-                <h6>3. 信息保护</h6>
-                <p>我们采用适当的技术措施保护您的个人信息安全。</p>
-                
-                <h6>4. 信息共享</h6>
-                <p>我们不会向第三方出售、出租或共享您的个人信息。</p>
-                
-                <h6>5. 信息更新</h6>
-                <p>您可以随时更新或删除您的个人信息。</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
+{% block title %}注册 - Kim's Blog{% endblock %}
 
 {% block extra_css %}
 <style>
-.avatar-section {
+.auth-register-page {
+    min-height: calc(100vh - 180px);
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-}
-
-.avatar-upload-area .upload-placeholder {
-    transition: all 0.3s ease;
-    border: 2px dashed #dee2e6;
-    min-height: 120px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
     align-items: center;
 }
 
-.avatar-upload-area .upload-placeholder:hover {
-    border-color: #007bff;
-    background-color: #f8f9fa;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,123,255,0.1);
-}
-
-.avatar-upload-area .upload-placeholder.border-primary {
-    border-color: #007bff !important;
-    background-color: #e3f2fd !important;
-}
-
-#avatar-preview {
-    border: 4px solid #dee2e6;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-#avatar-preview:hover {
-    border-color: #007bff;
-    transform: scale(1.05);
-    box-shadow: 0 6px 20px rgba(0,123,255,0.2);
-}
-
-.avatar-section h5 {
-    color: #94a3b8;
-    font-weight: 600;
-    margin-bottom: 1rem;
-}
-
-/* 注册页面文字颜色统一调整为灰色 */
-.card-header h4 {
-    color: white !important;
-}
-
-.card-header h4 i {
-    color: white !important;
-}
-
-h5 {
-    color: white !important;
-}
-
-.form-label {
-    color: white !important;
-}
-
-.form-text {
-    color: #64748b !important;
-    font-size: 0.75rem !important;
-}
-
-.text-muted {
-    color: #64748b !important;
-    font-size: 0.75rem !important;
-}
-
-.invalid-feedback {
-    color: #94a3b8 !important;
-}
-
-.modal-title {
-    color: white !important;
-}
-
-.card-body {
-    color: #94a3b8 !important;
-}
-
-.card-body p {
-    color: #94a3b8 !important;
-}
-
-.card-body a {
-    color: #94a3b8 !important;
-}
-
-.form-check-label {
-    color: #94a3b8 !important;
-}
-
-.form-check-label a {
-    color: #94a3b8 !important;
-}
-
-/* 输入框文字颜色调整 */
-.form-control {
-    color: white !important;
-    background-color: rgba(15, 23, 42, 0.8) !important;
-    border-color: rgba(71, 85, 105, 0.3) !important;
-}
-
-.form-control:focus {
-    color: white !important;
-    background-color: rgba(15, 23, 42, 0.9) !important;
-    border-color: #6366f1 !important;
-    box-shadow: 0 0 0 0.2rem rgba(99, 102, 241, 0.25) !important;
-}
-
-.form-control::placeholder {
-    color: #94a3b8 !important;
-    opacity: 1;
-}
-
-.form-control:-webkit-autofill,
-.form-control:-webkit-autofill:hover,
-.form-control:-webkit-autofill:focus,
-.form-control:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 30px rgba(15, 23, 42, 0.8) inset !important;
-    -webkit-text-fill-color: white !important;
-    color: white !important;
-}
-
-/* 密码输入栏样式优化 */
-.input-group {
-    display: flex;
-    flex-wrap: nowrap;
+.auth-register-layout {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+    gap: 24px;
     align-items: stretch;
-    width: 100%;
 }
 
-.input-group .form-control {
-    flex: 1 1 auto;
+.auth-register-panel,
+.auth-register-card {
     min-width: 0;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
 }
 
-.input-group .btn {
-    flex: 0 0 auto;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-left: 0;
-    min-width: 60px;
+.auth-register-panel {
+    padding: 30px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 24px;
+    background:
+        radial-gradient(circle at top left, rgba(9, 105, 218, 0.12), transparent 40%),
+        linear-gradient(180deg, var(--bgColor-muted) 0%, var(--bgColor-default) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 28px;
+}
+
+.auth-register-panel-top {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.auth-register-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(9, 105, 218, 0.18);
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.auth-register-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: clamp(2rem, 5vw, 2.7rem);
+    line-height: 1.06;
+    letter-spacing: -0.03em;
+}
+
+.auth-register-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 15px;
+    line-height: 1.9;
+}
+
+.auth-register-feature-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.auth-register-feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    background: rgba(255, 255, 255, 0.72);
+}
+
+.auth-register-feature-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-accent-muted);
+    color: var(--fgColor-accent);
+}
+
+.auth-register-feature-copy strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.auth-register-feature-copy span {
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.auth-register-panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.auth-register-link-muted,
+.auth-register-link-accent {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.auth-register-link-muted {
+    color: var(--fgColor-muted);
+}
+
+.auth-register-link-muted:hover {
+    color: var(--fgColor-default);
+    text-decoration: none;
+}
+
+.auth-register-link-accent {
+    color: var(--fgColor-accent);
+}
+
+.auth-register-link-accent:hover {
+    text-decoration: none;
+}
+
+.auth-register-card {
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow-resting-small);
+}
+
+.auth-register-card .Box-body {
+    padding: 26px;
+}
+
+.auth-register-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+.auth-register-card-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 1.45rem;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.auth-register-card-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.auth-register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+}
+
+.auth-register-avatar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 18px;
+    background: var(--bgColor-muted);
+}
+
+.auth-register-avatar-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+}
+
+.auth-register-avatar-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.auth-register-avatar-title {
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.auth-register-avatar-note {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.auth-register-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.auth-register-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.auth-register-field-wide {
+    grid-column: 1 / -1;
+}
+
+.auth-register-label {
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.auth-register-field .form-control {
+    width: 100%;
+    max-width: 100%;
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    box-sizing: border-box;
+    appearance: none;
+    -webkit-appearance: none;
+    box-shadow: inset 0 1px 2px rgba(31, 35, 40, 0.03);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.auth-register-field .form-control:focus {
+    border-color: var(--borderColor-accent-emphasis);
+    background: var(--bgColor-default);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.auth-register-password {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.auth-register-password .form-control {
+    padding-right: 52px;
+}
+
+.auth-register-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 6px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--fgColor-muted);
+    box-shadow: none;
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.auth-register-password-toggle:hover {
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+}
+
+.auth-register-password-toggle:focus-visible {
+    outline: none;
+    border-color: rgba(9, 105, 218, 0.22);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.auth-register-agreement {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.auth-register-agreement input {
+    margin-top: 2px;
+    accent-color: var(--fgColor-accent);
+}
+
+.auth-register-agreement a {
+    color: var(--fgColor-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-register-submit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 1px solid var(--button-primary-bgColor-rest);
+    background: var(--button-primary-bgColor-rest);
+    color: var(--button-primary-fgColor);
+    font-size: 14px;
+    font-weight: 600;
+    appearance: none;
+    -webkit-appearance: none;
+    box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04), 0 2px 8px rgba(9, 105, 218, 0.18);
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.auth-register-submit:hover {
+    background: var(--button-primary-bgColor-hover);
+    border-color: var(--button-primary-bgColor-hover);
+    box-shadow: 0 1px 0 rgba(31, 35, 40, 0.04), 0 6px 14px rgba(9, 105, 218, 0.18);
+    transform: translateY(-1px);
+}
+
+.auth-register-submit:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.auth-register-submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.16);
+}
+
+.auth-register-divider {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 4px 0;
 }
 
-.input-group .btn i {
-    font-size: 14px;
+.auth-register-divider::before {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    top: 50%;
+    border-top: 1px solid var(--borderColor-default);
 }
 
-/* 确保密码输入栏不会换行 */
-.password-input-group {
+.auth-register-divider span {
+    position: relative;
+    padding: 0 12px;
+    background: var(--bgColor-default);
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+.auth-register-oauth {
     display: flex;
-    flex-wrap: nowrap;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.auth-register-oauth .btn {
+    display: flex;
+    justify-content: flex-start;
     width: 100%;
+    min-height: 46px;
+    padding: 0 16px;
+    border-radius: 14px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+    box-shadow: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
-.password-input-group .form-control {
-    flex: 1;
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    border-right: 0;
+.auth-register-oauth .btn:hover {
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-default);
+    transform: none;
+    box-shadow: none;
 }
 
-.password-input-group .btn {
-    flex: 0 0 auto;
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    border-left: 1px solid #ced4da;
-    min-width: 60px;
-    padding: 0.375rem 0.75rem;
+.auth-register-oauth .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .avatar-section {
-        gap: 0.5rem;
+.auth-register-oauth .btn span {
+    color: inherit;
+}
+
+.auth-register-oauth .btn svg {
+    flex-shrink: 0;
+}
+
+.auth-register-oauth .btn .color-fg-default {
+    color: var(--fgColor-default) !important;
+}
+
+.auth-register-oauth .btn[disabled] {
+    opacity: 0.55;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
+    border-color: var(--borderColor-default);
+    transform: none;
+}
+
+.auth-register-footer {
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px solid var(--borderColor-default);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.auth-register-footer a {
+    color: var(--fgColor-accent);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-register-footer a:hover {
+    text-decoration: none;
+}
+
+@media (max-width: 767px) {
+    .auth-register-page {
+        min-height: auto;
     }
-    
-    #avatar-preview {
-        width: 120px !important;
-        height: 120px !important;
+
+    .auth-register-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
     }
-    
-    .avatar-upload-area {
-        max-width: 280px !important;
+
+    .auth-register-panel,
+    .auth-register-card .Box-body {
+        padding: 20px;
     }
-    
-    /* 移动端密码输入栏优化 */
-    .password-input-group .btn {
-        min-width: 40px;
-        padding: 0.375rem 0.5rem;
+
+    .auth-register-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
-    
-    .password-input-group .btn i {
-        font-size: 12px;
+
+    .auth-register-field-wide {
+        grid-column: auto;
+    }
+
+    .auth-register-avatar,
+    .auth-register-panel-foot {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .auth-register-title {
+        font-size: 2rem;
     }
 }
 </style>
 {% endblock %}
 
+{% block content %}
+<div class="auth-register-page py-5">
+    <div class="container-xl width-full">
+        <div class="auth-register-layout">
+            <section class="auth-register-panel">
+                <div class="auth-register-panel-top">
+                    <span class="auth-register-badge">
+                        <i class="fas fa-user-plus" aria-hidden="true"></i>
+                        创建账户
+                    </span>
+
+                    <div>
+                        <h1 class="auth-register-title">加入这个站点</h1>
+                        <p class="auth-register-copy">
+                            注册后你就可以参与评论、收藏文章、接收通知，也能把你的资料和后续互动统一保存在同一个账户里。
+                        </p>
+                    </div>
+
+                    <ul class="auth-register-feature-list">
+                        <li class="auth-register-feature-item">
+                            <span class="auth-register-feature-icon">
+                                <i class="fas fa-comments" aria-hidden="true"></i>
+                            </span>
+                            <div class="auth-register-feature-copy">
+                                <strong>参与评论和讨论</strong>
+                                <span>创建账户后就能在文章页留下评论，并持续收到回复提醒。</span>
+                            </div>
+                        </li>
+                        <li class="auth-register-feature-item">
+                            <span class="auth-register-feature-icon">
+                                <i class="fas fa-bookmark" aria-hidden="true"></i>
+                            </span>
+                            <div class="auth-register-feature-copy">
+                                <strong>保存你的阅读偏好</strong>
+                                <span>你对文章的收藏、点赞和个人设置都会和账户一起长期保留。</span>
+                            </div>
+                        </li>
+                        <li class="auth-register-feature-item">
+                            <span class="auth-register-feature-icon">
+                                <i class="fas fa-id-badge" aria-hidden="true"></i>
+                            </span>
+                            <div class="auth-register-feature-copy">
+                                <strong>建立自己的展示身份</strong>
+                                <span>头像、昵称和显示名称都可以自定义，后续互动会更有识别度。</span>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="auth-register-panel-foot">
+                    <a href="{{ url_for('main.index') }}" class="auth-register-link-muted">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                        返回首页
+                    </a>
+                    <a href="{{ url_for('auth.login') }}" class="auth-register-link-accent">
+                        已有账号？去登录
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </section>
+
+            <section class="Box auth-register-card">
+                <div class="Box-body">
+                    <div class="auth-register-card-head">
+                        <h2 class="auth-register-card-title">创建你的账户</h2>
+                        <p class="auth-register-card-copy">填写基础信息后即可完成注册，第三方登录也可以直接创建账号。</p>
+                    </div>
+
+                    <form method="POST" id="register-form" class="auth-register-form" enctype="multipart/form-data">
+                        <div class="auth-register-avatar">
+                            <img id="avatar-preview" src="/static/avatar/avatar1.png" alt="头像预览" class="auth-register-avatar-preview">
+                            <div class="auth-register-avatar-copy">
+                                <div class="auth-register-avatar-title">上传头像</div>
+                                <div class="auth-register-avatar-note">可选，支持 JPG、PNG、GIF、WebP，头像会展示在你的个人资料和评论里。</div>
+                                <div>
+                                    <input type="file" id="avatar" name="avatar" accept="image/*" class="d-none" onchange="previewAvatar(this)">
+                                    <button type="button" onclick="document.getElementById('avatar').click()" class="btn btn-secondary btn-sm">
+                                        <i class="fa fa-camera" aria-hidden="true"></i>
+                                        选择图片
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="auth-register-grid">
+                            <div class="auth-register-field">
+                                <label for="username" class="auth-register-label">用户名 *</label>
+                                <input type="text" id="username" name="username" required
+                                       class="form-control width-full"
+                                       value="{{ request.form.get('username', '') }}"
+                                       placeholder="请输入用户名">
+                            </div>
+
+                            <div class="auth-register-field">
+                                <label for="nickname" class="auth-register-label">显示名称</label>
+                                <input type="text" id="nickname" name="nickname"
+                                       class="form-control width-full"
+                                       value="{{ request.form.get('nickname', request.form.get('display_name', '')) }}"
+                                       placeholder="对外显示的名称（可选）">
+                            </div>
+
+                            <div class="auth-register-field auth-register-field-wide">
+                                <label for="email" class="auth-register-label">邮箱 *</label>
+                                <input type="email" id="email" name="email" required
+                                       class="form-control width-full"
+                                       value="{{ request.form.get('email', '') }}"
+                                       placeholder="请输入邮箱地址">
+                            </div>
+
+                            <div class="auth-register-field">
+                                <label for="password" class="auth-register-label">密码 *</label>
+                                <div class="auth-register-password">
+                                    <input type="password" id="password" name="password" required
+                                           class="form-control width-full"
+                                           placeholder="至少 6 位密码">
+                                    <button type="button" onclick="togglePassword('password')"
+                                            class="auth-register-password-toggle"
+                                            aria-label="显示或隐藏密码">
+                                        <i class="fa fa-eye" id="password-toggle-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="auth-register-field">
+                                <label for="confirm_password" class="auth-register-label">确认密码 *</label>
+                                <div class="auth-register-password">
+                                    <input type="password" id="confirm_password" name="confirm_password" required
+                                           class="form-control width-full"
+                                           placeholder="再次输入密码">
+                                    <button type="button" onclick="togglePassword('confirm_password')"
+                                            class="auth-register-password-toggle"
+                                            aria-label="显示或隐藏确认密码">
+                                        <i class="fa fa-eye" id="confirm-password-toggle-icon"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label for="agree_terms" class="auth-register-agreement">
+                            <input type="checkbox" id="agree_terms" name="agree_terms" required class="cursor-pointer">
+                            <span>我已阅读并同意 <a href="#">用户协议</a> 与 <a href="#">隐私政策</a>，并理解账户信息将用于评论、互动和站点通知。</span>
+                        </label>
+
+                        <button type="submit" class="auth-register-submit">
+                            创建账号
+                        </button>
+
+                        <div class="auth-register-divider">
+                            <span>其他注册方式</span>
+                        </div>
+
+                        <div class="auth-register-oauth">
+                            {% if config.GOOGLE_CLIENT_ID and config.GOOGLE_CLIENT_ID != 'your-google-client-id' %}
+                            <a href="{{ url_for('auth.login_google') }}"
+                               class="btn btn-secondary width-full d-flex items-center gap-3 no-underline">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span>使用 Google 注册</span>
+                            </a>
+                            {% else %}
+                            <button type="button"
+                                    disabled
+                                    class="btn btn-secondary width-full d-flex items-center gap-3 cursor-default"
+                                    title="Google OAuth 未配置">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                <span>Google 注册暂不可用</span>
+                            </button>
+                            {% endif %}
+
+                            <a href="{{ url_for('auth.login_github') }}"
+                               class="btn btn-secondary width-full d-flex items-center gap-3 no-underline">
+                                <svg class="w-5 h-5 flex-shrink-0 color-fg-default" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                                <span>使用 GitHub 注册</span>
+                            </a>
+
+                            {% if config.WECHAT_APP_ID and config.WECHAT_APP_ID != 'your-wechat-app-id' %}
+                            <a href="{{ url_for('auth.login_wechat') }}"
+                               class="btn btn-secondary width-full d-flex items-center gap-3 no-underline">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#07C160" aria-hidden="true">
+                                    <path d="M8.5 12.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5zm7 0c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5z"/>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                                </svg>
+                                <span>使用微信注册</span>
+                            </a>
+                            {% else %}
+                            <button type="button"
+                                    disabled
+                                    class="btn btn-secondary width-full d-flex items-center gap-3 cursor-default"
+                                    title="微信 OAuth 未配置">
+                                <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#07C160" aria-hidden="true">
+                                    <path d="M8.5 12.5c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5zm7 0c0-.8-.7-1.5-1.5-1.5s-1.5.7-1.5 1.5.7 1.5 1.5 1.5 1.5-.7 1.5-1.5z"/>
+                                    <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm0 18c-4.4 0-8-3.6-8-8s3.6-8 8-8 8 3.6 8 8-3.6 8-8 8z"/>
+                                </svg>
+                                <span>微信注册暂不可用</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </form>
+
+                    <div class="auth-register-footer">
+                        已有账号？
+                        <a href="{{ url_for('auth.login') }}">立即登录</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
 {% block extra_js %}
 <script>
+function previewAvatar(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('avatar-preview').src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function togglePassword(inputId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleIcon = document.getElementById(inputId === 'password' ? 'password-toggle-icon' : 'confirm-password-toggle-icon');
+
+    if (!passwordInput || !toggleIcon) return;
+
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.className = 'fa fa-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.className = 'fa fa-eye';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const confirmPasswordInput = document.getElementById('confirm_password');
+
+    function validatePassword() {
+        if (confirmPasswordInput.value && passwordInput.value !== confirmPasswordInput.value) {
+            confirmPasswordInput.setCustomValidity('密码不匹配');
+        } else {
+            confirmPasswordInput.setCustomValidity('');
+        }
+    }
+
+    passwordInput.addEventListener('input', validatePassword);
+    confirmPasswordInput.addEventListener('input', validatePassword);
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('register-form');
-    const password = document.getElementById('password');
-    const confirmPassword = document.getElementById('confirm_password');
-    const togglePassword = document.getElementById('togglePassword');
-    const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
-    const avatarInput = document.getElementById('avatar');
-    const avatarPreview = document.getElementById('avatar-preview');
-    const avatarPreviewContainer = document.getElementById('avatar-preview-container');
-    const avatarPreviewText = document.getElementById('avatar-preview-text');
-    const avatarUploadArea = document.getElementById('avatar-upload-area');
-    const uploadPlaceholder = avatarUploadArea.querySelector('.upload-placeholder');
-    
-    // 点击上传区域触发文件选择
-    uploadPlaceholder.addEventListener('click', function() {
-        avatarInput.click();
-    });
-    
-    // 拖拽上传功能
-    uploadPlaceholder.addEventListener('dragover', function(e) {
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
         e.preventDefault();
-        this.classList.add('border-primary', 'bg-light');
-    });
-    
-    uploadPlaceholder.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        this.classList.remove('border-primary', 'bg-light');
-    });
-    
-    uploadPlaceholder.addEventListener('drop', function(e) {
-        e.preventDefault();
-        this.classList.remove('border-primary', 'bg-light');
-        
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            const file = files[0];
-            if (file.type.startsWith('image/')) {
-                // 创建FileList对象
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(file);
-                avatarInput.files = dataTransfer.files;
-                
-                // 触发change事件
-                avatarInput.dispatchEvent(new Event('change'));
+
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalHtml = submitButton.innerHTML;
+
+        submitButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i><span>创建中...</span>';
+        submitButton.disabled = true;
+
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                emitToast('注册成功！', 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect_url || data.redirect || '/';
+                }, 900);
             } else {
-                alert('请选择图片文件');
+                emitToast(data.message || '注册失败', 'error');
+                submitButton.innerHTML = originalHtml;
+                submitButton.disabled = false;
             }
-        }
+        })
+        .catch(error => {
+            console.error('注册错误:', error);
+            emitToast('注册失败，请稍后重试', 'error');
+            submitButton.innerHTML = originalHtml;
+            submitButton.disabled = false;
+        });
     });
-    
-    // 头像预览功能
-    avatarInput.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            // 验证文件类型
-            const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                alert('不支持的文件类型，请选择 PNG、JPG、JPEG、GIF 或 WebP 格式的图片');
-                this.value = '';
-                return;
-            }
-            
-            // 验证文件大小 (5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                alert('文件大小不能超过 5MB');
-                this.value = '';
-                return;
-            }
-            
-            // 显示预览
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                avatarPreview.src = e.target.result;
-                avatarPreviewText.textContent = '头像预览';
-                avatarPreviewText.className = 'text-success';
-            };
-            reader.readAsDataURL(file);
-        } else {
-            // 重置为默认状态
-            avatarPreview.src = '/static/avatar/avatar1.png';
-            avatarPreviewText.textContent = '请选择头像文件';
-            avatarPreviewText.className = 'text-muted';
-        }
-    });
-    
-    // 密码显示/隐藏切换
-    togglePassword.addEventListener('click', function() {
-        const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-        password.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-    
-    toggleConfirmPassword.addEventListener('click', function() {
-        const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-        confirmPassword.setAttribute('type', type);
-        this.querySelector('i').classList.toggle('fa-eye');
-        this.querySelector('i').classList.toggle('fa-eye-slash');
-    });
-    
-    // 密码确认验证
-    confirmPassword.addEventListener('input', function() {
-        if (password.value !== this.value) {
-            this.setCustomValidity('两次输入的密码不一致');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
-    
-    password.addEventListener('input', function() {
-        if (confirmPassword.value && password.value !== confirmPassword.value) {
-            confirmPassword.setCustomValidity('两次输入的密码不一致');
-        } else {
-            confirmPassword.setCustomValidity('');
-        }
-    });
-    
-    // 用户名格式验证
-    const username = document.getElementById('username');
-    username.addEventListener('input', function() {
-        const pattern = /^[a-zA-Z0-9_]+$/;
-        if (!pattern.test(this.value)) {
-            this.setCustomValidity('用户名只能包含字母、数字和下划线');
-        } else {
-            this.setCustomValidity('');
-        }
-    });
-    
-    // 表单提交验证
-    form.addEventListener('submit', function(event) {
-        if (!form.checkValidity()) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-        
-        // 检查密码一致性
-        if (password.value !== confirmPassword.value) {
-            event.preventDefault();
-            confirmPassword.setCustomValidity('两次输入的密码不一致');
-        }
-        
-        // 检查头像是否已选择
-        if (!avatarInput.files || avatarInput.files.length === 0) {
-            event.preventDefault();
-            avatarInput.setCustomValidity('请选择头像文件');
-        } else {
-            avatarInput.setCustomValidity('');
-        }
-        
-        form.classList.add('was-validated');
-    });
-    
-    // 实时密码强度检测
-    password.addEventListener('input', function() {
-        const strength = checkPasswordStrength(this.value);
-        updatePasswordStrengthIndicator(strength);
-    });
-    
-    function checkPasswordStrength(password) {
-        let score = 0;
-        
-        if (password.length >= 6) score++;
-        if (password.length >= 8) score++;
-        if (/[a-z]/.test(password)) score++;
-        if (/[A-Z]/.test(password)) score++;
-        if (/[0-9]/.test(password)) score++;
-        if (/[^A-Za-z0-9]/.test(password)) score++;
-        
-        if (score <= 2) return 'weak';
-        if (score <= 4) return 'medium';
-        return 'strong';
-    }
-    
-    function updatePasswordStrengthIndicator(strength) {
-        // 移除现有的强度指示器
-        const existingIndicator = document.getElementById('password-strength');
-        if (existingIndicator) {
-            existingIndicator.remove();
-        }
-        
-        // 创建新的强度指示器
-        const indicator = document.createElement('div');
-        indicator.id = 'password-strength';
-        indicator.className = 'mt-2';
-        
-        let color, text;
-        switch (strength) {
-            case 'weak':
-                color = 'danger';
-                text = '密码强度：弱';
-                break;
-            case 'medium':
-                color = 'warning';
-                text = '密码强度：中等';
-                break;
-            case 'strong':
-                color = 'success';
-                text = '密码强度：强';
-                break;
-        }
-        
-        indicator.innerHTML = `
-            <div class="progress" style="height: 5px;">
-                <div class="progress-bar bg-${color}" style="width: ${strength === 'weak' ? '33%' : strength === 'medium' ? '66%' : '100%'}"></div>
-            </div>
-            <small class="text-${color}">${text}</small>
-        `;
-        
-        // 将强度指示器插入到密码输入栏的父容器中（mb-3 div），而不是input-group中
-        const passwordContainer = password.closest('.mb-3');
-        if (passwordContainer) {
-            // 在form-text之后插入强度指示器
-            const formText = passwordContainer.querySelector('.form-text');
-            if (formText) {
-                formText.insertAdjacentElement('afterend', indicator);
-            } else {
-                // 如果没有form-text，则在input-group之后插入
-                const inputGroup = passwordContainer.querySelector('.input-group');
-                if (inputGroup) {
-                    inputGroup.insertAdjacentElement('afterend', indicator);
-                }
-            }
-        }
-    }
 });
+
+function emitToast(message, type = 'info') {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : null;
+}
 </script>
-{% endblock %} 
+{% endblock %}

@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, jsonify, redirect, request, url_for
 from flask_login import LoginManager
 from app.models.user import db
-from app.utils.filters import nl2br_filter, markdown_filter, html_filter
+from app.utils.filters import nl2br_filter, markdown_filter, html_filter, localtime_filter
 from app.utils.logger import setup_app_logging, log_manager
 import os
 
@@ -30,6 +30,14 @@ def create_app():
     # 基础配置
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
+    # 将 OAuth 环境变量添加到应用配置中
+    app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
+    app.config['GOOGLE_CLIENT_SECRET'] = os.getenv('GOOGLE_CLIENT_SECRET')
+    app.config['GITHUB_CLIENT_ID'] = os.getenv('GITHUB_CLIENT_ID')
+    app.config['GITHUB_CLIENT_SECRET'] = os.getenv('GITHUB_CLIENT_SECRET')
+    app.config['WECHAT_APP_ID'] = os.getenv('WECHAT_APP_ID')
+    app.config['WECHAT_APP_SECRET'] = os.getenv('WECHAT_APP_SECRET')
+    
     # 初始化扩展
     db.init_app(app)
     
@@ -37,6 +45,23 @@ def create_app():
     login_manager = LoginManager()
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
+
+    @login_manager.unauthorized_handler
+    def unauthorized():
+        wants_json = (
+            request.path.startswith('/api/')
+            or request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            or 'application/json' in request.headers.get('Accept', '')
+        )
+
+        if wants_json:
+            return jsonify({
+                'success': False,
+                'message': '请先登录后再继续操作',
+                'require_login': True
+            }), 401
+
+        return redirect(url_for(login_manager.login_view, next=request.url))
     
     @login_manager.user_loader
     def load_user(user_id):
@@ -47,6 +72,23 @@ def create_app():
     app.template_filter('nl2br')(nl2br_filter)
     app.template_filter('markdown')(markdown_filter)
     app.template_filter('html')(html_filter)
+    app.template_filter('localtime')(localtime_filter)
+    
+    # 初始化 OAuth
+    try:
+        from app.config.oauth import init_oauth
+        oauth, google, github, wechat = init_oauth(app)
+        app.oauth = oauth
+        app.google_oauth = google
+        app.github_oauth = github
+        app.wechat_oauth = wechat
+        print("✅ OAuth 初始化成功")
+    except Exception as e:
+        print(f"⚠️  OAuth 初始化失败: {e}")
+        app.oauth = None
+        app.google_oauth = None
+        app.github_oauth = None
+        app.wechat_oauth = None
     
     # 注册蓝图
     from app.routes import main_bp, admin_bp, auth_bp
@@ -65,6 +107,25 @@ def create_app():
     # 设置日志
     setup_app_logging(app)
     app.logger.info("应用初始化完成")
+
+    with app.app_context():
+        try:
+            from app.models.post import ensure_post_schema
+            ensure_post_schema()
+        except Exception as e:
+            app.logger.warning(f"文章表结构检查失败: {e}")
+
+        try:
+            from app.models.message import ensure_message_schema
+            ensure_message_schema()
+        except Exception as e:
+            app.logger.warning(f"消息表结构检查失败: {e}")
+
+        try:
+            from app.models.interaction import ensure_comment_reply_schema
+            ensure_comment_reply_schema()
+        except Exception as e:
+            app.logger.warning(f"评论回复表结构检查失败: {e}")
     
     # 初始化 HTTPS 重定向（生产环境）
     if app.config.get('FORCE_HTTPS', False):

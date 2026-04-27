@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}编辑友链 - {{ super() }}{% endblock %}
+
+{% block content %}
+<div class="container-lg py-6">
+    <div class="mb-4">
+        <h1 class="f2 text-bold color-fg-default m-0 mb-2">编辑友链</h1>
+        <p class="f4 color-fg-muted m-0">修改友链信息</p>
+    </div>
+
+    <div class="Box">
+        <div class="Box-body">
+            <form method="POST" class="space-y-4">
+                <div class="d-grid grid-cols-1 d-regular-grid grid-regular-cols-2 gap-3">
+                    <div>
+                        <label for="name" class="form-label">网站名称 *</label>
+                        <input type="text" id="name" name="name" value="{{ link.name }}" required
+                               class="form-control width-full" placeholder="网站名称">
+                    </div>
+                    <div>
+                        <label for="url" class="form-label">网站链接 *</label>
+                        <input type="url" id="url" name="url" value="{{ link.url }}" required
+                               class="form-control width-full" placeholder="https://example.com">
+                    </div>
+                </div>
+
+                <div>
+                    <label for="description" class="form-label">网站描述</label>
+                    <textarea id="description" name="description" rows="3"
+                              class="form-control width-full" placeholder="简要描述">{{ link.description or '' }}</textarea>
+                </div>
+
+                <div class="d-grid grid-cols-1 d-regular-grid grid-regular-cols-2 gap-3">
+                    <div>
+                        <label for="email" class="form-label">联系邮箱</label>
+                        <input type="email" id="email" name="email" value="{{ link.email or '' }}"
+                               class="form-control width-full" placeholder="contact@example.com">
+                    </div>
+                    <div>
+                        <label for="status" class="form-label">状态</label>
+                        <select id="status" name="status" class="form-select width-full">
+                            <option value="active" {% if link.status == 'active' %}selected{% endif %}>活跃</option>
+                            <option value="pending" {% if link.status == 'pending' %}selected{% endif %}>待审核</option>
+                            <option value="inactive" {% if link.status == 'inactive' %}selected{% endif %}>已拒绝</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="d-grid grid-cols-1 d-regular-grid grid-regular-cols-2 gap-3">
+                    <div>
+                        <label for="sort_order" class="form-label">排序权重</label>
+                        <input type="number" id="sort_order" name="sort_order" value="{{ link.sort_order or 0 }}"
+                               class="form-control width-full" placeholder="0">
+                        <p class="f6 color-fg-muted m-0 mt-1">数值越大排序越靠前</p>
+                    </div>
+                    <div class="d-flex items-center gap-2">
+                        <input type="checkbox" id="featured" name="featured" value="1" {% if link.featured %}checked{% endif %}>
+                        <label class="form-label m-0" for="featured">设为推荐友链</label>
+                    </div>
+                </div>
+
+                <div class="d-flex flex-wrap justify-end gap-2 pt-3 border-top">
+                    <a href="{{ url_for('admin.admin_links') }}" class="btn btn-secondary no-underline">取消</a>
+                    <button type="submit" class="btn btn-primary">更新友链</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

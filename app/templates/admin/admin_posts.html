@@ -3,378 +3,587 @@
 {% block title %}文章管理 - 管理后台{% endblock %}
 
 {% block content %}
-<!-- 页面头部 -->
-<div class="text-center py-6 mb-8">
-    <div class="max-w-4xl mx-auto">
-        <h1 class="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-indigo-400 to-purple-500 bg-clip-text text-transparent">
-            文章管理
-        </h1>
-        <p class="text-slate-300">管理您的博客文章和内容</p>
-    </div>
-</div>
-
-<!-- 主要内容 -->
-<div class="max-w-6xl mx-auto px-4">
-    <!-- 操作栏 -->
-    <div class="flex justify-between items-center mb-6">
-        <div class="flex items-center gap-4">
-            <div class="glass-card rounded-lg px-4 py-2">
-                <span class="text-white font-medium">共 {{ posts.total }} 篇文章</span>
-            </div>
+<div class="admin-posts-page">
+    <header class="admin-posts-head">
+        <div>
+            <span class="admin-posts-kicker">内容管理</span>
+            <h1>文章管理</h1>
+            <p>共 {{ posts.total }} 篇文章</p>
         </div>
-        <a href="{{ url_for('admin.new_post') }}" class="btn-primary">
-            <i class="fas fa-plus"></i> 新建文章
+        <a href="{{ url_for('admin.new_post') }}" class="admin-posts-btn admin-posts-btn-primary">
+            <i class="fas fa-plus" aria-hidden="true"></i>
+            <span>新建文章</span>
         </a>
-    </div>
-    
-    <!-- 筛选器 -->
-    <div class="glass-card rounded-xl p-6 mb-6">
-        <form method="GET" class="flex items-center gap-4">
-            <div class="flex-1">
-                <label for="search" class="block text-sm font-medium text-slate-300 mb-2">搜索文章</label>
-                <input type="text" 
-                       class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                       id="search" 
-                       name="search" 
+    </header>
+
+    <section class="admin-posts-filter">
+        <form method="GET" class="admin-posts-filter-form">
+            <label class="admin-posts-field">
+                <span>搜索文章</span>
+                <input type="text" class="form-control" id="search" name="search"
                        value="{{ search_query or '' }}"
-                       placeholder="搜索标题、内容、摘要、分类或标签...">
-            </div>
-            <div class="flex-1">
-                <label for="status" class="block text-sm font-medium text-slate-300 mb-2">状态筛选</label>
-                <select class="w-full bg-slate-800/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
-                        id="status" name="status">
+                       placeholder="搜索标题、摘要、分类或标签">
+            </label>
+            <label class="admin-posts-field">
+                <span>状态筛选</span>
+                <select class="form-select" id="status" name="status">
                     <option value="">全部状态</option>
                     <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>草稿</option>
                     <option value="published" {% if status_filter == 'published' %}selected{% endif %}>已发布</option>
                 </select>
-            </div>
-            <div class="flex gap-2 self-end">
-                <button type="submit" class="btn-secondary">
-                    <i class="fas fa-search"></i> 搜索
+            </label>
+            <div class="admin-posts-filter-actions">
+                <button type="submit" class="admin-posts-btn admin-posts-btn-secondary">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                    <span>搜索</span>
                 </button>
-                <a href="{{ url_for('admin.admin_posts') }}" class="btn-secondary">
-                    <i class="fas fa-times"></i> 清除
+                <a href="{{ url_for('admin.admin_posts') }}" class="admin-posts-btn admin-posts-btn-ghost">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                    <span>清除</span>
                 </a>
             </div>
         </form>
-    </div>
-    
-    <!-- 文章列表 -->
-    <div class="glass-card rounded-xl p-6">
+    </section>
+
+    <section class="admin-posts-list-card">
         {% if posts.items %}
-            <div class="space-y-4">
-                {% for post in posts.items %}
-                <div class="bg-slate-800/50 border border-slate-600 rounded-lg p-4 hover:bg-slate-800/70 transition-colors">
-                    <div class="flex items-start justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-start gap-4">
-                                {% if post.featured_image %}
-                                <img src="{{ post.featured_image }}" alt="特色图片" 
-                                     class="rounded-lg w-16 h-16 object-cover flex-shrink-0">
-                                {% else %}
-                                <div class="w-16 h-16 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-image text-slate-400"></i>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="flex-1">
-                                    <h3 class="text-white font-semibold mb-2">{{ post.title }}</h3>
-                                    {% if post.excerpt %}
-                                    <p class="text-slate-300 text-sm mb-3">{{ post.excerpt[:100] }}...</p>
-                                    {% endif %}
-                                    
-                                    <div class="flex items-center gap-4 text-sm">
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-user text-slate-400"></i>
-                                            <span class="text-slate-300">{{ post.author.username if post.author else '未知' }}</span>
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-tag text-slate-400"></i>
-                                            {% if post.category %}
-                                                <span class="px-2 py-1 bg-blue-600/20 text-blue-400 rounded text-xs">{{ post.category }}</span>
-                                            {% else %}
-                                                <span class="text-slate-400">未分类</span>
-                                            {% endif %}
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-eye text-slate-400"></i>
-                                            <span class="text-slate-300">{{ post.view_count }}</span>
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-2">
-                                            <i class="fas fa-clock text-slate-400"></i>
-                                            <span class="text-slate-300">{{ post.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex items-center gap-2 ml-4">
-                            <!-- 状态标签 -->
-                            {% if post.status == 'published' %}
-                                <span class="px-3 py-1 bg-green-600/20 text-green-400 rounded-full text-sm">已发布</span>
-                            {% else %}
-                                <span class="px-3 py-1 bg-yellow-600/20 text-yellow-400 rounded-full text-sm">草稿</span>
-                            {% endif %}
-                            
-                            <!-- 操作按钮 -->
-                            <div class="flex gap-1">
-                                {% if post.status == 'published' %}
-                                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" 
-                                   class="btn-action" target="_blank" title="查看">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                {% endif %}
-                                <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" 
-                                   class="btn-action" title="编辑">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button type="button" class="btn-action btn-action-danger" 
-                                        data-post-id="{{ post.id }}" data-post-title="{{ post.title }}" title="删除">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
+        <ul class="admin-posts-list">
+            {% for post in posts.items %}
+            <li class="admin-post-row">
+                <div class="admin-post-thumb">
+                    {% if post.featured_image %}
+                    <img src="{{ post.featured_image }}" alt="展示图片">
+                    {% else %}
+                    <i class="fas fa-file-alt" aria-hidden="true"></i>
+                    {% endif %}
+                </div>
+                <div class="admin-post-main">
+                    <div class="admin-post-title-line">
+                        <h2>{{ post.title }}</h2>
+                        {% if post.status == 'published' %}
+                        <span class="admin-post-status is-published">已发布</span>
+                        {% else %}
+                        <span class="admin-post-status is-draft">草稿</span>
+                        {% endif %}
+                    </div>
+                    {% if post.excerpt %}
+                    <p class="admin-post-excerpt">{{ post.excerpt[:82] }}{% if post.excerpt|length > 82 %}...{% endif %}</p>
+                    {% endif %}
+                    <div class="admin-post-meta">
+                        <span><i class="fas fa-user" aria-hidden="true"></i>{{ post.author.username if post.author else '未知' }}</span>
+                        <span><i class="fas fa-tag" aria-hidden="true"></i>{{ post.category or '未分类' }}</span>
+                        <span><i class="fas fa-eye" aria-hidden="true"></i>{{ post.view_count }}</span>
+                        <span><i class="fas fa-clock" aria-hidden="true"></i>{{ post.created_at.strftime('%m-%d %H:%M') }}</span>
                     </div>
                 </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="text-center py-12">
-                <div class="w-20 h-20 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-newspaper text-slate-400 text-2xl"></i>
-                </div>
-                <h3 class="text-white font-semibold mb-2">暂无文章</h3>
-                <p class="text-slate-300 mb-6">点击"新建文章"按钮开始创作吧！</p>
-                <a href="{{ url_for('admin.new_post') }}" class="btn-primary">
-                    <i class="fas fa-plus"></i> 新建文章
-                </a>
-            </div>
-        {% endif %}
-    </div>
-    
-    <!-- 分页 -->
-    {% if posts.pages > 1 %}
-    <div class="flex justify-center mt-8">
-        <nav class="flex items-center gap-2">
-            {% if posts.has_prev %}
-            <a href="{{ url_for('admin.admin_posts', page=posts.prev_num, status=status_filter, search=search_query) }}" 
-               class="btn-pagination">
-                <i class="fas fa-chevron-left"></i>
-            </a>
-            {% endif %}
-            
-            {% for page_num in posts.iter_pages() %}
-                {% if page_num %}
-                    {% if page_num != posts.page %}
-                    <a href="{{ url_for('admin.admin_posts', page=page_num, status=status_filter, search=search_query) }}" 
-                       class="btn-pagination">
-                        {{ page_num }}
+                <div class="admin-post-actions">
+                    {% if post.status == 'published' %}
+                    <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="admin-post-icon-btn" target="_blank" title="查看">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
                     </a>
-                    {% else %}
-                    <span class="btn-pagination btn-pagination-active">{{ page_num }}</span>
                     {% endif %}
-                {% else %}
-                <span class="btn-pagination btn-pagination-disabled">...</span>
-                {% endif %}
+                    <a href="{{ url_for('admin.edit_post', post_id=post.id) }}" class="admin-post-icon-btn is-edit" title="编辑">
+                        <i class="fas fa-edit" aria-hidden="true"></i>
+                    </a>
+                    <button type="button" class="admin-post-icon-btn is-delete"
+                            data-post-id="{{ post.id }}" data-post-title="{{ post.title }}" title="删除" data-delete-trigger>
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </li>
             {% endfor %}
-            
-            {% if posts.has_next %}
-            <a href="{{ url_for('admin.admin_posts', page=posts.next_num, status=status_filter, search=search_query) }}" 
-               class="btn-pagination">
-                <i class="fas fa-chevron-right"></i>
+        </ul>
+        {% else %}
+        <div class="admin-posts-empty">
+            <div class="admin-posts-empty-icon"><i class="fas fa-newspaper" aria-hidden="true"></i></div>
+            <h3>暂无文章</h3>
+            <p>点击「新建文章」开始创作。</p>
+            <a href="{{ url_for('admin.new_post') }}" class="admin-posts-btn admin-posts-btn-primary">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span>新建文章</span>
             </a>
+        </div>
+        {% endif %}
+    </section>
+
+    {% if posts.pages > 1 %}
+    <nav class="admin-posts-pagination" aria-label="分页">
+        {% if posts.has_prev %}
+        <a href="{{ url_for('admin.admin_posts', page=posts.prev_num, status=status_filter, search=search_query) }}" class="admin-posts-page-link"><i class="fas fa-chevron-left" aria-hidden="true"></i></a>
+        {% endif %}
+        {% for page_num in posts.iter_pages() %}
+            {% if page_num %}
+                {% if page_num != posts.page %}
+                <a href="{{ url_for('admin.admin_posts', page=page_num, status=status_filter, search=search_query) }}" class="admin-posts-page-link">{{ page_num }}</a>
+                {% else %}
+                <span class="admin-posts-page-link is-active" aria-current="page">{{ page_num }}</span>
+                {% endif %}
+            {% else %}
+            <span class="admin-posts-page-gap">…</span>
             {% endif %}
-        </nav>
-    </div>
+        {% endfor %}
+        {% if posts.has_next %}
+        <a href="{{ url_for('admin.admin_posts', page=posts.next_num, status=status_filter, search=search_query) }}" class="admin-posts-page-link"><i class="fas fa-chevron-right" aria-hidden="true"></i></a>
+        {% endif %}
+    </nav>
     {% endif %}
 </div>
 
 <!-- 删除确认模态框 -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content bg-slate-800 border border-slate-600">
-            <div class="modal-header border-b border-slate-600">
-                <h5 class="modal-title text-white">确认删除</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+<div id="deleteModal" class="site-confirm-overlay position-fixed inset-0 d-none items-center justify-center" style="z-index: 1000; padding: 16px;">
+    <div class="site-confirm-card">
+        <div class="site-confirm-head">
+            <div class="site-confirm-head-main">
+                <span class="site-confirm-icon" aria-hidden="true"><i class="fas fa-trash"></i></span>
+                <div>
+                    <h3 class="site-confirm-title">确认删除</h3>
+                    <p class="site-confirm-subtitle">删除后将无法恢复，请再次确认。</p>
+                </div>
             </div>
-            <div class="modal-body">
-                <p class="text-slate-300">您确定要删除文章 "<span id="delete-post-title" class="text-white font-medium"></span>" 吗？</p>
-                <p class="text-red-400 text-sm mt-2"><i class="fas fa-exclamation-triangle mr-1"></i>此操作不可撤销！</p>
-            </div>
-            <div class="modal-footer border-t border-slate-600">
-                <button type="button" class="btn-secondary" data-bs-dismiss="modal">取消</button>
-                <form id="delete-form" method="POST" style="display: inline;">
-                    <button type="submit" class="btn-danger">确认删除</button>
-                </form>
-            </div>
+            <button type="button" onclick="closeModal('deleteModal')" class="btn-close cursor-pointer" aria-label="关闭"></button>
+        </div>
+        <div class="site-confirm-body">
+            <p class="f5 color-fg-default m-0 mb-2">您确定要删除文章「<span id="delete-post-title" class="text-semibold"></span>」吗？</p>
+            <p class="site-confirm-warning m-0 f6"><i class="fas fa-exclamation-triangle"></i><span>此操作不可撤销！</span></p>
+        </div>
+        <div class="site-confirm-footer">
+            <button type="button" class="admin-posts-btn admin-posts-btn-secondary" onclick="closeModal('deleteModal')">取消</button>
+            <form id="delete-form" method="POST" class="d-inline-block m-0">
+                <button type="submit" class="admin-posts-btn admin-posts-btn-danger">确认删除</button>
+            </form>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block extra_css %}
 <style>
-.btn-primary {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
+.admin-posts-page {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 0 34px;
+}
+
+.admin-posts-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.admin-posts-kicker {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
+    min-height: 24px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+    font-size: 12px;
+    font-weight: 650;
 }
 
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
-    text-decoration: none;
-    color: white;
+.admin-posts-head h1 {
+    margin: 8px 0 4px;
+    color: var(--fgColor-default);
+    font-size: 1.65rem;
+    line-height: 1.1;
 }
 
-.btn-secondary {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
+.admin-posts-head p {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
 }
 
-.btn-secondary:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
+.admin-posts-filter,
+.admin-posts-list-card {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 16px;
+    background: var(--bgColor-default);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
 }
 
-.btn-action {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.5rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    text-decoration: none;
+.admin-posts-filter {
+    padding: 14px;
+    margin-bottom: 14px;
 }
 
-.btn-action:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-1px);
-    text-decoration: none;
-    color: white;
+.admin-posts-filter-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(180px, 0.6fr) auto;
+    gap: 12px;
+    align-items: end;
 }
 
-.btn-action-danger {
-    background: rgba(239, 68, 68, 0.8);
-    border: 1px solid rgba(239, 68, 68, 0.3);
+.admin-posts-field {
+    display: grid;
+    gap: 7px;
+    margin: 0;
+    min-width: 0;
 }
 
-.btn-action-danger:hover {
-    background: rgba(239, 68, 68, 1);
+.admin-posts-field span {
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 650;
 }
 
-.btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 0.5rem;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+.admin-posts-field .form-control,
+.admin-posts-field .form-select {
+    width: 100%;
+    min-height: 38px;
+    border-radius: 12px;
+    border-color: var(--borderColor-default);
+    box-sizing: border-box;
+    font-size: 13px;
 }
 
-.btn-danger:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+.admin-posts-field .form-control:focus,
+.admin-posts-field .form-select:focus {
+    border-color: rgba(9, 105, 218, 0.45);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.1);
 }
 
-.btn-pagination {
-    background: rgba(100, 116, 139, 0.8);
-    border: 1px solid rgba(100, 116, 139, 0.3);
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    transition: all 0.3s ease;
-    cursor: pointer;
+.admin-posts-filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.admin-posts-btn,
+.admin-posts-page-link,
+.admin-post-icon-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 2.5rem;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.78);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    box-shadow: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-posts-btn:hover,
+.admin-posts-page-link:hover,
+.admin-post-icon-btn:hover {
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-default);
     text-decoration: none;
 }
 
-.btn-pagination:hover {
-    background: rgba(100, 116, 139, 1);
-    transform: translateY(-1px);
-    text-decoration: none;
-    color: white;
+.admin-posts-btn i,
+.admin-posts-page-link i,
+.admin-post-icon-btn i {
+    margin: 0;
+    line-height: 1;
 }
 
-.btn-pagination-active {
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-    color: white;
+.admin-posts-btn-primary,
+.admin-posts-page-link.is-active,
+.admin-post-icon-btn.is-edit {
+    background: rgba(221, 244, 255, 0.72);
+    border-color: rgba(9, 105, 218, 0.2);
+    color: var(--fgColor-accent);
 }
 
-.btn-pagination-disabled {
-    background: rgba(100, 116, 139, 0.3);
-    border: 1px solid rgba(100, 116, 139, 0.1);
-    color: rgba(100, 116, 139, 0.5);
-    cursor: not-allowed;
+.admin-posts-btn-primary:hover,
+.admin-posts-page-link.is-active:hover,
+.admin-post-icon-btn.is-edit:hover {
+    background: rgba(221, 244, 255, 0.95);
+    border-color: rgba(9, 105, 218, 0.34);
+    color: var(--fgColor-accent);
+}
+
+.admin-posts-btn-secondary,
+.admin-posts-btn-ghost {
+    background: rgba(255, 255, 255, 0.75);
+}
+
+.admin-posts-btn-danger,
+.admin-post-icon-btn.is-delete {
+    background: rgba(255, 245, 245, 0.8);
+    border-color: rgba(209, 36, 47, 0.18);
+    color: var(--fgColor-danger);
+}
+
+.admin-posts-btn-danger:hover,
+.admin-post-icon-btn.is-delete:hover {
+    background: var(--bgColor-danger-muted);
+    border-color: rgba(209, 36, 47, 0.32);
+    color: var(--fgColor-danger);
+}
+
+.admin-posts-list {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.admin-post-row {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--borderColor-default);
+}
+
+.admin-post-row:last-child {
+    border-bottom: 0;
+}
+
+.admin-post-thumb {
+    width: 52px;
+    height: 52px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
+}
+
+.admin-post-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.admin-post-main {
+    min-width: 0;
+}
+
+.admin-post-title-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.admin-post-title-line h2 {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 700;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-post-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 0 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.admin-post-status.is-published {
+    background: rgba(26, 127, 55, 0.08);
+    color: var(--fgColor-success);
+}
+
+.admin-post-status.is-draft {
+    background: var(--bgColor-attention-muted);
+    color: var(--fgColor-attention);
+}
+
+.admin-post-excerpt {
+    margin: 5px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    margin-top: 6px;
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+.admin-post-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.admin-post-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.admin-post-icon-btn {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    padding: 0;
+}
+
+.admin-posts-empty {
+    padding: 34px 20px;
+    text-align: center;
+}
+
+.admin-posts-empty-icon {
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 12px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
+}
+
+.admin-posts-empty h3 {
+    margin: 0 0 6px;
+    color: var(--fgColor-default);
+    font-size: 1rem;
+}
+
+.admin-posts-empty p {
+    margin: 0 0 14px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+}
+
+.admin-posts-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.admin-posts-page-link {
+    min-width: 32px;
+    padding: 0 10px;
+}
+
+.admin-posts-page-gap {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    color: var(--fgColor-subtle);
+}
+
+.site-confirm-footer .admin-posts-btn {
+    min-height: 32px;
+}
+
+@media (max-width: 860px) {
+    .admin-posts-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-posts-filter-form {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-posts-filter-actions {
+        justify-content: flex-start;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-post-row {
+        grid-template-columns: 44px minmax(0, 1fr);
+        align-items: flex-start;
+    }
+
+    .admin-post-thumb {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+    }
+
+    .admin-post-actions {
+        grid-column: 1 / -1;
+        justify-content: flex-start;
+    }
+
+    .admin-post-title-line {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-post-title-line h2,
+    .admin-post-excerpt {
+        white-space: normal;
+    }
 }
 </style>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Add event listeners to delete buttons
+function openModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('d-none');
+    el.classList.add('d-flex');
+    document.body.classList.add('has-site-dialog');
+}
+function closeModal(id) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    el.classList.add('d-none');
+    el.classList.remove('d-flex');
+    document.body.classList.remove('has-site-dialog');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.btn-action-danger').forEach(button => {
+    document.querySelectorAll('[data-delete-trigger]').forEach(function(button) {
         button.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
-            const postTitle = this.getAttribute('data-post-title');
-            
-            const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            const deleteTitle = document.getElementById('delete-post-title');
-            const deleteForm = document.getElementById('delete-form');
-            
-            deleteTitle.textContent = postTitle;
-            deleteForm.action = `/admin/posts/${postId}/delete`;
-            deleteModal.show();
+            var postId = this.getAttribute('data-post-id');
+            var postTitle = this.getAttribute('data-post-title');
+            var deleteTitle = document.getElementById('delete-post-title');
+            var deleteForm = document.getElementById('delete-form');
+            if (deleteTitle) deleteTitle.textContent = postTitle || '';
+            if (deleteForm) deleteForm.action = '/admin/posts/' + postId + '/delete';
+            openModal('deleteModal');
         });
     });
 });
 
-// 搜索框回车提交
-document.getElementById('search').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        this.form.submit();
-    }
-});
+var searchEl = document.getElementById('search');
+if (searchEl) {
+    searchEl.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') this.form.submit();
+    });
+}
 </script>
-{% endblock %} 
+{% endblock %}

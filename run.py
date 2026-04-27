@@ -5,7 +5,7 @@
 
 from app import create_app
 from app.models.user import db
-from app.models import User, Post, Project, Message
+from app.models import User, Post, Message
 
 app = create_app()
 

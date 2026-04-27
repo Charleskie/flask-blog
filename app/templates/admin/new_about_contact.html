@@ -3,290 +3,143 @@
 {% block title %}新建联系方式 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1><i class="fas fa-plus"></i> 新建联系方式</h1>
-                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline-secondary">
-                    <i class="fas fa-arrow-left"></i> 返回管理
-                </a>
-            </div>
-            
-            <div class="card">
-                <div class="card-body">
-                    <form method="POST" id="contact-form">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <!-- 基本信息 -->
-                                <div class="mb-3">
-                                    <label for="platform" class="form-label">平台名称 *</label>
-                                    <input type="text" class="form-control" id="platform" name="platform" 
-                                           required placeholder="例如: GitHub, LinkedIn, 微信">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="icon" class="form-label">图标类名 *</label>
-                                    <input type="text" class="form-control" id="icon" name="icon" 
-                                           required placeholder="例如: fab fa-github, fas fa-envelope">
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle"></i> 
-                                        使用Font Awesome图标，如 <code>fab fa-github</code>、<code>fas fa-envelope</code>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="text" class="form-label">显示文本 *</label>
-                                    <input type="text" class="form-control" id="text" name="text" 
-                                           required placeholder="例如: GitHub, 邮箱地址">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="url" class="form-label">链接地址</label>
-                                    <input type="url" class="form-control" id="url" name="url" 
-                                           placeholder="例如: https://github.com/username">
-                                    <div class="form-text">可选，如果不填写则只显示文本</div>
-                                </div>
+<div class="container-xl mx-auto px-3 py-4">
+    <div class="d-flex flex-wrap items-center justify-between gap-3 mb-4">
+        <h1 class="f3 text-bold color-fg-default m-0"><i class="fas fa-plus mr-2"></i>新建联系方式</h1>
+        <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline btn-sm">
+            <i class="fas fa-arrow-left"></i> 返回管理
+        </a>
+    </div>
+
+    <div class="Box">
+        <div class="Box-body p-4">
+            <form method="POST" id="contact-form" class="d-flex flex-column gap-4">
+                <div class="d-grid grid-cols-1" style="gap: 24px;">
+                    <style>
+                    @media (min-width: 768px) {
+                        .contact-edit-grid { grid-template-columns: 1fr 1fr; }
+                    }
+                    </style>
+                    <div class="d-grid contact-edit-grid" style="gap: 24px;">
+                        <div class="d-flex flex-column gap-4">
+                            <div class="d-flex flex-column gap-2">
+                                <label for="platform" class="form-label m-0">平台名称 *</label>
+                                <input type="text" class="form-control" id="platform" name="platform" required placeholder="例如: GitHub, LinkedIn, 微信">
                             </div>
-                            
-                            <div class="col-md-6">
-                                <!-- 样式设置 -->
-                                <div class="mb-3">
-                                    <label for="color" class="form-label">图标颜色</label>
-                                    <select class="form-select" id="color" name="color">
-                                        <option value="primary">蓝色 (primary)</option>
-                                        <option value="secondary">灰色 (secondary)</option>
-                                        <option value="success">绿色 (success)</option>
-                                        <option value="danger">红色 (danger)</option>
-                                        <option value="warning">黄色 (warning)</option>
-                                        <option value="info">青色 (info)</option>
-                                        <option value="light">浅色 (light)</option>
-                                        <option value="dark">深色 (dark)</option>
-                                    </select>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="order" class="form-label">显示顺序</label>
-                                    <input type="number" class="form-control" id="order" name="order" 
-                                           value="0" min="0" placeholder="数字越小越靠前">
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
-                                        <label class="form-check-label" for="is_active">
-                                            显示此联系方式
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <!-- 预览 -->
-                                <div class="mb-3">
-                                    <label class="form-label">预览效果</label>
-                                    <div class="border rounded p-3" style="background-color: #f8f9fa;">
-                                        <div id="contact-preview">
-                                            <i class="fas fa-envelope text-primary"></i>
-                                            <span class="ms-2">示例联系方式</span>
-                                        </div>
+                            <div class="d-flex flex-column gap-2">
+                                <label for="icon" class="form-label m-0">图标类名 *</label>
+                                <input type="text" class="form-control" id="icon" name="icon" required placeholder="例如: fab fa-github, fas fa-envelope">
+                                <p class="f6 color-fg-muted m-0"><i class="fas fa-info-circle mr-1"></i>使用 Font Awesome 图标，如 <code class="text-mono">fab fa-github</code>、<code class="text-mono">fas fa-envelope</code></p>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <label for="text" class="form-label m-0">显示文本 *</label>
+                                <input type="text" class="form-control" id="text" name="text" required placeholder="例如: GitHub, 邮箱地址">
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <label for="url" class="form-label m-0">链接地址</label>
+                                <input type="url" class="form-control" id="url" name="url" placeholder="例如: https://github.com/username">
+                                <p class="f6 color-fg-muted m-0">可选，如果不填写则只显示文本</p>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-4">
+                            <div class="d-flex flex-column gap-2">
+                                <label for="color" class="form-label m-0">图标颜色</label>
+                                <select class="form-select" id="color" name="color">
+                                    <option value="primary">蓝色 (primary)</option>
+                                    <option value="secondary">灰色 (secondary)</option>
+                                    <option value="success">绿色 (success)</option>
+                                    <option value="danger">红色 (danger)</option>
+                                    <option value="warning">黄色 (warning)</option>
+                                    <option value="info">青色 (info)</option>
+                                    <option value="light">浅色 (light)</option>
+                                    <option value="dark">深色 (dark)</option>
+                                </select>
+                            </div>
+                            <div class="d-flex flex-column gap-2">
+                                <label for="order" class="form-label m-0">显示顺序</label>
+                                <input type="number" class="form-control" id="order" name="order" value="0" min="0" placeholder="数字越小越靠前">
+                            </div>
+                            <label class="d-flex items-center gap-2 f6 color-fg-default m-0">
+                                <input type="checkbox" id="is_active" name="is_active" checked>
+                                <span>显示此联系方式</span>
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="form-label m-0">预览效果</label>
+                                <div class="border rounded-2 color-bg-muted p-3 f6">
+                                    <div id="contact-preview">
+                                        <i class="fas fa-envelope color-fg-accent"></i>
+                                        <span class="color-fg-default ml-2">示例联系方式</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
-                                <i class="fas fa-times"></i> 取消
-                            </a>
-                            <button type="submit" class="btn-submit">
-                                <i class="fas fa-save"></i> 保存联系方式
-                            </button>
-                        </div>
-                    </form>
+                    </div>
                 </div>
-            </div>
+
+                <div class="d-flex flex-wrap justify-end gap-2 border-top pt-4">
+                    <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存联系方式
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-<style>
-/* 输入框文字颜色样式 */
-.form-control {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-control:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-.form-control::placeholder {
-    color: rgba(255, 255, 255, 0.6) !important;
-}
-
-.form-label {
-    color: white !important;
-}
-
-.form-text {
-    color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.invalid-feedback {
-    color: #ff6b6b !important;
-}
-
-.valid-feedback {
-    color: #51cf66 !important;
-}
-
-/* 按钮样式调整 */
-.btn-outline-secondary {
-    color: white !important;
-    border-color: rgba(255, 255, 255, 0.3) !important;
-    background-color: transparent !important;
-}
-
-.btn-outline-secondary:hover {
-    color: #000 !important;
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    border-color: rgba(255, 255, 255, 0.9) !important;
-}
-
-.btn-outline-secondary:focus {
-    color: white !important;
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-    box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
-}
-
-/* 提交按钮样式 */
-.btn-submit {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    color: white;
-    padding: 0.75rem 2rem;
-    border-radius: 0.5rem;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
-}
-
-.btn-submit:hover {
-    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    text-decoration: none;
-    color: white;
-}
-
-.btn-submit:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
-}
-
-.btn-submit:disabled {
-    background: rgba(100, 116, 139, 0.5);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.btn-submit:disabled:hover {
-    background: rgba(100, 116, 139, 0.5);
-    transform: none;
-    box-shadow: none;
-}
-
-/* 卡片样式调整 */
-.card {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(10px);
-    box-shadow: none !important;
-}
-
-.card-header {
-    background: rgba(15, 23, 42, 0.3) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
-    color: #e2e8f0 !important;
-}
-
-.card-body {
-    background: transparent !important;
-    color: #94a3b8 !important;
-}
-
-/* 开关样式调整 */
-.form-check-input {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-}
-
-.form-check-input:checked {
-    background-color: #667eea !important;
-    border-color: #667eea !important;
-}
-
-.form-check-label {
-    color: white !important;
-}
-</style>
-{% endblock %}
-
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const iconInput = document.getElementById('icon');
-    const textInput = document.getElementById('text');
-    const colorSelect = document.getElementById('color');
-    const urlInput = document.getElementById('url');
-    const previewDiv = document.getElementById('contact-preview');
-    
-    function updatePreview() {
-        const icon = iconInput.value.trim() || 'fas fa-envelope';
-        const text = textInput.value.trim() || '示例联系方式';
-        const color = colorSelect.value;
-        const url = urlInput.value.trim();
-        
-        let html = `<i class="${icon} text-${color}"></i>`;
-        if (url) {
-            html += ` <a href="${url}" target="_blank" class="text-decoration-none ms-2">${text}</a>`;
-        } else {
-            html += ` <span class="ms-2">${text}</span>`;
-        }
-        
-        previewDiv.innerHTML = html;
+(function() {
+    var COLOR_CLASS = {
+        primary: 'color-fg-accent',
+        secondary: 'color-fg-muted',
+        success: 'color-fg-success',
+        danger: 'color-fg-danger',
+        warning: 'color-fg-attention',
+        info: 'color-fg-accent',
+        light: 'color-fg-subtle',
+        dark: 'color-fg-default'
+    };
+    function contactColorClass(key) {
+        return COLOR_CLASS[key] || 'color-fg-accent';
     }
-    
-    iconInput.addEventListener('input', updatePreview);
-    textInput.addEventListener('input', updatePreview);
-    colorSelect.addEventListener('change', updatePreview);
-    urlInput.addEventListener('input', updatePreview);
-    
-    // 表单验证
-    const form = document.getElementById('contact-form');
-    form.addEventListener('submit', function(e) {
-        const platform = document.getElementById('platform').value.trim();
-        const icon = document.getElementById('icon').value.trim();
-        const text = document.getElementById('text').value.trim();
-        
-        if (!platform || !icon || !text) {
-            e.preventDefault();
-            alert('请填写所有必填字段');
-            return;
+    document.addEventListener('DOMContentLoaded', function() {
+        var iconInput = document.getElementById('icon');
+        var textInput = document.getElementById('text');
+        var colorSelect = document.getElementById('color');
+        var urlInput = document.getElementById('url');
+        var previewDiv = document.getElementById('contact-preview');
+        function updatePreview() {
+            var icon = iconInput.value.trim() || 'fas fa-envelope';
+            var text = textInput.value.trim() || '示例联系方式';
+            var color = colorSelect.value;
+            var url = urlInput.value.trim();
+            var ccls = contactColorClass(color);
+            var html = '<i class="' + icon + ' ' + ccls + '"></i>';
+            if (url) {
+                html += ' <a href="' + url + '" target="_blank" rel="noopener noreferrer" class="color-fg-accent no-underline ml-2">' + text + '</a>';
+            } else {
+                html += ' <span class="color-fg-default ml-2">' + text + '</span>';
+            }
+            previewDiv.innerHTML = html;
         }
+        iconInput.addEventListener('input', updatePreview);
+        textInput.addEventListener('input', updatePreview);
+        colorSelect.addEventListener('change', updatePreview);
+        urlInput.addEventListener('input', updatePreview);
+        document.getElementById('contact-form').addEventListener('submit', function(e) {
+            var platform = document.getElementById('platform').value.trim();
+            var icon = document.getElementById('icon').value.trim();
+            var text = document.getElementById('text').value.trim();
+            if (!platform || !icon || !text) {
+                e.preventDefault();
+                alert('请填写所有必填字段');
+            }
+        });
     });
-});
+})();
 </script>
 {% endblock %}

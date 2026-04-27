@@ -1,24 +1,23 @@
-/* 交互功能样式 */
+/* Interaction styles - Primer aligned */
 
-/* 交互功能优化样式 */
 .interaction-section {
-    margin: 20px 0;
-    padding: 15px;
-    border-radius: 15px;
-    backdrop-filter: blur(15px);
-    border: 1px solid var(--border-color);
+    margin: 16px 0;
+    padding: 16px;
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
 }
 
-/* 统计信息样式 */
 .stats-info {
     display: flex;
-    gap: 20px;
-    margin: 15px 0;
+    gap: 16px;
+    margin: 16px 0;
     flex-wrap: wrap;
     justify-content: center;
     padding: 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 12px;
+    background: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--borderColor-default);
 }
 
 .stat-item {
@@ -32,48 +31,46 @@
 .stat-number {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.25rem;
+    color: var(--fgColor-accent);
+    margin-bottom: 4px;
 }
 
 .stat-label {
-    font-size: 0.8rem;
-    color: var(--text-muted);
+    font-size: 12px;
+    color: var(--fgColor-subtle);
     font-weight: 500;
 }
 
-/* 交互按钮样式 */
 .interaction-buttons {
     display: flex;
-    gap: 15px;
-    margin: 15px 0;
+    gap: 12px;
+    margin: 16px 0;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
 }
 
-/* 评分区域样式 */
 .rating-section {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    background: var(--bgColor-muted);
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--borderColor-default);
 }
 
 .rating-label {
-    font-size: 0.9rem;
-    color: var(--text-secondary);
+    font-size: 14px;
+    color: var(--fgColor-muted);
     font-weight: 500;
     margin: 0;
 }
 
 .rating-input {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     align-items: center;
 }
 
@@ -84,194 +81,246 @@
 .rating-input label {
     cursor: pointer;
     font-size: 1.2rem;
-    color: var(--text-muted);
-    transition: all 0.3s ease;
+    color: var(--fgColor-subtle);
+    transition: color 0.15s ease;
     padding: 2px;
 }
 
 .rating-input label:hover {
-    color: var(--warning-color);
-    transform: scale(1.1);
+    color: var(--fgColor-attention);
 }
 
-.rating-input input[type="radio"]:checked + label {
-    color: var(--warning-color);
-}
-
+.rating-input input[type="radio"]:checked + label,
 .rating-input input[type="radio"]:checked ~ label {
-    color: var(--warning-color);
+    color: var(--fgColor-attention);
 }
 
-/* 评分输入悬停效果 */
 .rating-input label:hover ~ label {
-    color: var(--text-muted);
+    color: var(--fgColor-subtle);
 }
 
 .interaction-btn {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    border: 1px solid var(--bg-tertiary);
-    border-radius: var(--radius-lg);
-    background: var(--bg-glass);
-    color: var(--text-primary);
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 10px;
+    background: linear-gradient(180deg, var(--bgColor-default), var(--bgColor-muted));
+    color: var(--fgColor-default);
     text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
+    font-weight: 600;
+    font-size: 13px;
+    box-shadow: var(--shadow-resting-xsmall);
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
     cursor: pointer;
-    backdrop-filter: blur(10px);
 }
 
 .interaction-btn:hover {
-    background: var(--bg-glass-hover);
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-accent);
+    box-shadow: var(--shadow-resting-small);
+    transform: translateY(-1px);
     text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
 }
 
 .interaction-btn.active {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
+    background: var(--bgColor-accent-emphasis);
+    border-color: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .interaction-btn.active:hover {
-    background: var(--primary-dark);
-    color: white;
+    background: #0550ae;
+    color: var(--fgColor-onEmphasis);
+    transform: translateY(-1px);
 }
 
 .interaction-btn i {
-    font-size: 1.1rem;
+    font-size: 14px;
 }
 
-/* 点赞按钮特殊样式 */
 .interaction-btn.like-btn.active {
-    background: var(--danger-color);
-    border-color: var(--danger-color);
-    color: white;
+    background: var(--bgColor-danger-emphasis);
+    border-color: var(--bgColor-danger-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .interaction-btn.like-btn.active:hover {
-    background: #dc2626;
-    color: white;
+    background: #a40e26;
+    color: var(--fgColor-onEmphasis);
 }
 
-/* 收藏按钮特殊样式 */
 .interaction-btn.favorite-btn.active {
-    background: var(--warning-color);
-    border-color: var(--warning-color);
-    color: white;
+    background: var(--bgColor-attention-emphasis);
+    border-color: var(--bgColor-attention-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .interaction-btn.favorite-btn.active:hover {
-    background: #d97706;
-    color: white;
+    background: #7d5600;
+    color: var(--fgColor-onEmphasis);
 }
 
-/* 评论按钮特殊样式 */
 .interaction-btn.comment-btn {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: white;
+    background: var(--bgColor-accent-emphasis);
+    border-color: var(--bgColor-accent-emphasis);
+    color: var(--fgColor-onEmphasis);
 }
 
 .interaction-btn.comment-btn:hover {
-    background: var(--primary-dark);
-    color: white;
+    background: #0550ae;
+    color: var(--fgColor-onEmphasis);
 }
 
-/* 消息提示样式 */
+/* Toast */
 .message-toast {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    padding: 1rem 1.5rem;
-    border-radius: var(--radius-lg);
-    color: white;
-    font-weight: 500;
-    z-index: 9999;
-    max-width: 400px;
-    box-shadow: var(--shadow-lg);
-    backdrop-filter: blur(10px);
-    animation: slideInRight 0.3s ease-out;
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    width: auto;
+    min-width: 220px;
+    max-width: 100%;
+    padding: 12px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(208, 215, 222, 0.82);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.96)),
+        var(--bgColor-default);
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.12);
+    color: var(--fgColor-default);
+    backdrop-filter: blur(16px);
+    transform: translateX(0);
+    animation: slideInRight 0.2s ease-out;
+}
+
+.message-toast-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    background: rgba(9, 105, 218, 0.08);
+    color: var(--fgColor-accent);
+}
+
+.message-toast-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.message-toast-message {
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.message-toast-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--fgColor-muted);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.message-toast-close:hover {
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+}
+
+.message-toast-close:focus-visible {
+    outline: none;
+    border-color: rgba(9, 105, 218, 0.22);
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
 }
 
 .message-toast.success {
-    background: linear-gradient(135deg, var(--success-color), #059669);
+    border-color: rgba(31, 136, 61, 0.18);
 }
 
 .message-toast.error {
-    background: linear-gradient(135deg, var(--danger-color), #dc2626);
+    border-color: rgba(218, 54, 51, 0.18);
 }
 
 .message-toast.warning {
-    background: linear-gradient(135deg, var(--warning-color), #d97706);
+    border-color: rgba(191, 135, 0, 0.18);
 }
 
 .message-toast.info {
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border-color: rgba(9, 105, 218, 0.16);
 }
 
-/* 消息提示动画 */
+.message-toast.success .message-toast-icon {
+    background: rgba(31, 136, 61, 0.08);
+    color: var(--fgColor-success);
+}
+
+.message-toast.error .message-toast-icon {
+    background: rgba(218, 54, 51, 0.08);
+    color: var(--fgColor-danger);
+}
+
+.message-toast.warning .message-toast-icon {
+    background: rgba(191, 135, 0, 0.08);
+    color: var(--fgColor-attention);
+}
+
 @keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+    from { opacity: 0; transform: translateX(16px); }
+    to { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes slideOutRight {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%);
-    }
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(16px); }
 }
 
 .message-toast.hide {
-    animation: slideOutRight 0.3s ease-in-out forwards;
+    animation: slideOutRight 0.2s ease-in-out forwards;
 }
 
-/* 交互状态指示器 */
 .interaction-status {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-md);
-    font-size: 0.875rem;
+    gap: 8px;
+    padding: 4px 12px;
+    border-radius: var(--borderRadius-medium);
+    font-size: 14px;
     font-weight: 500;
 }
 
 .interaction-status.loading {
-    background: var(--bg-secondary);
-    color: var(--text-muted);
+    background: var(--bgColor-muted);
+    color: var(--fgColor-subtle);
 }
 
 .interaction-status.success {
-    background: rgba(16, 185, 129, 0.1);
-    color: var(--success-color);
+    background: var(--bgColor-success-muted);
+    color: var(--fgColor-success);
 }
 
 .interaction-status.error {
-    background: rgba(239, 68, 68, 0.1);
-    color: var(--danger-color);
+    background: var(--bgColor-danger-muted);
+    color: var(--fgColor-danger);
 }
 
-/* 交互按钮组 */
 .interaction-group {
     display: flex;
-    gap: 1rem;
+    gap: 8px;
     align-items: center;
     flex-wrap: wrap;
 }
@@ -282,33 +331,21 @@
     justify-content: center;
 }
 
-/* 响应式交互按钮 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
     .interaction-buttons {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
-    
     .interaction-btn {
         width: 100%;
         justify-content: center;
     }
-    
-    .stats-info {
-        gap: 15px;
-    }
-    
-    .stat-item {
-        min-width: 50px;
-    }
-    
-    .stat-number {
-        font-size: 1.25rem;
-    }
-    
+    .stats-info { gap: 12px; }
+    .stat-item { min-width: 50px; }
+    .stat-number { font-size: 1.25rem; }
     .message-toast {
-        right: 10px;
-        left: 10px;
+        right: 8px;
+        left: 8px;
         max-width: none;
     }
 }
