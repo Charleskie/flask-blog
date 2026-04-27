@@ -22,11 +22,13 @@ export LOG_FILE=app.log
 export SERVER_NAME=$DOMAIN
 export FORCE_HTTPS=$ENABLE_HTTPS
 export FORCE_WWW=true
+export APP_VERSION=${APP_VERSION:-$(git describe --tags --exact-match 2>/dev/null || git describe --tags --always 2>/dev/null || date +%Y%m%d%H%M%S)}
 
 echo "🚀 开始部署个人网站到 $SERVER_USER@$SERVER_IP"
 echo "🌐 域名: $DOMAIN"
 echo "🔐 HTTPS: $ENABLE_HTTPS"
 echo "🔌 SSH端口: $SSH_PORT"
+echo "🏷️  应用版本: $APP_VERSION"
 echo ""
 echo "📋 使用说明:"
 echo "  HTTP部署:  ./deploy_simple.sh [IP] [用户] false [密钥路径] [端口]"
@@ -470,7 +472,7 @@ echo "🧹 清理Nginx缓存..."
 sudo rm -rf /var/cache/nginx/* 2>/dev/null || true
 
 echo "⚙️ 创建systemd服务..."
-sudo tee /etc/systemd/system/website.service << 'SERVICE_EOF'
+sudo tee /etc/systemd/system/website.service << SERVICE_EOF
 [Unit]
 Description=Personal Website
 After=network.target
@@ -484,6 +486,7 @@ Environment=PATH=/home/website/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin
 Environment=FLASK_ENV=production
 Environment=FLASK_DEBUG=False
 Environment=PYTHONUNBUFFERED=1
+Environment=APP_VERSION=$APP_VERSION
 ExecStartPre=/home/website/venv/bin/python -c "from app import create_app; from app.models.user import db; app=create_app(); ctx=app.app_context(); ctx.push(); db.create_all(); ctx.pop()"
 ExecStart=/home/website/venv/bin/gunicorn --bind 127.0.0.1:8000 --workers 2 --threads 4 --timeout 120 --access-logfile - --error-logfile - 'app:create_app()'
 Restart=always

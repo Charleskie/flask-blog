@@ -136,7 +136,7 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui/toastui-editor.min.css') }}">
+<link rel="stylesheet" href="{{ asset_url('vendor/toastui/toastui-editor.min.css') }}">
 
 <style>
 .post-edit-header {
@@ -515,8 +515,8 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor-all.min.js') }}"></script>
-<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor-zh-cn.js') }}"></script>
+<script src="{{ asset_url('vendor/toastui/toastui-editor-all.min.js') }}"></script>
+<script src="{{ asset_url('vendor/toastui/toastui-editor-zh-cn.js') }}"></script>
 
 <script>
 function getToastEditorHeight() {

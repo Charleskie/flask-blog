@@ -17,6 +17,7 @@ export LOG_LEVEL=INFO
 export LOG_DIR=/root/kim/temp/blog/logs
 export LOG_FILE=app.log
 export PYTHONUNBUFFERED=1
+export APP_VERSION=${APP_VERSION:-$(git describe --tags --exact-match 2>/dev/null || git describe --tags --always 2>/dev/null || date +%Y%m%d%H%M%S)}
 
 APP_HOST="${APP_HOST:-127.0.0.1}"
 APP_PORT="${APP_PORT:-8000}"
@@ -63,6 +64,7 @@ fi
 echo "🌐 启动生产服务器 (Gunicorn)..."
 echo "📱 访问地址: http://${APP_HOST}:${APP_PORT}"
 echo "🔧 管理后台: http://${APP_HOST}:${APP_PORT}/admin"
+echo "🏷️  应用版本: ${APP_VERSION}"
 echo "📝 日志目录: /root/kim/temp/blog/logs/"
 echo "⏹️  按 Ctrl+C 停止服务器"
 echo ""

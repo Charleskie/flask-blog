@@ -45,12 +45,12 @@
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
+<link rel="stylesheet" href="{{ asset_url('css/components/simple-comment-editor.css') }}">
+<link rel="stylesheet" href="{{ asset_url('css/components/tiptap-editor.css') }}">
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+<script src="{{ asset_url('js/simple-tiptap-editor.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const tiptapContainer = document.getElementById('tiptap-container');

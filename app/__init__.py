@@ -4,6 +4,8 @@ from app.models.user import db
 from app.utils.filters import nl2br_filter, markdown_filter, html_filter, localtime_filter
 from app.utils.logger import setup_app_logging, log_manager
 import os
+import subprocess
+from pathlib import Path
 
 def load_env_file():
     """加载 .env 文件"""
@@ -15,6 +17,40 @@ def load_env_file():
                 if line and not line.startswith('#') and '=' in line:
                     key, value = line.split('=', 1)
                     os.environ[key.strip()] = value.strip().strip('"').strip("'")
+
+
+def resolve_app_version():
+    """解析当前应用版本，优先使用显式环境变量，其次尝试读取 git 信息。"""
+    env_version = (os.getenv('APP_VERSION') or '').strip()
+    if env_version:
+        return env_version
+
+    project_root = Path(__file__).resolve().parent.parent
+    if not (project_root / '.git').exists():
+        return 'dev'
+
+    commands = (
+        ['git', 'describe', '--tags', '--exact-match'],
+        ['git', 'describe', '--tags', '--always'],
+        ['git', 'rev-parse', '--short', 'HEAD'],
+    )
+
+    for command in commands:
+        try:
+            result = subprocess.run(
+                command,
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                text=True
+            )
+            version = result.stdout.strip()
+            if version:
+                return version
+        except Exception:
+            continue
+
+    return 'dev'
 
 def create_app():
     """应用工厂函数"""
@@ -29,6 +65,7 @@ def create_app():
     
     # 基础配置
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['APP_VERSION'] = resolve_app_version()
     
     # 将 OAuth 环境变量添加到应用配置中
     app.config['GOOGLE_CLIENT_ID'] = os.getenv('GOOGLE_CLIENT_ID')
@@ -73,6 +110,18 @@ def create_app():
     app.template_filter('markdown')(markdown_filter)
     app.template_filter('html')(html_filter)
     app.template_filter('localtime')(localtime_filter)
+
+    @app.context_processor
+    def inject_asset_helpers():
+        asset_version = app.config.get('APP_VERSION', 'dev')
+
+        def asset_url(filename):
+            return url_for('static', filename=filename, v=asset_version)
+
+        return {
+            'asset_url': asset_url,
+            'app_version': asset_version,
+        }
     
     # 初始化 OAuth
     try:

@@ -103,6 +103,7 @@ python run.py
 说明：
 - `deploy_sample.sh` 是脱敏后的示例脚本，适合作为指导模板。
 - 实际生产部署建议使用你自己的正式脚本副本，并结合 `gunicorn + systemd + nginx`。
+- 部署脚本会自动生成 `APP_VERSION`：优先取当前 `git tag`，没有 tag 时回退到 `git describe` / commit 标识。
 
 ## 核心路由
 
@@ -297,6 +298,7 @@ UPLOAD_FOLDER=app/static/uploads
 ```bash
 FORCE_HTTPS=false
 SERVER_NAME=example.com
+APP_VERSION=v2.0.0
 ```
 
 ## 维护脚本
@@ -330,6 +332,7 @@ tail -f logs/app.log
 - 应用启动时会自动执行部分数据库兼容修复：
   为文章补齐 `content_format`，为消息补齐删除/已读字段，为评论回复补齐二级回复字段。
 - 当前工作区里存在一些未提交的本地改动；如果要发布 `v2.0.0`，建议先确认本次版本应包含的文件范围，再统一提交和打 tag。
+- 模板中的静态资源现在统一通过 `APP_VERSION` 做缓存失效；发版时如果在 tag 上部署，会自动使用 tag 名作为版本参数。
 - 如果启用了 `FORCE_HTTPS`，应用会在生产环境中接入 HTTPS 重定向。
 
 ## 许可证
