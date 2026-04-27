@@ -449,14 +449,12 @@
                 
                 <div class="d-flex items-center" style="gap: 8px;">
                     {% if current_user.is_authenticated %}
-                        {% if current_user.is_admin %}
                         <div class="position-relative">
-                            <a href="{{ url_for('admin.admin_messages') }}" class="nav-utility-btn" aria-label="管理员消息">
+                            <a href="{{ url_for('main.message_center') }}" class="nav-utility-btn" aria-label="消息中心">
                                 <i class="fas fa-envelope" style="font-size: 16px;"></i>
                                 <span id="message-badge" class="nav-utility-badge position-absolute d-none items-center justify-center badge-notification">0</span>
                             </a>
                         </div>
-                        {% endif %}
                         
                         <div class="position-relative">
                             <a href="{{ url_for('notification.notifications') }}" class="nav-utility-btn" aria-label="通知">
@@ -522,6 +520,10 @@
             <a href="{{ url_for('main.about') }}" class="no-underline f2 {% if request.endpoint == 'main.about' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">关于</a>
             <a href="{{ url_for('main.blog') }}" class="no-underline f2 {% if request.endpoint == 'main.blog' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">博客</a>
             <a href="{{ url_for('main.links') }}" class="no-underline f2 {% if request.endpoint == 'main.links' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">友链</a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('main.message_center') }}" class="no-underline f2 {% if request.endpoint in ['main.contact', 'admin.admin_messages', 'main.message_center'] %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">消息中心</a>
+            <a href="{{ url_for('notification.notifications') }}" class="no-underline f2 {% if request.endpoint == 'notification.notifications' %}color-fg-accent text-bold{% else %}color-fg-default{% endif %}">通知</a>
+            {% endif %}
             <div class="position-relative mt-3">
                 <form method="GET" action="{{ url_for('main.search') }}">
                     <input type="text" name="q" placeholder="搜索..." 
@@ -811,7 +813,6 @@
     {% if current_user.is_authenticated %}
     <script>
     function updateMessageCount() {
-        {% if current_user.is_admin %}
         fetch('/api/messages/unread-count')
         .then(r => r.ok ? r.json() : Promise.reject())
         .then(data => {
@@ -831,7 +832,6 @@
             const badge = document.getElementById('message-badge');
             if (badge) { badge.classList.add('d-none'); badge.classList.remove('d-flex'); }
         });
-        {% endif %}
     }
     
     function updateNotificationCount() {

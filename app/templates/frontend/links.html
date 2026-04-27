@@ -29,7 +29,7 @@
 .links-page .links-empty,
 .links-page .links-apply-bar,
 .links-page .links-modal-body {
-    padding: 24px;
+    padding: 18px;
 }
 
 .links-page .links-section {
@@ -42,26 +42,27 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .links-page .links-list-title {
     margin: 0 0 6px;
-    font-size: 1.35rem;
+    font-size: 1.18rem;
     color: var(--fgColor-default);
 }
 
 .links-page .links-list-copy {
     margin: 0;
     color: var(--fgColor-muted);
-    line-height: 1.75;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 .links-page .links-list-meta {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 12px;
+    padding: 6px 10px;
     border-radius: 999px;
     background: var(--links-surface-muted);
     color: var(--fgColor-muted);
@@ -76,7 +77,6 @@
 }
 
 .links-page .btn,
-.links-page .link-action,
 .links-page .links-modal-close {
     display: inline-flex;
     align-items: center;
@@ -97,7 +97,6 @@
 }
 
 .links-page .btn:hover,
-.links-page .link-action:hover,
 .links-page .links-modal-close:hover {
     transform: none;
     box-shadow: none;
@@ -108,21 +107,18 @@
 }
 
 .links-page .btn i,
-.links-page .link-action i,
 .links-page .links-modal-close i {
     margin: 0;
     line-height: 1;
 }
 
-.links-page .btn-primary,
-.links-page .link-action {
+.links-page .btn-primary {
     background: rgba(221, 244, 255, 0.72);
     border-color: rgba(9, 105, 218, 0.2);
     color: var(--links-accent);
 }
 
-.links-page .btn-primary:hover,
-.links-page .link-action:hover {
+.links-page .btn-primary:hover {
     background: rgba(221, 244, 255, 0.95);
     border-color: rgba(9, 105, 218, 0.34);
     color: var(--links-accent);
@@ -140,124 +136,42 @@
 }
 
 .links-page .links-grid {
-    display: grid;
-    gap: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .links-page .link-card {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    padding: 18px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 0 14px;
+    border-radius: 999px;
     transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 .links-page .link-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-1px);
     border-color: var(--links-border-strong);
-    box-shadow: var(--shadow-resting-small);
-}
-
-.links-page .link-card-top {
-    display: flex;
-    align-items: flex-start;
-    gap: 14px;
-}
-
-.links-page .link-avatar,
-.links-page .link-avatar-fallback {
-    width: 46px;
-    height: 46px;
-    flex-shrink: 0;
-    border-radius: var(--links-radius-sm);
-}
-
-.links-page .link-avatar {
-    object-fit: cover;
-    border: 1px solid rgba(31, 35, 40, 0.08);
-}
-
-.links-page .link-avatar-fallback {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--links-surface-muted);
-    color: var(--fgColor-default);
-    font-size: 1.05rem;
-    font-weight: 700;
-}
-
-.links-page .link-body {
-    min-width: 0;
-    flex: 1;
+    box-shadow: 0 6px 16px rgba(31, 35, 40, 0.06);
 }
 
 .links-page .link-title {
     margin: 0;
-    font-size: 1.06rem;
+    font-size: 0.98rem;
     line-height: 1.35;
 }
 
+.links-page .link-card,
 .links-page .link-title a {
     color: var(--fgColor-default);
     text-decoration: none;
 }
 
+.links-page .link-card:hover,
 .links-page .link-title a:hover {
     color: var(--links-accent);
     text-decoration: none;
-}
-
-.links-page .link-domain {
-    margin: 6px 0 0;
-    color: var(--fgColor-subtle);
-    font-size: 13px;
-}
-
-.links-page .link-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 10px;
-    padding: 5px 10px;
-    border-radius: 999px;
-    background: var(--links-accent-soft);
-    color: var(--links-accent);
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.links-page .link-desc {
-    margin: 0;
-    color: var(--fgColor-muted);
-    line-height: 1.75;
-}
-
-.links-page .link-footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding-top: 14px;
-    border-top: 1px solid var(--links-border);
-}
-
-.links-page .link-url {
-    min-width: 0;
-    color: var(--fgColor-subtle);
-    font-size: 13px;
-}
-
-.links-page .link-url span {
-    display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.links-page .link-action {
-    white-space: nowrap;
 }
 
 .links-page .links-empty {
@@ -266,14 +180,15 @@
 
 .links-page .links-empty h3 {
     margin: 0 0 8px;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--fgColor-default);
 }
 
 .links-page .links-empty p {
     margin: 0;
     color: var(--fgColor-muted);
-    line-height: 1.75;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 .links-page .links-apply-bar {
@@ -281,15 +196,16 @@
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
-    margin-top: 20px;
+    gap: 12px;
+    margin-top: 16px;
     background: var(--links-surface-muted);
 }
 
 .links-page .links-apply-text {
     margin: 0;
     color: var(--fgColor-muted);
-    line-height: 1.75;
+    font-size: 13px;
+    line-height: 1.6;
 }
 
 .links-page .links-apply-actions {
@@ -406,18 +322,6 @@
     margin-top: 2px;
 }
 
-@media (min-width: 768px) {
-    .links-page .links-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@media (min-width: 1012px) {
-    .links-page .links-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
 @media (max-width: 767px) {
     .links-page .links-list-actions,
     .links-page .links-apply-actions,
@@ -438,53 +342,14 @@
     .links-page .links-modal-header {
         align-items: flex-start;
     }
-
-    .links-page .link-footer {
-        flex-direction: column;
-        align-items: flex-start;
-    }
 }
 </style>
 {% endblock %}
 
 {% macro render_link_card(link) %}
-{% set clean_url = link.url | replace('https://', '') | replace('http://', '') | replace('www.', '') %}
-<article class="link-card">
-    <div class="link-card-top">
-        {% if link.avatar_url %}
-        <img src="{{ link.avatar_url }}" alt="{{ link.name }}" class="link-avatar">
-        {% else %}
-        <div class="link-avatar-fallback">{{ link.name[0].upper() }}</div>
-        {% endif %}
-
-        <div class="link-body">
-            <h3 class="link-title">
-                <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">{{ link.name }}</a>
-            </h3>
-            <p class="link-domain">{{ clean_url }}</p>
-            {% if link.featured %}
-            <span class="link-badge">
-                <i class="fas fa-star" aria-hidden="true"></i>
-                推荐友链
-            </span>
-            {% endif %}
-        </div>
-    </div>
-
-    <p class="link-desc">
-        {{ link.description or '这是一个内容清晰、值得收藏的网站。' }}
-    </p>
-
-    <div class="link-footer">
-        <div class="link-url">
-            <span title="{{ link.url }}">{{ clean_url }}</span>
-        </div>
-        <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-action">
-            <i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i>
-            <span>访问网站</span>
-        </a>
-    </div>
-</article>
+<a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-card">
+    <span class="link-title">{{ link.name }}</span>
+</a>
 {% endmacro %}
 
 {% block content %}
@@ -493,25 +358,6 @@
 <div class="links-page py-4">
     <section class="links-section">
         <div class="links-list-wrap">
-            <div class="links-list-head">
-                <div>
-                    <h2 class="links-list-title">所有友链</h2>
-                    <p class="links-list-copy">按统一列表展示，推荐友链会用标签标出。</p>
-                </div>
-                <div class="d-flex flex-column items-stretch gap-3">
-                    <div class="links-list-meta">
-                        <i class="fas fa-link" aria-hidden="true"></i>
-                        {{ total_links }} 个
-                    </div>
-                    <div class="links-list-actions">
-                        <button type="button" id="applyLinkBtn" class="btn btn-primary" data-open-link-modal>
-                            <i class="fas fa-plus" aria-hidden="true"></i>
-                            <span>申请友链</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
             {% if links %}
             <div class="links-grid">
                 {% for link in links %}
@@ -527,7 +373,7 @@
 
             <div class="links-apply-bar">
                 <p class="links-apply-text">
-                    如果你也有自己的博客或作品站，欢迎申请友链。页面会尽量保持简洁，只收录长期维护、访问稳定的网站。
+                    如果你也有自己的博客或作品站，欢迎申请友链。
                 </p>
                 <div class="links-apply-actions">
                     <button type="button" class="btn btn-primary" data-open-link-modal>

@@ -25,6 +25,18 @@ def get_admin_unread_messages_count():
         if message.has_unread_for_admin()
     )
 
+
+def get_user_unread_messages_count(user_email):
+    """按当前用户统计有管理员新回复的未读会话数。"""
+    if not user_email:
+        return 0
+
+    return sum(
+        1
+        for message in Message.visible_to_user_query(user_email).order_by(Message.created_at.desc()).all()
+        if message.has_unread_for_user()
+    )
+
 @admin_bp.route('/admin')
 @login_required
 @admin_required
@@ -937,11 +949,14 @@ def mark_all_messages_read():
 
 @admin_bp.route('/api/messages/unread-count')
 @login_required
-@admin_required
 def api_unread_messages_count():
-    """API: 获取未读消息数量"""
+    """API: 获取当前登录用户的未读会话数量。"""
     try:
-        unread_count = get_admin_unread_messages_count()
+        if current_user.is_admin:
+            unread_count = get_admin_unread_messages_count()
+        else:
+            unread_count = get_user_unread_messages_count(current_user.email)
+
         return jsonify({
             'success': True,
             'count': unread_count

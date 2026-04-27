@@ -1,6 +1,19 @@
 /* 主样式文件 - 导入所有CSS模块 */
 
-/* 1. CSS变量定义 - Primer Design System */
+/* 1. 模块导入 */
+@import url('./base/reset.css');
+@import url('./base/animations.css');
+@import url('./components/navigation.css');
+@import url('./components/cards.css');
+@import url('./components/buttons.css');
+@import url('./components/timeline.css');
+@import url('./interactions/rating.css');
+@import url('./interactions/comments.css');
+@import url('./interactions/interactions.css');
+@import url('./responsive/mobile.css');
+@import url('./responsive/tablet.css');
+
+/* 2. CSS变量定义 - Primer Design System */
 :root {
     /* Primer Foreground Colors */
     --fgColor-default: #1f2328;
@@ -96,26 +109,7 @@
     --spacing-xl: 48px;
 }
 
-/* 2. 基础样式 */
-@import url('./base/reset.css');
-@import url('./base/animations.css');
-
-/* 3. 组件样式 */
-@import url('./components/navigation.css');
-@import url('./components/cards.css');
-@import url('./components/buttons.css');
-@import url('./components/timeline.css');
-
-/* 4. 交互功能样式 */
-@import url('./interactions/rating.css');
-@import url('./interactions/comments.css');
-@import url('./interactions/interactions.css');
-
-/* 5. 响应式设计 */
-@import url('./responsive/mobile.css');
-@import url('./responsive/tablet.css');
-
-/* 6. 其他通用样式 */
+/* 3. 其他通用样式 */
 /* 分页样式 */
 .pagination {
     display: flex;

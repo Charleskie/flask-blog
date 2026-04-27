@@ -137,7 +137,7 @@ class Notification(db.Model):
             content=f'"{message_subject}"',
             related_id=message_id,
             related_type='message',
-            related_url=f'/contact',  # 跳转到联系页面
+            related_url=f'/contact?message_id={message_id}',
             sender_name=admin_name
         )
         return notification

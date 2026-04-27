@@ -110,6 +110,12 @@ def create_app():
 
     with app.app_context():
         try:
+            from app.models.user import ensure_user_schema
+            ensure_user_schema()
+        except Exception as e:
+            app.logger.warning(f"用户表结构检查失败: {e}")
+
+        try:
             from app.models.post import ensure_post_schema
             ensure_post_schema()
         except Exception as e:

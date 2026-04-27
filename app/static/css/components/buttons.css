@@ -360,9 +360,9 @@ body.has-site-dialog {
 }
 
 .site-dialog-panel {
-    width: min(460px, calc(100vw - 32px));
+    width: min(420px, calc(100vw - 32px));
     border: 1px solid rgba(208, 215, 222, 0.82);
-    border-radius: 24px;
+    border-radius: 20px;
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 248, 250, 0.96)),
         var(--bgColor-default);
@@ -376,7 +376,7 @@ body.has-site-dialog {
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 22px 24px 0;
+    padding: 18px 20px 0;
 }
 
 .site-dialog-head-main {
@@ -390,9 +390,9 @@ body.has-site-dialog {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 16px;
+    width: 38px;
+    height: 38px;
+    border-radius: 14px;
     flex-shrink: 0;
     background: rgba(9, 105, 218, 0.08);
     color: var(--fgColor-accent);
@@ -418,7 +418,7 @@ body.has-site-dialog {
 }
 
 .site-dialog-body {
-    padding: 18px 24px 24px;
+    padding: 14px 20px 20px;
 }
 
 .site-dialog-body-center {
@@ -443,16 +443,16 @@ body.has-site-dialog {
 .site-dialog-title {
     margin: 0;
     color: var(--fgColor-default);
-    font-size: clamp(1.35rem, 3vw, 1.85rem);
+    font-size: 18px;
     line-height: 1.15;
     font-weight: 700;
 }
 
 .site-dialog-message {
-    margin: 10px 0 0;
+    margin: 8px 0 0;
     color: var(--fgColor-muted);
-    font-size: 15px;
-    line-height: 1.7;
+    font-size: 14px;
+    line-height: 1.65;
     white-space: pre-line;
 }
 
@@ -460,7 +460,7 @@ body.has-site-dialog {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-    margin-top: 20px;
+    margin-top: 18px;
 }
 
 .site-dialog-actions-centered {
@@ -469,8 +469,39 @@ body.has-site-dialog {
 
 .site-dialog-actions .btn,
 .site-dialog-actions a.btn {
-    min-width: 104px;
+    min-width: 96px;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    box-shadow: none;
     justify-content: center;
+}
+
+.site-dialog-actions .btn-secondary {
+    --btn-bg: rgba(255, 255, 255, 0.9);
+    --btn-bg-hover: var(--bgColor-muted);
+    --btn-border: rgba(208, 215, 222, 0.86);
+    --btn-color: var(--fgColor-default);
+}
+
+.site-dialog-actions .btn-primary {
+    --btn-bg: rgba(221, 244, 255, 0.78);
+    --btn-bg-hover: rgba(221, 244, 255, 0.96);
+    --btn-border: rgba(9, 105, 218, 0.22);
+    --btn-color: var(--fgColor-accent);
+}
+
+.site-dialog-actions .btn-danger {
+    --btn-bg: rgba(255, 245, 245, 0.9);
+    --btn-bg-hover: rgba(207, 34, 46, 0.08);
+    --btn-border: rgba(207, 34, 46, 0.22);
+    --btn-color: var(--fgColor-danger);
+}
+
+.site-dialog-actions .btn-danger:hover {
+    color: var(--fgColor-danger);
+    border-color: rgba(207, 34, 46, 0.34);
 }
 
 .site-dialog-secondary-link {

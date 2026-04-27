@@ -113,7 +113,7 @@ def _get_contact_view_context(selected_message_id=None, compose_mode=False):
 
     if current_user.is_authenticated:
         user_messages = Message.visible_to_user_query(current_user.email).order_by(Message.created_at.desc()).all()
-        show_conversation_inbox = len(user_messages) > 0
+        show_conversation_inbox = compose_mode or len(user_messages) > 0
 
         if show_conversation_inbox and not compose_mode:
             if selected_message_id:
@@ -147,6 +147,20 @@ def _get_contact_view_context(selected_message_id=None, compose_mode=False):
         'user_unread_total': user_unread_total,
     })
     return context
+
+
+@main_bp.route('/messages')
+@login_required
+def message_center():
+    """统一消息中心入口。"""
+    if current_user.is_admin:
+        return redirect(url_for('admin.admin_messages'))
+
+    has_messages = Message.visible_to_user_query(current_user.email).count() > 0
+    if has_messages:
+        return redirect(url_for('main.contact'))
+
+    return redirect(url_for('main.contact', mode='new'))
 
 @main_bp.route('/')
 def index():

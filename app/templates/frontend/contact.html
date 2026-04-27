@@ -17,7 +17,7 @@
 
 <div class="contact-page py-4">
     <div class="container-xl width-full">
-        {% if show_conversation_inbox %}
+        {% if current_user.is_authenticated and (show_conversation_inbox or compose_mode) %}
         {% set conversation_mode = 'user' %}
         {% set conversation_items = user_messages %}
         {% set conversation_selected = selected_message %}
@@ -25,10 +25,10 @@
         {% set conversation_unread_total = user_unread_total %}
         {% set conversation_current_page = 1 %}
         {% set conversation_page_obj = none %}
-        {% set conversation_header_kicker = '我的会话' %}
-        {% set conversation_header_title = '联系记录' %}
-        {% set conversation_header_subtitle = '把历史私信和往来回复放到同一个对话页里查看。' %}
-        {% set conversation_toolbar_title = '全部会话' %}
+        {% set conversation_header_kicker = '消息中心' %}
+        {% set conversation_header_title = '与管理员的对话' %}
+        {% set conversation_header_subtitle = '把历史私信和管理员回复放到同一个会话页里查看和继续沟通。' %}
+        {% set conversation_toolbar_title = '全部对话' %}
         {% set conversation_toolbar_meta = '可以继续回复已有会话，也可以直接发起一个新话题。' %}
         {% set conversation_empty_title = '当前无私信' %}
         {% set conversation_empty_text = '发送第一条消息后，会在这里形成对话记录。' %}
@@ -46,13 +46,7 @@
                         <i class="fas fa-paper-plane" aria-hidden="true"></i>
                         开始新对话
                     </span>
-                    <h1 class="contact-title">联系我</h1>
-                    <p class="contact-subtitle">合作邀请、内容建议、问题反馈，或者只是想打个招呼，都可以直接留言。</p>
-
-                    <div class="contact-stat-row">
-                        <span class="contact-stat-pill"><strong>24h</strong>工作日常规回复</span>
-                        <span class="contact-stat-pill"><strong>{{ contact_channels|length }}</strong>可用联系渠道</span>
-                    </div>
+                    <p class="contact-subtitle">合作邀请、内容建议、问题反馈，闲聊或者只是想找个人吐槽一下，都可以直接留言。</p>
 
                     <div class="contact-sidebar-actions">
                         {% if current_user.is_authenticated %}
@@ -73,64 +67,6 @@
                     </div>
                 </div>
 
-                <div class="contact-sidebar-card">
-                    <div class="contact-card-head">
-                        <span class="contact-card-eyebrow">联系渠道</span>
-                        <h2>你也可以从这些入口找到我</h2>
-                    </div>
-                    <div class="contact-channel-list">
-                        {% for channel in contact_channels %}
-                        {% set channel_url = channel.url or '' %}
-                        <div class="contact-channel-item">
-                            <span class="contact-channel-icon {{ contact_icon_color.get(channel.color, 'color-fg-accent') }}">
-                                <i class="{{ channel.icon }}" aria-hidden="true"></i>
-                            </span>
-                            <div class="contact-channel-copy">
-                                <span class="contact-channel-label">{{ channel.platform }}</span>
-                                {% if channel_url %}
-                                <a href="{{ channel_url }}"
-                                   class="contact-channel-link no-underline"
-                                   {% if not channel_url.startswith('mailto:') and not channel_url.startswith('tel:') %}target="_blank" rel="noopener noreferrer"{% endif %}>
-                                    {{ channel.text }}
-                                </a>
-                                {% else %}
-                                <span class="contact-channel-text">{{ channel.text }}</span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="contact-sidebar-card">
-                    <div class="contact-card-head">
-                        <span class="contact-card-eyebrow">发送前先看</span>
-                        <h2>为了更快回复</h2>
-                    </div>
-                    <div class="contact-hint-list">
-                        <div class="contact-hint-item">
-                            <span class="contact-hint-index">01</span>
-                            <div>
-                                <strong>说明背景和目标</strong>
-                                <p>简单说明你当前的背景、问题和想达成的结果。</p>
-                            </div>
-                        </div>
-                        <div class="contact-hint-item">
-                            <span class="contact-hint-index">02</span>
-                            <div>
-                                <strong>补充时间信息</strong>
-                                <p>如果有截止时间或排期要求，可以一开始就说明。</p>
-                            </div>
-                        </div>
-                        <div class="contact-hint-item">
-                            <span class="contact-hint-index">03</span>
-                            <div>
-                                <strong>登录后更方便追踪</strong>
-                                <p>登录后可以直接在站内回看历史消息和后续回复。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </aside>
 
             <section class="contact-dialog-main">
@@ -139,12 +75,13 @@
                         <div>
                             <span class="contact-card-eyebrow">对话窗口</span>
                             <h2>直接在这里发起一段新对话</h2>
-                            <p>把你的问题、合作意向或建议发过来即可。</p>
                         </div>
                         <div class="contact-thread-tags">
                             <span class="contact-thread-tag">合作</span>
                             <span class="contact-thread-tag">反馈</span>
                             <span class="contact-thread-tag">建议</span>
+                            <span class="contact-thread-tag">闲聊</span>
+                            <span class="contact-thread-tag">吐槽</span>
                         </div>
                     </div>
 
@@ -154,7 +91,7 @@
                                 <span class="contact-bubble-author">系统提示</span>
                                 <span>现在</span>
                             </div>
-                            <div class="contact-bubble-content">你好，可以直接在这里留言。我会尽量在一个工作日内回复。</div>
+                            <div class="contact-bubble-content">你好，可以直接在这里留言。我会尽快回复。</div>
                         </div>
 
                         <div class="contact-bubble contact-bubble-user">
@@ -225,58 +162,6 @@
                             </div>
                         </div>
                     </form>
-                </div>
-
-                <div class="contact-support-grid">
-                    {% if link_contacts %}
-                    <section class="Box contact-panel-card">
-                        <div class="Box-body">
-                            <div class="contact-card-head">
-                                <span class="contact-card-eyebrow">快捷入口</span>
-                                <h3>一键直达常用渠道</h3>
-                            </div>
-                            <div class="contact-link-grid">
-                                {% for channel in link_contacts %}
-                                {% set channel_url = channel.url or '' %}
-                                <a href="{{ channel_url }}"
-                                   class="contact-link-card no-underline"
-                                   {% if not channel_url.startswith('mailto:') and not channel_url.startswith('tel:') %}target="_blank" rel="noopener noreferrer"{% endif %}>
-                                    <span class="contact-link-icon {{ contact_icon_color.get(channel.color, 'color-fg-accent') }}">
-                                        <i class="{{ channel.icon }}" aria-hidden="true"></i>
-                                    </span>
-                                    <div class="contact-link-copy">
-                                        <strong>{{ channel.platform }}</strong>
-                                        <span>{{ channel.text }}</span>
-                                    </div>
-                                    <i class="fas fa-arrow-up-right-from-square contact-link-arrow" aria-hidden="true"></i>
-                                </a>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </section>
-                    {% endif %}
-
-                    <section class="Box contact-panel-card">
-                        <div class="Box-body">
-                            <div class="contact-card-head">
-                                <span class="contact-card-eyebrow">常见问题</span>
-                                <h3>发消息前先看看这个</h3>
-                            </div>
-                            <div class="contact-faq-list">
-                                {% for item in faq_items %}
-                                <div class="contact-faq-item">
-                                    <button type="button" class="contact-faq-button" onclick="toggleFaq('{{ item.id }}')">
-                                        <span>{{ item.question }}</span>
-                                        <i class="fas fa-chevron-down contact-faq-icon" aria-hidden="true"></i>
-                                    </button>
-                                    <div id="{{ item.id }}" class="contact-faq-content d-none">
-                                        <p>{{ item.answer }}</p>
-                                    </div>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </section>
                 </div>
             </section>
         </section>
@@ -1360,13 +1245,14 @@ function setContactSubmitLoading(submitBtn, loadingText) {
 
     const originalHtml = submitBtn.innerHTML;
     const originalWidth = submitBtn.offsetWidth;
+    const originalHeight = submitBtn.offsetHeight;
 
     submitBtn.style.width = originalWidth + 'px';
     submitBtn.style.minWidth = originalWidth + 'px';
     submitBtn.style.maxWidth = originalWidth + 'px';
-    submitBtn.style.height = '38px';
-    submitBtn.style.minHeight = '38px';
-    submitBtn.style.maxHeight = '38px';
+    submitBtn.style.height = originalHeight + 'px';
+    submitBtn.style.minHeight = originalHeight + 'px';
+    submitBtn.style.maxHeight = originalHeight + 'px';
     submitBtn.classList.add('is-loading');
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>' + loadingText + '</span>';
     submitBtn.disabled = true;
@@ -1385,7 +1271,7 @@ function setContactSubmitLoading(submitBtn, loadingText) {
 }
 
 async function deleteConversation(messageId, subject) {
-    const confirmed = await window.confirmAsync(`确定要删除对话「${subject}」吗？删除后它只会从你的会话列表中移除。`, {
+    const confirmed = await window.confirmAsync(`确定删除「${subject || '当前对话'}」吗？\n删除后仅从你的会话列表中移除。`, {
         title: '删除对话',
         confirmText: '确认删除',
         cancelText: '取消',

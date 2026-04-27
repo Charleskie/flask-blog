@@ -104,8 +104,7 @@
     .home-closing-copy h2,
     .home-feature-card h2,
     .home-now-card h3,
-    .home-rail-head h3,
-    .home-skill-group h3 {
+    .home-rail-head h3 {
         margin: 0;
         color: var(--home-ink);
         font-family: inherit;
@@ -524,8 +523,7 @@
 
     .home-popular-body strong,
     .home-link-copy strong,
-    .home-version-copy strong,
-    .home-skill-group h3 {
+    .home-version-copy strong {
         color: var(--home-ink);
         font-size: 14px;
         line-height: 1.5;
@@ -592,79 +590,99 @@
     }
 
     .home-skill-panel {
+        padding: 18px;
         background: linear-gradient(180deg, #ffffff 0%, #f9fbfd 100%);
     }
 
-    .home-skill-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-        margin-top: 14px;
-    }
-
-    .home-skill-group {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
-        padding: 16px;
-        border: 1px solid var(--home-line);
-        border-radius: 18px;
-        background: var(--home-card);
-    }
-
-    .home-skill-group-head {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 10px;
-    }
-
-    .home-skill-group-head span {
-        color: var(--home-muted);
-        font-size: 11px;
-    }
-
     .home-skill-icons {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: flex-start;
+        gap: 16px;
+        margin-top: 12px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 6px;
+        scroll-snap-type: x proximity;
+        -webkit-overflow-scrolling: touch;
     }
 
     .home-skill-item {
-        display: flex;
+        flex: 0 0 auto;
+        display: inline-flex;
         flex-direction: column;
         align-items: center;
+        justify-content: flex-start;
         gap: 8px;
+        padding: 0;
         text-align: center;
+        scroll-snap-align: start;
+        transition: transform 0.18s ease;
+    }
+
+    .home-skill-item:hover {
+        transform: translateY(-2px);
     }
 
     .home-skill-icon-frame {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
-        border: 1px solid var(--home-line);
-        background: var(--home-card-strong);
+        width: auto;
+        height: auto;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
         color: var(--home-accent);
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+        box-shadow: none;
     }
 
     .home-skill-icon-frame i {
-        font-size: 1.55rem;
+        font-size: 1.45rem;
+        line-height: 1;
     }
 
     .home-skill-icon-image {
-        width: 30px;
-        height: 30px;
+        display: block;
+        width: 28px;
+        height: 28px;
         object-fit: contain;
+    }
+
+    .home-skill-icon-fallback {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        background: rgba(9, 105, 218, 0.08);
+        color: var(--home-accent);
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1;
+        text-transform: uppercase;
     }
 
     .home-skill-item-name {
         color: var(--home-muted);
-        font-size: 11px;
-        line-height: 1.45;
+        font-size: 12px;
+        line-height: 1.35;
+        white-space: nowrap;
+    }
+
+    .home-skill-icons::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .home-skill-icons::-webkit-scrollbar-track {
+        background: rgba(208, 215, 222, 0.24);
+        border-radius: 999px;
+    }
+
+    .home-skill-icons::-webkit-scrollbar-thumb {
+        background: rgba(140, 149, 159, 0.5);
+        border-radius: 999px;
     }
 
     .home-closing-panel {
@@ -754,14 +772,6 @@
 
         .home-panel-link {
             white-space: normal;
-        }
-
-        .home-skill-grid {
-            grid-template-columns: minmax(0, 1fr);
-        }
-
-        .home-skill-icons {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
 
         .home-hero-actions,
@@ -1029,8 +1039,7 @@
         <div class="home-panel-head">
             <div class="home-panel-head-copy">
                 <span class="home-section-label">Tool Shelf</span>
-                <h2>我在用的技术地图</h2>
-                <p>常用技术直接摆在这里，快速说明这个站和这些内容大致建立在什么之上。</p>
+                <h2>我的技术地图</h2>
             </div>
             <a href="{{ url_for('main.about') }}" class="home-panel-link no-underline">
                 继续了解我
@@ -1038,32 +1047,23 @@
             </a>
         </div>
 
-        {% if skill_groups %}
-        <div class="home-skill-grid">
-            {% for category, items in skill_groups %}
-            <div class="home-skill-group">
-                <div class="home-skill-group-head">
-                    <h3>{{ category }}</h3>
-                    <span>{{ items|length }} 项</span>
+        {% if skills %}
+        <div class="home-skill-icons">
+            {% for skill in skills[:12] %}
+            <div class="home-skill-item" title="{{ skill.name }}">
+                <div class="home-skill-icon-frame">
+                    {% if skill.icon %}
+                        {% if skill.icon.startswith('http') or skill.icon.startswith('/') %}
+                        <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="home-skill-icon-image" loading="lazy"
+                             onerror="this.style.display='none'; this.nextElementSibling.hidden = false;">
+                        {% else %}
+                        <i class="{{ skill.icon }}" aria-hidden="true"></i>
+                        {% endif %}
+                    {% else %}
+                    <span class="home-skill-icon-fallback">{{ skill.name[:1] }}</span>
+                    {% endif %}
                 </div>
-                <div class="home-skill-icons">
-                    {% for skill in items[:6] %}
-                    <div class="home-skill-item" title="{{ skill.name }}">
-                        <div class="home-skill-icon-frame">
-                            {% if skill.icon %}
-                                {% if skill.icon.startswith('http') or skill.icon.startswith('/') %}
-                                <img src="{{ skill.icon }}" alt="{{ skill.name }}" class="home-skill-icon-image">
-                                {% else %}
-                                <i class="{{ skill.icon }}" aria-hidden="true"></i>
-                                {% endif %}
-                            {% else %}
-                            <i class="fas fa-code" aria-hidden="true"></i>
-                            {% endif %}
-                        </div>
-                        <span class="home-skill-item-name">{{ skill.name }}</span>
-                    </div>
-                    {% endfor %}
-                </div>
+                <span class="home-skill-item-name">{{ skill.name }}</span>
             </div>
             {% endfor %}
         </div>
@@ -1076,7 +1076,6 @@
         <div class="home-closing-copy">
             <span class="home-section-label">Start Here</span>
             <h2>如果你第一次来到这里，最适合先看文章。</h2>
-            <p>首页不负责展示所有功能，只负责告诉你最近写了什么，以及下一步该去哪里。</p>
             <div class="home-closing-note">
                 <span>先从博客进入</span>
                 <span>再看关于与友链</span>

@@ -3,154 +3,394 @@
 {% block title %}关于页面编辑 - 管理后台{% endblock %}
 
 {% block content %}
-<div class="container-xl mx-auto px-3 py-4">
-    <div class="d-flex flex-wrap items-center justify-between gap-3 mb-4">
-        <h1 class="f3 text-bold color-fg-default m-0"><i class="fas fa-user-circle mr-2"></i>关于页面编辑</h1>
-        <a href="{{ url_for('admin.admin_about') }}" class="btn btn-outline btn-sm">
-            <i class="fas fa-arrow-left"></i> 返回管理
-        </a>
-    </div>
-
-    <div class="Box">
-        <div class="Box-body p-4">
-            <form method="POST" id="about-form" class="d-flex flex-column gap-4">
-                <div class="about-edit-layout">
-                        <div class="d-flex flex-column gap-4">
-                            <div class="d-flex flex-column gap-2">
-                                <label for="page_title" class="form-label m-0">页面标题 *</label>
-                                <input type="text" class="form-control" id="page_title" name="page_title"
-                                       value="{{ page_title or '关于我' }}" required>
-                                <p class="f6 color-fg-muted m-0">关于页面的主标题</p>
-                            </div>
-                            <div class="d-flex flex-column gap-2">
-                                <label for="page_content" class="form-label m-0">页面内容 *</label>
-                                <div id="tiptap-container"></div>
-                                <textarea id="page_content" name="page_content" class="d-none" required>{{ page_content or '' }}</textarea>
-                                <p class="f6 color-fg-muted m-0"><i class="fas fa-info-circle mr-1"></i>使用富文本编辑器，支持格式化文本、链接、图片等</p>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="Box">
-                                <div class="Box-header border-bottom f6 text-semibold">
-                                    <i class="fas fa-eye mr-2"></i>内容预览
-                                </div>
-                                <div class="Box-body p-3">
-                                    <div id="content-preview" class="about-preview overflow-y-auto f6 color-fg-default" style="min-height: 200px; max-height: 400px;">
-                                        <p class="color-fg-muted m-0">输入内容后将在此处显示预览</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                </div>
-
-                <div class="d-flex flex-wrap justify-end gap-2 border-top pt-4">
-                    <a href="{{ url_for('admin.admin_about') }}" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> 取消
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> 保存页面
-                    </button>
-                </div>
-            </form>
+<div class="container-xl py-4 about-edit-page">
+    <div class="about-edit-header mb-4">
+        <div class="about-edit-header-copy">
+            <h1 class="about-edit-title"><i class="fas fa-user-circle color-fg-muted"></i> 关于页面编辑</h1>
+            <p class="about-edit-subtitle">已切换为和博客一致的编辑器，支持所见即所得、Markdown 预览和图片上传。</p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{{ url_for('admin.admin_about') }}" class="btn btn-sm no-underline about-edit-btn about-edit-btn-secondary">
+                <i class="fas fa-arrow-left"></i> 返回管理
+            </a>
         </div>
     </div>
-</div>
 
-<style>
-.about-edit-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
-@media (min-width: 1012px) {
-    .about-edit-layout {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        align-items: start;
-    }
-}
-.about-preview {
-    border: 1px solid var(--borderColor-default);
-    border-radius: var(--borderRadius-medium);
-    padding: 16px;
-    line-height: 1.6;
-    background: var(--bgColor-muted);
-}
-.about-preview h1, .about-preview h2, .about-preview h3,
-.about-preview h4, .about-preview h5, .about-preview h6 {
-    color: var(--fgColor-default);
-    margin: 0 0 12px;
-}
-.about-preview p { margin: 0 0 12px; }
-.about-preview a { color: var(--fgColor-accent); text-decoration: none; }
-.about-preview a:hover { text-decoration: underline; }
-.about-preview ul, .about-preview ol { margin: 0 0 12px; padding-left: 20px; }
-.about-preview blockquote {
-    border-left: 4px solid var(--borderColor-accent-emphasis);
-    padding-left: 16px;
-    margin: 16px 0;
-    color: var(--fgColor-muted);
-}
-.about-preview code {
-    background: var(--bgColor-default);
-    padding: 2px 6px;
-    border-radius: var(--borderRadius-small);
-    font-family: ui-monospace, monospace;
-    font-size: 0.9em;
-}
-.about-preview pre {
-    background: var(--bgColor-default);
-    padding: 16px;
-    border-radius: var(--borderRadius-medium);
-    overflow-x: auto;
-    margin: 16px 0;
-    border: 1px solid var(--borderColor-default);
-}
-.about-preview pre code { background: none; padding: 0; }
-</style>
+    <form method="POST" id="about-form">
+        <div class="about-edit-layout">
+            <div class="about-edit-main">
+                <div class="Box mb-3">
+                    <div class="Box-header">
+                        <h2 class="f4 text-semibold m-0 color-fg-default"><i class="fas fa-heading color-fg-muted"></i> 页面信息</h2>
+                    </div>
+                    <div class="Box-body about-edit-stack">
+                        <div>
+                            <label for="page_title" class="form-label">页面标题 *</label>
+                            <input type="text" class="form-control width-full" id="page_title" name="page_title" value="{{ page_title or '关于我' }}" required>
+                            <p class="f6 color-fg-muted m-0 mt-1">这里控制关于页顶部的主标题。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="Box">
+                    <div class="Box-header">
+                        <h2 class="f4 text-semibold m-0 color-fg-default"><i class="fas fa-align-left color-fg-muted"></i> 页面内容</h2>
+                    </div>
+                    <div class="Box-body about-edit-stack">
+                        <label for="page_content" class="form-label m-0">正文内容 *</label>
+                        <p class="about-edit-editor-note m-0">默认按 HTML 兼容模式保存，编辑器交互与博客正文编辑一致。</p>
+                        <div id="toastui-editor"></div>
+                        <textarea id="page_content" name="page_content" class="d-none" aria-hidden="true" required>{{ page_content or '' }}</textarea>
+
+                        <div class="about-edit-toolbar">
+                            <div class="about-edit-toolbar-meta">
+                                <span class="about-edit-toolbar-pill">关于页正文</span>
+                                <span class="about-edit-toolbar-pill">支持图片上传</span>
+                            </div>
+                            <div class="about-edit-toolbar-actions">
+                                <a href="{{ url_for('admin.admin_about') }}" class="btn btn-sm no-underline text-center about-edit-btn about-edit-btn-secondary">
+                                    <i class="fas fa-times"></i> 取消
+                                </a>
+                                <button type="submit" class="btn btn-sm about-edit-btn about-edit-btn-primary">
+                                    <i class="fas fa-save"></i> 保存页面
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/simple-comment-editor.css') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/components/tiptap-editor.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='vendor/toastui/toastui-editor.min.css') }}">
+
+<style>
+.about-edit-page {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.about-edit-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.about-edit-header-copy {
+    min-width: 0;
+}
+
+.about-edit-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 28px;
+    line-height: 1.15;
+    font-weight: 700;
+}
+
+.about-edit-subtitle {
+    margin: 8px 0 0;
+    color: var(--fgColor-muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.about-edit-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+    align-items: start;
+}
+
+.about-edit-main,
+.about-edit-main .Box,
+.about-edit-main .Box-body,
+.about-edit-main .about-edit-stack > div {
+    min-width: 0;
+}
+
+.about-edit-main .Box {
+    overflow: hidden;
+}
+
+.about-edit-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.about-edit-main .form-control,
+.about-edit-main input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border: 1px solid var(--borderColor-default) !important;
+    border-radius: 12px;
+    background: var(--bgColor-default) !important;
+    box-shadow: inset 0 1px 1px rgba(31, 35, 40, 0.02), 0 1px 2px rgba(31, 35, 40, 0.04);
+}
+
+.about-edit-main .form-control:focus,
+.about-edit-main input:focus {
+    border-color: var(--focus-outlineColor) !important;
+    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+}
+
+.about-edit-editor-note {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.about-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 14px;
+    border-radius: var(--borderRadius-medium);
+    border: 1px solid var(--button-default-borderColor);
+    background: var(--button-default-bgColor-rest);
+    color: var(--button-default-fgColor) !important;
+    box-shadow: var(--shadow-resting-xsmall);
+    text-decoration: none !important;
+}
+
+.about-edit-btn:hover {
+    background: var(--button-default-bgColor-hover);
+    border-color: var(--borderColor-emphasis);
+    color: var(--button-default-fgColor) !important;
+}
+
+.about-edit-btn-primary {
+    background: var(--button-primary-bgColor-rest);
+    border-color: var(--button-primary-bgColor-rest);
+    color: var(--button-primary-fgColor) !important;
+}
+
+.about-edit-btn-primary:hover {
+    background: var(--button-primary-bgColor-hover);
+    border-color: var(--button-primary-bgColor-hover);
+    color: var(--button-primary-fgColor) !important;
+}
+
+.about-edit-btn-secondary {
+    color: var(--button-default-fgColor) !important;
+}
+
+.about-edit-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 14px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.about-edit-toolbar-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.about-edit-toolbar-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.about-edit-toolbar-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-left: auto;
+}
+
+#toastui-editor {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bgColor-default);
+}
+
+#toastui-editor .toastui-editor-defaultUI {
+    border: 0;
+    font-family: inherit;
+}
+
+#toastui-editor .toastui-editor-toolbar {
+    border-bottom-color: var(--borderColor-default);
+    background: var(--bgColor-muted);
+}
+
+#toastui-editor .toastui-editor-mode-switch {
+    border-top-color: var(--borderColor-default);
+    background: var(--bgColor-muted);
+}
+
+#toastui-editor .toastui-editor-md-tab-container,
+#toastui-editor .toastui-editor-tabs {
+    background: var(--bgColor-muted);
+}
+
+#toastui-editor .tab-item {
+    color: var(--fgColor-muted);
+}
+
+#toastui-editor .tab-item.active {
+    color: var(--fgColor-default);
+    font-weight: 600;
+}
+
+#toastui-editor .toastui-editor-main {
+    min-height: 560px;
+}
+
+#toastui-editor .toastui-editor-md-container,
+#toastui-editor .toastui-editor-ww-container {
+    background: var(--bgColor-default);
+}
+
+#toastui-editor .toastui-editor-contents {
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--fgColor-default);
+}
+
+@media (max-width: 767px) {
+    .about-edit-header,
+    .about-edit-toolbar,
+    .about-edit-toolbar-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .about-edit-title {
+        font-size: 24px;
+    }
+
+    #toastui-editor .toastui-editor-main {
+        min-height: 440px;
+    }
+}
+</style>
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/simple-tiptap-editor.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor-all.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/toastui/toastui-editor-zh-cn.js') }}"></script>
+
 <script>
+function getToastEditorHeight() {
+    return window.innerWidth < 768 ? '460px' : '680px';
+}
+
+function getToastPreviewStyle() {
+    return window.innerWidth < 992 ? 'tab' : 'vertical';
+}
+
+function extractEditorPlainText(editor) {
+    var tempDiv = document.createElement('div');
+    tempDiv.innerHTML = editor.getHTML();
+    return (tempDiv.textContent || tempDiv.innerText || '').replace(/\s+/g, ' ').trim();
+}
+
+function requestImageUpload(file) {
+    var allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    if (!allowedTypes.includes(file.type)) {
+        return Promise.reject('请选择图片文件（JPG、PNG、GIF、WebP、SVG）');
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        return Promise.reject('图片大小不能超过5MB');
+    }
+
+    var formData = new FormData();
+    formData.append('image', file);
+
+    return fetch('/api/upload-image', { method: 'POST', body: formData })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.success) {
+                throw new Error(data.message || '上传失败，请稍后重试');
+            }
+            return data;
+        });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    const tiptapContainer = document.getElementById('tiptap-container');
-    const contentTextarea = document.getElementById('page_content');
-    const previewDiv = document.getElementById('content-preview');
+    var editorContainer = document.getElementById('toastui-editor');
+    var contentTextarea = document.getElementById('page_content');
+    var form = document.getElementById('about-form');
+    var titleInput = document.getElementById('page_title');
 
-    const tiptapEditor = new SimpleTiptapEditor(tiptapContainer, {
+    var toastEditor = new toastui.Editor({
+        el: editorContainer,
+        height: getToastEditorHeight(),
+        initialEditType: 'wysiwyg',
+        previewStyle: getToastPreviewStyle(),
+        initialValue: '',
+        usageStatistics: false,
+        language: 'zh-CN',
         placeholder: '开始编辑关于页面内容...',
-        content: contentTextarea.value || ''
-    });
-
-    tiptapEditor.onContentChange = function(htmlContent) {
-        if (htmlContent === undefined || htmlContent === null) {
-            htmlContent = '';
-        }
-        contentTextarea.value = htmlContent;
-        if (previewDiv) {
-            if (htmlContent.trim()) {
-                previewDiv.innerHTML = htmlContent;
-            } else {
-                previewDiv.innerHTML = '<p class="color-fg-muted m-0">输入内容后将在此处显示预览</p>';
+        hooks: {
+            addImageBlobHook: function(blob, callback) {
+                requestImageUpload(blob)
+                    .then(function(data) {
+                        callback(data.url, data.alt || blob.name || 'image');
+                    })
+                    .catch(function(error) {
+                        alert(error.message || error);
+                    });
+                return false;
             }
         }
-    };
-
-    document.getElementById('about-form').addEventListener('submit', function(e) {
-        const pageTitle = document.getElementById('page_title').value.trim();
-        const pageContent = contentTextarea.value.trim();
-        if (!pageTitle || !pageContent) {
-            e.preventDefault();
-            alert('请填写页面标题和内容');
-            return;
-        }
     });
+
+    if (contentTextarea.value) {
+        toastEditor.setHTML(contentTextarea.value);
+    }
+
+    function syncEditorContent() {
+        contentTextarea.value = toastEditor.getHTML();
+        return contentTextarea.value;
+    }
+
+    toastEditor.on('change', function() {
+        syncEditorContent();
+    });
+
+    window.addEventListener('resize', function() {
+        toastEditor.setHeight(getToastEditorHeight());
+    });
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            var title = titleInput.value.trim();
+            syncEditorContent();
+            var content = extractEditorPlainText(toastEditor);
+
+            if (!title || !content) {
+                e.preventDefault();
+                alert('请填写页面标题和内容');
+            }
+        });
+    }
 });
 </script>
 {% endblock %}

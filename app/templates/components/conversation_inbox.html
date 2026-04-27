@@ -33,12 +33,14 @@
             <span class="message-toolbar-meta">{{ conversation_toolbar_meta }}</span>
         </div>
         {% if conversation_mode == 'admin' %}
-            <button type="button" class="btn btn-secondary btn-sm" onclick="markAllAsRead(this)">
-                <i class="fas fa-envelope-open mr-2"></i>全部标记为已读
+            <button type="button" class="message-action-btn message-action-btn-muted" onclick="markAllAsRead(this)">
+                <i class="fas fa-envelope-open" aria-hidden="true"></i>
+                <span>全部标为已读</span>
             </button>
         {% elif conversation_mode == 'user' %}
-            <a href="{{ url_for('main.contact', mode='new') }}" class="btn btn-primary btn-sm no-underline">
-                <i class="fas fa-plus mr-2"></i>新建对话
+            <a href="{{ url_for('main.contact', mode='new') }}" class="message-action-btn message-action-btn-primary no-underline">
+                <i class="fas fa-plus" aria-hidden="true"></i>
+                <span>新建对话</span>
             </a>
         {% endif %}
     </div>
@@ -122,14 +124,14 @@
                 {% if conversation_mode == 'admin' and conversation_page_obj and conversation_page_obj.pages > 1 %}
                     <div class="message-pagination">
                         {% if conversation_page_obj.has_prev %}
-                            <a href="{{ url_for('admin.admin_messages', page=conversation_page_obj.prev_num) }}" class="btn btn-sm btn-outline">
-                                <i class="fas fa-chevron-left"></i>
+                            <a href="{{ url_for('admin.admin_messages', page=conversation_page_obj.prev_num) }}" class="message-icon-action" aria-label="上一页">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i>
                             </a>
                         {% endif %}
                         <span class="message-pagination-info">{{ conversation_page_obj.page }} / {{ conversation_page_obj.pages }}</span>
                         {% if conversation_page_obj.has_next %}
-                            <a href="{{ url_for('admin.admin_messages', page=conversation_page_obj.next_num) }}" class="btn btn-sm btn-outline">
-                                <i class="fas fa-chevron-right"></i>
+                            <a href="{{ url_for('admin.admin_messages', page=conversation_page_obj.next_num) }}" class="message-icon-action" aria-label="下一页">
+                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </a>
                         {% endif %}
                     </div>
@@ -137,8 +139,9 @@
 
                 {% if conversation_mode == 'user' %}
                     <div class="message-sidebar-actions">
-                        <a href="{{ url_for('main.contact', mode='new') }}" class="btn btn-secondary btn-sm no-underline">
-                            <i class="fas fa-plus mr-2"></i>新建对话
+                        <a href="{{ url_for('main.contact', mode='new') }}" class="message-action-btn message-action-btn-muted no-underline">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            <span>新建对话</span>
                         </a>
                     </div>
                 {% endif %}
@@ -172,8 +175,9 @@
                     </div>
                     <div class="message-thread-actions">
                         {% if conversation_back_href %}
-                            <a href="{{ conversation_back_href }}" class="btn btn-secondary btn-sm no-underline">
-                                <i class="fas fa-arrow-left mr-2"></i>返回会话
+                            <a href="{{ conversation_back_href }}" class="message-action-btn message-action-btn-muted no-underline">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                                <span>返回会话</span>
                             </a>
                         {% endif %}
                     </div>
@@ -221,8 +225,8 @@
                             required
                         ></textarea>
                         <div class="message-reply-actions">
-                            <button type="button" class="btn btn-secondary btn-sm" onclick="clearContactForm(this)">清空</button>
-                            <button type="submit" class="btn btn-primary btn-sm contact-submit">
+                            <button type="button" class="message-action-btn message-action-btn-muted" onclick="clearContactForm(this)">清空</button>
+                            <button type="submit" class="message-action-btn message-action-btn-primary contact-submit">
                                 <i class="fas fa-paper-plane" aria-hidden="true"></i>
                                 <span>发送新对话</span>
                             </button>
@@ -272,23 +276,26 @@
                         {% if conversation_mode == 'user' %}
                             <button
                                 type="button"
-                                class="btn btn-outline btn-sm color-fg-danger js-delete-conversation"
+                                class="message-action-btn message-action-btn-danger js-delete-conversation"
                                 data-message-id="{{ conversation_selected.id }}"
                                 data-message-subject="{{ conversation_selected.subject|e }}"
                             >
-                                删除对话
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span>删除对话</span>
                             </button>
-                            <a href="{{ url_for('main.contact', mode='new') }}" class="btn btn-secondary btn-sm no-underline">
-                                <i class="fas fa-plus mr-2"></i>新建对话
+                            <a href="{{ url_for('main.contact', mode='new') }}" class="message-action-btn message-action-btn-muted no-underline">
+                                <i class="fas fa-plus" aria-hidden="true"></i>
+                                <span>新建对话</span>
                             </a>
                         {% else %}
                             <button
                                 type="button"
-                                class="btn btn-outline btn-sm color-fg-danger js-delete-message"
+                                class="message-action-btn message-action-btn-danger js-delete-message"
                                 data-message-id="{{ conversation_selected.id }}"
                                 data-message-subject="{{ conversation_selected.subject|e }}"
                             >
-                                删除
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span>删除</span>
                             </button>
                         {% endif %}
                     </div>
@@ -346,9 +353,10 @@
                                 placeholder="输入回复内容..."
                             ></textarea>
                             <div class="message-reply-actions">
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearQuickReply()">清空</button>
-                                <button type="submit" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-paper-plane mr-2"></i>发送回复
+                                <button type="button" class="message-action-btn message-action-btn-muted" onclick="clearQuickReply()">清空</button>
+                                <button type="submit" class="message-action-btn message-action-btn-primary">
+                                    <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                    <span>发送回复</span>
                                 </button>
                             </div>
                         </form>
@@ -375,8 +383,8 @@
                                 required
                             ></textarea>
                             <div class="message-reply-actions">
-                                <button type="button" class="btn btn-secondary btn-sm" onclick="clearContactForm(this)">清空</button>
-                                <button type="submit" class="btn btn-primary btn-sm contact-submit">
+                                <button type="button" class="message-action-btn message-action-btn-muted" onclick="clearContactForm(this)">清空</button>
+                                <button type="submit" class="message-action-btn message-action-btn-primary contact-submit">
                                     <i class="fas fa-paper-plane" aria-hidden="true"></i>
                                     <span>发送回复</span>
                                 </button>

@@ -50,8 +50,8 @@
 async function deleteMessage(messageId, messageSubject) {
     const subject = messageSubject || '未命名会话';
     const confirmed = window.confirmAsync
-        ? await window.confirmAsync(`确定要删除消息「${subject}」吗？会话会先从管理员消息列表中移除，不会立即影响用户侧。`, {
-            title: '确认删除',
+        ? await window.confirmAsync(`确定删除「${subject}」吗？\n删除后仅从管理员消息列表中移除，用户侧不会立即受影响。`, {
+            title: '删除会话',
             confirmText: '确认删除',
             cancelText: '取消',
             danger: true
@@ -77,9 +77,9 @@ function emitToast(type, message) {
 }
 
 async function markAllAsRead(btn) {
-    const confirmed = await window.confirmAsync('确定要将所有未读消息标记为已读吗？', {
-        title: '全部标记已读',
-        confirmText: '确认标记',
+    const confirmed = await window.confirmAsync('确定将所有未读会话标为已读吗？', {
+        title: '全部标为已读',
+        confirmText: '标为已读',
         cancelText: '取消'
     });
     if (!confirmed) {
@@ -87,7 +87,10 @@ async function markAllAsRead(btn) {
     }
 
     const originalText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>处理中...';
+    const originalWidth = btn.offsetWidth;
+    btn.style.width = `${originalWidth}px`;
+    btn.classList.add('is-loading');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>处理中</span>';
     btn.disabled = true;
 
     fetch('/admin/messages/mark-all-read', {
@@ -111,6 +114,8 @@ async function markAllAsRead(btn) {
         })
         .finally(() => {
             btn.innerHTML = originalText;
+            btn.style.width = '';
+            btn.classList.remove('is-loading');
             btn.disabled = false;
         });
 }
@@ -154,10 +159,13 @@ document.addEventListener('DOMContentLoaded', function() {
             const messageId = quickReplyForm.dataset.messageId;
             const submitButton = quickReplyForm.querySelector('button[type="submit"]');
             const originalText = submitButton.innerHTML;
+            const originalWidth = submitButton.offsetWidth;
             const formData = new FormData(quickReplyForm);
 
             submitButton.disabled = true;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>发送中...';
+            submitButton.style.width = `${originalWidth}px`;
+            submitButton.classList.add('is-loading');
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin" aria-hidden="true"></i><span>发送中</span>';
 
             fetch(`/admin/messages/${messageId}/reply`, {
                 method: 'POST',
@@ -181,6 +189,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .finally(() => {
                     submitButton.disabled = false;
+                    submitButton.style.width = '';
+                    submitButton.classList.remove('is-loading');
                     submitButton.innerHTML = originalText;
                 });
         });
