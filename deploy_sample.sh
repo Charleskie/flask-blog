@@ -93,6 +93,7 @@ cp db_tools.py $TEMP_DIR/
 cp cleanup_logs.py $TEMP_DIR/
 cp setup_log_cleanup.sh $TEMP_DIR/
 cp start_prod.sh $TEMP_DIR/
+cp start_scheduler.sh $TEMP_DIR/
 cp ssl_redirect.py $TEMP_DIR/
 
 

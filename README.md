@@ -94,6 +94,34 @@ python run.py
 ./start_prod.sh
 ```
 
+### 定时任务统一管理
+
+项目内已经提供统一任务入口，不再要求把应用任务散落写在服务器 `crontab` 里。
+
+```bash
+# 查看全部已注册任务
+python -m app.tasks.cli list
+
+# 手动执行单个任务
+python -m app.tasks.cli run project.log_cleanup
+
+# 启动常驻调度器
+python -m app.tasks.cli scheduler
+
+# 输出 systemd service 示例
+python -m app.tasks.cli export-systemd
+```
+
+当前已纳入注册表的任务来源：
+- 仓库内原有的日志清理任务。
+- 服务器 `crontab` 中的 `/opt/stock-collector` 采集、预测、飞书报告任务。
+- 服务器 `crontab` 中的 `certbot renew` 任务。
+
+说明：
+- 调度器设计为**独立进程**，不要直接嵌进 Gunicorn worker 内，否则会重复执行。
+- 股票采集相关任务默认读取 `STOCK_COLLECTOR_ROOT` 和 `STOCK_COLLECTOR_PYTHON`；路径不存在时任务会显示为 `disabled`。
+- 证书续期已经被录入注册表，但服务器如果还保留 `certbot-renew.timer` 或重复 `crontab` 项，需要切换时一并清理，避免重复执行。
+
 ### 部署脚本
 
 ```bash
