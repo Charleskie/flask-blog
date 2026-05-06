@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify, make_response
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, make_response, current_app
 from flask_login import login_required, current_user
 from app.models import Post, Message, MessageReply, AboutContent, AboutContact, Version, Skill, Link, VisitorStats
 from app.models.user import db
@@ -6,9 +6,35 @@ from app.utils.pdf_generator import generate_about_pdf
 import re
 import urllib.parse
 from datetime import datetime
+from xml.sax.saxutils import escape
 
 
 main_bp = Blueprint('main', __name__)
+
+
+def _get_public_site_root():
+    """Return the canonical public site root for crawlable files."""
+    configured_site_url = (
+        current_app.config.get('SITE_URL')
+        or current_app.config.get('PUBLIC_SITE_URL')
+        or ''
+    ).strip()
+
+    if configured_site_url:
+        return configured_site_url.rstrip('/') + '/'
+
+    return request.url_root.rstrip('/') + '/'
+
+
+def _absolute_public_url(path):
+    path = path.lstrip('/')
+    return urllib.parse.urljoin(_get_public_site_root(), path)
+
+
+def _format_sitemap_lastmod(value):
+    if not value:
+        return None
+    return value.date().isoformat()
 
 
 def _get_contact_page_context():
@@ -161,6 +187,76 @@ def message_center():
         return redirect(url_for('main.contact'))
 
     return redirect(url_for('main.contact', mode='new'))
+
+
+@main_bp.route('/robots.txt')
+def robots_txt():
+    """Expose crawler rules and advertise the XML sitemap."""
+    sitemap_url = _absolute_public_url('/sitemap.xml')
+    content = '\n'.join([
+        'User-agent: *',
+        'Allow: /',
+        'Disallow: /admin',
+        'Disallow: /api/',
+        'Disallow: /login',
+        'Disallow: /register',
+        'Disallow: /settings',
+        'Disallow: /messages',
+        '',
+        f'Sitemap: {sitemap_url}',
+        '',
+    ])
+    response = make_response(content)
+    response.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    return response
+
+
+@main_bp.route('/sitemap.xml')
+def sitemap_xml():
+    """Generate an XML sitemap for public pages and published blog posts."""
+    static_pages = [
+        {'loc': _absolute_public_url('/'), 'priority': '1.0', 'changefreq': 'weekly'},
+        {'loc': _absolute_public_url('/blog'), 'priority': '0.9', 'changefreq': 'daily'},
+        {'loc': _absolute_public_url('/about'), 'priority': '0.7', 'changefreq': 'monthly'},
+        {'loc': _absolute_public_url('/links'), 'priority': '0.6', 'changefreq': 'weekly'},
+        {'loc': _absolute_public_url('/contact'), 'priority': '0.5', 'changefreq': 'monthly'},
+    ]
+
+    posts = Post.query.filter_by(status='published').order_by(Post.updated_at.desc()).all()
+    for post in posts:
+        static_pages.append({
+            'loc': _absolute_public_url(url_for('main.post_detail', slug=post.safe_slug)),
+            'lastmod': _format_sitemap_lastmod(post.updated_at or post.created_at),
+            'priority': '0.8',
+            'changefreq': 'monthly',
+        })
+
+    url_blocks = []
+    for page in static_pages:
+        lines = [
+            '  <url>',
+            f'    <loc>{escape(page["loc"])}</loc>',
+        ]
+        if page.get('lastmod'):
+            lines.append(f'    <lastmod>{page["lastmod"]}</lastmod>')
+        if page.get('changefreq'):
+            lines.append(f'    <changefreq>{page["changefreq"]}</changefreq>')
+        if page.get('priority'):
+            lines.append(f'    <priority>{page["priority"]}</priority>')
+        lines.append('  </url>')
+        url_blocks.append('\n'.join(lines))
+
+    content = '\n'.join([
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+        *url_blocks,
+        '</urlset>',
+        '',
+    ])
+
+    response = make_response(content)
+    response.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    return response
 
 @main_bp.route('/')
 def index():
