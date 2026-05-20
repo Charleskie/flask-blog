@@ -88,28 +88,15 @@
     box-shadow: var(--shadow-resting-small);
 }
 
-.blog-page .blog-card-top {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.blog-page .blog-card-top-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-left: auto;
-}
-
 .blog-page .blog-card-category {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
     min-width: 0;
-    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(221, 244, 255, 0.72);
+    font-size: 12px;
     font-weight: 600;
     color: var(--fgColor-accent);
 }
@@ -131,6 +118,16 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 8px 10px;
+    margin-bottom: 8px;
+}
+
+.blog-page .blog-card-title-main {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .blog-page .blog-card-favorite-badge {
@@ -146,24 +143,10 @@
     line-height: 1;
 }
 
-.blog-page .blog-card-heading {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 10px;
-}
-
-.blog-page .blog-card-heading-main {
-    min-width: 0;
-    flex: 1;
-}
-
 .blog-page .blog-card-meta-inline {
     display: flex;
     flex-wrap: wrap;
     gap: 8px 12px;
-    margin-top: 8px;
 }
 
 .blog-page .blog-card-title a {
@@ -190,9 +173,8 @@
     font-size: 13px;
 }
 
-.blog-page .blog-card-head-actions {
-    display: flex;
-    align-items: center;
+.blog-page .blog-card-title-row .blog-card-delete-btn {
+    margin-left: auto;
     flex-shrink: 0;
 }
 
@@ -365,22 +347,12 @@
 }
 
 @media (max-width: 767px) {
-    .blog-page .blog-card-heading,
-    .blog-page .blog-card-head-actions {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
     .blog-page .blog-card-meta-inline {
         gap: 8px 10px;
     }
 
     .blog-page .blog-page-actions {
         justify-content: flex-start;
-    }
-
-    .blog-page .blog-card-head-actions {
-        justify-content: flex-end;
     }
 }
 </style>
@@ -411,54 +383,46 @@
             {% if posts.items %}
             {% for post in posts.items %}
             <article class="Box blog-list-card" data-post-url="{{ url_for('main.post_detail', slug=post.safe_slug) }}" role="link" tabindex="0" aria-label="查看文章 {{ post.title }}">
-                <div class="blog-card-top">
-                    <span class="blog-card-category">{{ post.category or '未分类' }}</span>
-                    <div class="blog-card-top-right">
-                        <span class="blog-card-date">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
-                        {% if current_user.is_authenticated and current_user.is_admin %}
-                        <button type="button" onclick="deletePost({{ post.id }})" class="btn btn-invisible btn-sm blog-card-icon-btn blog-card-delete-btn" title="删除文章" aria-label="删除文章">
-                            <i class="fas fa-trash" aria-hidden="true"></i>
-                        </button>
+                <div class="blog-card-title-row">
+                    <div class="blog-card-title-main">
+                        <h2 class="blog-card-title text-bold color-fg-default">
+                            <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="no-underline">{{ post.title }}</a>
+                        </h2>
+                        {% if post.id in favorite_post_ids %}
+                        <span class="blog-card-favorite-badge">
+                            <i class="fas fa-star" aria-hidden="true"></i>
+                            <span>已收藏</span>
+                        </span>
                         {% endif %}
                     </div>
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                    <button type="button" onclick="deletePost({{ post.id }})" class="btn btn-invisible btn-sm blog-card-icon-btn blog-card-delete-btn" title="删除文章" aria-label="删除文章">
+                        <i class="fas fa-trash" aria-hidden="true"></i>
+                    </button>
+                    {% endif %}
                 </div>
                 
-                <div class="blog-card-heading">
-                    <div class="blog-card-heading-main">
-                        <div class="blog-card-title-row">
-                            <h2 class="blog-card-title text-bold color-fg-default">
-                                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="no-underline">{{ post.title }}</a>
-                            </h2>
-                            {% if post.id in favorite_post_ids %}
-                            <span class="blog-card-favorite-badge">
-                                <i class="fas fa-star" aria-hidden="true"></i>
-                                <span>已收藏</span>
-                            </span>
-                            {% endif %}
-                        </div>
-                        <div class="blog-card-meta-inline">
-                            <div class="blog-card-stat">
-                                <i class="fas fa-user" aria-hidden="true"></i>
-                                <span>{{ post.author.username if post.author else '未知' }}</span>
-                            </div>
-                            <div class="blog-card-stat">
-                                <i class="fas fa-eye" aria-hidden="true"></i>
-                                <span>{{ post.view_count }}</span>
-                            </div>
-                            <div class="blog-card-stat">
-                                <i class="far fa-heart" aria-hidden="true"></i>
-                                <span>{{ post.like_count }}</span>
-                            </div>
-                            <div class="blog-card-stat">
-                                <i class="far fa-comment" aria-hidden="true"></i>
-                                <span>{{ post.comment_count }}</span>
-                            </div>
-                        </div>
+                <div class="blog-card-meta-inline">
+                    <div class="blog-card-stat">
+                        <i class="fas fa-user" aria-hidden="true"></i>
+                        <span>{{ post.author.username if post.author else '未知' }}</span>
                     </div>
-                    <div class="blog-card-head-actions">
-                        <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="btn btn-invisible btn-sm no-underline blog-card-icon-btn blog-card-link-btn" aria-label="查看文章 {{ post.title }}">
-                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                        </a>
+                    <span class="blog-card-category">{{ post.category or '未分类' }}</span>
+                    <div class="blog-card-stat">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        <span>{{ post.view_count }}</span>
+                    </div>
+                    <div class="blog-card-stat">
+                        <i class="far fa-heart" aria-hidden="true"></i>
+                        <span>{{ post.like_count }}</span>
+                    </div>
+                    <div class="blog-card-stat">
+                        <i class="far fa-comment" aria-hidden="true"></i>
+                        <span>{{ post.comment_count }}</span>
+                    </div>
+                    <div class="blog-card-stat">
+                        <i class="fas fa-calendar" aria-hidden="true"></i>
+                        <span class="blog-card-date">{{ post.created_at.strftime('%Y-%m-%d') }}</span>
                     </div>
                 </div>
                 

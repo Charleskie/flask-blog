@@ -51,18 +51,30 @@ class Notification(db.Model):
             'related_url': self.related_url,
             'sender_name': self.sender_name
         }
+
+    @staticmethod
+    def _build_post_related_url(post_id, fragment=None):
+        """兼容 slug 路由的文章详情地址。"""
+        from app.models.post import Post
+
+        post = Post.query.get(post_id) if post_id else None
+        identifier = post.safe_slug if post else post_id
+        target_url = f'/blog/post/{identifier}'
+        if fragment:
+            target_url = f"{target_url}#{str(fragment).lstrip('#')}"
+        return target_url
     
     @classmethod
-    def create_comment_notification(cls, post_author_id, commenter_name, comment_content, post_id, post_title):
+    def create_comment_notification(cls, post_author_id, commenter_name, comment_content, comment_id, post_id, post_title):
         """创建评论通知"""
         notification = cls(
             user_id=post_author_id,
             type='comment',
             title=f'{commenter_name} 评论了你的文章',
             content=f'"{comment_content[:100]}{"..." if len(comment_content) > 100 else ""}"',
-            related_id=post_id,
-            related_type='post',
-            related_url=f'/blog/post/{post_id}',
+            related_id=comment_id,
+            related_type='comment',
+            related_url=cls._build_post_related_url(post_id, 'comments'),
             sender_name=commenter_name
         )
         return notification
@@ -77,7 +89,7 @@ class Notification(db.Model):
             content=f'"{reply_content[:100]}{"..." if len(reply_content) > 100 else ""}"',
             related_id=comment_id,
             related_type='comment',
-            related_url=f'/blog/post/{post_id}#comment-{comment_id}',
+            related_url=cls._build_post_related_url(post_id, 'comments'),
             sender_name=replier_name
         )
         return notification
@@ -92,7 +104,7 @@ class Notification(db.Model):
             content=f'"{content_title}"',
             related_id=content_id,
             related_type='post',
-            related_url=f'/blog/post/{content_id}',
+            related_url=cls._build_post_related_url(content_id),
             sender_name=liker_name
         )
         return notification
@@ -107,7 +119,7 @@ class Notification(db.Model):
             content=f'"{content_title}"',
             related_id=content_id,
             related_type='post',
-            related_url=f'/blog/post/{content_id}',
+            related_url=cls._build_post_related_url(content_id),
             sender_name=favoriter_name
         )
         return notification
@@ -122,7 +134,7 @@ class Notification(db.Model):
             content=f'"{content_title}"',
             related_id=content_id,
             related_type='post',
-            related_url=f'/blog/post/{content_id}',
+            related_url=cls._build_post_related_url(content_id),
             sender_name=rater_name
         )
         return notification

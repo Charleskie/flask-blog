@@ -817,8 +817,12 @@ def create_notification_for_comment(comment, content_type, content_title, conten
         # 如果不是自己的内容，创建通知
         if content_author_id != comment.user_id:
             notification = Notification.create_comment_notification(
-                content_author_id, comment.user.username, comment.content,
-                comment.post_id, content_title
+                content_author_id,
+                comment.user.username,
+                comment.content,
+                comment.id,
+                comment.post_id,
+                content_title
             )
             db.session.add(notification)
     except Exception as e:

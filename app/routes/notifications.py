@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from flask_login import login_required, current_user
 from sqlalchemy import or_
 from app.models.user import db
-from app.models import Notification
+from app.models import Notification, Post, Comment
 
 notification_bp = Blueprint('notification', __name__)
 
@@ -43,6 +43,72 @@ def _resolve_filter_group(filter_value):
     """将旧筛选参数归一到新的分组定义。"""
     filter_key = NOTIFICATION_FILTER_ALIASES.get((filter_value or '').strip(), 'all')
     return next(group for group in NOTIFICATION_FILTER_GROUPS if group['key'] == filter_key)
+
+
+def _build_post_detail_url(post, fragment=None):
+    """统一生成文章详情页地址，始终使用 slug。"""
+    if not post:
+        return None
+
+    target_url = url_for('main.post_detail', slug=post.safe_slug)
+    if fragment:
+        target_url = f"{target_url}#{str(fragment).lstrip('#')}"
+    return target_url
+
+
+def _extract_legacy_post_target(related_url):
+    """兼容历史通知中直接写入 `/blog/post/<id>` 的链接。"""
+    if not related_url or not related_url.startswith('/blog/post/'):
+        return None, ''
+
+    path_part, _, fragment = related_url.partition('#')
+    identifier = path_part.rsplit('/', 1)[-1].strip()
+    if not identifier:
+        return None, fragment
+
+    post = Post.query.filter_by(slug=identifier).first()
+    if not post and identifier.isdigit():
+        post = Post.query.get(int(identifier))
+
+    return post, fragment
+
+
+def _resolve_post_for_notification(notification):
+    """从通知本身或历史 related_url 中解析文章对象。"""
+    if notification.related_type == 'post' and notification.related_id:
+        post = Post.query.get(notification.related_id)
+        if post:
+            return post
+
+    if notification.related_type == 'comment' and notification.related_id:
+        comment = Comment.query.get(notification.related_id)
+        if comment and comment.post:
+            return comment.post
+
+    post, _ = _extract_legacy_post_target(notification.related_url)
+    return post
+
+
+def _resolve_notification_target(notification):
+    """根据通知类型解析最终跳转地址。"""
+    if notification.type in {'comment', 'reply'}:
+        post = _resolve_post_for_notification(notification)
+        if post:
+            return _build_post_detail_url(post, 'comments')
+
+    if notification.type in {'like', 'favorite', 'rating'}:
+        post = _resolve_post_for_notification(notification)
+        if post:
+            return _build_post_detail_url(post)
+
+    legacy_post, legacy_fragment = _extract_legacy_post_target(notification.related_url)
+    if legacy_post:
+        return _build_post_detail_url(legacy_post, legacy_fragment)
+
+    if notification.related_url:
+        return notification.related_url
+
+    return url_for('notification.notifications')
 
 @notification_bp.route('/notifications')
 @login_required
@@ -175,8 +241,4 @@ def view_notification(notification_id):
         flash('这条通知关联的内容已移除', 'info')
         return redirect(url_for('notification.notifications'))
 
-    # 如果有跳转URL，则跳转
-    if notification.related_url:
-        return redirect(notification.related_url)
-    
-    return redirect(url_for('notification.notifications'))
+    return redirect(_resolve_notification_target(notification))
