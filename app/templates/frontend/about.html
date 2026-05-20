@@ -5,20 +5,11 @@
 {% block content %}
 <div class="max-w-lg mx-auto">
     {% if page_content %}
-    <div class="Box overflow-hidden">
+    <div class="Box overflow">
         <div class="Box-body p-6 about-content-display">
             {{ page_content | safe }}
         </div>
     </div>
-    {% if current_user.is_authenticated and current_user.is_admin %}
-    <div class="d-flex justify-end mt-4 mb-4">
-        <a href="{{ url_for('main.about_pdf') }}" class="btn btn-danger no-underline" target="_blank" rel="noopener noreferrer">
-            <i class="fas fa-file-pdf"></i>
-            <span>下载PDF版本</span>
-        </a>
-    </div>
-    {% endif %}
-    {% else %}
     <div class="Box">
         <div class="Box-body p-8 text-center">
             <div class="mb-4">

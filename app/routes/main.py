@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify, make_response, current_app
 from flask_login import login_required, current_user
-from app.models import Post, Message, MessageReply, AboutContent, AboutContact, Version, Skill, Link, VisitorStats
+from app.models import Post, Message, MessageReply, AboutContent, AboutContact, Version, Skill, Link, VisitorStats, UserInteraction
 from app.models.user import db
 from app.utils.pdf_generator import generate_about_pdf
 import re
@@ -511,15 +511,39 @@ def links():
 def blog():
     """博客页面"""
     page = request.args.get('page', 1, type=int)
-    category = request.args.get('category', '')
-    search = request.args.get('search', '')
-    
-    # 构建查询
-    query = Post.query.filter_by(status='published')
-    
-    if category:
-        query = query.filter_by(category=category)
-    
+    category = (request.args.get('category', '') or '').strip()
+    search = (request.args.get('search', '') or '').strip()
+    view = (request.args.get('view', 'all') or 'all').strip().lower()
+    if view not in {'all', 'favorites'}:
+        view = 'all'
+
+    all_published_query = Post.query.filter_by(status='published')
+    published_posts_total = all_published_query.count()
+
+    favorite_post_ids = set()
+    favorite_posts_query = all_published_query.filter(Post.id == -1)
+    favorite_posts_total = 0
+
+    if current_user.is_authenticated:
+        favorite_posts_query = all_published_query.join(
+            UserInteraction,
+            db.and_(
+                UserInteraction.content_id == Post.id,
+                UserInteraction.type == 1,
+                UserInteraction.user_id == current_user.id,
+                UserInteraction.favorite == 1
+            )
+        )
+        favorite_post_ids = {
+            post_id for post_id, in favorite_posts_query.with_entities(Post.id).all()
+        }
+        favorite_posts_total = len(favorite_post_ids)
+
+    if view == 'favorites':
+        query = favorite_posts_query if current_user.is_authenticated else all_published_query.filter(Post.id == -1)
+    else:
+        query = all_published_query
+
     if search:
         query = query.filter(
             db.or_(
@@ -528,26 +552,41 @@ def blog():
                 Post.excerpt.contains(search)
             )
         )
-    
+
+    available_posts_total = query.count()
+
+    category_rows = query.with_entities(
+        Post.category,
+        db.func.count(Post.id)
+    ).filter(
+        Post.category.isnot(None)
+    ).group_by(
+        Post.category
+    ).order_by(
+        Post.category.asc()
+    ).all()
+    category_count = {category_name: count for category_name, count in category_rows}
+    categories = [category_name for category_name, _ in category_rows]
+
+    if category:
+        query = query.filter_by(category=category)
+
     posts = query.order_by(Post.created_at.desc()).paginate(
         page=page, per_page=10, error_out=False
     )
-    
-    # 获取所有分类
-    categories = db.session.query(Post.category).filter(
-        Post.category.isnot(None), 
-        Post.status == 'published'
-    ).distinct().all()
-    categories = [cat[0] for cat in categories]
-    
+
     # 获取热门文章（按浏览次数排序）
-    popular_posts = Post.query.filter_by(status='published').order_by(
-        Post.view_count.desc()
-    ).limit(5).all()
+    popular_source_query = all_published_query
+    if view == 'favorites' and current_user.is_authenticated and favorite_posts_total > 0:
+        popular_source_query = favorite_posts_query
+
+    popular_posts = popular_source_query.order_by(Post.view_count.desc()).limit(5).all()
+    if view == 'favorites' and not popular_posts:
+        popular_posts = all_published_query.order_by(Post.view_count.desc()).limit(5).all()
     
     # 获取所有标签
     all_tags = []
-    for post in Post.query.filter_by(status='published').all():
+    for post in all_published_query.all():
         if post.tags:
             all_tags.extend([tag.strip() for tag in post.tags.split(',')])
     
@@ -555,14 +594,32 @@ def blog():
     from collections import Counter
     tag_counts = Counter(all_tags)
     popular_tags = tag_counts.most_common(10)  # 取前10个热门标签
+
+    if view == 'favorites':
+        page_heading = '我的收藏'
+        if current_user.is_authenticated:
+            page_copy = f'这里汇总你收藏过的文章，当前共 {posts.total} 篇。'
+        else:
+            page_copy = '登录后即可查看你收藏过的文章。'
+    else:
+        page_heading = '最新文章'
+        page_copy = f'按时间排序展示，当前共 {posts.total} 篇文章。'
     
     return render_template('frontend/blog.html', 
                          posts=posts, 
                          categories=categories, 
+                         category_count=category_count,
                          popular_posts=popular_posts,
                          popular_tags=popular_tags,
-                         current_category=category, 
-                         search=search)
+                         current_category=category,
+                         search=search,
+                         current_view=view,
+                         page_heading=page_heading,
+                         page_copy=page_copy,
+                         available_posts_total=available_posts_total,
+                         published_posts_total=published_posts_total,
+                         favorite_posts_total=favorite_posts_total,
+                         favorite_post_ids=favorite_post_ids)
 
 @main_bp.route('/blog/post/<slug>')
 def post_detail(slug):

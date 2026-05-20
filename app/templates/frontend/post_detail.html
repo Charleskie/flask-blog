@@ -3,206 +3,213 @@
 {% block title %}{{ post.title }} - 博客{% endblock %}
 
 {% block content %}
-<!-- 左侧悬浮目录 -->
-<div id="floating-toc" class="floating-toc collapsed post-detail-toc z-toc-fixed">
-    <div class="toc-header">
-        <button type="button" id="toc-toggle" class="toc-toggle-btn" aria-expanded="false" aria-label="展开或收起目录">
-            <i class="fas fa-chevron-right" aria-hidden="true"></i>
-        </button>
-        <span class="toc-title">目录</span>
-    </div>
-    <div class="toc-content" id="toc-content">
-        <nav id="floating-table-of-contents" aria-label="文章目录">
-            <!-- 目录将通过JavaScript动态生成 -->
-        </nav>
-    </div>
-</div>
-
 <div class="container-xl post-detail-shell mt-4 mb-6">
-    <article class="blog-post post-detail-article Box p-4 mb-4">
-        <header class="post-detail-header">
-            <div class="post-detail-topbar">
-                <div class="post-title-copy">
-                    {% if post.category %}
-                    <span class="post-kicker">{{ post.category }}</span>
-                    {% endif %}
-                    <h1 class="f1 text-bold color-fg-default mb-0 wb-break-word flex-1 post-detail-title">
-                        {{ post.title }}
-                    </h1>
-                </div>
-                {% if current_user.is_authenticated and current_user.is_admin %}
-                <div class="admin-actions d-flex gap-2 flex-shrink-0">
-                    <a href="{{ url_for('admin.edit_post', post_id=post.id) }}"
-                       class="post-admin-action post-admin-action-edit" title="编辑文章">
-                        <i class="fas fa-edit" aria-hidden="true"></i>
-                        <span>编辑</span>
-                    </a>
-                    <button type="button" class="post-admin-action post-admin-action-delete"
-                            onclick="deletePost({{ post.id }})" title="删除文章">
-                        <i class="fas fa-trash" aria-hidden="true"></i>
-                        <span>删除</span>
-                    </button>
-                </div>
-                {% endif %}
+    <div class="post-detail-layout">
+        <aside id="floating-toc" class="floating-toc collapsed post-detail-toc z-toc-fixed" aria-label="文章目录区域">
+            <div class="toc-header">
+                <button type="button" id="toc-toggle" class="toc-toggle-btn" aria-expanded="false" aria-label="展开或收起目录">
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </button>
+                <span class="toc-title">目录</span>
+            </div>
+            <div class="toc-content" id="toc-content">
+                <nav id="floating-table-of-contents" aria-label="文章目录">
+                    <!-- 目录将通过JavaScript动态生成 -->
+                </nav>
+            </div>
+        </aside>
+
+        <div class="post-detail-main">
+            <div class="post-detail-inline-tools">
+                <button type="button" class="post-inline-action" id="inlineTocTrigger" aria-controls="floating-toc" aria-expanded="false">
+                    <i class="fas fa-list" aria-hidden="true"></i>
+                    <span>目录</span>
+                </button>
             </div>
 
-            <div class="post-overview-card">
-                <div class="post-meta-row">
-                    <div class="post-meta-group">
-                        <span class="post-meta-pill">
-                            <i class="fas fa-user" aria-hidden="true"></i>
-                            <span>{{ post.author.username }}</span>
-                        </span>
-                        <span class="post-meta-pill">
-                            <i class="fas fa-calendar" aria-hidden="true"></i>
-                            <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
-                        </span>
-                        <span class="post-meta-pill">
-                            <i class="fas fa-clock" aria-hidden="true"></i>
-                            <span>更新于 {{ post.updated_at.strftime('%m月%d日') }}</span>
-                        </span>
-                    </div>
-
-                    <div class="post-share-row">
-                        <span class="share-label f5 color-fg-muted text-semibold no-wrap">分享</span>
-                        <div class="share-buttons d-flex items-center gap-2">
-                            <button type="button" class="share-btn share-btn-wechat" onclick="shareToWeChat(event)" title="微信分享">
-                                <i class="fab fa-weixin" aria-hidden="true"></i>
-                            </button>
-                            <button type="button" class="share-btn share-btn-weibo" onclick="shareToWeibo()" title="微博分享">
-                                <i class="fab fa-weibo" aria-hidden="true"></i>
-                            </button>
-                            <button type="button" class="share-btn share-btn-link" onclick="copyLink()" title="复制链接">
-                                <i class="fas fa-link" aria-hidden="true"></i>
+            <article class="blog-post post-detail-article Box p-4 mb-4">
+                <header class="post-detail-header">
+                    <div class="post-detail-topbar">
+                        <div class="post-title-copy">
+                            {% if post.category %}
+                            <span class="post-kicker">{{ post.category }}</span>
+                            {% endif %}
+                            <h1 class="f1 text-bold color-fg-default mb-0 wb-break-word flex-1 post-detail-title">
+                                {{ post.title }}
+                            </h1>
+                        </div>
+                        {% if current_user.is_authenticated and current_user.is_admin %}
+                        <div class="admin-actions d-flex gap-2 flex-shrink-0">
+                            <a href="{{ url_for('admin.edit_post', post_id=post.id) }}"
+                               class="post-admin-action post-admin-action-edit" title="编辑文章">
+                                <i class="fas fa-edit" aria-hidden="true"></i>
+                                <span>编辑</span>
+                            </a>
+                            <button type="button" class="post-admin-action post-admin-action-delete"
+                                    onclick="deletePost({{ post.id }})" title="删除文章">
+                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                <span>删除</span>
                             </button>
                         </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="post-overview-card">
+                        <div class="post-meta-row">
+                            <div class="post-meta-group">
+                                <span class="post-meta-pill">
+                                    <i class="fas fa-user" aria-hidden="true"></i>
+                                    <span>{{ post.author.username }}</span>
+                                </span>
+                                <span class="post-meta-pill">
+                                    <i class="fas fa-calendar" aria-hidden="true"></i>
+                                    <span>{{ post.created_at.strftime('%Y年%m月%d日') }}</span>
+                                </span>
+                                <span class="post-meta-pill">
+                                    <i class="fas fa-clock" aria-hidden="true"></i>
+                                    <span>更新于 {{ post.updated_at.strftime('%m月%d日') }}</span>
+                                </span>
+                                <span class="post-meta-pill">
+                                    <i class="fas fa-eye" aria-hidden="true"></i>
+                                    <span>{{ post.view_count }}</span>
+                                </span>
+                                <span class="post-meta-pill">
+                                    <i class="far fa-comment" aria-hidden="true"></i>
+                                    <span class="comment-count">{{ post.comment_count }} 评论</span>
+                                </span>
+                            </div>
+
+                            <div class="post-share-row">
+                                <span class="share-label f5 color-fg-muted text-semibold no-wrap">分享</span>
+                                <div class="share-buttons d-flex items-center gap-2">
+                                    <button type="button" class="share-btn share-btn-wechat" onclick="shareToWeChat(event)" title="微信分享">
+                                        <i class="fab fa-weixin" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" class="share-btn share-btn-link" onclick="copyLink()" title="复制链接">
+                                        <i class="fas fa-link" aria-hidden="true"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if post.excerpt %}
+                        <div class="post-excerpt-card" role="note" aria-label="文章摘要">
+                            <span class="post-excerpt-label">摘要</span>
+                            <p class="post-excerpt-text">{{ post.excerpt }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if post.tags %}
+                        <div class="post-tags-row">
+                            {% for tag in post.get_tags_list() %}
+                            <span class="Label Label--secondary">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </header>
+
+                <!-- 文章内容 -->
+                <div class="blog-content rich-text-content post-detail-body">
+                    {{ post.rendered_content|safe }}
+                </div>
+            </article>
+
+            <!-- 评论区域 -->
+            <div class="comments-section post-comments-card">
+                <div class="comments-header">
+                    <h4 class="comments-title">评论</h4>
+                    <span class="comments-count">{{ post.comment_count }} 条评论</span>
+                </div>
+
+                <!-- 评论表单 -->
+                {% if current_user.is_authenticated %}
+                <form class="comment-form" data-id="{{ post.id }}" data-type="post">
+                    <div class="form-group">
+                        <label for="comment-content">发表评论</label>
+                        <div id="comment-editor-{{ post.id }}" class="comment-editor"></div>
+                        <textarea class="form-control comment-content d-none" id="comment-content"
+                                  name="content"></textarea>
+                    </div>
+                    <button type="submit" class="comment-submit">
+                        <i class="fas fa-paper-plane" aria-hidden="true"></i> 提交评论
+                    </button>
+                </form>
+                {% else %}
+                <div class="flash">
+                    <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>
+                    请 <a href="{{ url_for('auth.login') }}" class="color-fg-accent no-underline">登录</a> 后发表评论
+                </div>
+                {% endif %}
+
+                <!-- 评论列表 -->
+                <div class="comments-list" data-content-id="{{ post.id }}" data-content-type="post">
+                    <!-- 评论将通过JavaScript动态加载 -->
+                </div>
+            </div>
+        </div>
+
+        <aside class="floating-interaction-buttons post-detail-float-actions z-toc-fixed" aria-label="文章互动">
+            <div class="floating-panel Box p-3 d-flex flex-column gap-3">
+                <div class="floating-actions-group">
+                    <button type="button" class="floating-btn like-btn" data-id="{{ post.id }}" data-type="post" title="点赞">
+                        <span class="floating-btn-icon" aria-hidden="true">
+                            <i class="far fa-heart" aria-hidden="true"></i>
+                        </span>
+                        <span class="floating-btn-text">点赞</span>
+                        <span class="floating-btn-count count">{{ post.like_count or 0 }}</span>
+                    </button>
+                    <button type="button" class="floating-btn favorite-btn" data-id="{{ post.id }}" data-type="post" title="收藏">
+                        <span class="floating-btn-icon" aria-hidden="true">
+                            <i class="far fa-star" aria-hidden="true"></i>
+                        </span>
+                        <span class="floating-btn-text">收藏</span>
+                        <span class="floating-btn-count count">{{ post.favorite_count or 0 }}</span>
+                    </button>
+                    <button type="button" class="floating-btn floating-btn-rate-toggle mobile-only" id="mobileRatingToggle" title="评分" aria-expanded="false" aria-controls="mobileRatingSection">
+                        <span class="floating-btn-icon" aria-hidden="true">
+                            <i class="fas fa-star" aria-hidden="true"></i>
+                        </span>
+                        <span class="floating-btn-text">评分</span>
+                    </button>
+                    <button type="button" class="floating-btn floating-btn-toc mobile-only" id="mobileTocTrigger" title="目录" aria-expanded="false" aria-controls="floating-toc">
+                        <span class="floating-btn-icon" aria-hidden="true">
+                            <i class="fas fa-list" aria-hidden="true"></i>
+                        </span>
+                        <span class="floating-btn-text">目录</span>
+                    </button>
+                </div>
+                <div id="mobileRatingSection" class="floating-rating-section d-flex flex-column items-center gap-2">
+                    <div class="floating-rating-meta">
+                        <span class="floating-rating-caption">文章评分</span>
+                        <span class="floating-rating-average">{{ '%.1f'|format(post.average_rating) if post.average_rating > 0 else '暂无' }}</span>
+                    </div>
+                    <label class="rating-label f6 color-fg-muted m-0">我的评分</label>
+                    <div class="rating-input d-flex justify-center gap-1">
+                        <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="1">
+                        <label for="rating-{{ post.id }}-1" data-rating="1" aria-label="1分"><i class="fas fa-star" aria-hidden="true"></i></label>
+                        <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="2">
+                        <label for="rating-{{ post.id }}-2" data-rating="2" aria-label="2分"><i class="fas fa-star" aria-hidden="true"></i></label>
+                        <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
+                        <label for="rating-{{ post.id }}-3" data-rating="3" aria-label="3分"><i class="fas fa-star" aria-hidden="true"></i></label>
+                        <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="4">
+                        <label for="rating-{{ post.id }}-4" data-rating="4" aria-label="4分"><i class="fas fa-star" aria-hidden="true"></i></label>
+                        <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="5">
+                        <label for="rating-{{ post.id }}-5" data-rating="5" aria-label="5分"><i class="fas fa-star" aria-hidden="true"></i></label>
                     </div>
                 </div>
-
-                <div class="post-stats-row">
-                    <span class="post-meta-pill">
-                        <i class="fas fa-eye" aria-hidden="true"></i>
-                        <span>{{ post.view_count }} 次浏览</span>
-                    </span>
-                    <span class="post-meta-pill">
-                        <i class="far fa-heart" aria-hidden="true"></i>
-                        <span class="like-count">{{ post.like_count }} 点赞</span>
-                    </span>
-                    <span class="post-meta-pill">
-                        <i class="far fa-star" aria-hidden="true"></i>
-                        <span class="favorite-count">{{ post.favorite_count }} 收藏</span>
-                    </span>
-                    <span class="post-meta-pill">
-                        <i class="far fa-comment" aria-hidden="true"></i>
-                        <span class="comment-count">{{ post.comment_count }} 评论</span>
-                    </span>
-                    {% if post.average_rating > 0 %}
-                    <span class="post-meta-pill">
-                        <i class="fas fa-star" aria-hidden="true"></i>
-                        <span class="rating-text">{{ post.average_rating }}</span>
-                    </span>
-                    {% endif %}
-                </div>
-
-                {% if post.excerpt %}
-                <div class="post-excerpt-card" role="note" aria-label="文章摘要">
-                    <span class="post-excerpt-label">摘要</span>
-                    <p class="post-excerpt-text">{{ post.excerpt }}</p>
-                </div>
-                {% endif %}
-
-                {% if post.tags %}
-                <div class="post-tags-row">
-                    {% for tag in post.get_tags_list() %}
-                    <span class="Label Label--secondary">{{ tag }}</span>
-                    {% endfor %}
-                </div>
-                {% endif %}
             </div>
-        </header>
-
-        <!-- 文章内容 -->
-        <div class="blog-content rich-text-content post-detail-body">
-            {{ post.rendered_content|safe }}
-        </div>
-    </article>
-
-    <!-- 评论区域 -->
-    <div class="comments-section post-comments-card">
-        <div class="comments-header">
-            <h4 class="comments-title">评论</h4>
-            <span class="comments-count">{{ post.comment_count }} 条评论</span>
-        </div>
-
-        <!-- 评论表单 -->
-        {% if current_user.is_authenticated %}
-        <form class="comment-form" data-id="{{ post.id }}" data-type="post">
-            <div class="form-group">
-                <label for="comment-content">发表评论</label>
-                <div id="comment-editor-{{ post.id }}" class="comment-editor"></div>
-                <textarea class="form-control comment-content d-none" id="comment-content"
-                          name="content"></textarea>
-            </div>
-            <button type="submit" class="comment-submit">
-                <i class="fas fa-paper-plane" aria-hidden="true"></i> 提交评论
-            </button>
-        </form>
-        {% else %}
-        <div class="flash">
-            <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>
-            请 <a href="{{ url_for('auth.login') }}" class="color-fg-accent no-underline">登录</a> 后发表评论
-        </div>
-        {% endif %}
-
-        <!-- 评论列表 -->
-        <div class="comments-list" data-content-id="{{ post.id }}" data-content-type="post">
-            <!-- 评论将通过JavaScript动态加载 -->
-        </div>
+        </aside>
     </div>
 </div>
+
+<div id="postDetailOverlay" class="post-detail-overlay" hidden></div>
 
 <!-- 微信分享二维码小弹窗 -->
 <div id="wechatShareModal" class="qr-popup position-fixed z-toc-fixed" style="display: none;">
     <div class="qr-popup-content Box p-2 d-flex flex-column items-center">
         <div id="qrcode"></div>
         <p class="f6 color-fg-muted mt-2 mb-0">微信扫码分享</p>
-    </div>
-</div>
-
-<!-- 悬浮互动按钮 -->
-<div class="floating-interaction-buttons post-detail-float-actions z-toc-fixed">
-    <div class="floating-panel Box p-3 d-flex flex-column gap-3">
-        <div class="floating-actions-group">
-            <button type="button" class="floating-btn like-btn" data-id="{{ post.id }}" data-type="post" title="点赞">
-                <span class="floating-btn-icon" aria-hidden="true">
-                    <i class="far fa-heart" aria-hidden="true"></i>
-                </span>
-                <span class="floating-btn-text">点赞</span>
-                <span class="floating-btn-count count">{{ post.like_count or 0 }}</span>
-            </button>
-            <button type="button" class="floating-btn favorite-btn" data-id="{{ post.id }}" data-type="post" title="收藏">
-                <span class="floating-btn-icon" aria-hidden="true">
-                    <i class="far fa-star" aria-hidden="true"></i>
-                </span>
-                <span class="floating-btn-text">收藏</span>
-                <span class="floating-btn-count count">{{ post.favorite_count or 0 }}</span>
-            </button>
-        </div>
-        <div class="floating-rating-section d-flex flex-column items-center gap-2">
-            <label class="rating-label f6 color-fg-muted m-0">我的评分</label>
-            <div class="rating-input d-flex flex-row-reverse justify-center gap-1">
-                <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="5">
-                <label for="rating-{{ post.id }}-1"><i class="far fa-star" aria-hidden="true"></i></label>
-                <input type="radio" id="rating-{{ post.id }}-2" name="rating" value="4">
-                <label for="rating-{{ post.id }}-2"><i class="far fa-star" aria-hidden="true"></i></label>
-                <input type="radio" id="rating-{{ post.id }}-3" name="rating" value="3">
-                <label for="rating-{{ post.id }}-3"><i class="far fa-star" aria-hidden="true"></i></label>
-                <input type="radio" id="rating-{{ post.id }}-4" name="rating" value="2">
-                <label for="rating-{{ post.id }}-4"><i class="far fa-star" aria-hidden="true"></i></label>
-                <input type="radio" id="rating-{{ post.id }}-5" name="rating" value="1">
-                <label for="rating-{{ post.id }}-5"><i class="far fa-star" aria-hidden="true"></i></label>
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}
@@ -220,34 +227,118 @@
     min-width: 0;
 }
 
-/* Floating TOC — bordered panel, solid background */
-.floating-toc {
+.mobile-only {
+    display: none;
+}
+
+.post-detail-shell {
+    max-width: 1280px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.post-detail-layout {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) 144px;
+    gap: 24px;
+    align-items: start;
+}
+
+.post-detail-toc {
+    grid-column: 1;
+}
+
+.post-detail-main {
+    grid-column: 2;
+    min-width: 0;
+}
+
+.post-detail-inline-tools {
+    display: none;
+    margin-bottom: 12px;
+}
+
+.post-inline-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.86);
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+    box-shadow: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.post-inline-action:hover {
+    background: rgba(221, 244, 255, 0.72);
+    border-color: rgba(9, 105, 218, 0.24);
+    color: var(--fgColor-accent);
+}
+
+.post-detail-overlay {
     position: fixed;
-    left: 20px;
-    top: 30%;
-    transform: translateY(-50%);
+    inset: 0;
+    background: rgba(15, 23, 42, 0.24);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+    z-index: 999;
+}
+
+.post-detail-overlay.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+body.post-detail-sheet-open {
+    overflow: hidden;
+}
+
+.floating-toc {
+    position: sticky;
+    top: 88px;
+    align-self: start;
+    width: 220px;
+    min-width: 0;
+    max-width: none;
     background-color: var(--bgColor-default);
     border: 1px solid var(--borderColor-default);
-    border-radius: var(--borderRadius-medium);
+    border-radius: 18px;
     box-shadow: var(--shadow-resting-small);
-    max-width: 280px;
-    min-width: 200px;
-    cursor: move;
-    user-select: none;
+    transform: none;
+    cursor: default;
+    user-select: auto;
 }
 
 .floating-toc.collapsed {
-    width: 50px;
-    min-width: 50px;
-    max-width: 50px;
+    width: 88px;
+    min-width: 88px;
+    max-width: 88px;
 }
 
 .floating-toc.collapsed .toc-content {
     display: none;
 }
 
+.floating-toc.collapsed .toc-header {
+    padding: 12px 12px;
+}
+
+.floating-toc.collapsed .toc-toggle-btn {
+    margin-right: 6px;
+}
+
 .floating-toc.collapsed .toc-title {
-    display: none;
+    display: block;
+    font-size: 13px;
 }
 
 .floating-toc.dragging {
@@ -259,7 +350,7 @@
     align-items: center;
     padding: 12px 16px;
     border-bottom: 1px solid var(--borderColor-default);
-    cursor: move;
+    cursor: default;
     user-select: none;
     position: relative;
     z-index: 10;
@@ -296,12 +387,6 @@
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     line-height: 1.08;
     letter-spacing: -0.02em;
-}
-
-.post-detail-shell {
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
 }
 
 .post-detail-article {
@@ -350,24 +435,25 @@
     flex-direction: column;
     gap: 12px;
     padding: 14px;
-    border: 1px solid var(--borderColor-default);
+    border: 2px solid var(--borderColor-default);
     border-radius: 16px;
     background: var(--bgColor-muted);
 }
 
 .post-meta-row {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
-.post-meta-group,
-.post-stats-row {
+.post-meta-group {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
+    flex: 1;
+    min-width: 0;
 }
 
 .post-meta-pill {
@@ -389,6 +475,8 @@
     align-items: center;
     gap: 10px;
     flex-wrap: wrap;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .post-excerpt-card {
@@ -397,7 +485,7 @@
     gap: 8px;
     padding: 12px 14px;
     border-radius: 14px;
-    border: 1px solid var(--borderColor-default);
+    border: 2px solid var(--borderColor-default);
     background: var(--bgColor-default);
 }
 
@@ -439,7 +527,7 @@
 
 .toc-content {
     padding: 12px 16px;
-    max-height: 400px;
+    max-height: calc(100vh - 152px);
     overflow-y: auto;
     background-color: var(--bgColor-default);
 }
@@ -587,11 +675,6 @@
     border-color: var(--borderColor-success-emphasis);
 }
 
-.share-btn-weibo:hover {
-    color: var(--fgColor-danger);
-    border-color: var(--borderColor-danger-emphasis);
-}
-
 .share-btn i {
     font-size: 14px;
 }
@@ -604,24 +687,29 @@
     white-space: nowrap;
 }
 
+.rating-input {
+    display: flex;
+    align-items: center;
+}
+
 .rating-input input[type="radio"] {
     display: none;
 }
 
 .rating-input label {
     cursor: pointer;
-    color: var(--borderColor-emphasis);
+    color: #c7cfd9;
     font-size: 12px;
     transition: color 0.15s ease;
 }
 
-.rating-input label:hover,
-.rating-input input[type="radio"]:checked ~ label {
-    color: var(--fgColor-attention);
+.rating-input label i {
+    line-height: 1;
 }
 
-.rating-input input[type="radio"]:checked ~ label ~ label {
-    color: var(--borderColor-emphasis);
+.rating-input label.is-active,
+.rating-input label.hover-active {
+    color: #d39b1a;
 }
 
 .rating-star {
@@ -665,11 +753,11 @@
 
 /* Floating interaction — outer wrapper positions panel */
 .floating-interaction-buttons {
-    position: fixed;
-    right: 20px;
-    top: 30%;
-    transform: translateY(-50%);
-    width: 132px;
+    grid-column: 3;
+    position: sticky;
+    top: 88px;
+    align-self: start;
+    width: 144px;
     box-sizing: border-box;
 }
 
@@ -686,6 +774,10 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+}
+
+.floating-btn.mobile-only {
+    display: none;
 }
 
 .floating-btn {
@@ -791,6 +883,27 @@
     gap: 6px !important;
 }
 
+.floating-rating-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.floating-rating-caption {
+    font-size: 11px;
+    color: var(--fgColor-muted);
+    line-height: 1.2;
+}
+
+.floating-rating-average {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--fgColor-default);
+    letter-spacing: -0.03em;
+}
+
 .floating-rating-section .rating-label {
     font-size: 11px;
     color: var(--fgColor-muted);
@@ -809,13 +922,48 @@
     align-items: center;
     justify-content: center;
     font-size: 13px;
-    color: var(--fgColor-subtle);
+    color: #c7cfd9 !important;
+}
+
+.floating-rating-section .rating-input label i {
+    color: inherit !important;
+}
+
+.floating-rating-section .rating-input label.is-active,
+.floating-rating-section .rating-input label.is-active i,
+.floating-rating-section .rating-input label.hover-active,
+.floating-rating-section .rating-input label.hover-active i {
+    color: #d39b1a !important;
+}
+
+.floating-rating-section .rating-input input[type="radio"]:checked + label,
+.floating-rating-section .rating-input input[type="radio"]:checked + label i,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label i {
+    color: #c7cfd9 !important;
+}
+
+.floating-rating-section .rating-input input[type="radio"]:checked + label.is-active,
+.floating-rating-section .rating-input input[type="radio"]:checked + label.is-active i,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label.is-active,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label.is-active i,
+.floating-rating-section .rating-input input[type="radio"]:checked + label.hover-active,
+.floating-rating-section .rating-input input[type="radio"]:checked + label.hover-active i,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label.hover-active,
+.floating-rating-section .rating-input input[type="radio"]:checked ~ label.hover-active i {
+    color: #d39b1a !important;
 }
 
 .floating-rating-section .rating-input label:hover,
-.floating-rating-section .rating-input label:hover ~ label,
-.floating-rating-section .rating-input input[type="radio"]:checked ~ label {
-    color: var(--fgColor-attention);
+.floating-rating-section .rating-input label:hover i {
+    color: inherit !important;
+}
+
+.floating-rating-section .rating-input label:hover.is-active,
+.floating-rating-section .rating-input label:hover.is-active i,
+.floating-rating-section .rating-input label:hover.hover-active,
+.floating-rating-section .rating-input label:hover.hover-active i {
+    color: #d39b1a !important;
 }
 
 .blog-post {
@@ -1194,43 +1342,242 @@
     color: var(--fgColor-danger);
 }
 
-@media (max-width: 1200px) {
-    .floating-toc {
-        left: 10px;
-        max-width: 250px;
-        min-width: 180px;
+@media (min-width: 768px) and (max-width: 1199px) {
+    .post-detail-layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
     }
-}
 
-@media (max-width: 768px) {
-    .floating-toc {
-        display: none;
+    .post-detail-toc,
+    .post-detail-main,
+    .floating-interaction-buttons {
+        grid-column: 1;
+    }
+
+    .post-detail-toc {
+        grid-row: 1;
     }
 
     .floating-interaction-buttons {
-        right: 10px;
-        width: 116px;
+        grid-row: 2;
+        position: static;
+        top: auto;
+        width: max-content;
+        max-width: 100%;
+        justify-self: end;
+    }
+
+    .post-detail-main {
+        grid-row: 3;
+    }
+
+    .post-detail-inline-tools {
+        display: flex;
+        margin-bottom: 14px;
+    }
+
+    .floating-toc {
+        position: static;
+        top: auto;
+        left: auto;
+        bottom: auto;
+        display: none;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        transform: none;
+        opacity: 1;
+        pointer-events: auto;
+        z-index: auto;
+    }
+
+    .floating-toc.collapsed,
+    .floating-toc.is-inline-open {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .floating-toc.is-inline-open {
+        display: block;
+    }
+
+    .floating-toc.is-inline-open .toc-content {
+        display: block !important;
+        max-height: min(42vh, 360px);
+    }
+
+    .floating-toc.is-inline-open .toc-title {
+        display: block !important;
+    }
+
+    .floating-toc .toc-header {
+        cursor: default;
+    }
+
+    .floating-panel {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px !important;
+        padding: 12px 14px !important;
+    }
+
+    .floating-actions-group {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .floating-btn {
+        width: auto;
+        min-width: 116px;
+        grid-template-columns: 14px auto auto;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .floating-btn-count {
+        min-width: 24px;
+    }
+
+    .floating-rating-section {
+        min-width: 152px;
+        padding: 10px 12px;
+        margin-left: 0;
+    }
+}
+
+@media (max-width: 767px) {
+    .post-detail-layout {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .post-detail-main,
+    .post-detail-toc,
+    .floating-interaction-buttons {
+        grid-column: 1;
+    }
+
+    .post-detail-main {
+        padding-bottom: 92px;
+    }
+
+    .post-detail-inline-tools {
+        display: none;
+    }
+
+    .floating-toc {
+        position: fixed;
+        left: 50%;
+        bottom: 82px;
+        top: auto;
+        width: min(360px, calc(100vw - 16px));
+        min-width: 0;
+        max-width: none;
+        transform: translate(-50%, calc(100% + 24px));
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+        z-index: 1001;
+    }
+
+    .floating-toc.is-mobile-open {
+        width: min(360px, calc(100vw - 16px));
+        opacity: 1;
+        pointer-events: auto;
+        transform: translate(-50%, 0);
+    }
+
+    .floating-toc.is-mobile-open .toc-content {
+        display: block !important;
+        max-height: min(52vh, 420px);
+    }
+
+    .floating-toc.is-mobile-open .toc-title {
+        display: block !important;
+    }
+
+    .floating-interaction-buttons {
+        position: fixed;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        top: auto;
+        width: auto;
+        z-index: 1002;
     }
 
     .floating-panel {
         padding: 8px !important;
+        gap: 0 !important;
+        border-radius: 18px;
+        box-shadow: var(--shadow-floating-small);
+    }
+
+    .floating-actions-group {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .floating-btn.mobile-only,
+    .mobile-only {
+        display: inline-grid;
     }
 
     .floating-btn {
-        min-height: 34px;
-        padding: 5px 8px;
-        gap: 6px;
+        min-height: 44px;
+        padding: 8px 6px;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 4px;
         font-size: 11px;
     }
 
+    .floating-btn-text {
+        font-size: 10px;
+        text-align: center;
+    }
+
     .floating-btn-count {
-        min-width: 18px;
-        padding: 2px 5px;
+        min-width: 0;
+        padding: 0;
+        background: transparent;
         font-size: 10px;
     }
 
+    .floating-btn-rate-toggle .floating-btn-count,
+    .floating-btn-toc .floating-btn-count {
+        display: none;
+    }
+
+    .floating-rating-section {
+        position: fixed;
+        left: 50%;
+        bottom: 82px;
+        width: min(320px, calc(100vw - 24px));
+        padding: 14px 16px;
+        border-radius: 18px;
+        background: var(--bgColor-default);
+        box-shadow: var(--shadow-floating-medium);
+        transform: translate(-50%, calc(100% + 24px));
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+        z-index: 1003;
+    }
+
+    .floating-interaction-buttons.show-rating-sheet .floating-rating-section {
+        transform: translate(-50%, 0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     .floating-rating-section .rating-input label {
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .post-detail-article {
@@ -1253,8 +1600,7 @@
         justify-content: space-between;
     }
 
-    .post-meta-group,
-    .post-stats-row {
+    .post-meta-group {
         gap: 6px;
     }
 
@@ -1308,6 +1654,7 @@ document.addEventListener('DOMContentLoaded', function() {
     generateTableOfContents();
     setupFloatingToc();
     setupRatingStars();
+    setupFloatingRatingInputs();
     setupFloatingButtons();
 
     const commentEditorContainer = document.getElementById('comment-editor-{{ post.id }}');
@@ -1403,106 +1750,201 @@ function setupTocHighlight() {
 function setupFloatingToc() {
     const tocToggle = document.getElementById('toc-toggle');
     const floatingToc = document.getElementById('floating-toc');
+    const overlay = document.getElementById('postDetailOverlay');
+    const inlineTocTrigger = document.getElementById('inlineTocTrigger');
+    const mobileTocTrigger = document.getElementById('mobileTocTrigger');
+    const floatingButtons = document.querySelector('.floating-interaction-buttons');
+    const mobileRatingToggle = document.getElementById('mobileRatingToggle');
+    const tocNav = document.getElementById('floating-table-of-contents');
 
     if (!tocToggle || !floatingToc) return;
 
-    tocToggle.addEventListener('click', function(e) {
-        e.stopPropagation();
-        const collapsed = floatingToc.classList.toggle('collapsed');
-        tocToggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    const isMobileLayout = () => window.innerWidth < 768;
+    const isTabletLayout = () => window.innerWidth >= 768 && window.innerWidth < 1200;
+    const isCompactLayout = () => window.innerWidth < 1200;
+    const isDrawerOpen = () => floatingToc.classList.contains('is-mobile-open');
+    const isInlinePanelOpen = () => floatingToc.classList.contains('is-inline-open');
+    const isRatingSheetOpen = () => Boolean(
+        floatingButtons && floatingButtons.classList.contains('show-rating-sheet')
+    );
 
+    const syncOverlay = () => {
+        if (!overlay) return;
+
+        const overlayVisible = isMobileLayout() && (isDrawerOpen() || isRatingSheetOpen());
+
+        overlay.hidden = !overlayVisible;
+        overlay.classList.toggle('is-visible', overlayVisible);
+        document.body.classList.toggle('post-detail-sheet-open', overlayVisible);
+    };
+
+    const syncTocControls = () => {
+        const drawerOpen = isDrawerOpen();
+        const inlineOpen = isInlinePanelOpen();
+        const collapsed = floatingToc.classList.contains('collapsed');
         const icon = tocToggle.querySelector('i');
-        if (floatingToc.classList.contains('collapsed')) {
-            icon.className = 'fas fa-chevron-right';
-        } else {
-            icon.className = 'fas fa-list';
+
+        if (icon) {
+            if (isMobileLayout()) {
+                icon.className = drawerOpen ? 'fas fa-xmark' : 'fas fa-list';
+            } else if (isTabletLayout()) {
+                icon.className = inlineOpen ? 'fas fa-xmark' : 'fas fa-list';
+            } else {
+                icon.className = collapsed ? 'fas fa-chevron-right' : 'fas fa-list';
+            }
         }
 
-        localStorage.setItem('toc-collapsed', floatingToc.classList.contains('collapsed'));
+        if (isMobileLayout()) {
+            tocToggle.setAttribute('aria-expanded', String(drawerOpen));
+        } else if (isTabletLayout()) {
+            tocToggle.setAttribute('aria-expanded', String(inlineOpen));
+        } else {
+            tocToggle.setAttribute('aria-expanded', String(!collapsed));
+        }
+
+        [inlineTocTrigger, mobileTocTrigger].forEach((button) => {
+            if (button) {
+                const expanded = isMobileLayout() ? drawerOpen : inlineOpen;
+                button.setAttribute('aria-expanded', expanded ? 'true' : 'false');
+            }
+        });
+
+        if (mobileRatingToggle) {
+            mobileRatingToggle.setAttribute(
+                'aria-expanded',
+                isRatingSheetOpen() ? 'true' : 'false'
+            );
+        }
+    };
+
+    const closeRatingSheet = () => {
+        if (!floatingButtons) return;
+        floatingButtons.classList.remove('show-rating-sheet');
+        syncTocControls();
+        syncOverlay();
+    };
+
+    const closeTocPanels = () => {
+        floatingToc.classList.remove('is-inline-open');
+        floatingToc.classList.remove('is-mobile-open');
+        syncTocControls();
+        syncOverlay();
+    };
+
+    const openTocPanel = () => {
+        if (!isCompactLayout()) return;
+        closeRatingSheet();
+
+        if (isMobileLayout()) {
+            floatingToc.classList.remove('is-inline-open');
+            floatingToc.classList.add('is-mobile-open');
+        } else if (isTabletLayout()) {
+            floatingToc.classList.remove('is-mobile-open');
+            floatingToc.classList.add('is-inline-open');
+        }
+
+        syncTocControls();
+        syncOverlay();
+    };
+
+    const toggleToc = (event) => {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        if (isMobileLayout()) {
+            if (isDrawerOpen()) {
+                closeTocPanels();
+            } else {
+                openTocPanel();
+            }
+            return;
+        }
+
+        if (isTabletLayout()) {
+            if (isInlinePanelOpen()) {
+                closeTocPanels();
+            } else {
+                openTocPanel();
+            }
+            return;
+        }
+
+        const collapsed = floatingToc.classList.toggle('collapsed');
+        localStorage.setItem('toc-collapsed', collapsed ? 'true' : 'false');
+        syncTocControls();
+    };
+
+    tocToggle.addEventListener('click', toggleToc);
+
+    [inlineTocTrigger, mobileTocTrigger].forEach((button) => {
+        if (!button) return;
+        button.addEventListener('click', toggleToc);
+    });
+
+    if (mobileRatingToggle && floatingButtons) {
+        mobileRatingToggle.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (!isMobileLayout()) return;
+
+            closeTocPanels();
+            floatingButtons.classList.toggle('show-rating-sheet');
+            syncTocControls();
+            syncOverlay();
+        });
+    }
+
+    if (tocNav) {
+        tocNav.addEventListener('click', function(event) {
+            if (event.target.closest('a') && isCompactLayout()) {
+                setTimeout(closeTocPanels, 120);
+            }
+        });
+    }
+
+    if (overlay) {
+        overlay.addEventListener('click', function() {
+            closeTocPanels();
+            closeRatingSheet();
+        });
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeTocPanels();
+            closeRatingSheet();
+        }
+    });
+
+    window.addEventListener('resize', function() {
+        if (!isTabletLayout()) {
+            floatingToc.classList.remove('is-inline-open');
+        }
+
+        if (!isMobileLayout()) {
+            floatingToc.classList.remove('is-mobile-open');
+        }
+
+        if (!isMobileLayout() && floatingButtons) {
+            floatingButtons.classList.remove('show-rating-sheet');
+        }
+
+        syncTocControls();
+        syncOverlay();
     });
 
     const savedState = localStorage.getItem('toc-collapsed');
     if (savedState === 'true') {
         floatingToc.classList.add('collapsed');
-        tocToggle.setAttribute('aria-expanded', 'false');
-        const icon = tocToggle.querySelector('i');
-        icon.className = 'fas fa-chevron-right';
+    } else {
+        floatingToc.classList.remove('collapsed');
     }
 
-    setupTocDragging(floatingToc);
-}
-
-function setupTocDragging(tocElement) {
-    let isDragging = false;
-    let startX, startY, startLeft, startTop;
-
-    tocElement.addEventListener('mousedown', function(e) {
-        if (!e.target.closest('.toc-header') || e.target.closest('.toc-toggle-btn')) {
-            return;
-        }
-
-        isDragging = true;
-        tocElement.classList.add('dragging');
-
-        startX = e.clientX;
-        startY = e.clientY;
-
-        const rect = tocElement.getBoundingClientRect();
-        startLeft = rect.left;
-        startTop = rect.top;
-
-        e.preventDefault();
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-    });
-
-    function handleMouseMove(e) {
-        if (!isDragging) return;
-
-        const deltaX = e.clientX - startX;
-        const deltaY = e.clientY - startY;
-
-        let newLeft = startLeft + deltaX;
-        let newTop = startTop + deltaY;
-
-        const windowWidth = window.innerWidth;
-        const windowHeight = window.innerHeight;
-        const tocWidth = tocElement.offsetWidth;
-        const tocHeight = tocElement.offsetHeight;
-
-        newLeft = Math.max(0, Math.min(newLeft, windowWidth - tocWidth));
-        newTop = Math.max(0, Math.min(newTop, windowHeight - tocHeight));
-
-        tocElement.style.left = newLeft + 'px';
-        tocElement.style.top = newTop + 'px';
-        tocElement.style.transform = 'none';
-
-        localStorage.setItem('toc-position', JSON.stringify({
-            left: newLeft,
-            top: newTop
-        }));
-    }
-
-    function handleMouseUp() {
-        if (isDragging) {
-            isDragging = false;
-            tocElement.classList.remove('dragging');
-
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        }
-    }
-
-    const savedPosition = localStorage.getItem('toc-position');
-    if (savedPosition) {
-        try {
-            const position = JSON.parse(savedPosition);
-            tocElement.style.left = position.left + 'px';
-            tocElement.style.top = position.top + 'px';
-            tocElement.style.transform = 'none';
-        } catch (e) {}
-    }
+    syncTocControls();
+    syncOverlay();
 }
 
 function setupRatingStars() {
@@ -1514,6 +1956,68 @@ function setupRatingStars() {
             const percentage = (rating / 5) * 100;
             star.style.setProperty('--rating-clip', `${100 - percentage}%`);
         }
+    });
+}
+
+function setFloatingRatingIconState(label, filled) {
+    const icon = label.querySelector('i');
+    if (!icon) return;
+
+    icon.className = 'fas fa-star';
+}
+
+function syncFloatingRatingSelection(ratingContainer) {
+    if (!ratingContainer) return;
+
+    const checkedInput = ratingContainer.querySelector('input[name="rating"]:checked');
+    const activeRating = checkedInput ? parseInt(checkedInput.value, 10) : 0;
+    const labels = ratingContainer.querySelectorAll('label');
+
+    labels.forEach((label) => {
+        label.classList.remove('hover-active');
+        const labelRating = parseInt(label.dataset.rating || '0', 10);
+        const filled = activeRating > 0 && labelRating <= activeRating;
+        label.classList.toggle('is-active', filled);
+        setFloatingRatingIconState(label, filled);
+    });
+}
+
+function applyFloatingRatingPreview(ratingContainer, previewRating) {
+    if (!ratingContainer) return;
+
+    const labels = ratingContainer.querySelectorAll('label');
+    labels.forEach((label) => {
+        const labelRating = parseInt(label.dataset.rating || '0', 10);
+        const filled = previewRating > 0 && labelRating <= previewRating;
+        label.classList.toggle('hover-active', filled);
+        label.classList.toggle('is-active', false);
+        setFloatingRatingIconState(label, filled);
+    });
+}
+
+function setupFloatingRatingInputs() {
+    const ratingContainers = document.querySelectorAll('.floating-rating-section .rating-input');
+
+    ratingContainers.forEach((ratingContainer) => {
+        syncFloatingRatingSelection(ratingContainer);
+
+        ratingContainer.addEventListener('mouseover', function(event) {
+            const label = event.target.closest('label');
+            if (!label || !ratingContainer.contains(label)) return;
+
+            const previewRating = parseInt(label.dataset.rating || '0', 10);
+            applyFloatingRatingPreview(ratingContainer, previewRating);
+        });
+
+        ratingContainer.addEventListener('mouseleave', function() {
+            syncFloatingRatingSelection(ratingContainer);
+        });
+
+        ratingContainer.addEventListener('change', function() {
+            requestAnimationFrame(() => {
+                syncFloatingRatingSelection(ratingContainer);
+            });
+        });
     });
 }
 
@@ -1599,6 +2103,8 @@ function updateFloatingRatingUI(ratingSection, userRating) {
             targetInput.checked = true;
         }
     }
+
+    syncFloatingRatingSelection(ratingSection.querySelector('.rating-input'));
 }
 
 function shareToWeChat(event) {
@@ -1621,13 +2127,6 @@ function shareToWeChat(event) {
     });
 
     event.stopPropagation();
-}
-
-function shareToWeibo() {
-    const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent(document.title);
-    const weiboUrl = `https://service.weibo.com/share/share.php?url=${url}&title=${title}`;
-    window.open(weiboUrl, '_blank');
 }
 
 async function copyLink() {
