@@ -108,17 +108,43 @@ class InteractionManager {
 
         // 评分悬停事件（仅限互动统计模块）
         document.addEventListener('mouseover', (e) => {
-            if (e.target.closest('.rating-section .rating-input label')) {
+            if (e.target.closest('.rating-input label')) {
                 this.handleRatingHover(e.target);
             }
         });
 
         document.addEventListener('mouseout', (e) => {
-            if (e.target.closest('.rating-section .rating-input')) {
-                this.clearRatingHover(e.target.closest('.rating-section .rating-input'));
+            const ratingContainer = e.target.closest('.rating-input');
+            if (ratingContainer && !ratingContainer.contains(e.relatedTarget)) {
+                this.clearRatingHover(ratingContainer);
             }
         });
 
+    }
+
+    updateRatingLabelIcon(label, filled) {
+        const icon = label.querySelector('i');
+        if (!icon) return;
+
+        icon.className = 'fas fa-star';
+    }
+
+    syncRatingVisualState(ratingContainer) {
+        if (!ratingContainer) return;
+
+        const checkedInput = ratingContainer.querySelector('input[name="rating"]:checked');
+        const activeRating = checkedInput ? parseInt(checkedInput.value, 10) : 0;
+        const labels = ratingContainer.querySelectorAll('label');
+
+        labels.forEach(label => {
+            label.classList.remove('hover-active');
+
+            const labelRating = parseInt(label.dataset.rating || '0', 10);
+            const filled = activeRating > 0 && labelRating <= activeRating;
+
+            label.classList.toggle('is-active', filled);
+            this.updateRatingLabelIcon(label, filled);
+        });
     }
 
     async handleLike(button) {
@@ -282,13 +308,16 @@ class InteractionManager {
     }
 
     handleRatingChange(radio) {
+        const ratingSection = radio.closest('.rating-section') || radio.closest('.floating-rating-section');
+        const ratingContainer = ratingSection ? ratingSection.querySelector('.rating-input') : null;
+
         if (this.isGuest || !this.currentUser) {
             radio.checked = false;
+            this.syncRatingVisualState(ratingContainer);
             this.showLoginModal('登录后即可为内容评分');
             return;
         }
-        
-        const ratingSection = radio.closest('.rating-section') || radio.closest('.floating-rating-section');
+
         let interactionButtons, likeBtn;
         
         if (ratingSection.closest('.interaction-buttons')) {
@@ -304,7 +333,11 @@ class InteractionManager {
         
         const contentId = likeBtn.dataset.id;
         const contentType = likeBtn.dataset.type;
-        const rating = parseInt(radio.value);// 立即保存评分
+        const rating = parseInt(radio.value, 10);
+
+        this.syncRatingVisualState(ratingContainer);
+
+        // 立即保存评分
         this.saveRating(contentId, contentType, rating);
     }
 
@@ -518,6 +551,8 @@ class InteractionManager {
                 targetInput.checked = true;
             }
         }
+
+        this.syncRatingVisualState(ratingSection.querySelector('.rating-input'));
     }
 
     updateCommentCount(contentId, contentType, count) {
@@ -527,11 +562,37 @@ class InteractionManager {
         }
     }
 
+    formatAverageRating(rating) {
+        const numericRating = Number(rating);
+        if (!Number.isFinite(numericRating) || numericRating <= 0) {
+            return '暂无';
+        }
+
+        return numericRating.toFixed(1);
+    }
+
+    updateFloatingRatingSummary(contentId, contentType, rating) {
+        const floatingButtons = document.querySelector('.floating-interaction-buttons');
+        if (!floatingButtons) return;
+
+        const likeBtn = floatingButtons.querySelector('.like-btn');
+        if (!likeBtn || likeBtn.dataset.id !== contentId || likeBtn.dataset.type !== contentType) {
+            return;
+        }
+
+        const ratingAverage = floatingButtons.querySelector('.floating-rating-average');
+        if (ratingAverage) {
+            ratingAverage.textContent = this.formatAverageRating(rating);
+        }
+    }
+
     updateRating(contentId, contentType, rating) {
         const ratingElement = document.querySelector(`[data-id="${contentId}"][data-type="${contentType}"] .rating-display`);
         if (ratingElement && rating > 0) {
             ratingElement.innerHTML = this.generateStarRating(rating);
         }
+
+        this.updateFloatingRatingSummary(contentId, contentType, rating);
     }
 
     async loadUserStatus() {
@@ -920,20 +981,23 @@ class InteractionManager {
         const label = target.closest('label');
         if (!label) return;
 
-        const ratingContainer = label.closest('.rating-section .rating-input');
+        const ratingContainer = label.closest('.rating-input');
         if (!ratingContainer) return;
 
         // 清除所有悬停效果
         this.clearRatingHover(ratingContainer);
 
-        // 获取当前星星的索引
+        const previewRating = parseInt(label.dataset.rating || '0', 10);
         const labels = ratingContainer.querySelectorAll('label');
-        const currentIndex = Array.from(labels).indexOf(label);
         
-        // 为当前星星及之前的星星添加悬停效果
-        for (let i = 0; i <= currentIndex; i++) {
-            labels[i].classList.add('hover-active');
-        }
+        labels.forEach(currentLabel => {
+            const labelRating = parseInt(currentLabel.dataset.rating || '0', 10);
+            const filled = previewRating > 0 && labelRating <= previewRating;
+
+            currentLabel.classList.toggle('hover-active', filled);
+            currentLabel.classList.toggle('is-active', false);
+            this.updateRatingLabelIcon(currentLabel, filled);
+        });
     }
 
     clearRatingHover(ratingContainer) {
@@ -943,6 +1007,8 @@ class InteractionManager {
         labels.forEach(label => {
             label.classList.remove('hover-active');
         });
+
+        this.syncRatingVisualState(ratingContainer);
     }
 
     stripHtml(html) {
