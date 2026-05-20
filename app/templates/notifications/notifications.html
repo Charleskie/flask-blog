@@ -28,24 +28,23 @@
     <section class="Box mb-3 notifications-toolbar-box">
         <div class="Box-body">
             <div class="notifications-toolbar">
+                <div class="notifications-filter-tabs">
+                    {% for option in filter_options %}
+                    <a href="{{ option.href }}" class="notifications-filter-tab {% if option.active %}is-active{% endif %}">
+                        <span>{{ option.label }}</span>
+                        <span class="notifications-filter-tab-count" data-filter-count="{{ option.key }}">{{ option.count }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
                 <button
                     type="button"
-                    class="btn btn-primary btn-sm notifications-page-btn"
+                    class="btn btn-primary btn-sm notifications-page-btn notifications-bulk-read-btn"
                     onclick="markAllRead()"
                     data-bulk-read-btn
                     {% if unread_total == 0 %}style="display: none;"{% endif %}>
                     <i class="fas fa-check-double"></i>
                     <span>全部标记已读</span>
                 </button>
-            </div>
-
-            <div class="notifications-filter-tabs">
-                {% for option in filter_options %}
-                <a href="{{ option.href }}" class="notifications-filter-tab {% if option.active %}is-active{% endif %}">
-                    <span>{{ option.label }}</span>
-                    <span class="notifications-filter-tab-count" data-filter-count="{{ option.key }}">{{ option.count }}</span>
-                </a>
-                {% endfor %}
             </div>
         </div>
     </section>
@@ -109,12 +108,6 @@
             </div>
 
             <div class="notification-row-actions">
-                {% if notification.related_url %}
-                <a href="{{ url_for('notification.view_notification', notification_id=notification.id) }}" class="notification-action-btn notification-action-view">
-                    <i class="fas fa-arrow-up-right-from-square"></i>
-                    <span>查看</span>
-                </a>
-                {% endif %}
                 {% if not notification.is_read %}
                 <button type="button" class="notification-action-btn notification-action-read" data-action="mark-read" onclick="markAsRead({{ notification.id }})">
                     <i class="fas fa-check"></i>
@@ -340,20 +333,6 @@
     text-decoration: none;
 }
 
-.notification-action-view {
-    background: transparent;
-    border-color: rgba(9, 105, 218, 0.18);
-    color: var(--fgColor-accent);
-}
-
-.notification-action-view:hover,
-.notification-action-view:focus-visible {
-    background: var(--bgColor-accent-muted);
-    border-color: rgba(9, 105, 218, 0.32);
-    color: var(--fgColor-accent);
-    text-decoration: none;
-}
-
 .notification-action-read {
     background: rgba(221, 244, 255, 0.5);
     border-color: rgba(9, 105, 218, 0.16);
@@ -395,9 +374,13 @@
     display: flex;
     flex-wrap: wrap;
     gap: 7px;
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid var(--borderColor-default);
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.notifications-bulk-read-btn {
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 .notifications-filter-tab {
@@ -442,7 +425,7 @@
 
 .notifications-list-head {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 126px 68px 160px;
+    grid-template-columns: minmax(0, 1fr) 126px 68px 108px;
     gap: 12px;
     padding: 10px 14px;
     border-bottom: 1px solid var(--borderColor-default);
@@ -454,7 +437,7 @@
 
 .notification-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 126px 68px 160px;
+    grid-template-columns: minmax(0, 1fr) 126px 68px 108px;
     gap: 12px;
     align-items: center;
     padding: 12px 14px;
@@ -612,19 +595,29 @@
 @media (max-width: 1012px) {
     .notifications-list-head,
     .notification-row {
-        grid-template-columns: minmax(0, 1fr) 112px 64px 142px;
+        grid-template-columns: minmax(0, 1fr) 112px 64px 104px;
     }
 }
 
 @media (max-width: 768px) {
+    .notifications-toolbar {
+        align-items: stretch;
+    }
+
     .notifications-summary,
     .notifications-toolbar-actions,
     .notifications-empty-actions {
         width: 100%;
     }
 
+    .notifications-filter-tabs,
+    .notifications-bulk-read-btn {
+        width: 100%;
+    }
+
     .notifications-toolbar-actions .btn,
-    .notifications-empty-actions .btn {
+    .notifications-empty-actions .btn,
+    .notifications-bulk-read-btn {
         width: 100%;
         justify-content: center;
     }
