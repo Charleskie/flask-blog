@@ -31,6 +31,14 @@
     line-height: 1.75;
 }
 
+.blog-page .blog-page-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
 .blog-page .blog-new-post-btn {
     display: inline-flex;
     align-items: center;
@@ -116,6 +124,26 @@
     margin: 0;
     font-size: 1.3rem;
     line-height: 1.3;
+}
+
+.blog-page .blog-card-title-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+}
+
+.blog-page .blog-card-favorite-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255, 244, 209, 0.95);
+    color: #a06a00;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
 }
 
 .blog-page .blog-card-heading {
@@ -302,6 +330,32 @@
     background: var(--bgColor-danger-muted);
 }
 
+.blog-page .blog-empty-state {
+    padding: 28px 24px;
+    border-radius: 16px;
+    text-align: center;
+}
+
+.blog-page .blog-empty-state h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+    color: var(--fgColor-default);
+}
+
+.blog-page .blog-empty-state p {
+    margin: 0 auto 18px;
+    max-width: 34rem;
+    color: var(--fgColor-muted);
+    line-height: 1.75;
+}
+
+.blog-page .blog-empty-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
 @media (min-width: 768px) {
     .blog-page .blog-sidebar {
         position: sticky;
@@ -321,6 +375,10 @@
         gap: 8px 10px;
     }
 
+    .blog-page .blog-page-actions {
+        justify-content: flex-start;
+    }
+
     .blog-page .blog-card-head-actions {
         justify-content: flex-end;
     }
@@ -335,11 +393,11 @@
     <div class="width-full w-regular-2/3 w-large-3/4 pr-regular-4">
         <div class="blog-page-head">
             <div>
-                <h1 class="blog-page-title">最新文章</h1>
-                <p class="blog-page-copy">按时间排序展示，当前共 {{ posts.total }} 篇文章。</p>
+                <h1 class="blog-page-title">{{ page_heading }}</h1>
+                <p class="blog-page-copy">{{ page_copy }}</p>
             </div>
             {% if current_user.is_authenticated and current_user.is_admin %}
-            <div class="d-flex space-x-2">
+            <div class="blog-page-actions">
                 <a href="{{ url_for('admin.new_post') }}" class="blog-new-post-btn">
                     <i class="fas fa-plus" aria-hidden="true"></i>
                     <span>新增文章</span>
@@ -350,6 +408,7 @@
         
         <!-- 文章卡片 -->
         <div class="d-grid grid-cols-1 blog-list">
+            {% if posts.items %}
             {% for post in posts.items %}
             <article class="Box blog-list-card" data-post-url="{{ url_for('main.post_detail', slug=post.safe_slug) }}" role="link" tabindex="0" aria-label="查看文章 {{ post.title }}">
                 <div class="blog-card-top">
@@ -366,9 +425,17 @@
                 
                 <div class="blog-card-heading">
                     <div class="blog-card-heading-main">
-                        <h2 class="blog-card-title text-bold color-fg-default">
-                            <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="no-underline">{{ post.title }}</a>
-                        </h2>
+                        <div class="blog-card-title-row">
+                            <h2 class="blog-card-title text-bold color-fg-default">
+                                <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="no-underline">{{ post.title }}</a>
+                            </h2>
+                            {% if post.id in favorite_post_ids %}
+                            <span class="blog-card-favorite-badge">
+                                <i class="fas fa-star" aria-hidden="true"></i>
+                                <span>已收藏</span>
+                            </span>
+                            {% endif %}
+                        </div>
                         <div class="blog-card-meta-inline">
                             <div class="blog-card-stat">
                                 <i class="fas fa-user" aria-hidden="true"></i>
@@ -398,6 +465,30 @@
                 <p class="blog-card-excerpt line-clamp-2">{{ post.display_excerpt|truncate(120, True, '...') }}</p>
             </article>
             {% endfor %}
+            {% else %}
+            <div class="Box blog-empty-state">
+                {% if current_view == 'favorites' and not current_user.is_authenticated %}
+                <h3>登录后即可查看收藏</h3>
+                <p>你已经可以在文章详情页使用收藏功能，登录后这里会自动汇总你收藏过的文章，方便集中回看。</p>
+                <div class="blog-empty-actions">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-primary no-underline">登录</a>
+                    <a href="{{ url_for('main.blog') }}" class="btn btn-secondary no-underline">浏览全部文章</a>
+                </div>
+                {% elif current_view == 'favorites' %}
+                <h3>还没有收藏文章</h3>
+                <p>去文章详情页点一下收藏按钮，你喜欢的文章就会出现在这里，后面回看会方便很多。</p>
+                <div class="blog-empty-actions">
+                    <a href="{{ url_for('main.blog', view='all', search=search) }}" class="btn btn-primary no-underline">去逛逛文章</a>
+                </div>
+                {% else %}
+                <h3>暂时没有找到文章</h3>
+                <p>可以试试换个关键词，或者清掉当前筛选条件，再看看有没有更合适的结果。</p>
+                <div class="blog-empty-actions">
+                    <a href="{{ url_for('main.blog', view=current_view) }}" class="btn btn-secondary no-underline">清除筛选</a>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
         </div>
         
         <!-- 分页 -->
@@ -405,7 +496,7 @@
         <div class="d-flex justify-center blog-pagination">
             <nav class="d-flex items-center space-x-2" aria-label="分页">
                 {% if posts.has_prev %}
-                <a href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search) }}" 
+                <a href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search, view=current_view) }}" 
                    class="btn btn-secondary btn-sm no-underline">
                     <i class="fas fa-chevron-left" aria-hidden="true"></i>
                 </a>
@@ -414,7 +505,7 @@
                 {% for page_num in posts.iter_pages() %}
                     {% if page_num %}
                         {% if page_num != posts.page %}
-                        <a href="{{ url_for('main.blog', page=page_num, category=current_category, search=search) }}" 
+                        <a href="{{ url_for('main.blog', page=page_num, category=current_category, search=search, view=current_view) }}" 
                            class="btn btn-secondary btn-sm no-underline">
                             {{ page_num }}
                         </a>
@@ -427,7 +518,7 @@
                 {% endfor %}
                 
                 {% if posts.has_next %}
-                <a href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search) }}" 
+                <a href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search, view=current_view) }}" 
                    class="btn btn-secondary btn-sm no-underline">
                     <i class="fas fa-chevron-right" aria-hidden="true"></i>
                 </a>
@@ -442,12 +533,40 @@
         <div class="blog-sidebar-stack">
         <div class="Box blog-side-card">
             <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-layer-group mr-2" aria-hidden="true"></i> 浏览方式
+            </h3>
+            <ul class="list-style-none p-0 m-0 blog-side-list">
+                <li>
+                    <a href="{{ url_for('main.blog', view='all', category=current_category, search=search) }}" class="blog-side-link f5">
+                        <span>所有文章</span>
+                        <span class="Label Label--secondary">{{ published_posts_total }}</span>
+                    </a>
+                </li>
+                {% if current_user.is_authenticated %}
+                <li>
+                    <a href="{{ url_for('main.blog', view='favorites', category=current_category, search=search) }}" class="blog-side-link f5">
+                        <span>我的收藏</span>
+                        <span class="Label Label--secondary">{{ favorite_posts_total }}</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="color-fg-muted f5 lh-condensed">登录后可以在这里集中查看收藏过的文章。</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
                 <i class="fas fa-search mr-2" aria-hidden="true"></i> 搜索
             </h3>
             <form method="GET" action="{{ url_for('main.blog') }}" class="blog-side-search">
+                <input type="hidden" name="view" value="{{ current_view }}">
+                {% if current_category %}
+                <input type="hidden" name="category" value="{{ current_category }}">
+                {% endif %}
                 <i class="fas fa-search" aria-hidden="true"></i>
                 <div>
-                    <input type="text" name="search" placeholder="搜索文章..." 
+                    <input type="text" name="search" placeholder="{% if current_view == 'favorites' %}在收藏中搜索文章...{% else %}搜索文章...{% endif %}" 
                            value="{{ search or '' }}"
                            class="form-control flex-1 f5">
                 </div>
@@ -460,19 +579,22 @@
             </h3>
             <ul class="list-style-none p-0 m-0 blog-side-list">
                 <li>
-                    <a href="{{ url_for('main.blog') }}" class="blog-side-link f5">
-                        <span>所有文章</span>
-                        <span class="Label Label--secondary">{{ posts.total }}</span>
+                    <a href="{{ url_for('main.blog', view=current_view, search=search) }}" class="blog-side-link f5">
+                        <span>{% if current_view == 'favorites' %}全部收藏{% else %}所有文章{% endif %}</span>
+                        <span class="Label Label--secondary">{{ available_posts_total }}</span>
                     </a>
                 </li>
                 {% for category in categories %}
                 <li>
-                    <a href="{{ url_for('main.blog', category=category) }}" class="blog-side-link f5">
+                    <a href="{{ url_for('main.blog', category=category, search=search, view=current_view) }}" class="blog-side-link f5">
                         <span>{{ category }}</span>
                         <span class="Label Label--secondary">{{ category_count[category] if category_count else 0 }}</span>
                     </a>
                 </li>
                 {% endfor %}
+                {% if not categories %}
+                <li class="color-fg-muted f5 lh-condensed">当前筛选下还没有可用分类。</li>
+                {% endif %}
             </ul>
         </div>
         

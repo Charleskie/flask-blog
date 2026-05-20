@@ -142,8 +142,37 @@ function scrollConversationToLatest(container) {
     setTimeout(scrollToBottom, 80);
 }
 
+function scrollActiveConversationItemIntoView(container) {
+    if (!container) {
+        return;
+    }
+
+    const activeItem = container.querySelector('.message-list-item.is-active');
+    if (!activeItem) {
+        return;
+    }
+
+    const targetTop = activeItem.offsetTop - Math.max((container.clientHeight - activeItem.offsetHeight) / 2, 0);
+    const maxTop = Math.max(container.scrollHeight - container.clientHeight, 0);
+    const nextTop = Math.min(Math.max(targetTop, 0), maxTop);
+
+    container.scrollTo({
+        top: nextTop,
+        behavior: 'smooth'
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('[data-scroll-latest]').forEach(scrollConversationToLatest);
+    document.querySelectorAll('.message-list').forEach(function(container) {
+        const syncActiveItem = function() {
+            scrollActiveConversationItemIntoView(container);
+        };
+
+        syncActiveItem();
+        requestAnimationFrame(syncActiveItem);
+        setTimeout(syncActiveItem, 120);
+    });
 
     document.querySelectorAll('.js-delete-message').forEach(function(button) {
         button.addEventListener('click', function() {
