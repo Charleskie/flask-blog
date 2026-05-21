@@ -410,7 +410,8 @@
                 </div>
                 <div>
                     <label for="linkUrl" class="form-label">网站链接 *</label>
-                    <input type="url" id="linkUrl" name="url" required class="form-control" placeholder="https://example.com">
+                    <input type="text" id="linkUrl" name="url" required class="form-control" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="www.example.com 或 https://example.com">
+                    <p class="links-form-hint">可直接填写域名，系统会自动补全为 `https://`。</p>
                 </div>
                 <div>
                     <label for="linkDescription" class="form-label">网站描述</label>
@@ -442,6 +443,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const nameInput = document.getElementById('linkName');
     const submitBtn = form ? form.querySelector('button[type="submit"]') : null;
     const openTriggers = document.querySelectorAll('[data-open-link-modal]');
+
+    function normalizeExternalUrl(rawUrl) {
+        const value = (rawUrl || '').trim();
+        if (!value) {
+            return '';
+        }
+
+        const candidate = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\//.test(value) ? value : `https://${value.replace(/^\/+/, '')}`;
+
+        try {
+            const parsed = new URL(candidate);
+            if (!['http:', 'https:'].includes(parsed.protocol) || !parsed.hostname) {
+                return '';
+            }
+
+            const normalizedUrl = parsed.toString();
+            if (parsed.pathname === '/' && !parsed.search && !parsed.hash) {
+                return normalizedUrl.replace(/\/$/, '');
+            }
+
+            return normalizedUrl;
+        } catch (error) {
+            return '';
+        }
+    }
 
     function openModal() {
         modal.classList.remove('d-none');
@@ -488,6 +514,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const formData = new FormData(form);
         const data = Object.fromEntries(formData.entries());
+        const normalizedUrl = normalizeExternalUrl(data.url);
+
+        if (!normalizedUrl) {
+            window.showToast('请输入有效的网站链接', 'error');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = submitBtn.dataset.originalText || '提交申请';
+            }
+            return;
+        }
+
+        data.url = normalizedUrl;
 
         try {
             const response = await fetch('/api/apply-link', {
