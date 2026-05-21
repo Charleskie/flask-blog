@@ -31,6 +31,31 @@ def _absolute_public_url(path):
     return urllib.parse.urljoin(_get_public_site_root(), path)
 
 
+def _normalize_external_url(raw_url):
+    """Normalize user-provided external URLs and default bare domains to HTTPS."""
+    url = (raw_url or '').strip()
+    if not url:
+        return ''
+
+    if not re.match(r'^[a-zA-Z][a-zA-Z0-9+.-]*://', url):
+        url = f'https://{url.lstrip("/")}'
+
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme not in ('http', 'https') or not parsed.netloc:
+        return ''
+
+    normalized = urllib.parse.urlunparse((
+        parsed.scheme.lower(),
+        parsed.netloc,
+        parsed.path or '',
+        parsed.params or '',
+        parsed.query or '',
+        parsed.fragment or '',
+    ))
+
+    return normalized.rstrip('/') if parsed.path in ('', '/') and not parsed.query and not parsed.fragment else normalized
+
+
 def _format_sitemap_lastmod(value):
     if not value:
         return None
@@ -382,17 +407,15 @@ def apply_link():
         # 验证必填字段
         if not data.get('name') or not data.get('url'):
             return jsonify({'success': False, 'message': '网站名称和链接为必填项'}), 400
-        
-        # 验证URL格式
-        import re
-        url_pattern = r'^https?://.+'
-        if not re.match(url_pattern, data.get('url', '')):
+
+        normalized_url = _normalize_external_url(data.get('url', ''))
+        if not normalized_url:
             return jsonify({'success': False, 'message': '请输入有效的网站链接'}), 400
         
         # 检查是否已存在相同的友链申请
         existing_link = Link.query.filter_by(
-            name=data.get('name'),
-            url=data.get('url')
+            name=data.get('name').strip(),
+            url=normalized_url
         ).first()
         
         if existing_link:
@@ -400,10 +423,10 @@ def apply_link():
         
         # 创建友链申请
         link = Link(
-            name=data.get('name'),
-            url=data.get('url'),
-            description=data.get('description', ''),
-            email=data.get('email', ''),
+            name=data.get('name').strip(),
+            url=normalized_url,
+            description=(data.get('description', '') or '').strip(),
+            email=(data.get('email', '') or '').strip(),
             status='pending'  # 待审核状态
         )
         
@@ -414,9 +437,9 @@ def apply_link():
         from app.models import Message, Notification
         message = Message(
             name=data.get('name', '友链申请'),
-            email=data.get('email', ''),
+            email=(data.get('email', '') or '').strip(),
             subject=f'友链申请：{data.get("name")}',
-            message=f'网站名称：{data.get("name")}\n网站链接：{data.get("url")}\n网站描述：{data.get("description", "无")}\n联系邮箱：{data.get("email", "无")}',
+            message=f'网站名称：{data.get("name")}\n网站链接：{normalized_url}\n网站描述：{data.get("description", "无")}\n联系邮箱：{data.get("email", "无")}',
             ip_address=request.remote_addr,
             user_agent=request.headers.get('User-Agent')
         )
