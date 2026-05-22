@@ -70,6 +70,62 @@
     line-height: 1;
 }
 
+.blog-page .blog-feed-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.82);
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 650;
+    line-height: 1;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.blog-page .blog-feed-btn:hover {
+    background: rgba(255, 244, 209, 0.95);
+    border-color: rgba(154, 103, 0, 0.24);
+    color: #a06a00;
+    text-decoration: none;
+}
+
+.blog-page .blog-active-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.blog-page .blog-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.blog-page .blog-filter-chip strong {
+    color: var(--fgColor-default);
+    font-weight: 700;
+}
+
+.blog-page .blog-filter-clear {
+    color: var(--fgColor-accent);
+    text-decoration: none;
+}
+
 .blog-page .blog-list {
     gap: 18px !important;
 }
@@ -99,6 +155,20 @@
     font-size: 12px;
     font-weight: 600;
     color: var(--fgColor-accent);
+}
+
+.blog-page .blog-card-series {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: rgba(255, 244, 209, 0.85);
+    font-size: 12px;
+    font-weight: 600;
+    color: #a06a00;
+    text-decoration: none;
 }
 
 .blog-page .blog-card-date {
@@ -178,6 +248,37 @@
     flex-shrink: 0;
 }
 
+.blog-page .blog-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.blog-page .blog-card-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.86);
+    border: 1px solid var(--borderColor-default);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.blog-page .blog-card-tag:hover,
+.blog-page .blog-card-series:hover,
+.blog-page .blog-card-category:hover {
+    color: var(--fgColor-accent);
+    border-color: rgba(9, 105, 218, 0.24);
+    background: rgba(221, 244, 255, 0.72);
+    text-decoration: none;
+}
+
 .blog-page .blog-sidebar-stack {
     display: flex;
     flex-direction: column;
@@ -248,6 +349,34 @@
     text-decoration: none;
 }
 
+.blog-page .blog-side-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.blog-page .blog-side-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid var(--borderColor-default);
+    background: rgba(246, 248, 250, 0.86);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.blog-page .blog-side-tag:hover {
+    color: var(--fgColor-accent);
+    border-color: rgba(9, 105, 218, 0.24);
+    background: rgba(221, 244, 255, 0.72);
+    text-decoration: none;
+}
+
 .blog-page .blog-popular-list {
     display: grid;
     gap: 12px;
@@ -278,6 +407,19 @@
 
 .blog-page .blog-pagination {
     margin-top: 28px;
+}
+
+.blog-page .blog-rss-copy {
+    margin: 0 0 12px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.blog-page .blog-rss-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .blog-page .blog-card-icon-btn {
@@ -368,15 +510,46 @@
                 <h1 class="blog-page-title">{{ page_heading }}</h1>
                 <p class="blog-page-copy">{{ page_copy }}</p>
             </div>
-            {% if current_user.is_authenticated and current_user.is_admin %}
             <div class="blog-page-actions">
+                <a href="{{ url_for('main.blog_subscribe', category=current_category or None, tag=current_tag or None, series=current_series or None) }}" class="blog-feed-btn no-underline">
+                    <i class="fas fa-rss" aria-hidden="true"></i>
+                    <span>{% if current_tag or current_series or current_category %}订阅当前筛选{% else %}RSS 订阅{% endif %}</span>
+                </a>
+                {% if current_user.is_authenticated and current_user.is_admin %}
                 <a href="{{ url_for('admin.new_post') }}" class="blog-new-post-btn">
                     <i class="fas fa-plus" aria-hidden="true"></i>
                     <span>新增文章</span>
                 </a>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
+
+        {% if current_category or current_tag or current_series %}
+        <div class="blog-active-filters">
+            {% if current_category %}
+            <span class="blog-filter-chip">
+                <span>分类</span>
+                <strong>{{ current_category }}</strong>
+            </span>
+            {% endif %}
+            {% if current_series %}
+            <span class="blog-filter-chip">
+                <span>系列</span>
+                <strong>{{ current_series }}</strong>
+            </span>
+            {% endif %}
+            {% if current_tag %}
+            <span class="blog-filter-chip">
+                <span>标签</span>
+                <strong>#{{ current_tag }}</strong>
+            </span>
+            {% endif %}
+            <a href="{{ url_for('main.blog', view=current_view, search=search) }}" class="blog-filter-chip blog-filter-clear">
+                <i class="fas fa-rotate-left" aria-hidden="true"></i>
+                <span>清除筛选</span>
+            </a>
+        </div>
+        {% endif %}
         
         <!-- 文章卡片 -->
         <div class="d-grid grid-cols-1 blog-list">
@@ -407,7 +580,17 @@
                         <i class="fas fa-user" aria-hidden="true"></i>
                         <span>{{ post.author.username if post.author else '未知' }}</span>
                     </div>
-                    <span class="blog-card-category">{{ post.category or '未分类' }}</span>
+                    {% if post.category %}
+                    <a href="{{ url_for('main.blog', category=post.category, search=search, view=current_view, tag=current_tag or None, series=current_series or None) }}" class="blog-card-category">{{ post.category }}</a>
+                    {% else %}
+                    <span class="blog-card-category">未分类</span>
+                    {% endif %}
+                    {% if post.series %}
+                    <a href="{{ url_for('main.blog_series', series_name=post.series, view=current_view, search=search, category=current_category or None, tag=current_tag or None) }}" class="blog-card-series">
+                        <i class="fas fa-books" aria-hidden="true"></i>
+                        <span>{{ post.series }}</span>
+                    </a>
+                    {% endif %}
                     <div class="blog-card-stat">
                         <i class="fas fa-eye" aria-hidden="true"></i>
                         <span>{{ post.view_count }}</span>
@@ -427,6 +610,16 @@
                 </div>
                 
                 <p class="blog-card-excerpt line-clamp-2">{{ post.display_excerpt|truncate(120, True, '...') }}</p>
+                {% if post.get_tags_list() %}
+                <div class="blog-card-tags">
+                    {% for tag_name in post.get_tags_list()[:4] %}
+                    <a href="{{ url_for('main.blog_tag', tag_name=tag_name, view=current_view, search=search, category=current_category or None, series=current_series or None) }}" class="blog-card-tag">
+                        <i class="fas fa-hashtag" aria-hidden="true"></i>
+                        <span>{{ tag_name }}</span>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </article>
             {% endfor %}
             {% else %}
@@ -460,7 +653,7 @@
         <div class="d-flex justify-center blog-pagination">
             <nav class="d-flex items-center space-x-2" aria-label="分页">
                 {% if posts.has_prev %}
-                <a href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search, view=current_view) }}" 
+                <a href="{{ url_for('main.blog', page=posts.prev_num, category=current_category, search=search, view=current_view, tag=current_tag or None, series=current_series or None) }}" 
                    class="btn btn-secondary btn-sm no-underline">
                     <i class="fas fa-chevron-left" aria-hidden="true"></i>
                 </a>
@@ -469,7 +662,7 @@
                 {% for page_num in posts.iter_pages() %}
                     {% if page_num %}
                         {% if page_num != posts.page %}
-                        <a href="{{ url_for('main.blog', page=page_num, category=current_category, search=search, view=current_view) }}" 
+                        <a href="{{ url_for('main.blog', page=page_num, category=current_category, search=search, view=current_view, tag=current_tag or None, series=current_series or None) }}" 
                            class="btn btn-secondary btn-sm no-underline">
                             {{ page_num }}
                         </a>
@@ -482,7 +675,7 @@
                 {% endfor %}
                 
                 {% if posts.has_next %}
-                <a href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search, view=current_view) }}" 
+                <a href="{{ url_for('main.blog', page=posts.next_num, category=current_category, search=search, view=current_view, tag=current_tag or None, series=current_series or None) }}" 
                    class="btn btn-secondary btn-sm no-underline">
                     <i class="fas fa-chevron-right" aria-hidden="true"></i>
                 </a>
@@ -501,14 +694,14 @@
             </h3>
             <ul class="list-style-none p-0 m-0 blog-side-list">
                 <li>
-                    <a href="{{ url_for('main.blog', view='all', category=current_category, search=search) }}" class="blog-side-link f5">
+                    <a href="{{ url_for('main.blog', view='all', category=current_category, search=search, tag=current_tag or None, series=current_series or None) }}" class="blog-side-link f5">
                         <span>所有文章</span>
                         <span class="Label Label--secondary">{{ published_posts_total }}</span>
                     </a>
                 </li>
                 {% if current_user.is_authenticated %}
                 <li>
-                    <a href="{{ url_for('main.blog', view='favorites', category=current_category, search=search) }}" class="blog-side-link f5">
+                    <a href="{{ url_for('main.blog', view='favorites', category=current_category, search=search, tag=current_tag or None, series=current_series or None) }}" class="blog-side-link f5">
                         <span>我的收藏</span>
                         <span class="Label Label--secondary">{{ favorite_posts_total }}</span>
                     </a>
@@ -528,6 +721,12 @@
                 {% if current_category %}
                 <input type="hidden" name="category" value="{{ current_category }}">
                 {% endif %}
+                {% if current_tag %}
+                <input type="hidden" name="tag" value="{{ current_tag }}">
+                {% endif %}
+                {% if current_series %}
+                <input type="hidden" name="series" value="{{ current_series }}">
+                {% endif %}
                 <i class="fas fa-search" aria-hidden="true"></i>
                 <div>
                     <input type="text" name="search" placeholder="{% if current_view == 'favorites' %}在收藏中搜索文章...{% else %}搜索文章...{% endif %}" 
@@ -543,14 +742,14 @@
             </h3>
             <ul class="list-style-none p-0 m-0 blog-side-list">
                 <li>
-                    <a href="{{ url_for('main.blog', view=current_view, search=search) }}" class="blog-side-link f5">
+                    <a href="{{ url_for('main.blog', view=current_view, search=search, tag=current_tag or None, series=current_series or None) }}" class="blog-side-link f5">
                         <span>{% if current_view == 'favorites' %}全部收藏{% else %}所有文章{% endif %}</span>
                         <span class="Label Label--secondary">{{ available_posts_total }}</span>
                     </a>
                 </li>
                 {% for category in categories %}
                 <li>
-                    <a href="{{ url_for('main.blog', category=category, search=search, view=current_view) }}" class="blog-side-link f5">
+                    <a href="{{ url_for('main.blog', category=category, search=search, view=current_view, tag=current_tag or None, series=current_series or None) }}" class="blog-side-link f5">
                         <span>{{ category }}</span>
                         <span class="Label Label--secondary">{{ category_count[category] if category_count else 0 }}</span>
                     </a>
@@ -560,6 +759,42 @@
                 <li class="color-fg-muted f5 lh-condensed">当前筛选下还没有可用分类。</li>
                 {% endif %}
             </ul>
+        </div>
+
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-books mr-2" aria-hidden="true"></i> 系列专题
+            </h3>
+            <ul class="list-style-none p-0 m-0 blog-side-list">
+                {% for series_name, series_count in series_groups[:8] %}
+                <li>
+                    <a href="{{ url_for('main.blog_series', series_name=series_name, view=current_view, search=search, category=current_category or None, tag=current_tag or None) }}" class="blog-side-link f5">
+                        <span>{{ series_name }}</span>
+                        <span class="Label Label--secondary">{{ series_count }}</span>
+                    </a>
+                </li>
+                {% endfor %}
+                {% if not series_groups %}
+                <li class="color-fg-muted f5 lh-condensed">等你把更多文章串成专题，这里就会自动长出来。</li>
+                {% endif %}
+            </ul>
+        </div>
+
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-hashtag mr-2" aria-hidden="true"></i> 热门标签
+            </h3>
+            <div class="blog-side-tags">
+                {% for tag_name, tag_count in popular_tags %}
+                <a href="{{ url_for('main.blog_tag', tag_name=tag_name, view=current_view, search=search, category=current_category or None, series=current_series or None) }}" class="blog-side-tag">
+                    <span>#{{ tag_name }}</span>
+                    <span>{{ tag_count }}</span>
+                </a>
+                {% endfor %}
+                {% if not popular_tags %}
+                <span class="color-fg-muted f5 lh-condensed">先给文章打些标签，这里就会更丰富。</span>
+                {% endif %}
+            </div>
         </div>
         
         <div class="Box blog-side-card">
@@ -587,6 +822,19 @@
                 </li>
                 {% endfor %}
             </ul>
+        </div>
+
+        <div class="Box blog-side-card">
+            <h3 class="blog-side-title text-bold d-flex items-center">
+                <i class="fas fa-rss mr-2" aria-hidden="true"></i> 订阅更新
+            </h3>
+            <p class="blog-rss-copy">如果你想第一时间收到新文章，可以直接订阅 RSS。当前筛选下的文章也支持单独订阅。</p>
+            <div class="blog-rss-actions">
+                <a href="{{ url_for('main.blog_subscribe', category=current_category or None, tag=current_tag or None, series=current_series or None) }}" class="btn btn-primary no-underline">
+                    <i class="fas fa-satellite-dish" aria-hidden="true"></i>
+                    <span>{% if current_tag or current_series or current_category %}订阅当前筛选{% else %}订阅全部文章{% endif %}</span>
+                </a>
+            </div>
         </div>
         </div>
     </aside>

@@ -31,8 +31,18 @@
                 <header class="post-detail-header">
                     <div class="post-detail-topbar">
                         <div class="post-title-copy">
-                            {% if post.category %}
-                            <span class="post-kicker">{{ post.category }}</span>
+                            {% if post.category or post.series %}
+                            <div class="post-kicker-row">
+                                {% if post.category %}
+                                <span class="post-kicker">{{ post.category }}</span>
+                                {% endif %}
+                                {% if post.series %}
+                                <a href="{{ url_for('main.blog_series', series_name=post.series) }}" class="post-series-chip no-underline">
+                                    <i class="fas fa-books" aria-hidden="true"></i>
+                                    <span>{{ post.series }}</span>
+                                </a>
+                                {% endif %}
+                            </div>
                             {% endif %}
                             <h1 class="f1 text-bold color-fg-default mb-0 wb-break-word flex-1 post-detail-title">
                                 {{ post.title }}
@@ -99,10 +109,25 @@
                         </div>
                         {% endif %}
 
+                        {% if post.series and series_posts|length > 1 %}
+                        <div class="post-series-summary-card">
+                            <div class="post-series-summary-head">
+                                <span class="post-excerpt-label">系列专题</span>
+                                <a href="{{ url_for('main.blog_series', series_name=post.series) }}" class="post-filter-link no-underline">查看系列页</a>
+                            </div>
+                            <p class="post-series-summary-text">
+                                这篇文章位于「{{ post.series }}」系列的第 {{ (series_index or 0) + 1 }} / {{ series_posts|length }} 篇，适合按顺序继续阅读。
+                            </p>
+                        </div>
+                        {% endif %}
+
                         {% if post.tags %}
                         <div class="post-tags-row">
                             {% for tag in post.get_tags_list() %}
-                            <span class="Label Label--secondary">{{ tag }}</span>
+                            <a href="{{ url_for('main.blog_tag', tag_name=tag) }}" class="post-filter-link post-tag-link no-underline">
+                                <i class="fas fa-hashtag" aria-hidden="true"></i>
+                                <span>{{ tag }}</span>
+                            </a>
                             {% endfor %}
                         </div>
                         {% endif %}
@@ -114,6 +139,90 @@
                     {{ post.rendered_content|safe }}
                 </div>
             </article>
+
+            <div class="post-detail-secondary-stack">
+                {% if post.series and series_posts|length > 1 %}
+                <section class="post-detail-section Box">
+                    <div class="post-detail-section-head">
+                        <div>
+                            <h2 class="post-detail-section-title">系列文章</h2>
+                            <p class="post-detail-section-copy">顺着同一个专题继续读，能更快把上下文串起来。</p>
+                        </div>
+                        <a href="{{ url_for('main.blog_series', series_name=post.series) }}" class="post-filter-link no-underline">查看全部</a>
+                    </div>
+                    <ol class="post-series-list">
+                        {% for series_post in series_posts %}
+                        <li class="post-series-item{% if series_post.id == post.id %} is-current{% endif %}">
+                            <span class="post-series-index">{{ loop.index }}</span>
+                            <div class="post-series-main">
+                                {% if series_post.id == post.id %}
+                                <span class="post-series-current">{{ series_post.title }}</span>
+                                {% else %}
+                                <a href="{{ url_for('main.post_detail', slug=series_post.safe_slug) }}" class="post-series-link no-underline">{{ series_post.title }}</a>
+                                {% endif %}
+                                <span class="post-series-date">{{ series_post.created_at.strftime('%Y-%m-%d') }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </section>
+                {% endif %}
+
+                {% if previous_post or next_post %}
+                <section class="post-detail-section Box post-reading-inline-section">
+                    <div class="post-detail-section-head">
+                        <div>
+                            <h2 class="post-detail-section-title">继续阅读</h2>
+                            <p class="post-detail-section-copy">{% if post.series %}当前按系列顺序排列。{% else %}当前按发布时间顺序排列。{% endif %}</p>
+                        </div>
+                    </div>
+                    <div class="post-nav-grid">
+                        {% if previous_post %}
+                        <a href="{{ url_for('main.post_detail', slug=previous_post.safe_slug) }}" class="post-nav-card no-underline">
+                            <span class="post-nav-label"><i class="fas fa-arrow-left" aria-hidden="true"></i> 上一篇</span>
+                            <strong class="post-nav-title">{{ previous_post.title }}</strong>
+                            <span class="post-nav-meta">{{ previous_post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </a>
+                        {% endif %}
+                        {% if next_post %}
+                        <a href="{{ url_for('main.post_detail', slug=next_post.safe_slug) }}" class="post-nav-card no-underline">
+                            <span class="post-nav-label">下一篇 <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                            <strong class="post-nav-title">{{ next_post.title }}</strong>
+                            <span class="post-nav-meta">{{ next_post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if related_posts %}
+                <section class="post-detail-section Box post-reading-inline-section">
+                    <div class="post-detail-section-head">
+                        <div>
+                            <h2 class="post-detail-section-title">相关文章</h2>
+                            <p class="post-detail-section-copy">基于系列、分类和标签为你挑了几篇顺手就能接着看的文章。</p>
+                        </div>
+                    </div>
+                    <div class="post-related-grid">
+                        {% for related_post in related_posts %}
+                        <a href="{{ url_for('main.post_detail', slug=related_post.safe_slug) }}" class="post-related-card no-underline">
+                            <div class="post-related-top">
+                                {% if related_post.category %}
+                                <span class="post-kicker">{{ related_post.category }}</span>
+                                {% endif %}
+                                {% if related_post.series %}
+                                <span class="post-related-series">{{ related_post.series }}</span>
+                                {% endif %}
+                            </div>
+                            <h3 class="post-related-title">{{ related_post.title }}</h3>
+                            <p class="post-related-excerpt">{{ related_post.display_excerpt|truncate(96, True, '...') }}</p>
+                            <span class="post-related-meta">{{ related_post.created_at.strftime('%Y-%m-%d') }} · {{ related_post.view_count }} 浏览</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            </div>
 
             <!-- 评论区域 -->
             <div id="comments" class="comments-section post-comments-card">
@@ -184,6 +293,10 @@
                         <span class="floating-rating-caption">文章评分</span>
                         <span class="floating-rating-average">{{ '%.1f'|format(post.average_rating) if post.average_rating > 0 else '暂无' }}</span>
                     </div>
+                    <a href="{{ subscribe_page_url }}" class="floating-subscribe-link no-underline">
+                        <i class="fas fa-rss" aria-hidden="true"></i>
+                        <span>订阅更新</span>
+                    </a>
                     <label class="rating-label f6 color-fg-muted m-0">我的评分</label>
                     <div class="rating-input d-flex justify-center gap-1">
                         <input type="radio" id="rating-{{ post.id }}-1" name="rating" value="1">
@@ -199,6 +312,59 @@
                     </div>
                 </div>
             </div>
+            {% if previous_post or next_post or related_posts %}
+            <div class="post-side-reading">
+                {% if previous_post or next_post %}
+                <section class="post-side-card Box" aria-label="继续阅读">
+                    <div class="post-side-card-head">
+                        <h2 class="post-side-card-title">继续阅读</h2>
+                        <p class="post-side-card-copy">{% if post.series %}按系列顺序继续看{% else %}按发布时间继续看{% endif %}</p>
+                    </div>
+                    <div class="post-side-nav-list">
+                        {% if previous_post %}
+                        <a href="{{ url_for('main.post_detail', slug=previous_post.safe_slug) }}" class="post-side-nav-card no-underline">
+                            <span class="post-side-nav-label"><i class="fas fa-arrow-left" aria-hidden="true"></i> 上一篇</span>
+                            <strong class="post-side-nav-title">{{ previous_post.title }}</strong>
+                            <span class="post-side-nav-meta">{{ previous_post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </a>
+                        {% endif %}
+                        {% if next_post %}
+                        <a href="{{ url_for('main.post_detail', slug=next_post.safe_slug) }}" class="post-side-nav-card no-underline">
+                            <span class="post-side-nav-label">下一篇 <i class="fas fa-arrow-right" aria-hidden="true"></i></span>
+                            <strong class="post-side-nav-title">{{ next_post.title }}</strong>
+                            <span class="post-side-nav-meta">{{ next_post.created_at.strftime('%Y-%m-%d') }}</span>
+                        </a>
+                        {% endif %}
+                    </div>
+                </section>
+                {% endif %}
+
+                {% if related_posts %}
+                <section class="post-side-card Box" aria-label="相关文章">
+                    <div class="post-side-card-head">
+                        <h2 class="post-side-card-title">相关文章</h2>
+                        <p class="post-side-card-copy">基于分类和标签推荐</p>
+                    </div>
+                    <div class="post-side-related-list">
+                        {% for related_post in related_posts[:2] %}
+                        <a href="{{ url_for('main.post_detail', slug=related_post.safe_slug) }}" class="post-side-related-item no-underline">
+                            <div class="post-side-related-top">
+                                {% if related_post.category %}
+                                <span class="post-side-related-kicker">{{ related_post.category }}</span>
+                                {% endif %}
+                                {% if related_post.series %}
+                                <span class="post-side-related-series">{{ related_post.series }}</span>
+                                {% endif %}
+                            </div>
+                            <strong class="post-side-related-title">{{ related_post.title }}</strong>
+                            <span class="post-side-related-meta">{{ related_post.created_at.strftime('%Y-%m-%d') }} · {{ related_post.view_count }} 浏览</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            </div>
+            {% endif %}
         </aside>
     </div>
 </div>
@@ -232,6 +398,8 @@
 }
 
 .post-detail-shell {
+    --post-side-width: 144px;
+    --post-action-panel-width: 144px;
     max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
@@ -239,7 +407,7 @@
 
 .post-detail-layout {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) 144px;
+    grid-template-columns: auto minmax(0, 1fr) var(--post-side-width);
     gap: 24px;
     align-items: start;
 }
@@ -418,6 +586,13 @@ body.post-detail-sheet-open {
     gap: 10px;
 }
 
+.post-kicker-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
 .post-kicker {
     display: inline-flex;
     align-items: center;
@@ -428,6 +603,24 @@ body.post-detail-sheet-open {
     color: var(--fgColor-accent);
     font-size: 12px;
     font-weight: 600;
+}
+
+.post-series-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: var(--borderRadius-full);
+    background: rgba(255, 244, 209, 0.95);
+    color: #a06a00;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-series-chip:hover {
+    text-decoration: none;
+    color: #8c5d00;
 }
 
 .post-overview-card {
@@ -508,16 +701,256 @@ body.post-detail-sheet-open {
     line-height: 1.7;
 }
 
+.post-series-summary-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid rgba(154, 103, 0, 0.18);
+    background: rgba(255, 244, 209, 0.42);
+}
+
+.post-series-summary-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.post-series-summary-text {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 14px;
+    line-height: 1.7;
+}
+
 .post-tags-row {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
 }
 
+.post-filter-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid var(--borderColor-default);
+    background: rgba(246, 248, 250, 0.86);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-filter-link:hover {
+    color: var(--fgColor-accent);
+    border-color: rgba(9, 105, 218, 0.24);
+    background: rgba(221, 244, 255, 0.72);
+    text-decoration: none;
+}
+
+.post-tag-link {
+    background: var(--bgColor-default);
+}
+
 .post-detail-body {
     border-top: 1px solid var(--borderColor-default);
     margin-top: 20px;
     padding-top: 22px;
+}
+
+.post-detail-secondary-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.post-detail-section {
+    padding: 18px;
+    border-radius: 18px;
+}
+
+.post-detail-section-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.post-detail-section-title {
+    margin: 0 0 4px;
+    font-size: 1.15rem;
+    color: var(--fgColor-default);
+}
+
+.post-detail-section-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.post-series-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.post-series-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 12px 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    background: var(--bgColor-default);
+}
+
+.post-series-item.is-current {
+    border-color: rgba(9, 105, 218, 0.22);
+    background: rgba(221, 244, 255, 0.5);
+}
+
+.post-series-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.post-series-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.post-series-link,
+.post-series-current {
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.post-series-link:hover {
+    color: var(--fgColor-accent);
+    text-decoration: none;
+}
+
+.post-series-date {
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+.post-nav-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.post-nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.post-nav-card:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    border-color: var(--borderColor-emphasis);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.post-nav-label {
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.post-nav-title {
+    color: var(--fgColor-default);
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.post-nav-meta {
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+.post-related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.post-related-card {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 16px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.post-related-card:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    border-color: var(--borderColor-emphasis);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.post-related-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.post-related-series {
+    color: #a06a00;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.post-related-title {
+    margin: 0;
+    color: var(--fgColor-default);
+    font-size: 15px;
+    line-height: 1.45;
+}
+
+.post-related-excerpt {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.post-related-meta {
+    color: var(--fgColor-subtle);
+    font-size: 12px;
 }
 
 .post-comments-card {
@@ -757,8 +1190,12 @@ body.post-detail-sheet-open {
     position: sticky;
     top: 88px;
     align-self: start;
-    width: 144px;
+    width: var(--post-side-width);
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    align-items: stretch;
 }
 
 .floating-panel {
@@ -768,6 +1205,8 @@ body.post-detail-sheet-open {
     box-shadow: var(--shadow-resting-small);
     padding: 10px !important;
     gap: 10px !important;
+    width: var(--post-action-panel-width);
+    align-self: flex-end;
 }
 
 .floating-actions-group {
@@ -888,6 +1327,130 @@ body.post-detail-sheet-open {
     flex-direction: column;
     align-items: center;
     gap: 2px;
+}
+
+.floating-subscribe-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(154, 103, 0, 0.18);
+    background: rgba(255, 244, 209, 0.82);
+    color: #a06a00;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.floating-subscribe-link:hover {
+    text-decoration: none;
+    color: #8c5d00;
+}
+
+.post-side-reading {
+    display: none;
+}
+
+.post-side-card {
+    padding: 12px;
+    border-radius: 16px;
+    box-shadow: var(--shadow-resting-small);
+}
+
+.post-side-card-head {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 10px;
+}
+
+.post-side-card-title {
+    margin: 0;
+    font-size: 0.95rem;
+    color: var(--fgColor-default);
+}
+
+.post-side-card-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
+.post-side-nav-list,
+.post-side-related-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.post-side-nav-card,
+.post-side-related-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.post-side-nav-card:hover,
+.post-side-related-item:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    border-color: var(--borderColor-emphasis);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.post-side-nav-label,
+.post-side-related-meta {
+    color: var(--fgColor-muted);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.post-side-nav-title,
+.post-side-related-title {
+    color: var(--fgColor-default);
+    font-size: 12px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.post-side-nav-meta {
+    color: var(--fgColor-subtle);
+    font-size: 11px;
+}
+
+.post-side-related-top {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.post-side-related-kicker {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: 999px;
+    background: var(--bgColor-accent-muted);
+    color: var(--fgColor-accent);
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.post-side-related-series {
+    color: #a06a00;
+    font-size: 10px;
+    font-weight: 700;
 }
 
 .floating-rating-caption {
@@ -1342,6 +1905,18 @@ body.post-detail-sheet-open {
     color: var(--fgColor-danger);
 }
 
+@media (min-width: 1200px) {
+    .post-side-reading {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .post-reading-inline-section {
+        display: none;
+    }
+}
+
 @media (min-width: 768px) and (max-width: 1199px) {
     .post-detail-layout {
         grid-template-columns: minmax(0, 1fr);
@@ -1421,6 +1996,8 @@ body.post-detail-sheet-open {
         align-items: center;
         gap: 12px !important;
         padding: 12px 14px !important;
+        width: auto;
+        align-self: auto;
     }
 
     .floating-actions-group {
@@ -1447,6 +2024,14 @@ body.post-detail-sheet-open {
         min-width: 152px;
         padding: 10px 12px;
         margin-left: 0;
+    }
+
+    .post-side-reading {
+        display: none;
+    }
+
+    .post-related-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -1515,6 +2100,8 @@ body.post-detail-sheet-open {
         gap: 0 !important;
         border-radius: 18px;
         box-shadow: var(--shadow-floating-small);
+        width: auto;
+        align-self: auto;
     }
 
     .floating-actions-group {
@@ -1580,6 +2167,10 @@ body.post-detail-sheet-open {
         font-size: 14px;
     }
 
+    .post-side-reading {
+        display: none;
+    }
+
     .post-detail-article {
         border-radius: 16px;
         padding: 14px !important;
@@ -1616,6 +2207,20 @@ body.post-detail-sheet-open {
     .post-detail-body {
         margin-top: 16px;
         padding-top: 18px;
+    }
+
+    .post-detail-section {
+        padding: 14px;
+    }
+
+    .post-detail-section-head {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .post-nav-grid,
+    .post-related-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .admin-actions {

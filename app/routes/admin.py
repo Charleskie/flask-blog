@@ -17,6 +17,15 @@ def get_post_categories():
     return [item[0] for item in categories]
 
 
+def get_post_series_options():
+    """获取已存在的文章系列，用于后台表单建议。"""
+    series_rows = db.session.query(Post.series).filter(
+        Post.series.isnot(None),
+        Post.series != ''
+    ).distinct().order_by(Post.series.asc()).all()
+    return [item[0] for item in series_rows]
+
+
 def get_admin_unread_messages_count():
     """按最新一条来信时间统计管理员侧未读会话数。"""
     return sum(
@@ -87,7 +96,8 @@ def admin_posts():
                 Post.content.contains(search_query),
                 Post.excerpt.contains(search_query),
                 Post.category.contains(search_query),
-                Post.tags.contains(search_query)
+                Post.tags.contains(search_query),
+                Post.series.contains(search_query)
             )
         )
     
@@ -106,6 +116,7 @@ def admin_posts():
 def new_post():
     """新建文章"""
     categories = get_post_categories()
+    series_options = get_post_series_options()
 
     if request.method == 'POST':
         title = request.form.get('title')
@@ -113,7 +124,8 @@ def new_post():
         content_format = (request.form.get('content_format') or 'markdown').strip().lower()
         excerpt = request.form.get('excerpt')
         category = (request.form.get('category') or '').strip() or None
-        tags = request.form.get('tags')
+        tags = Post.normalize_tags(request.form.get('tags'))
+        series = Post.normalize_series(request.form.get('series'))
         featured_image = request.form.get('featured_image')
         status = request.form.get('status', 'draft')
         slug = request.form.get('slug')
@@ -128,7 +140,13 @@ def new_post():
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '分类长度不能超过50个字符'})
 
-            return render_template('admin/new_post.html', categories=categories)
+            return render_template('admin/new_post.html', categories=categories, series_options=series_options)
+
+        if series and len(series) > 120:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '系列名称长度不能超过120个字符'})
+
+            return render_template('admin/new_post.html', categories=categories, series_options=series_options)
 
         if content_format not in {'html', 'markdown'}:
             content_format = 'markdown'
@@ -141,6 +159,7 @@ def new_post():
                 excerpt=excerpt,
                 category=category,
                 tags=tags,
+                series=series,
                 featured_image=featured_image,
                 status=status,
                 author_id=current_user.id
@@ -169,7 +188,7 @@ def new_post():
 
             print(f"创建文章错误: {e}")
     
-    return render_template('admin/new_post.html', categories=categories)
+    return render_template('admin/new_post.html', categories=categories, series_options=series_options)
 
 @admin_bp.route('/admin/posts/<int:post_id>/edit', methods=['GET', 'POST'])
 @login_required
@@ -178,6 +197,7 @@ def edit_post(post_id):
     """编辑文章"""
     post = Post.query.get_or_404(post_id)
     categories = get_post_categories()
+    series_options = get_post_series_options()
     
     if request.method == 'POST':
         title = request.form.get('title')
@@ -185,7 +205,8 @@ def edit_post(post_id):
         content_format = (request.form.get('content_format') or post.normalized_content_format).strip().lower()
         excerpt = request.form.get('excerpt')
         category = (request.form.get('category') or '').strip() or None
-        tags = request.form.get('tags')
+        tags = Post.normalize_tags(request.form.get('tags'))
+        series = Post.normalize_series(request.form.get('series'))
         featured_image = request.form.get('featured_image')
         status = request.form.get('status')
         slug = request.form.get('slug')
@@ -200,7 +221,13 @@ def edit_post(post_id):
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return jsonify({'success': False, 'message': '分类长度不能超过50个字符'})
 
-            return render_template('admin/edit_post.html', post=post, categories=categories)
+            return render_template('admin/edit_post.html', post=post, categories=categories, series_options=series_options)
+
+        if series and len(series) > 120:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return jsonify({'success': False, 'message': '系列名称长度不能超过120个字符'})
+
+            return render_template('admin/edit_post.html', post=post, categories=categories, series_options=series_options)
 
         if content_format not in {'html', 'markdown'}:
             content_format = post.normalized_content_format
@@ -212,6 +239,7 @@ def edit_post(post_id):
             post.excerpt = excerpt
             post.category = category
             post.tags = tags
+            post.series = series
             post.featured_image = featured_image
             post.status = status
             post.updated_at = datetime.utcnow()
@@ -235,7 +263,7 @@ def edit_post(post_id):
 
             print(f"更新文章错误: {e}")
     
-    return render_template('admin/edit_post.html', post=post, categories=categories)
+    return render_template('admin/edit_post.html', post=post, categories=categories, series_options=series_options)
 
 @admin_bp.route('/admin/posts/<int:post_id>/delete', methods=['POST'])
 @login_required
