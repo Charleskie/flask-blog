@@ -23,6 +23,7 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:image" content="{{ url_for('static', filename='images/favicon.png', _external=True) }}">
+    <link rel="alternate" type="application/rss+xml" title="Kim's Blog RSS" href="{{ url_for('main.blog_rss') }}">
     
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">

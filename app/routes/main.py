@@ -3,9 +3,12 @@ from flask_login import login_required, current_user
 from app.models import Post, Message, MessageReply, AboutContent, AboutContact, Version, Skill, Link, VisitorStats, UserInteraction
 from app.models.user import db
 from app.utils.pdf_generator import generate_about_pdf
+from app.utils.post_content import extract_post_plain_text
+from collections import Counter
 import re
 import urllib.parse
-from datetime import datetime
+from datetime import datetime, timezone
+from email.utils import format_datetime
 from xml.sax.saxutils import escape
 
 
@@ -60,6 +63,227 @@ def _format_sitemap_lastmod(value):
     if not value:
         return None
     return value.date().isoformat()
+
+
+def _normalize_tag_name(raw_tag):
+    return re.sub(r'\s+', ' ', (raw_tag or '').strip())
+
+
+def _normalize_series_name(raw_series):
+    return Post.normalize_series(raw_series) or ''
+
+
+def _build_tag_filter(tag_name):
+    normalized_tag = _normalize_tag_name(tag_name)
+    if not normalized_tag:
+        return None
+
+    return db.or_(
+        Post.tags == normalized_tag,
+        Post.tags.like(f'{normalized_tag},%'),
+        Post.tags.like(f'{normalized_tag}, %'),
+        Post.tags.like(f'%,{normalized_tag}'),
+        Post.tags.like(f'%, {normalized_tag}'),
+        Post.tags.like(f'%,{normalized_tag},%'),
+        Post.tags.like(f'%, {normalized_tag},%'),
+        Post.tags.like(f'%,{normalized_tag}, %'),
+        Post.tags.like(f'%, {normalized_tag}, %')
+    )
+
+
+def _apply_post_filters(query, *, search='', category='', tag='', series=''):
+    if search:
+        query = query.filter(
+            db.or_(
+                Post.title.contains(search),
+                Post.content.contains(search),
+                Post.excerpt.contains(search),
+                Post.tags.contains(search),
+                Post.series.contains(search)
+            )
+        )
+
+    if series:
+        query = query.filter(Post.series == series)
+
+    if tag:
+        tag_filter = _build_tag_filter(tag)
+        if tag_filter is not None:
+            query = query.filter(tag_filter)
+
+    if category:
+        query = query.filter(Post.category == category)
+
+    return query
+
+
+def _collect_blog_facets(posts):
+    category_counter = Counter()
+    series_counter = Counter()
+    tag_counter = Counter()
+
+    for post in posts:
+        if post.category:
+            category_counter[post.category] += 1
+        if post.series:
+            series_counter[post.series] += 1
+        for tag in post.get_tags_list():
+            tag_counter[tag] += 1
+
+    categories = sorted(category_counter.keys())
+    series_groups = sorted(
+        series_counter.items(),
+        key=lambda item: (-item[1], item[0].lower())
+    )
+    popular_tags = sorted(
+        tag_counter.items(),
+        key=lambda item: (-item[1], item[0].lower())
+    )[:12]
+
+    return categories, dict(category_counter), series_groups, popular_tags
+
+
+def _build_blog_page_copy(*, current_view='all', current_tag='', current_series='', current_category='', total=0):
+    if current_series:
+        prefix = '你收藏的这个系列' if current_view == 'favorites' else '这个系列'
+        return f'{prefix}按发布时间整理展示，当前共 {total} 篇文章。'
+    if current_tag:
+        prefix = '你收藏的相关文章' if current_view == 'favorites' else '使用这个标签的文章'
+        return f'{prefix}当前共 {total} 篇，方便顺着同一主题继续读。'
+    if current_category:
+        prefix = '当前分类下你收藏的文章' if current_view == 'favorites' else '当前分类下的文章'
+        return f'{prefix}共 {total} 篇，按时间倒序展示。'
+    if current_view == 'favorites':
+        return f'这里汇总你收藏过的文章，当前共 {total} 篇。'
+    return f'按时间排序展示，当前共 {total} 篇文章。'
+
+
+def _resolve_blog_heading(*, current_view='all', current_tag='', current_series='', current_category=''):
+    if current_series:
+        return f'{current_series} 系列'
+    if current_tag:
+        return f'#{current_tag}'
+    if current_category:
+        return current_category
+    if current_view == 'favorites':
+        return '我的收藏'
+    return '最新文章'
+
+
+def _get_related_posts(post, limit=3):
+    post_tags = set(post.get_tags_list())
+    scored_posts = []
+
+    for candidate in Post.query.filter(
+        Post.status == 'published',
+        Post.id != post.id
+    ).all():
+        score = 0
+        shared_tags = post_tags.intersection(candidate.get_tags_list())
+
+        if post.series and candidate.series == post.series:
+            score += 6
+        if post.category and candidate.category == post.category:
+            score += 2
+        score += len(shared_tags) * 2
+
+        if score > 0:
+            scored_posts.append((
+                score,
+                len(shared_tags),
+                candidate.updated_at or candidate.created_at,
+                candidate
+            ))
+
+    scored_posts.sort(key=lambda item: (item[0], item[1], item[2]), reverse=True)
+    related_posts = [item[3] for item in scored_posts[:limit]]
+
+    if len(related_posts) < limit:
+        existing_ids = {item.id for item in related_posts}
+        fallback_posts = Post.query.filter(
+            Post.status == 'published',
+            Post.id != post.id,
+            Post.id.notin_(existing_ids or {-1})
+        ).order_by(Post.created_at.desc()).limit(limit - len(related_posts)).all()
+        related_posts.extend(fallback_posts)
+
+    return related_posts
+
+
+def _get_adjacent_posts(post):
+    ordered_query = Post.query.filter(Post.status == 'published')
+    if post.series:
+        ordered_query = ordered_query.filter(Post.series == post.series)
+
+    ordered_posts = ordered_query.order_by(Post.created_at.asc(), Post.id.asc()).all()
+    previous_post = None
+    next_post = None
+    current_index = None
+
+    for index, item in enumerate(ordered_posts):
+        if item.id != post.id:
+            continue
+        current_index = index
+        previous_post = ordered_posts[index - 1] if index > 0 else None
+        next_post = ordered_posts[index + 1] if index + 1 < len(ordered_posts) else None
+        break
+
+    return previous_post, next_post, ordered_posts, current_index
+
+
+def _format_rss_pubdate(value):
+    if not value:
+        value = datetime.utcnow()
+    return format_datetime(value.replace(tzinfo=timezone.utc))
+
+
+def _build_rss_description(post, max_length=220):
+    source_text = post.excerpt if post.excerpt else post.content
+    plain_text = extract_post_plain_text(source_text, post.normalized_content_format)
+    plain_text = re.sub(r'!\[([^\]]*)\]\([^)]+\)', r'\1', plain_text)
+    plain_text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', plain_text)
+    plain_text = re.sub(r'`([^`]+)`', r'\1', plain_text)
+    plain_text = re.sub(r'(^|\s)#{1,6}\s*', ' ', plain_text)
+    plain_text = re.sub(r'(^|\s)&gt;\s*', ' ', plain_text)
+    plain_text = re.sub(r'(^|\s)>\s*', ' ', plain_text)
+    plain_text = re.sub(r'[*_~]+', '', plain_text)
+    plain_text = plain_text.replace('#', ' ')
+    plain_text = plain_text.replace('>', ' ')
+    plain_text = plain_text.replace('`', '')
+    plain_text = re.sub(r'\s+', ' ', plain_text).strip()
+    if len(plain_text) <= max_length:
+        return plain_text
+    return plain_text[:max_length].rstrip() + '...'
+
+
+def _get_blog_feed_meta(category='', tag='', series=''):
+    if series:
+        return {
+            'title': f'{series} 系列 - Kim\'s Blog',
+            'description': f'按发布时间整理的「{series}」系列文章订阅。',
+            'scope_label': f'系列：{series}',
+            'scope_kind': 'series',
+        }
+    if tag:
+        return {
+            'title': f'#{tag} - Kim\'s Blog',
+            'description': f'带有「{tag}」标签的文章订阅。',
+            'scope_label': f'标签：#{tag}',
+            'scope_kind': 'tag',
+        }
+    if category:
+        return {
+            'title': f'{category} - Kim\'s Blog',
+            'description': f'分类「{category}」下的最新文章订阅。',
+            'scope_label': f'分类：{category}',
+            'scope_kind': 'category',
+        }
+    return {
+        'title': 'Kim\'s Blog RSS',
+        'description': 'Kim\'s Blog 最新公开文章订阅。',
+        'scope_label': '全部文章',
+        'scope_kind': 'all',
+    }
 
 
 def _get_contact_page_context():
@@ -530,13 +754,14 @@ def links():
     
     return render_template('frontend/links.html', links=links, featured_links=featured_links)
 
-@main_bp.route('/blog')
-def blog():
-    """博客页面"""
+def _render_blog_page(forced_tag=None, forced_series=None):
     page = request.args.get('page', 1, type=int)
     category = (request.args.get('category', '') or '').strip()
     search = (request.args.get('search', '') or '').strip()
     view = (request.args.get('view', 'all') or 'all').strip().lower()
+    current_tag = _normalize_tag_name(forced_tag if forced_tag is not None else request.args.get('tag', ''))
+    current_series = _normalize_series_name(forced_series if forced_series is not None else request.args.get('series', ''))
+
     if view not in {'all', 'favorites'}:
         view = 'all'
 
@@ -562,87 +787,262 @@ def blog():
         }
         favorite_posts_total = len(favorite_post_ids)
 
-    if view == 'favorites':
-        query = favorite_posts_query if current_user.is_authenticated else all_published_query.filter(Post.id == -1)
-    else:
-        query = all_published_query
+    base_query = (
+        favorite_posts_query
+        if view == 'favorites' and current_user.is_authenticated
+        else all_published_query.filter(Post.id == -1)
+        if view == 'favorites'
+        else all_published_query
+    )
 
-    if search:
-        query = query.filter(
-            db.or_(
-                Post.title.contains(search),
-                Post.content.contains(search),
-                Post.excerpt.contains(search)
-            )
-        )
+    facet_query = _apply_post_filters(base_query, search=search)
+    facet_posts = facet_query.order_by(Post.created_at.desc()).all()
+    available_posts_total = len(facet_posts)
+    categories, category_count, series_groups, popular_tags = _collect_blog_facets(facet_posts)
 
-    available_posts_total = query.count()
-
-    category_rows = query.with_entities(
-        Post.category,
-        db.func.count(Post.id)
-    ).filter(
-        Post.category.isnot(None)
-    ).group_by(
-        Post.category
-    ).order_by(
-        Post.category.asc()
-    ).all()
-    category_count = {category_name: count for category_name, count in category_rows}
-    categories = [category_name for category_name, _ in category_rows]
-
-    if category:
-        query = query.filter_by(category=category)
-
-    posts = query.order_by(Post.created_at.desc()).paginate(
+    filtered_query = _apply_post_filters(
+        base_query,
+        search=search,
+        category=category,
+        tag=current_tag,
+        series=current_series
+    )
+    posts = filtered_query.order_by(Post.created_at.desc()).paginate(
         page=page, per_page=10, error_out=False
     )
 
-    # 获取热门文章（按浏览次数排序）
-    popular_source_query = all_published_query
-    if view == 'favorites' and current_user.is_authenticated and favorite_posts_total > 0:
-        popular_source_query = favorite_posts_query
-
-    popular_posts = popular_source_query.order_by(Post.view_count.desc()).limit(5).all()
-    if view == 'favorites' and not popular_posts:
+    popular_posts = filtered_query.order_by(Post.view_count.desc()).limit(5).all()
+    if not popular_posts:
         popular_posts = all_published_query.order_by(Post.view_count.desc()).limit(5).all()
-    
-    # 获取所有标签
-    all_tags = []
-    for post in all_published_query.all():
-        if post.tags:
-            all_tags.extend([tag.strip() for tag in post.tags.split(',')])
-    
-    # 统计标签出现次数
-    from collections import Counter
-    tag_counts = Counter(all_tags)
-    popular_tags = tag_counts.most_common(10)  # 取前10个热门标签
 
-    if view == 'favorites':
-        page_heading = '我的收藏'
-        if current_user.is_authenticated:
-            page_copy = f'这里汇总你收藏过的文章，当前共 {posts.total} 篇。'
-        else:
-            page_copy = '登录后即可查看你收藏过的文章。'
+    page_heading = _resolve_blog_heading(
+        current_view=view,
+        current_tag=current_tag,
+        current_series=current_series,
+        current_category=category
+    )
+    if view == 'favorites' and not current_user.is_authenticated:
+        page_copy = '登录后即可查看你收藏过的文章。'
     else:
-        page_heading = '最新文章'
-        page_copy = f'按时间排序展示，当前共 {posts.total} 篇文章。'
-    
-    return render_template('frontend/blog.html', 
-                         posts=posts, 
-                         categories=categories, 
-                         category_count=category_count,
-                         popular_posts=popular_posts,
-                         popular_tags=popular_tags,
-                         current_category=category,
-                         search=search,
-                         current_view=view,
-                         page_heading=page_heading,
-                         page_copy=page_copy,
-                         available_posts_total=available_posts_total,
-                         published_posts_total=published_posts_total,
-                         favorite_posts_total=favorite_posts_total,
-                         favorite_post_ids=favorite_post_ids)
+        page_copy = _build_blog_page_copy(
+            current_view=view,
+            current_tag=current_tag,
+            current_series=current_series,
+            current_category=category,
+            total=posts.total
+        )
+
+    return render_template(
+        'frontend/blog.html',
+        posts=posts,
+        categories=categories,
+        category_count=category_count,
+        popular_posts=popular_posts,
+        popular_tags=popular_tags,
+        series_groups=series_groups,
+        current_category=category,
+        current_tag=current_tag,
+        current_series=current_series,
+        search=search,
+        current_view=view,
+        page_heading=page_heading,
+        page_copy=page_copy,
+        available_posts_total=available_posts_total,
+        published_posts_total=published_posts_total,
+        favorite_posts_total=favorite_posts_total,
+        favorite_post_ids=favorite_post_ids
+    )
+
+
+@main_bp.route('/blog')
+def blog():
+    """博客页面"""
+    return _render_blog_page()
+
+
+@main_bp.route('/blog/tag/<path:tag_name>')
+def blog_tag(tag_name):
+    """标签文章列表页。"""
+    return _render_blog_page(forced_tag=tag_name)
+
+
+@main_bp.route('/blog/series/<path:series_name>')
+def blog_series(series_name):
+    """系列文章列表页。"""
+    return _render_blog_page(forced_series=series_name)
+
+
+@main_bp.route('/blog/subscribe')
+def blog_subscribe():
+    """博客订阅说明页。"""
+    category = (request.args.get('category', '') or '').strip()
+    tag = _normalize_tag_name(request.args.get('tag', ''))
+    series = _normalize_series_name(request.args.get('series', ''))
+
+    all_published_posts = Post.query.filter_by(status='published').all()
+    categories, category_count, series_groups, _ = _collect_blog_facets(all_published_posts)
+    published_total = len(all_published_posts)
+    feed_query = _apply_post_filters(
+        Post.query.filter_by(status='published'),
+        category=category,
+        tag=tag,
+        series=series
+    )
+    latest_posts = feed_query.order_by(Post.created_at.desc()).limit(6).all()
+
+    feed_url = url_for(
+        'main.blog_rss',
+        category=category or None,
+        tag=tag or None,
+        series=series or None,
+        _external=True
+    )
+    reader_apps = [
+        {'label': 'Follow', 'url': 'https://follow.is/'},
+        {'label': 'Feedly', 'url': 'https://feedly.com/homepage'},
+        {'label': 'Inoreader', 'url': 'https://www.inoreader.com/'},
+        {'label': 'NetNewsWire', 'url': 'https://netnewswire.com/'},
+    ]
+
+    scope_groups = [
+        {
+            'title': '常用范围',
+            'options': [
+                {
+                    'label': '全部文章',
+                    'description': f'订阅博客的所有公开文章更新，当前共 {published_total} 篇。',
+                    'url': url_for('main.blog_subscribe'),
+                    'is_current': not any([category, tag, series]),
+                }
+            ]
+        }
+    ]
+
+    category_options = [
+        {
+            'label': category_name,
+            'description': f'只跟进当前分类下的新文章，当前共 {category_count.get(category_name, 0)} 篇。',
+            'url': url_for('main.blog_subscribe', category=category_name),
+            'is_current': category == category_name and not series and not tag,
+        }
+        for category_name in categories
+    ]
+    if category and not any(option['label'] == category for option in category_options):
+        category_options.insert(0, {
+            'label': category,
+            'description': f'只跟进当前分类下的新文章，当前共 {category_count.get(category, 0)} 篇。',
+            'url': url_for('main.blog_subscribe', category=category),
+            'is_current': True,
+        })
+    if category_options:
+        scope_groups.append({
+            'title': '按分类订阅',
+            'options': category_options,
+        })
+
+    series_options_list = [
+        {
+            'label': f'{series_name} 系列',
+            'description': f'只跟进这个系列的后续文章，当前共 {count} 篇。',
+            'url': url_for('main.blog_subscribe', series=series_name),
+            'is_current': series == _normalize_series_name(series_name),
+        }
+        for series_name, count in series_groups
+    ]
+    if series and not any(_normalize_series_name(option['label'].removesuffix(' 系列')) == series for option in series_options_list):
+        series_count = sum(1 for post in all_published_posts if _normalize_series_name(post.series) == series)
+        series_options_list.insert(0, {
+            'label': f'{series} 系列',
+            'description': f'只跟进这个系列的后续文章，当前共 {series_count} 篇。',
+            'url': url_for('main.blog_subscribe', series=series),
+            'is_current': True,
+        })
+    if series_options_list:
+        scope_groups.append({
+            'title': '按系列订阅',
+            'options': series_options_list,
+        })
+
+    tag_options = []
+    if tag:
+        tag_count = sum(1 for post in all_published_posts if tag in post.get_tags_list())
+        tag_options.append({
+            'label': f'#{tag}',
+            'description': f'只跟进带有这个标签的文章，当前共 {tag_count} 篇。',
+            'url': url_for('main.blog_subscribe', tag=tag),
+            'is_current': True,
+        })
+    if tag_options:
+        scope_groups.append({
+            'title': '当前标签',
+            'options': tag_options,
+        })
+
+    return render_template(
+        'frontend/blog_subscribe.html',
+        feed_url=feed_url,
+        reader_apps=reader_apps,
+        latest_posts=latest_posts,
+        scope_groups=scope_groups,
+        current_category=category,
+        current_tag=tag,
+        current_series=series,
+    )
+
+
+@main_bp.route('/blog/rss.xml')
+def blog_rss():
+    """博客 RSS 订阅源。"""
+    category = (request.args.get('category', '') or '').strip()
+    tag = _normalize_tag_name(request.args.get('tag', ''))
+    series = _normalize_series_name(request.args.get('series', ''))
+
+    feed_query = _apply_post_filters(
+        Post.query.filter_by(status='published'),
+        category=category,
+        tag=tag,
+        series=series
+    )
+    posts = feed_query.order_by(Post.created_at.desc()).limit(20).all()
+    feed_meta = _get_blog_feed_meta(category=category, tag=tag, series=series)
+    feed_title = feed_meta['title']
+    feed_description = feed_meta['description']
+
+    feed_url = url_for('main.blog_rss', category=category or None, tag=tag or None, series=series or None, _external=True)
+    blog_url = url_for('main.blog', _external=True)
+    last_build_date = _format_rss_pubdate(posts[0].updated_at if posts else datetime.utcnow())
+
+    items = []
+    for post in posts:
+        post_url = url_for('main.post_detail', slug=post.safe_slug, _external=True)
+        description = escape(_build_rss_description(post))
+        pub_date = _format_rss_pubdate(post.updated_at or post.created_at)
+        items.append(
+            f"""<item>
+    <title>{escape(post.title)}</title>
+    <link>{escape(post_url)}</link>
+    <guid>{escape(post_url)}</guid>
+    <pubDate>{pub_date}</pubDate>
+    <description>{description}</description>
+</item>"""
+        )
+
+    rss_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<channel>
+    <title>{escape(feed_title)}</title>
+    <link>{escape(blog_url)}</link>
+    <description>{escape(feed_description)}</description>
+    <language>zh-CN</language>
+    <lastBuildDate>{last_build_date}</lastBuildDate>
+    <atom:link href="{escape(feed_url)}" rel="self" type="application/rss+xml" />
+    {''.join(items)}
+</channel>
+</rss>"""
+
+    response = make_response(rss_xml)
+    response.headers['Content-Type'] = 'application/rss+xml; charset=utf-8'
+    return response
 
 @main_bp.route('/blog/post/<slug>')
 def post_detail(slug):
@@ -652,15 +1052,26 @@ def post_detail(slug):
     # 增加浏览次数
     post.view_count += 1
     db.session.commit()
-    
-    # 获取相关文章
-    related_posts = Post.query.filter(
-        Post.category == post.category,
-        Post.id != post.id,
-        Post.status == 'published'
-    ).order_by(Post.created_at.desc()).limit(3).all()
-    
-    return render_template('frontend/post_detail.html', post=post, related_posts=related_posts)
+
+    related_posts = _get_related_posts(post)
+    previous_post, next_post, series_posts, series_index = _get_adjacent_posts(post)
+    subscribe_page_url = url_for(
+        'main.blog_subscribe',
+        series=post.series or None,
+        category=post.category if not post.series else None,
+        _external=True
+    )
+
+    return render_template(
+        'frontend/post_detail.html',
+        post=post,
+        related_posts=related_posts,
+        previous_post=previous_post,
+        next_post=next_post,
+        series_posts=series_posts if post.series else [],
+        series_index=series_index,
+        subscribe_page_url=subscribe_page_url
+    )
 
 @main_bp.route('/contact', methods=['GET', 'POST'])
 def contact():

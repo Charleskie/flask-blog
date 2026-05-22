@@ -1,0 +1,561 @@
+{% extends "base.html" %}
+
+{% block title %}订阅更新 - Kim's Blog{% endblock %}
+
+{% block extra_css %}
+<style>
+.subscribe-page {
+    max-width: 1280px;
+    margin: 0 auto;
+}
+
+.subscribe-page .subscribe-hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.subscribe-page .subscribe-title {
+    margin: 0 0 8px;
+    font-size: clamp(1.9rem, 4vw, 2.4rem);
+    line-height: 1.05;
+    color: var(--fgColor-default);
+}
+
+.subscribe-page .subscribe-copy {
+    margin: 0;
+    max-width: 56rem;
+    color: var(--fgColor-muted);
+    font-size: 0.98rem;
+    line-height: 1.8;
+}
+
+.subscribe-page .subscribe-layout {
+    display: grid;
+    gap: 20px;
+}
+
+.subscribe-page .subscribe-card,
+.subscribe-page .subscribe-side-card,
+.subscribe-page .subscribe-article-card {
+    border: 1px solid var(--borderColor-default);
+    border-radius: 18px;
+    background: var(--bgColor-default);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.subscribe-page .subscribe-card,
+.subscribe-page .subscribe-side-card {
+    padding: 20px;
+}
+
+.subscribe-page .subscribe-section-title {
+    margin: 0 0 6px;
+    font-size: 1.2rem;
+    color: var(--fgColor-default);
+}
+
+.subscribe-page .subscribe-section-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.subscribe-page .subscribe-scope {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 12px;
+    margin: 0 0 16px;
+    border-radius: 999px;
+    background: rgba(221, 244, 255, 0.72);
+    color: var(--fgColor-accent);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.subscribe-page .subscribe-feed-title {
+    margin: 0 0 8px;
+    font-size: 1.45rem;
+    color: var(--fgColor-default);
+}
+
+.subscribe-page .subscribe-feed-copy {
+    margin: 0 0 16px;
+    color: var(--fgColor-muted);
+    line-height: 1.8;
+}
+
+.subscribe-page .subscribe-url-wrap {
+    display: grid;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.subscribe-page .subscribe-url-label {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.subscribe-page .subscribe-url-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.subscribe-page .subscribe-url-input {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-default);
+    font-size: 14px;
+}
+
+.subscribe-page .subscribe-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.subscribe-page .subscribe-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 999px;
+    background: rgba(246, 248, 250, 0.86);
+    color: var(--fgColor-default);
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.subscribe-page .subscribe-btn:hover {
+    text-decoration: none;
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+}
+
+.subscribe-page .subscribe-btn-primary {
+    background: rgba(255, 244, 209, 0.88);
+    border-color: rgba(154, 103, 0, 0.18);
+    color: #8c5d00;
+}
+
+.subscribe-page .subscribe-btn-primary:hover {
+    background: rgba(255, 244, 209, 1);
+    color: #734c00;
+}
+
+.subscribe-page .subscribe-reader-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+}
+
+.subscribe-page .subscribe-switcher {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--borderColor-default);
+}
+
+.subscribe-page .subscribe-switcher-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.subscribe-page .subscribe-switcher-title {
+    margin: 0 0 6px;
+    font-size: 1.05rem;
+    color: var(--fgColor-default);
+}
+
+.subscribe-page .subscribe-switcher-copy {
+    margin: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.subscribe-page .subscribe-reader-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 30px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid var(--borderColor-default);
+    background: var(--bgColor-default);
+    color: var(--fgColor-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.subscribe-page .subscribe-reader-pill:hover {
+    text-decoration: none;
+    background: var(--bgColor-muted);
+    border-color: var(--borderColor-emphasis);
+    color: var(--fgColor-default);
+    transform: translateY(-1px);
+}
+
+.subscribe-page .subscribe-switcher-control {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.subscribe-page .subscribe-switcher-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+
+.subscribe-page .subscribe-select-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.subscribe-page .subscribe-scope-select {
+    width: 100%;
+    min-height: 46px;
+    padding: 0 44px 0 14px;
+    border: 1px solid var(--borderColor-default);
+    border-radius: 14px;
+    background: var(--bgColor-default);
+    color: var(--fgColor-default);
+    font-size: 14px;
+    font-weight: 600;
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.subscribe-page .subscribe-scope-select:hover {
+    border-color: var(--borderColor-emphasis);
+}
+
+.subscribe-page .subscribe-scope-select:focus {
+    outline: none;
+    border-color: rgba(9, 105, 218, 0.45);
+    box-shadow: 0 0 0 4px rgba(9, 105, 218, 0.12);
+}
+
+.subscribe-page .subscribe-select-icon {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    color: var(--fgColor-muted);
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.subscribe-page .subscribe-current-copy {
+    margin: 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--bgColor-muted);
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.subscribe-page .subscribe-url-input.is-loading,
+.subscribe-page .subscribe-article-list.is-loading {
+    opacity: 0.7;
+}
+
+.subscribe-page .subscribe-article-list.is-loading {
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.subscribe-page .subscribe-article-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.subscribe-page .subscribe-article-card {
+    padding: 14px 16px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.subscribe-page .subscribe-article-card:hover {
+    text-decoration: none;
+    transform: translateY(-1px);
+    border-color: var(--borderColor-emphasis);
+    box-shadow: var(--shadow-resting-small);
+}
+
+.subscribe-page .subscribe-article-title {
+    margin: 0 0 8px;
+    font-size: 1rem;
+    color: var(--fgColor-default);
+}
+
+.subscribe-page .subscribe-article-copy {
+    margin: 0 0 10px;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.75;
+}
+
+.subscribe-page .subscribe-article-meta {
+    color: var(--fgColor-subtle);
+    font-size: 12px;
+}
+
+@media (max-width: 639px) {
+    .subscribe-page .subscribe-card,
+    .subscribe-page .subscribe-side-card {
+        padding: 16px;
+    }
+
+    .subscribe-page .subscribe-url-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .subscribe-page .subscribe-actions {
+        flex-direction: column;
+    }
+
+    .subscribe-page .subscribe-btn {
+        width: 100%;
+    }
+
+    .subscribe-page .subscribe-switcher-head {
+        align-items: stretch;
+    }
+
+    .subscribe-page .subscribe-switcher-row {
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% set back_url = url_for('main.blog') %}
+
+<div class="container-xl subscribe-page mt-4 mb-6">
+    <div class="subscribe-hero">
+        <div>
+            <h1 class="subscribe-title">订阅更新</h1>
+        </div>
+        <div class="subscribe-actions">
+            <a href="{{ back_url }}" class="subscribe-btn no-underline">
+                <i class="fas fa-arrow-left" aria-hidden="true"></i>
+                <span>返回文章列表</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="subscribe-layout">
+        <div>
+            <section class="subscribe-card">
+                <h2 class="subscribe-feed-title">Kim's Blog RSS</h2>
+                <p class="subscribe-feed-copy">Kim's Blog 最新公开文章订阅。</p>
+
+                <div class="subscribe-url-wrap">
+                    <p class="subscribe-url-label">订阅地址</p>
+                    <div class="subscribe-url-row">
+                        <input type="text" class="subscribe-url-input" id="feedUrlInput" value="{{ feed_url }}" readonly>
+                        <button type="button" class="subscribe-btn subscribe-btn-primary" onclick="copyFeedUrl()">
+                            <i class="fas fa-copy" aria-hidden="true"></i>
+                            <span>复制地址</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="subscribe-reader-list" aria-label="推荐阅读器">
+                    {% for reader in reader_apps %}
+                    <a href="{{ reader.url }}" class="subscribe-reader-pill no-underline" target="_blank" rel="noopener">
+                        {{ reader.label }}
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <div class="subscribe-switcher">
+                    <div class="subscribe-switcher-head">
+                        <div>
+                            <h3 class="subscribe-switcher-title">切换订阅范围</h3>
+                        </div>
+                    </div>
+
+                    <div class="subscribe-switcher-control">
+                        <div class="subscribe-switcher-row">
+                            <div class="subscribe-select-wrap">
+                                <select id="scopeSelect" class="subscribe-scope-select" onchange="handleScopeChange(this)">
+                                    {% for group in scope_groups %}
+                                    <optgroup label="{{ group.title }}">
+                                        {% for option in group.options %}
+                                        <option
+                                            value="{{ option.url }}"
+                                            {% if option.is_current %}selected{% endif %}
+                                        >
+                                            {{ option.label }}
+                                        </option>
+                                        {% endfor %}
+                                    </optgroup>
+                                    {% endfor %}
+                                </select>
+                                <i class="fas fa-chevron-down subscribe-select-icon" aria-hidden="true"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="subscribe-card mt-3">
+                <h2 class="subscribe-section-title">最近会推送的内容</h2>
+
+                <div class="subscribe-article-list" id="subscribeArticleList">
+                    {% for post in latest_posts %}
+                    <a href="{{ url_for('main.post_detail', slug=post.safe_slug) }}" class="subscribe-article-card no-underline">
+                        <h3 class="subscribe-article-title">{{ post.title }}</h3>
+                        <p class="subscribe-article-copy">{{ post.display_excerpt|truncate(140, True, '...') }}</p>
+                        <span class="subscribe-article-meta">{{ post.created_at.strftime('%Y-%m-%d') }} · {{ post.view_count }} 浏览</span>
+                    </a>
+                    {% endfor %}
+                    {% if not latest_posts %}
+                    <div class="subscribe-article-card">
+                        <h3 class="subscribe-article-title">当前范围下还没有文章</h3>
+                        <p class="subscribe-article-copy">你可以先切回全部文章订阅，或者稍后再回来订阅更细的范围。</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function copyFeedUrl() {
+    const input = document.getElementById('feedUrlInput');
+    const value = input ? input.value : '';
+
+    if (!value) {
+        emitToast('没有可复制的订阅地址', 'error');
+        return;
+    }
+
+    try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function' && window.isSecureContext) {
+            await navigator.clipboard.writeText(value);
+        } else {
+            input.focus();
+            input.select();
+            document.execCommand('copy');
+        }
+        emitToast('订阅地址已复制', 'success');
+    } catch (error) {
+        console.error('复制订阅地址失败:', error);
+        emitToast('复制失败，请手动复制地址', 'error');
+    }
+}
+
+function emitToast(message, type = 'info') {
+    return window.siteUI && window.siteUI.showToast
+        ? window.siteUI.showToast(message, type)
+        : (typeof window.showToast === 'function' ? window.showToast(message, type) : null);
+}
+
+async function handleScopeChange(select) {
+    if (!select) {
+        return;
+    }
+
+    const selectedOption = select.options[select.selectedIndex];
+    if (!selectedOption || !selectedOption.value) {
+        return;
+    }
+
+    const feedInput = document.getElementById('feedUrlInput');
+    const articleList = document.getElementById('subscribeArticleList');
+    const previousIndex = Number(select.dataset.previousIndex || 0);
+    const nextScopeUrl = selectedOption.value;
+
+    if (!feedInput || !articleList || !nextScopeUrl) {
+        return;
+    }
+
+    select.disabled = true;
+    feedInput.classList.add('is-loading');
+    articleList.classList.add('is-loading');
+
+    try {
+        const response = await fetch(nextScopeUrl, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Request failed with status ${response.status}`);
+        }
+
+        const html = await response.text();
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const nextFeedInput = doc.getElementById('feedUrlInput');
+        const nextArticleList = doc.getElementById('subscribeArticleList');
+
+        if (!nextFeedInput || !nextArticleList) {
+            throw new Error('Subscribe scope payload is incomplete');
+        }
+
+        feedInput.value = nextFeedInput.value || '';
+        articleList.innerHTML = nextArticleList.innerHTML;
+        select.dataset.previousIndex = String(select.selectedIndex);
+    } catch (error) {
+        console.error('切换订阅范围失败:', error);
+        select.selectedIndex = previousIndex;
+        emitToast('切换失败，请稍后重试', 'error');
+    } finally {
+        select.disabled = false;
+        feedInput.classList.remove('is-loading');
+        articleList.classList.remove('is-loading');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const scopeSelect = document.getElementById('scopeSelect');
+    if (!scopeSelect) {
+        return;
+    }
+    scopeSelect.dataset.previousIndex = String(scopeSelect.selectedIndex);
+});
+</script>
+{% endblock %}
