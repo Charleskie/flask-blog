@@ -21,6 +21,9 @@
                 <span class="post-edit-meta-item"><i class="fas fa-pen"></i> 更新于 {{ post.updated_at.strftime('%Y-%m-%d %H:%M') }}</span>
                 <span class="post-edit-meta-item"><i class="fas fa-eye"></i> {{ post.view_count }} 浏览</span>
                 <span class="post-edit-meta-item"><i class="fas fa-comments"></i> {{ post.comment_count }} 评论</span>
+                {% if post.series %}
+                <span class="post-edit-meta-item"><i class="fas fa-books"></i> {{ post.series }}</span>
+                {% endif %}
             </div>
         </div>
         <div class="d-flex flex-wrap gap-2 post-edit-header-actions">
@@ -50,15 +53,24 @@
                         <div>
                             <label for="excerpt" class="form-label">文章摘要</label>
                             <textarea class="form-control width-full" id="excerpt" name="excerpt" rows="3" placeholder="文章摘要，用于列表页显示">{{ request.form.get('excerpt', post.excerpt or '') }}</textarea>
-                            <p class="f6 color-fg-muted m-0 mt-1">摘要会直接显示在博客列表里，尽量简短一点。</p>
                         </div>
                         <div class="post-edit-inline-settings">
                             <div class="post-edit-inline-field">
-                                <label for="status" class="form-label">发布状态</label>
-                                <select class="form-select width-full" id="status" name="status">
-                                    <option value="draft" {{ 'selected' if request.form.get('status', post.status) == 'draft' }}>草稿</option>
-                                    <option value="published" {{ 'selected' if request.form.get('status', post.status) == 'published' }}>已发布</option>
-                                </select>
+                                <label for="series" class="form-label">文章系列</label>
+                                <input
+                                    type="text"
+                                    class="form-control width-full"
+                                    id="series"
+                                    name="series"
+                                    list="post-series-options"
+                                    maxlength="120"
+                                    value="{{ request.form.get('series', post.series or '') }}"
+                                    placeholder="例如：Codex 使用指南">
+                                <datalist id="post-series-options">
+                                    {% for series_name in series_options %}
+                                    <option value="{{ series_name }}"></option>
+                                    {% endfor %}
+                                </datalist>
                             </div>
                             <div class="post-edit-inline-field">
                                 <label for="category" class="form-label">文章分类</label>
@@ -76,19 +88,23 @@
                                     <option value="{{ category }}"></option>
                                     {% endfor %}
                                 </datalist>
-                                <p class="f6 color-fg-muted m-0 mt-1">可直接输入新分类，也可以从已有分类中选择。</p>
                             </div>
                             <div class="post-edit-inline-field post-edit-inline-field-wide">
                                 <label for="tags" class="form-label">标签</label>
-                                <input type="text" class="form-control width-full" id="tags" name="tags" value="{{ request.form.get('tags', post.tags or '') }}" placeholder="Python, Flask, Web开发">
-                                <p class="f6 color-fg-muted m-0 mt-1">多个标签请用逗号分隔。</p>
+                                <input type="text" class="form-control width-full" id="tags" name="tags" value="{{ request.form.get('tags', post.tags or '') }}" placeholder="逗号分割">
+                            </div>
+                            <div class="post-edit-inline-field">
+                                <label for="status" class="form-label">发布状态</label>
+                                <select class="form-select width-full" id="status" name="status">
+                                    <option value="draft" {{ 'selected' if request.form.get('status', post.status) == 'draft' }}>草稿</option>
+                                    <option value="published" {{ 'selected' if request.form.get('status', post.status) == 'published' }}>已发布</option>
+                                </select>
                             </div>
                         </div>
                         <div class="post-edit-section">
                             <div class="post-edit-section-head post-edit-media-head">
                                 <div>
                                     <h3 class="post-edit-section-title">展示图片</h3>
-                                    <span class="post-edit-section-hint">可选，用于列表与分享展示</span>
                                 </div>
                                 <button type="button" class="btn btn-sm no-underline post-edit-btn post-edit-btn-secondary post-edit-btn-compact" id="image-toggle-btn">
                                     <i class="fas fa-plus" id="image-toggle-icon"></i>
@@ -126,9 +142,7 @@
                     <div class="Box-body post-edit-stack">
                         <label for="content" class="form-label m-0">文章内容 *</label>
                         {% if post.normalized_content_format == 'markdown' %}
-                        <p class="post-edit-editor-note m-0">当前文章使用 Markdown 存储，编辑区内支持实时预览。</p>
                         {% else %}
-                        <p class="post-edit-editor-note m-0">这是一篇旧版 HTML 文章，当前会以兼容模式编辑并继续保存为 HTML。</p>
                         {% endif %}
                         <div id="toastui-editor"></div>
                         <input type="hidden" id="content_format" name="content_format" value="{{ request.form.get('content_format', post.normalized_content_format) }}">
@@ -136,11 +150,9 @@
                         <div class="post-edit-toolbar">
                             <div class="post-edit-toolbar-meta">
                                 {% if post.status == 'published' %}
-                                <span class="post-edit-toolbar-pill">当前为已发布文章</span>
                                 {% else %}
                                 <span class="post-edit-toolbar-pill">当前为草稿</span>
                                 {% endif %}
-                                <span class="post-edit-toolbar-pill">{{ 'Markdown 存储' if post.normalized_content_format == 'markdown' else '兼容旧版 HTML' }}</span>
                             </div>
                             <div class="post-edit-toolbar-actions">
                                 <button type="submit" class="btn btn-sm post-edit-btn post-edit-btn-primary post-edit-btn-compact"><i class="fas fa-save"></i> 保存更改</button>
@@ -254,7 +266,7 @@
 
 .post-edit-inline-settings {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
     padding-top: 14px;
     border-top: 1px solid var(--borderColor-default);
@@ -265,7 +277,7 @@
 }
 
 .post-edit-inline-field-wide {
-    grid-column: 1 / -1;
+    grid-column: auto;
 }
 
 .post-edit-header .btn {
@@ -533,6 +545,12 @@
     color: var(--fgColor-default);
 }
 
+@media (max-width: 1180px) {
+    .post-edit-inline-settings {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 767px) {
     .post-edit-header {
         flex-direction: column;
@@ -544,10 +562,6 @@
 
     .post-edit-inline-settings {
         grid-template-columns: minmax(0, 1fr);
-    }
-
-    .post-edit-inline-field-wide {
-        grid-column: auto;
     }
 
     .post-edit-media-head {

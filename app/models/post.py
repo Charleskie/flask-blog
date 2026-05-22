@@ -14,6 +14,7 @@ class Post(db.Model):
     status = db.Column(db.String(20), default='draft')  # draft, published
     category = db.Column(db.String(50), nullable=True)  # 分类
     tags = db.Column(db.String(200), nullable=True)  # 标签，用逗号分隔
+    series = db.Column(db.String(120), nullable=True)  # 系列 / 专题名称
     featured_image = db.Column(db.String(500), nullable=True)  # 特色图片
     view_count = db.Column(db.Integer, default=0)  # 浏览次数
     like_count = db.Column(db.Integer, default=0)  # 点赞数
@@ -74,11 +75,42 @@ class Post(db.Model):
         if self.excerpt:
             return normalize_plain_text(self.excerpt)
         return self.plain_text_content
+
+    @staticmethod
+    def normalize_tags(raw_tags):
+        """规范化标签输入，去重后以逗号加空格存储。"""
+        if not raw_tags:
+            return None
+
+        seen = set()
+        normalized_tags = []
+        for tag in re.split(r'[,，]', raw_tags):
+            clean_tag = re.sub(r'\s+', ' ', (tag or '').strip())
+            if not clean_tag:
+                continue
+            dedupe_key = clean_tag.lower()
+            if dedupe_key in seen:
+                continue
+            seen.add(dedupe_key)
+            normalized_tags.append(clean_tag)
+
+        return ', '.join(normalized_tags) if normalized_tags else None
+
+    @staticmethod
+    def normalize_series(raw_series):
+        """规范化系列名称。"""
+        series = re.sub(r'\s+', ' ', (raw_series or '').strip())
+        return series or None
     
     def get_tags_list(self):
         """获取标签列表"""
         if self.tags:
-            return [tag.strip() for tag in self.tags.split(',')]
+            return [
+                clean_tag for clean_tag in (
+                    re.sub(r'\s+', ' ', (tag or '').strip())
+                    for tag in re.split(r'[,，]', self.tags)
+                ) if clean_tag
+            ]
         return []
 
 
@@ -93,8 +125,15 @@ def ensure_post_schema():
     with db.engine.begin() as conn:
         if 'content_format' not in existing_columns:
             conn.execute(db.text("ALTER TABLE post ADD COLUMN content_format VARCHAR(20) DEFAULT 'html'"))
+        if 'series' not in existing_columns:
+            conn.execute(db.text("ALTER TABLE post ADD COLUMN series VARCHAR(120)"))
 
         conn.execute(db.text(
             "UPDATE post SET content_format = 'html' "
             "WHERE content_format IS NULL OR TRIM(content_format) = ''"
         ))
+        if 'series' in {column['name'] for column in db.inspect(db.engine).get_columns('post')}:
+            conn.execute(db.text(
+                "UPDATE post SET series = NULL "
+                "WHERE series IS NOT NULL AND TRIM(series) = ''"
+            ))

@@ -16,7 +16,6 @@
 }
 
 .links-page .links-list-wrap,
-.links-page .link-card,
 .links-page .links-empty,
 .links-page .links-apply-bar,
 .links-page .links-modal-dialog {
@@ -136,30 +135,45 @@
 }
 
 .links-page .links-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    display: grid;
+    gap: 4px;
 }
 
 .links-page .link-card {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    gap: 12px;
+    width: 100%;
     min-height: 40px;
-    padding: 0 14px;
-    border-radius: 999px;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+    padding: 8px 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    transition: color 0.15s ease, transform 0.15s ease;
 }
 
 .links-page .link-card:hover {
-    transform: translateY(-1px);
-    border-color: var(--links-border-strong);
-    box-shadow: 0 6px 16px rgba(31, 35, 40, 0.06);
+    transform: none;
+    box-shadow: none;
 }
 
 .links-page .link-title {
     margin: 0;
     font-size: 0.98rem;
+    font-weight: 700;
     line-height: 1.35;
+    flex-shrink: 0;
+}
+
+.links-page .link-description {
+    min-width: 0;
+    color: var(--fgColor-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .links-page .link-card,
@@ -323,6 +337,19 @@
 }
 
 @media (max-width: 767px) {
+    .links-page .link-card {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 0;
+    }
+
+    .links-page .link-description {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
     .links-page .links-list-actions,
     .links-page .links-apply-actions,
     .links-page .links-form-actions {
@@ -349,6 +376,7 @@
 {% macro render_link_card(link) %}
 <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-card">
     <span class="link-title">{{ link.name }}</span>
+    <span class="link-description">{{ link.description or link.url }}</span>
 </a>
 {% endmacro %}
 
